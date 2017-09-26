@@ -421,7 +421,6 @@ VCS_ARGS     := ${DEFFILE} \
                 +define+NVTOOLS_SYNC2D_GENERIC_CELL \
 		+define+NO_PERFMON_HISTOGRAM \
 		+define+PRAND_OFF \
-		-P ../dut/GetArgValPLI.tab \
 
 ifeq ($(SAIF),1)
 	VCS_ARGS += +vcs+saif_libcell
