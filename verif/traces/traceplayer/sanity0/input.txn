@@ -1,0 +1,5 @@
+# load_mem(addr, offset,  file)
+# write_reg(reg_addr, reg_data, misc_bits)
+read_reg 0xffff100b 0xffffffe0 0x00000000 #NVDLA_BDMA.CFG_DST_SURF_0
+write_reg 0xffff100b 0xf0a5a500 #NVDLA_BDMA.CFG_DST_SURF_0
+read_reg 0xffff100b 0xffffffe0 0xf0a5a500 #NVDLA_BDMA.CFG_DST_SURF_0

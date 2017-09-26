@@ -1,0 +1,188 @@
+// ================================================================
+// NVDLA Open Source Project
+// 
+// Copyright(c) 2016 - 2017 NVIDIA Corporation.  Licensed under the
+// NVDLA Open Hardware License; Check "LICENSE" which comes with 
+// this distribution for more information.
+// ================================================================
+
+// File Name: RANDFUNC.vlib
+
+`ifdef NV_HWACC
+   `include "NV_HWACC_VLIB_tick_defines.vh"
+`endif
+`celldefine
+`ifndef FLATGATES // REGEN_MONOLITHIC_MARK1
+// Model: RANDFUNC - cell_lib Source     : //tsmc16ff/libs/tsmc16ff/std_cell/nvidia/cell_db/common/R/RANDFUNC/RANDFUNC_nonpg.vlib#8
+// RIP_START - RANDFUNC.v
+// Model: RANDFUNC - rtl Source : //tsmc16ff/libs/tsmc16ff/std_cell/nvidia/v1.0/rtl/RANDFUNC.v#4 
+// Model: header - rtl Source : //tsmc16ff/libs/tsmc16ff/std_cell/nvidia/v1.0/rtl/lib.header#1 
+
+`define RANDFUNC_MODNAME_LEN (32)
+
+module RANDFUNC;
+
+reg [47:0] seed;
+reg initialized;
+
+`ifndef PRAND_VERILOG
+// hash_combine(). 
+// Combine hash values.  k=key. v=variable
+function [31:0] hash_combine;
+input [31:0] k, v;
+begin
+	// Mixing function taken from boost
+	hash_combine = k ^ (v + 32'h9e3779b9 + (k<<6) + (k>>2));
+end
+endfunction
+
+// hash_get().  Use "hg" to minimize impact on module name path.
+// Function to generate a hash based on module name and seed.
+function [31:0] hg;
+input in1;
+reg [(`RANDFUNC_MODNAME_LEN*8)-1:0] modName;
+reg [31:0] hash, arg;
+integer i;
+
+begin
+	//	hash = 32'h9e3779b9;
+	hash = 0;
+	// Convert current module hierarchical name to a reg.
+	// Note $sformatf() converts strings right to left.  i.e.
+	// Return value contains data from right most data of the string.
+	modName = $sformatf ("%m");
+
+	// Create hash from module name.
+	for (i = 0; i < (`RANDFUNC_MODNAME_LEN/4); i = i + 1) begin
+		hash = hash_combine (hash, modName >> (i * 32));
+	end
+
+	// Also hash in seed command line options.
+	if($value$plusargs("seed0=%d", arg))
+		hash = hash_combine(hash, arg);
+	if($value$plusargs("seed1=%d", arg))
+		hash = hash_combine(hash, arg);
+	if($value$plusargs("seed2=%d", arg))
+		hash = hash_combine(hash, arg);	
+
+	hg = hash;
+end
+endfunction
+`endif
+
+
+// Verilog replacement for rollpli.
+function [31:0] rollpli;
+input [31:0] min;
+input [31:0] max;
+reg [32:0] diff;
+
+begin
+	if(initialized !== 1'b1) begin
+		`ifdef PRAND_VERILOG
+			seed = {$prand_get_seed(0), 16'b0};
+		`else
+			seed = {hg(1), 16'b0};
+		`endif
+		initialized = 1'b1;
+	end
+	diff = max - min + 1;
+	rollpli = min + seed[47:16] % diff;
+	// magic numbers taken from Java's random class (same as lrand48)
+	// seed = seed * 48'd25214903917 + 48'd11;
+	seed = seed * 48'h5deece66d + 48'hb;   // Hex version
+end
+
+endfunction
+
+endmodule
+// RIP_END - RANDFUNC.v
+
+`else // ifdef FLATGATES // REGEN_MONOLITHIC_MARK2
+// Model: RANDFUNC - cell_lib Source     : //tsmc16ff/libs/tsmc16ff/std_cell/nvidia/cell_db/common/R/RANDFUNC/RANDFUNC_nonpg.vlib#8
+// RIP_START - RANDFUNC.v
+// Model: RANDFUNC - rtl Source : //tsmc16ff/libs/tsmc16ff/std_cell/nvidia/v1.0/rtl/RANDFUNC.v#4 
+// Model: header - rtl Source : //tsmc16ff/libs/tsmc16ff/std_cell/nvidia/v1.0/rtl/lib.header#1 
+
+`define RANDFUNC_MODNAME_LEN (32)
+
+module RANDFUNC;
+
+reg [47:0] seed;
+reg initialized;
+
+`ifndef PRAND_VERILOG
+// hash_combine(). 
+// Combine hash values.  k=key. v=variable
+function [31:0] hash_combine;
+input [31:0] k, v;
+begin
+	// Mixing function taken from boost
+	hash_combine = k ^ (v + 32'h9e3779b9 + (k<<6) + (k>>2));
+end
+endfunction
+
+// hash_get().  Use "hg" to minimize impact on module name path.
+// Function to generate a hash based on module name and seed.
+function [31:0] hg;
+input in1;
+reg [(`RANDFUNC_MODNAME_LEN*8)-1:0] modName;
+reg [31:0] hash, arg;
+integer i;
+
+begin
+	//	hash = 32'h9e3779b9;
+	hash = 0;
+	// Convert current module hierarchical name to a reg.
+	// Note $sformatf() converts strings right to left.  i.e.
+	// Return value contains data from right most data of the string.
+	modName = $sformatf ("%m");
+
+	// Create hash from module name.
+	for (i = 0; i < (`RANDFUNC_MODNAME_LEN/4); i = i + 1) begin
+		hash = hash_combine (hash, modName >> (i * 32));
+	end
+
+	// Also hash in seed command line options.
+	if($value$plusargs("seed0=%d", arg))
+		hash = hash_combine(hash, arg);
+	if($value$plusargs("seed1=%d", arg))
+		hash = hash_combine(hash, arg);
+	if($value$plusargs("seed2=%d", arg))
+		hash = hash_combine(hash, arg);	
+
+	hg = hash;
+end
+endfunction
+`endif
+
+
+// Verilog replacement for rollpli.
+function [31:0] rollpli;
+input [31:0] min;
+input [31:0] max;
+reg [32:0] diff;
+
+begin
+	if(initialized !== 1'b1) begin
+		`ifdef PRAND_VERILOG
+			seed = {$prand_get_seed(0), 16'b0};
+		`else
+			seed = {hg(1), 16'b0};
+		`endif
+		initialized = 1'b1;
+	end
+	diff = max - min + 1;
+	rollpli = min + seed[47:16] % diff;
+	// magic numbers taken from Java's random class (same as lrand48)
+	// seed = seed * 48'd25214903917 + 48'd11;
+	seed = seed * 48'h5deece66d + 48'hb;   // Hex version
+end
+
+endfunction
+
+endmodule
+// RIP_END - RANDFUNC.v
+
+`endif // ifdef FLATGATES // REGEN_MONOLITHIC_MARK3
+`endcelldefine

@@ -1,0 +1,1224 @@
+// ================================================================
+// NVDLA Open Source Project
+// 
+// Copyright(c) 2016 - 2017 NVIDIA Corporation.  Licensed under the
+// NVDLA Open Hardware License; Check "LICENSE" which comes with 
+// this distribution for more information.
+// ================================================================
+
+// File Name: NV_NVDLA_CSB_MASTER_falcon2csb_fifo.v
+
+`define FORCE_CONTENTION_ASSERTION_RESET_ACTIVE 1'b1
+`include "simulate_x_tick.vh"
+module NV_NVDLA_CSB_MASTER_falcon2csb_fifo (
+      wr_clk
+    , wr_reset_
+    , wr_ready
+    , wr_req
+`ifdef FV_RAND_WR_PAUSE
+    , wr_pause
+`endif
+    , wr_data
+    , rd_clk
+    , rd_reset_
+    , rd_ready
+    , rd_req
+    , rd_data
+    , pwrbus_ram_pd
+    );
+
+// spyglass disable_block W401 -- clock is not input to module
+input         wr_clk;
+input         wr_reset_;
+output        wr_ready;
+input         wr_req;
+`ifdef FV_RAND_WR_PAUSE
+input         wr_pause;
+`endif
+input  [49:0] wr_data;
+input         rd_clk;
+input         rd_reset_;
+input         rd_ready;
+output        rd_req;
+output [49:0] rd_data;
+input  [31:0] pwrbus_ram_pd;
+
+//
+// DFT clock gate enable qualifier
+//
+
+// Write side
+wire dft_qualifier_wr_enable;
+oneHotClk_async_write_clock fifogenDFTWrQual ( .enable_w( dft_qualifier_wr_enable ) );
+
+wire wr_clk_dft_mgated;
+
+NV_CLK_gate_power wr_clk_wr_dft_mgate( .clk(wr_clk), .reset_(wr_reset_), .clk_en(dft_qualifier_wr_enable), .clk_gated(wr_clk_dft_mgated) );
+
+// Add a dummy sink to prevent issue related to no fanout on this clock gate
+NV_BLKBOX_SINK UJ_BLKBOX_UNUSED_FIFOGEN_dft_wr_clkgate_sink (.A( wr_clk_dft_mgated ) );
+
+// Read side
+wire dft_qualifier_rd_enable;
+oneHotClk_async_read_clock fifogenDFTRdQual ( .enable_r( dft_qualifier_rd_enable ) );
+
+wire rd_clk_dft_mgated;
+
+NV_CLK_gate_power rd_clk_rd_dft_mgate( .clk(rd_clk), .reset_(rd_reset_), .clk_en(dft_qualifier_rd_enable), .clk_gated(rd_clk_dft_mgated) );
+
+// Add a dummy sink to prevent issue related to no fanout on this clock gate
+NV_BLKBOX_SINK UJ_BLKBOX_UNUSED_FIFOGEN_dft_rd_clkgate_sink (.A( rd_clk_dft_mgated ) );
+
+// Master Clock Gating (SLCG)
+//
+// We gate the clock(s) when idle or stalled.
+// This allows us to turn off numerous miscellaneous flops
+// that don't get gated during synthesis for one reason or another.
+//
+// We gate write side and read side separately. 
+// If the fifo is synchronous, we also gate the ram separately, but if
+// -master_clk_gated_unified or -status_reg/-status_logic_reg is specified, 
+// then we use one clk gate for write, ram, and read.
+//
+wire wr_clk_wr_mgated_enable;   // assigned by code at end of this module
+wire wr_clk_wr_mgated;
+NV_CLK_gate_power wr_clk_wr_mgate( .clk(wr_clk), .reset_(wr_reset_), .clk_en(wr_clk_wr_mgated_enable), .clk_gated(wr_clk_wr_mgated) );
+wire rd_clk_rd_mgated_enable;   // assigned by code at end of this module
+wire rd_clk_rd_mgated;
+NV_CLK_gate_power rd_clk_rd_mgate( .clk(rd_clk), .reset_(rd_reset_), .clk_en(rd_clk_rd_mgated_enable), .clk_gated(rd_clk_rd_mgated) );
+
+// 
+// WRITE SIDE
+//
+// synopsys translate_off
+`ifndef SYNTH_LEVEL1_COMPILE
+`ifndef SYNTHESIS
+wire wr_pause_rand;  // random stalling
+`endif	
+`endif	
+// synopsys translate_on
+wire wr_reserving;
+reg        wr_req_in;                                // registered wr_req
+reg        wr_busy_in;                              // inputs being held this cycle?
+assign     wr_ready = !wr_busy_in;
+wire       wr_busy_next;                           // fwd: fifo busy next?
+
+// factor for better timing with distant wr_req signal
+wire       wr_busy_in_next_wr_req_eq_1 = wr_busy_next;
+wire       wr_busy_in_next_wr_req_eq_0 = (wr_req_in && wr_busy_next) && !wr_reserving;
+`ifdef FV_RAND_WR_PAUSE
+wire       wr_busy_in_next = (wr_req? wr_busy_in_next_wr_req_eq_1 : wr_busy_in_next_wr_req_eq_0)
+                             || wr_pause ;
+`else
+wire       wr_busy_in_next = (wr_req? wr_busy_in_next_wr_req_eq_1 : wr_busy_in_next_wr_req_eq_0)
+                              
+                            // synopsys translate_off
+                            `ifndef SYNTH_LEVEL1_COMPILE
+                            `ifndef SYNTHESIS
+                            || wr_pause_rand
+                            `endif
+                            `endif
+                            // synopsys translate_on
+                             ;
+`endif
+wire       wr_busy_in_int;
+always @( posedge wr_clk_dft_mgated or negedge wr_reset_ ) begin
+    if ( !wr_reset_ ) begin
+        wr_req_in <=  1'b0;
+        wr_busy_in <=  1'b0;
+    end else begin
+        wr_busy_in <=  wr_busy_in_next;
+        if ( !wr_busy_in_int ) begin
+            wr_req_in  <=  wr_req && !wr_busy_in;
+        end
+        //synopsys translate_off
+            else if ( wr_busy_in_int ) begin
+        end else begin
+            wr_req_in  <=  `x_or_0; 
+        end
+        //synopsys translate_on
+
+    end
+end
+
+reg        wr_busy_int;		        	// copy for internal use
+assign       wr_reserving = wr_req_in && !wr_busy_int; // reserving write space?
+
+
+wire       wr_popping;                          // fwd: write side sees pop?
+
+reg  [2:0] wr_count;			// write-side count
+
+wire [2:0] wr_count_next_wr_popping = wr_reserving ? wr_count : (wr_count - 1'd1); // spyglass disable W164a W484
+wire [2:0] wr_count_next_no_wr_popping = wr_reserving ? (wr_count + 1'd1) : wr_count; // spyglass disable W164a W484
+wire [2:0] wr_count_next = wr_popping ? wr_count_next_wr_popping : 
+                                               wr_count_next_no_wr_popping;
+
+wire wr_count_next_no_wr_popping_is_4 = ( wr_count_next_no_wr_popping == 3'd4 );
+wire wr_count_next_is_4 = wr_popping ? 1'b0 :
+                                          wr_count_next_no_wr_popping_is_4;
+wire [2:0] wr_limit_muxed;  // muxed with simulation/emulation overrides
+wire [2:0] wr_limit_reg = wr_limit_muxed;
+                          // VCS coverage off
+assign     wr_busy_next = wr_count_next_is_4 || // busy next cycle?
+                          (wr_limit_reg != 3'd0 &&      // check wr_limit if != 0
+                           wr_count_next >= wr_limit_reg)  ;
+                          // VCS coverage on
+assign     wr_busy_in_int = wr_req_in && wr_busy_int;
+always @( posedge wr_clk_wr_mgated or negedge wr_reset_ ) begin
+    if ( !wr_reset_ ) begin
+        wr_busy_int <=  1'b0;
+        wr_count <=  3'd0;
+    end else begin
+	wr_busy_int <=  wr_busy_next;
+	if ( wr_reserving ^ wr_popping ) begin
+	    wr_count <=  wr_count_next;
+        end 
+        //synopsys translate_off
+            else if ( !(wr_reserving ^ wr_popping) ) begin
+        end else begin
+            wr_count <=  {3{`x_or_0}};
+        end
+        //synopsys translate_on
+
+    end
+end
+
+wire       wr_pushing = wr_reserving;   // data pushed same cycle as wr_req_in
+
+//
+// RAM
+//
+
+reg  [1:0] wr_adr;			// current write address
+
+// spyglass disable_block W484
+// next wr_adr if wr_pushing=1
+wire [1:0] wr_adr_next = wr_adr + 1'd1;  // spyglass disable W484
+always @( posedge wr_clk_wr_mgated or negedge wr_reset_ ) begin
+    if ( !wr_reset_ ) begin
+        wr_adr <=  2'd0;
+    end else begin
+        if ( wr_pushing ) begin
+            wr_adr <=  wr_adr_next;
+        end
+    end
+end
+// spyglass enable_block W484
+
+
+reg [1:0] rd_adr;          // read address this cycle
+wire ram_we = wr_pushing;   // note: write occurs next cycle
+wire ram_iwe = !wr_busy_in && wr_req;  
+wire [49:0] rd_data_p;                    // read data out of ram
+
+wire [31 : 0] pwrbus_ram_pd;
+
+// Adding parameter for fifogen to disable wr/rd contention assertion in ramgen.
+// Fifogen handles this by ignoring the data on the ram data out for that cycle.
+
+
+NV_NVDLA_CSB_MASTER_falcon2csb_fifo_flopram_rwa_4x50 ram (
+      .clk( wr_clk_dft_mgated )
+    , .clk_mgated( wr_clk_wr_mgated )
+    , .pwrbus_ram_pd ( pwrbus_ram_pd )
+    , .di        ( wr_data )
+    , .iwe        ( ram_iwe )
+    , .we        ( ram_we )
+    , .wa        ( wr_adr )
+    , .ra        ( rd_adr )
+    , .dout        ( rd_data_p )
+    );
+
+wire   rd_popping;              // read side doing pop this cycle?
+
+wire [1:0] rd_adr_next_popping = rd_adr + 1'd1; // spyglass disable W484
+always @( posedge rd_clk_rd_mgated or negedge rd_reset_ ) begin
+    if ( !rd_reset_ ) begin
+        rd_adr <=  2'd0;
+    end else begin
+        if ( rd_popping ) begin
+	    rd_adr <=  rd_adr_next_popping;
+        end 
+        //synopsys translate_off
+            else if ( !rd_popping ) begin
+        end else begin
+            rd_adr <=  {2{`x_or_0}};
+        end
+        //synopsys translate_on
+
+    end
+end
+
+//
+// ASYNCHRONOUS BOUNDARY USING TRADITIONAL SYNCHRONIZERS
+//
+// Our goal here is to translate wr_pushing pulses into rd_pushing
+// pulses on the read side and, conversely, to translate rd_popping
+// pulses to wr_popping pulses on the write side.
+//
+// We don't try to optimize the case where the async fifo depth is
+// a power of two.  We handle the general case using one scheme to
+// avoid maintaining different implementations.  We may use a couple
+// more counters, but they are quite cheap in the grand scheme of things.
+// This wr_pushing/rd_pushing/rd_popping/wr_popping centric scheme also
+// fits in well with the case where there is no asynchronous boundary.
+//
+// The scheme works as follows.  For the wr_pushing -> rd_pushing translation,
+// we keep an 3-bit gray counter on the write and read sides.
+// This counter is initialized to 0 on both sides.   When wr_pushing
+// is pulsed, the write side gray-increments its counter, registers it,
+// then sends it through an 3-bit synchronizer to the other side.
+// Whenever the read side sees the new gray counter not equal to its
+// copy of the gray counter, it gray-increments its counter and pulses
+// rd_pushing=1.  The actual value of the gray counter is irrelevant.
+// It must be a power-of-2 to make the gray code work.  Otherwise,
+// we're just looking for changes in the gray value.
+//
+// The same technique is used for the rd_popping -> wr_popping translation.
+//
+// The gray counter algorithm uses a 1-bit polarity register that starts
+// off as 0 and is inverted whenever the gray counter is incremented.
+//
+// In plain English, the next gray counter is determined as follows:
+// if the current polarity register is 0, invert bit 0 (the lsb); otherwise,
+// find the rightmost one bit and invert the bit to the left of the one bit
+// if the one bit is not the msb else invert the msb one bit.  The
+// general expression is thus:
+//
+// { gray[n-1] ^ (polarity             & ~gray[n-3] & ~gray[n-4] & ... ),
+//   gray[n-2] ^ (polarity & gray[n-3] & ~gray[n-4] & ~gray[n-5] & ... ),
+//   gray[n-3] ^ (polarity & gray[n-4] & ~gray[n-5] & ~gray[n-6] & ... ),
+//   ...
+//   gray[0]   ^ (~polarity) }
+//
+// For n == 1, the next gray value is obviously just ~gray.
+//
+// The wr_pushing/rd_popping signal does not affect the registered
+// gray counter until the next cycle.  However, for non-FF-type rams,
+// the write will not complete until the end of the next cycle, so
+// we must delay wr_pushing yet another more cycle,
+// unless the -rd_clk_le_2x_wr_clk option was given
+// (or the -rd_clk_le_2x_wr_clk_dynamic option was given
+// and the rd_clk_le_2x_wr_clk signal is 1).
+//
+
+
+
+
+// clk gating of strict synchronizers
+//
+
+wire wr_clk_wr_mgated_strict_snd_gated;
+NV_CLK_gate_power wr_clk_wr_mgated_snd_gate( .clk(wr_clk), .reset_(wr_reset_), .clk_en(dft_qualifier_wr_enable && (wr_pushing)), .clk_gated(wr_clk_wr_mgated_strict_snd_gated) ); 
+
+//
+// wr_pushing -> rd_pushing translation
+//
+wire [2:0]	wr_pushing_gray_cntr;
+wire [2:0]	wr_pushing_gray_cntr_next;
+
+NV_NVDLA_CSB_MASTER_falcon2csb_fifo_gray_cntr_strict wr_pushing_gray (  
+`ifdef NV_FPGA_FIFOGEN
+      .inc		( wr_pushing ) ,
+`endif
+      .gray		( wr_pushing_gray_cntr )
+    , .gray_next        ( wr_pushing_gray_cntr_next )
+    );
+wire [2:0] wr_pushing_gray_cntr_sync; 
+
+p_STRICTSYNC3DOTM_C_PPP NV_AFIFO_wr_pushing_sync0 (
+      .SRC_CLK          ( wr_clk_wr_mgated_strict_snd_gated )
+    , .SRC_CLRN         ( wr_reset_ )
+    , .SRC_D_NEXT	( wr_pushing_gray_cntr_next[0] )
+    , .SRC_D		( wr_pushing_gray_cntr[0] )
+    , .DST_CLK		( rd_clk_dft_mgated )
+    , .DST_CLRN  	( rd_reset_ )
+    , .DST_Q		( wr_pushing_gray_cntr_sync[0] )
+    , .ATPG_CTL         ( 1'b0 )
+    , .TEST_MODE        ( 1'b0 )
+    );
+p_STRICTSYNC3DOTM_C_PPP NV_AFIFO_wr_pushing_sync1 (
+      .SRC_CLK          ( wr_clk_wr_mgated_strict_snd_gated )
+    , .SRC_CLRN         ( wr_reset_ )
+    , .SRC_D_NEXT	( wr_pushing_gray_cntr_next[1] )
+    , .SRC_D		( wr_pushing_gray_cntr[1] )
+    , .DST_CLK		( rd_clk_dft_mgated )
+    , .DST_CLRN  	( rd_reset_ )
+    , .DST_Q		( wr_pushing_gray_cntr_sync[1] )
+    , .ATPG_CTL         ( 1'b0 )
+    , .TEST_MODE        ( 1'b0 )
+    );
+p_STRICTSYNC3DOTM_C_PPP NV_AFIFO_wr_pushing_sync2 (
+      .SRC_CLK          ( wr_clk_wr_mgated_strict_snd_gated )
+    , .SRC_CLRN         ( wr_reset_ )
+    , .SRC_D_NEXT	( wr_pushing_gray_cntr_next[2] )
+    , .SRC_D		( wr_pushing_gray_cntr[2] )
+    , .DST_CLK		( rd_clk_dft_mgated )
+    , .DST_CLRN  	( rd_reset_ )
+    , .DST_Q		( wr_pushing_gray_cntr_sync[2] )
+    , .ATPG_CTL         ( 1'b0 )
+    , .TEST_MODE        ( 1'b0 )
+    );
+
+wire [2:0] rd_pushing_gray_cntr;
+wire    rd_pushing =  wr_pushing_gray_cntr_sync != rd_pushing_gray_cntr;
+
+NV_NVDLA_CSB_MASTER_falcon2csb_fifo_gray_cntr rd_pushing_gray (  
+      .clk		( rd_clk_rd_mgated )
+    , .reset_		( rd_reset_ )
+    , .inc		( rd_pushing )
+    , .gray	( rd_pushing_gray_cntr )
+    );
+
+
+
+
+
+
+
+// clk gating of strict synchronizers
+//
+
+wire rd_clk_rd_mgated_strict_snd_gated;
+NV_CLK_gate_power rd_clk_rd_mgated_snd_gate( .clk(rd_clk), .reset_(rd_reset_), .clk_en(dft_qualifier_rd_enable && (rd_popping)), .clk_gated(rd_clk_rd_mgated_strict_snd_gated) ); 
+wire wr_clk_strict_rcv_gated;
+NV_CLK_gate_power wr_clk_rcv_gate( .clk(wr_clk), .reset_(wr_reset_), .clk_en(dft_qualifier_wr_enable && (wr_count_next_no_wr_popping != 3'd0)), .clk_gated(wr_clk_strict_rcv_gated) ); 
+
+//
+// rd_popping -> wr_popping translation
+//
+wire [2:0]	rd_popping_gray_cntr;
+wire [2:0]	rd_popping_gray_cntr_next;
+
+NV_NVDLA_CSB_MASTER_falcon2csb_fifo_gray_cntr_strict rd_popping_gray (  
+`ifdef NV_FPGA_FIFOGEN
+      .inc		( rd_popping ) ,
+`endif
+      .gray		( rd_popping_gray_cntr )
+    , .gray_next        ( rd_popping_gray_cntr_next )
+    );
+wire [2:0] rd_popping_gray_cntr_sync; 
+
+p_STRICTSYNC3DOTM_C_PPP NV_AFIFO_rd_popping_sync0 (
+      .SRC_CLK          ( rd_clk_rd_mgated_strict_snd_gated )
+    , .SRC_CLRN         ( rd_reset_ )
+    , .SRC_D_NEXT	( rd_popping_gray_cntr_next[0] )
+    , .SRC_D		( rd_popping_gray_cntr[0] )
+    , .DST_CLK		( wr_clk_strict_rcv_gated )
+    , .DST_CLRN  	( wr_reset_ )
+    , .DST_Q		( rd_popping_gray_cntr_sync[0] )
+    , .ATPG_CTL         ( 1'b0 )
+    , .TEST_MODE        ( 1'b0 )
+    );
+p_STRICTSYNC3DOTM_C_PPP NV_AFIFO_rd_popping_sync1 (
+      .SRC_CLK          ( rd_clk_rd_mgated_strict_snd_gated )
+    , .SRC_CLRN         ( rd_reset_ )
+    , .SRC_D_NEXT	( rd_popping_gray_cntr_next[1] )
+    , .SRC_D		( rd_popping_gray_cntr[1] )
+    , .DST_CLK		( wr_clk_strict_rcv_gated )
+    , .DST_CLRN  	( wr_reset_ )
+    , .DST_Q		( rd_popping_gray_cntr_sync[1] )
+    , .ATPG_CTL         ( 1'b0 )
+    , .TEST_MODE        ( 1'b0 )
+    );
+p_STRICTSYNC3DOTM_C_PPP NV_AFIFO_rd_popping_sync2 (
+      .SRC_CLK          ( rd_clk_rd_mgated_strict_snd_gated )
+    , .SRC_CLRN         ( rd_reset_ )
+    , .SRC_D_NEXT	( rd_popping_gray_cntr_next[2] )
+    , .SRC_D		( rd_popping_gray_cntr[2] )
+    , .DST_CLK		( wr_clk_strict_rcv_gated )
+    , .DST_CLRN  	( wr_reset_ )
+    , .DST_Q		( rd_popping_gray_cntr_sync[2] )
+    , .ATPG_CTL         ( 1'b0 )
+    , .TEST_MODE        ( 1'b0 )
+    );
+
+wire [2:0] wr_popping_gray_cntr;
+assign    wr_popping =  rd_popping_gray_cntr_sync != wr_popping_gray_cntr;
+
+NV_NVDLA_CSB_MASTER_falcon2csb_fifo_gray_cntr wr_popping_gray (  
+      .clk		( wr_clk_wr_mgated )
+    , .reset_		( wr_reset_ )
+    , .inc		( wr_popping )
+    , .gray	( wr_popping_gray_cntr )
+    );
+
+
+
+
+//
+// READ SIDE
+//
+
+wire       rd_req_p; 		// data out of fifo is valid
+
+reg        rd_req_int;	// internal copy of rd_req
+assign     rd_req = rd_req_int;
+assign     rd_popping = rd_req_p && !(rd_req_int && !rd_ready);
+
+reg  [2:0] rd_count_p;			// read-side fifo count
+// spyglass disable_block W164a W484
+wire [2:0] rd_count_p_next_rd_popping = rd_pushing ? rd_count_p : 
+                                                                (rd_count_p - 1'd1);
+wire [2:0] rd_count_p_next_no_rd_popping =  rd_pushing ? (rd_count_p + 1'd1) : 
+                                                                    rd_count_p;
+// spyglass enable_block W164a W484
+wire [2:0] rd_count_p_next = rd_popping ? rd_count_p_next_rd_popping :
+                                                     rd_count_p_next_no_rd_popping; 
+assign     rd_req_p = rd_count_p != 0 || rd_pushing;
+always @( posedge rd_clk_rd_mgated or negedge rd_reset_ ) begin
+    if ( !rd_reset_ ) begin
+        rd_count_p <=  3'd0;
+    end else begin
+        if ( rd_pushing || rd_popping  ) begin
+	    rd_count_p <=  rd_count_p_next;
+        end 
+        //synopsys translate_off
+            else if ( !(rd_pushing || rd_popping ) ) begin
+        end else begin
+            rd_count_p <=  {3{`x_or_0}};
+        end
+        //synopsys translate_on
+
+    end
+end
+reg [49:0]  NV_AFIFO_rd_data;         // output data register
+wire        rd_req_next = (rd_req_p || (rd_req_int && !rd_ready)) ;
+
+always @( posedge rd_clk_rd_mgated or negedge rd_reset_ ) begin
+    if ( !rd_reset_ ) begin
+        rd_req_int <=  1'b0;
+    end else begin
+        rd_req_int <=  rd_req_next;
+    end
+end
+always @( posedge rd_clk_rd_mgated ) begin
+    if ( (rd_popping) ) begin
+        NV_AFIFO_rd_data <=  rd_data_p;
+    end 
+    //synopsys translate_off
+        else if ( !((rd_popping)) ) begin
+    end else begin
+        NV_AFIFO_rd_data <=  {50{`x_or_0}};
+    end
+    //synopsys translate_on
+
+end
+
+assign rd_data = NV_AFIFO_rd_data;
+
+
+// Master Clock Gating (SLCG) Enables
+//
+
+// plusarg for disabling this stuff:
+
+// synopsys translate_off
+`ifndef SYNTH_LEVEL1_COMPILE
+`ifndef SYNTHESIS
+reg master_clk_gating_disabled;  initial master_clk_gating_disabled = $test$plusargs( "fifogen_disable_master_clk_gating" ) != 0;
+`endif
+`endif
+// synopsys translate_on
+
+// synopsys translate_off
+`ifndef SYNTH_LEVEL1_COMPILE
+`ifndef SYNTHESIS
+reg wr_pause_rand_dly;  
+always @( posedge wr_clk_dft_mgated or negedge wr_reset_ ) begin
+    if ( !wr_reset_ ) begin
+        wr_pause_rand_dly <=  1'b0;
+    end else begin
+        wr_pause_rand_dly <=  wr_pause_rand;
+    end
+end
+`endif
+`endif
+// synopsys translate_on
+assign wr_clk_wr_mgated_enable = dft_qualifier_wr_enable && (wr_reserving || wr_pushing || wr_popping || wr_popping || (wr_req_in && !wr_busy_int) || (wr_busy_int != wr_busy_next))
+                               `ifdef FIFOGEN_MASTER_CLK_GATING_DISABLED
+                               || 1'b1
+                               `endif
+                               // synopsys translate_off
+			       `ifndef SYNTH_LEVEL1_COMPILE
+			       `ifndef SYNTHESIS
+                               || master_clk_gating_disabled || (wr_pause_rand != wr_pause_rand_dly)
+			       `endif
+			       `endif
+                               // synopsys translate_on
+                               ;
+assign rd_clk_rd_mgated_enable = dft_qualifier_rd_enable && ((rd_pushing || rd_popping || (rd_req_int && rd_ready)))
+                               `ifdef FIFOGEN_MASTER_CLK_GATING_DISABLED
+                               || 1'b1
+                               `endif
+                               // synopsys translate_off
+			       `ifndef SYNTH_LEVEL1_COMPILE
+			       `ifndef SYNTHESIS
+                               || master_clk_gating_disabled
+			       `endif
+			       `endif
+                               // synopsys translate_on
+                               ;
+
+
+// Simulation and Emulation Overrides of wr_limit(s)
+//
+
+`ifdef EMU
+
+`ifdef EMU_FIFO_CFG
+// Emulation Global Config Override
+//
+assign wr_limit_muxed = `EMU_FIFO_CFG.NV_NVDLA_CSB_MASTER_falcon2csb_fifo_wr_limit_override ? `EMU_FIFO_CFG.NV_NVDLA_CSB_MASTER_falcon2csb_fifo_wr_limit : 3'd0;
+`else
+// No Global Override for Emulation 
+//
+assign wr_limit_muxed = 3'd0;
+`endif // EMU_FIFO_CFG
+
+`else // !EMU
+`ifdef SYNTH_LEVEL1_COMPILE
+
+// No Override for GCS Compiles
+//
+assign wr_limit_muxed = 3'd0;
+`else
+`ifdef SYNTHESIS
+
+// No Override for RTL Synthesis
+//
+
+assign wr_limit_muxed = 3'd0;
+
+`else  
+
+// RTL Simulation Plusarg Override
+
+
+// VCS coverage off
+
+reg wr_limit_override;
+reg [2:0] wr_limit_override_value; 
+assign wr_limit_muxed = wr_limit_override ? wr_limit_override_value : 3'd0;
+`ifdef NV_ARCHPRO
+event reinit;
+
+initial begin
+    $display("fifogen reinit initial block %m");
+    -> reinit;
+end
+`endif
+
+`ifdef NV_ARCHPRO
+always @( reinit ) begin
+`else 
+initial begin
+`endif
+    wr_limit_override = 0;
+    wr_limit_override_value = 0;  // to keep viva happy with dangles
+    if ( $test$plusargs( "NV_NVDLA_CSB_MASTER_falcon2csb_fifo_wr_limit" ) ) begin
+        wr_limit_override = 1;
+        $value$plusargs( "NV_NVDLA_CSB_MASTER_falcon2csb_fifo_wr_limit=%d", wr_limit_override_value);
+    end
+end
+
+// VCS coverage on
+
+
+`endif 
+`endif
+`endif
+
+
+// Random Write-Side Stalling
+// synopsys translate_off
+`ifndef SYNTH_LEVEL1_COMPILE
+`ifndef SYNTHESIS
+// VCS coverage off
+
+// leda W339 OFF -- Non synthesizable operator
+// leda W372 OFF -- Undefined PLI task
+// leda W373 OFF -- Undefined PLI function
+// leda W599 OFF -- This construct is not supported by Synopsys
+// leda W430 OFF -- Initial statement is not synthesizable
+// leda W182 OFF -- Illegal statement for synthesis
+// leda W639 OFF -- For synthesis, operands of a division or modulo operation need to be constants
+// leda DCVER_274_NV OFF -- This system task is not supported by DC
+
+integer stall_probability;      // prob of stalling
+integer stall_cycles_min;       // min cycles to stall
+integer stall_cycles_max;       // max cycles to stall
+integer stall_cycles_left;      // stall cycles left
+`ifdef NV_ARCHPRO
+always @( reinit ) begin
+`else 
+initial begin
+`endif
+    stall_probability      = 0; // no stalling by default
+    stall_cycles_min       = 1;
+    stall_cycles_max       = 10;
+
+`ifdef NO_PLI
+`else
+    if ( $test$plusargs( "NV_NVDLA_CSB_MASTER_falcon2csb_fifo_fifo_stall_probability" ) ) begin
+        $value$plusargs( "NV_NVDLA_CSB_MASTER_falcon2csb_fifo_fifo_stall_probability=%d", stall_probability);
+    end else if ( $test$plusargs( "default_fifo_stall_probability" ) ) begin
+        $value$plusargs( "default_fifo_stall_probability=%d", stall_probability);
+    end
+
+    if ( $test$plusargs( "NV_NVDLA_CSB_MASTER_falcon2csb_fifo_fifo_stall_cycles_min" ) ) begin
+        $value$plusargs( "NV_NVDLA_CSB_MASTER_falcon2csb_fifo_fifo_stall_cycles_min=%d", stall_cycles_min);
+    end else if ( $test$plusargs( "default_fifo_stall_cycles_min" ) ) begin
+        $value$plusargs( "default_fifo_stall_cycles_min=%d", stall_cycles_min);
+    end
+
+    if ( $test$plusargs( "NV_NVDLA_CSB_MASTER_falcon2csb_fifo_fifo_stall_cycles_max" ) ) begin
+        $value$plusargs( "NV_NVDLA_CSB_MASTER_falcon2csb_fifo_fifo_stall_cycles_max=%d", stall_cycles_max);
+    end else if ( $test$plusargs( "default_fifo_stall_cycles_max" ) ) begin
+        $value$plusargs( "default_fifo_stall_cycles_max=%d", stall_cycles_max);
+    end
+`endif
+
+    if ( stall_cycles_min < 1 ) begin
+        stall_cycles_min = 1;
+    end
+
+    if ( stall_cycles_min > stall_cycles_max ) begin
+        stall_cycles_max = stall_cycles_min;
+    end
+
+end
+
+`ifdef NO_PLI
+`else
+
+// randomization globals
+`ifdef SIMTOP_RANDOMIZE_STALLS
+  always @( `SIMTOP_RANDOMIZE_STALLS.global_stall_event ) begin
+    if ( ! $test$plusargs( "NV_NVDLA_CSB_MASTER_falcon2csb_fifo_fifo_stall_probability" ) ) stall_probability = `SIMTOP_RANDOMIZE_STALLS.global_stall_fifo_probability; 
+    if ( ! $test$plusargs( "NV_NVDLA_CSB_MASTER_falcon2csb_fifo_fifo_stall_cycles_min"  ) ) stall_cycles_min  = `SIMTOP_RANDOMIZE_STALLS.global_stall_fifo_cycles_min;
+    if ( ! $test$plusargs( "NV_NVDLA_CSB_MASTER_falcon2csb_fifo_fifo_stall_cycles_max"  ) ) stall_cycles_max  = `SIMTOP_RANDOMIZE_STALLS.global_stall_fifo_cycles_max;
+  end
+`endif
+
+`endif
+
+always @( negedge wr_clk_dft_mgated or negedge wr_reset_ ) begin
+    if ( !wr_reset_ ) begin
+        stall_cycles_left <=  0;
+    end else begin
+`ifdef NO_PLI
+            stall_cycles_left <=  0;
+`else
+            if ( wr_req && !(!wr_ready)
+                 && stall_probability != 0 ) begin
+                if ( prand_inst0(1, 100) <= stall_probability ) begin
+                    stall_cycles_left <=  prand_inst1(stall_cycles_min, stall_cycles_max);
+                end else if ( stall_cycles_left !== 0  ) begin
+                    stall_cycles_left <=  stall_cycles_left - 1;
+                end
+            end else if ( stall_cycles_left !== 0  ) begin
+                stall_cycles_left <=  stall_cycles_left - 1;
+            end
+`endif
+    end
+end
+
+assign wr_pause_rand = (stall_cycles_left !== 0) ;
+
+// VCS coverage on
+`endif
+`endif
+// synopsys translate_on
+// VCS coverage on
+
+// leda W339 ON
+// leda W372 ON
+// leda W373 ON
+// leda W599 ON
+// leda W430 ON
+// leda W182 ON
+// leda W639 ON
+// leda DCVER_274_NV ON
+
+
+//
+// Histogram of fifo depth (from write side's perspective)
+//
+// NOTE: it will reference `SIMTOP.perfmon_enabled, so that
+//       has to at least be defined, though not initialized.
+//	 tbgen testbenches have it already and various
+//	 ways to turn it on and off.
+//
+`ifdef PERFMON_HISTOGRAM 
+// synopsys translate_off
+`ifndef SYNTH_LEVEL1_COMPILE
+`ifndef SYNTHESIS
+perfmon_histogram perfmon (
+      .clk	( wr_clk ) 
+    , .max      ( {29'd0, (wr_limit_reg == 3'd0) ? 3'd4 : wr_limit_reg} )
+    , .curr	( {29'd0, wr_count} )
+    );
+`endif
+`endif
+// synopsys translate_on
+`endif
+
+// spyglass disable_block W164a W164b W116 W484 W504
+
+`ifdef SPYGLASS
+`else
+
+`ifdef FV_ASSERT_ON
+`else
+// synopsys translate_off
+`endif
+
+`ifdef ASSERT_ON
+
+`ifdef SPYGLASS
+wire disable_assert_plusarg = 1'b0;
+`else
+
+`ifdef FV_ASSERT_ON
+wire disable_assert_plusarg = 1'b0;
+`else
+wire disable_assert_plusarg = $test$plusargs("DISABLE_NESS_FLOW_ASSERTIONS");
+`endif
+
+`endif
+wire assert_enabled = 1'b1 && !disable_assert_plusarg;
+
+
+`endif
+
+`ifdef FV_ASSERT_ON
+`else
+// synopsys translate_on
+`endif
+
+`ifdef ASSERT_ON
+
+//synopsys translate_off
+`ifndef SYNTH_LEVEL1_COMPILE
+`ifndef SYNTHESIS
+always @(assert_enabled) begin
+    if ( assert_enabled === 1'b0 ) begin
+        $display("Asserts are disabled for %m");
+    end
+end
+`endif
+`endif
+//synopsys translate_on
+
+`endif
+
+`endif
+
+// spyglass enable_block W164a W164b W116 W484 W504
+
+
+//The NV_BLKBOX_SRC0 module is only present when the FIFOGEN_MODULE_SEARCH
+// define is set.  This is to aid fifogen team search for fifogen fifo
+// instance and module names in a given design.
+`ifdef FIFOGEN_MODULE_SEARCH
+NV_BLKBOX_SRC0 dummy_breadcrumb_fifogen_blkbox (.Y());
+`endif
+
+// spyglass enable_block W401 -- clock is not input to module
+
+// synopsys dc_script_begin
+//   set_boundary_optimization find(design, "NV_NVDLA_CSB_MASTER_falcon2csb_fifo") true
+// synopsys dc_script_end
+
+
+`ifdef SYNTH_LEVEL1_COMPILE
+`else
+`ifdef SYNTHESIS
+`else
+`ifdef PRAND_VERILOG
+// Only verilog needs any local variables
+reg [47:0] prand_local_seed0;
+reg prand_initialized0;
+reg prand_no_rollpli0;
+`endif
+`endif
+`endif
+
+function [31:0] prand_inst0;
+//VCS coverage off
+    input [31:0] min;
+    input [31:0] max;
+    reg [32:0] diff;
+    
+    begin
+`ifdef SYNTH_LEVEL1_COMPILE
+        prand_inst0 = min;
+`else
+`ifdef SYNTHESIS
+        prand_inst0 = min;
+`else
+`ifdef PRAND_VERILOG
+        if (prand_initialized0 !== 1'b1) begin
+            prand_no_rollpli0 = $test$plusargs("NO_ROLLPLI");
+            if (!prand_no_rollpli0)
+                prand_local_seed0 = {$prand_get_seed(0), 16'b0};
+            prand_initialized0 = 1'b1;
+        end
+        if (prand_no_rollpli0) begin
+            prand_inst0 = min;
+        end else begin
+            diff = max - min + 1;
+            prand_inst0 = min + prand_local_seed0[47:16] % diff;
+            // magic numbers taken from Java's random class (same as lrand48)
+            prand_local_seed0 = prand_local_seed0 * 48'h5deece66d + 48'd11;
+        end
+`else
+`ifdef PRAND_OFF
+        prand_inst0 = min;
+`else
+        prand_inst0 = $RollPLI(min, max, "auto");
+`endif
+`endif
+`endif
+`endif
+    end
+//VCS coverage on
+endfunction
+
+
+`ifdef SYNTH_LEVEL1_COMPILE
+`else
+`ifdef SYNTHESIS
+`else
+`ifdef PRAND_VERILOG
+// Only verilog needs any local variables
+reg [47:0] prand_local_seed1;
+reg prand_initialized1;
+reg prand_no_rollpli1;
+`endif
+`endif
+`endif
+
+function [31:0] prand_inst1;
+//VCS coverage off
+    input [31:0] min;
+    input [31:0] max;
+    reg [32:0] diff;
+    
+    begin
+`ifdef SYNTH_LEVEL1_COMPILE
+        prand_inst1 = min;
+`else
+`ifdef SYNTHESIS
+        prand_inst1 = min;
+`else
+`ifdef PRAND_VERILOG
+        if (prand_initialized1 !== 1'b1) begin
+            prand_no_rollpli1 = $test$plusargs("NO_ROLLPLI");
+            if (!prand_no_rollpli1)
+                prand_local_seed1 = {$prand_get_seed(1), 16'b0};
+            prand_initialized1 = 1'b1;
+        end
+        if (prand_no_rollpli1) begin
+            prand_inst1 = min;
+        end else begin
+            diff = max - min + 1;
+            prand_inst1 = min + prand_local_seed1[47:16] % diff;
+            // magic numbers taken from Java's random class (same as lrand48)
+            prand_local_seed1 = prand_local_seed1 * 48'h5deece66d + 48'd11;
+        end
+`else
+`ifdef PRAND_OFF
+        prand_inst1 = min;
+`else
+        prand_inst1 = $RollPLI(min, max, "auto");
+`endif
+`endif
+`endif
+`endif
+    end
+//VCS coverage on
+endfunction
+
+
+endmodule // NV_NVDLA_CSB_MASTER_falcon2csb_fifo
+
+// 
+// Flop-Based RAM (with internal wr_reg)
+//
+module NV_NVDLA_CSB_MASTER_falcon2csb_fifo_flopram_rwa_4x50 (
+      clk
+    , clk_mgated
+    , pwrbus_ram_pd
+    , di
+    , iwe
+    , we
+    , wa
+    , ra
+    , dout
+    );
+
+input  clk;  // write clock
+input  clk_mgated;  // write clock mgated
+input [31 : 0] pwrbus_ram_pd;
+input  [49:0] di;
+input  iwe;
+input  we;
+input  [1:0] wa;
+input  [1:0] ra;
+output [49:0] dout;
+
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_0 (.A(pwrbus_ram_pd[0]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_1 (.A(pwrbus_ram_pd[1]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_2 (.A(pwrbus_ram_pd[2]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_3 (.A(pwrbus_ram_pd[3]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_4 (.A(pwrbus_ram_pd[4]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_5 (.A(pwrbus_ram_pd[5]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_6 (.A(pwrbus_ram_pd[6]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_7 (.A(pwrbus_ram_pd[7]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_8 (.A(pwrbus_ram_pd[8]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_9 (.A(pwrbus_ram_pd[9]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_10 (.A(pwrbus_ram_pd[10]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_11 (.A(pwrbus_ram_pd[11]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_12 (.A(pwrbus_ram_pd[12]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_13 (.A(pwrbus_ram_pd[13]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_14 (.A(pwrbus_ram_pd[14]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_15 (.A(pwrbus_ram_pd[15]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_16 (.A(pwrbus_ram_pd[16]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_17 (.A(pwrbus_ram_pd[17]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_18 (.A(pwrbus_ram_pd[18]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_19 (.A(pwrbus_ram_pd[19]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_20 (.A(pwrbus_ram_pd[20]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_21 (.A(pwrbus_ram_pd[21]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_22 (.A(pwrbus_ram_pd[22]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_23 (.A(pwrbus_ram_pd[23]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_24 (.A(pwrbus_ram_pd[24]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_25 (.A(pwrbus_ram_pd[25]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_26 (.A(pwrbus_ram_pd[26]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_27 (.A(pwrbus_ram_pd[27]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_28 (.A(pwrbus_ram_pd[28]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_29 (.A(pwrbus_ram_pd[29]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_30 (.A(pwrbus_ram_pd[30]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_31 (.A(pwrbus_ram_pd[31]));
+
+reg [49:0] di_d;  // -wr_reg
+
+always @( posedge clk ) begin
+    if ( iwe ) begin
+        di_d <=  di; // -wr_reg
+    end
+end
+
+`ifdef EMU
+
+
+// we use an emulation ram here to save flops on the emulation board
+// so that the monstrous chip can fit :-)
+//
+reg [1:0] Wa0_vmw;
+reg we0_vmw;
+reg [49:0] Di0_vmw;
+
+always @( posedge clk ) begin
+    Wa0_vmw <=  wa;
+    we0_vmw <=  we;
+    Di0_vmw <=  di_d;
+end
+
+vmw_NV_NVDLA_CSB_MASTER_falcon2csb_fifo_flopram_rwa_4x50 emu_ram (
+     .Wa0( Wa0_vmw ) 
+   , .we0( we0_vmw ) 
+   , .Di0( Di0_vmw )
+   , .Ra0( ra ) 
+   , .Do0( dout )
+   );
+
+`else
+
+reg [49:0] ram_ff0;
+reg [49:0] ram_ff1;
+reg [49:0] ram_ff2;
+reg [49:0] ram_ff3;
+
+always @( posedge clk_mgated ) begin
+    if ( we && wa == 2'd0 ) begin
+	ram_ff0 <=  di_d;
+    end
+    if ( we && wa == 2'd1 ) begin
+	ram_ff1 <=  di_d;
+    end
+    if ( we && wa == 2'd2 ) begin
+	ram_ff2 <=  di_d;
+    end
+    if ( we && wa == 2'd3 ) begin
+	ram_ff3 <=  di_d;
+    end
+end
+
+reg [49:0] dout;
+
+always @(*) begin
+    case( ra ) // synopsys infer_mux_override
+    2'd0:       dout = ram_ff0;
+    2'd1:       dout = ram_ff1;
+    2'd2:       dout = ram_ff2;
+    2'd3:       dout = ram_ff3;
+    //VCS coverage off
+    default:    dout = {50{`x_or_0}};
+    //VCS coverage on
+    endcase
+end
+
+`endif // EMU
+
+endmodule // NV_NVDLA_CSB_MASTER_falcon2csb_fifo_flopram_rwa_4x50
+
+// emulation model of flopram guts
+//
+`ifdef EMU
+
+
+module vmw_NV_NVDLA_CSB_MASTER_falcon2csb_fifo_flopram_rwa_4x50 (
+   Wa0, we0, Di0,
+   Ra0, Do0
+   );
+
+input  [1:0] Wa0;
+input            we0;
+input  [49:0] Di0;
+input  [1:0] Ra0;
+output [49:0] Do0;
+
+// Only visible during Spyglass to avoid blackboxes.
+`ifdef SPYGLASS_FLOPRAM
+
+assign Do0 = 50'd0;
+wire dummy = 1'b0 | (|Wa0) | (|we0) | (|Di0) | (|Ra0);
+
+`endif
+
+// synopsys translate_off
+`ifndef SYNTH_LEVEL1_COMPILE
+`ifndef SYNTHESIS
+reg [49:0] mem[3:0];
+
+// expand mem for debug ease
+`ifdef EMU_EXPAND_FLOPRAM_MEM
+wire [49:0] Q0 = mem[0];
+wire [49:0] Q1 = mem[1];
+wire [49:0] Q2 = mem[2];
+wire [49:0] Q3 = mem[3];
+`endif
+
+// asynchronous ram writes
+always @(*) begin
+  if ( we0 == 1'b1 ) begin
+    #0.1;
+    mem[Wa0] = Di0;
+  end
+end
+
+assign Do0 = mem[Ra0];
+`endif
+`endif
+// synopsys translate_on
+
+// synopsys dc_script_begin
+// synopsys dc_script_end
+
+// g2c if { [find / -null_ok -subdesign vmw_NV_NVDLA_CSB_MASTER_falcon2csb_fifo_flopram_rwa_4x50] != {} } { set_attr preserve 1 [find / -subdesign vmw_NV_NVDLA_CSB_MASTER_falcon2csb_fifo_flopram_rwa_4x50] }
+endmodule // vmw_NV_NVDLA_CSB_MASTER_falcon2csb_fifo_flopram_rwa_4x50
+
+//vmw: Memory vmw_NV_NVDLA_CSB_MASTER_falcon2csb_fifo_flopram_rwa_4x50
+//vmw: Address-size 2
+//vmw: Data-size 50
+//vmw: Sensitivity level 1
+//vmw: Ports W R
+
+//vmw: terminal we0 WriteEnable0
+//vmw: terminal Wa0 address0
+//vmw: terminal Di0[49:0] data0[49:0]
+//vmw: 
+//vmw: terminal Ra0 address1
+//vmw: terminal Do0[49:0] data1[49:0]
+//vmw: 
+
+//qt: CELL vmw_NV_NVDLA_CSB_MASTER_falcon2csb_fifo_flopram_rwa_4x50
+//qt: TERMINAL we0 TYPE=WE POLARITY=H PORT=1
+//qt: TERMINAL Wa0[%d] TYPE=ADDRESS DIR=W BIT=%1 PORT=1
+//qt: TERMINAL Di0[%d] TYPE=DATA DIR=I BIT=%1 PORT=1
+//qt: 
+//qt: TERMINAL Ra0[%d] TYPE=ADDRESS DIR=R BIT=%1 PORT=1
+//qt: TERMINAL Do0[%d] TYPE=DATA DIR=O BIT=%1 PORT=1
+//qt:
+
+`endif // EMU
+
+
+//
+// See the ASYNCHONROUS BOUNDARY section above for details on the
+// gray counter implementation.
+//
+
+module NV_NVDLA_CSB_MASTER_falcon2csb_fifo_gray_cntr_strict (
+`ifdef NV_FPGA_FIFOGEN
+      inc ,
+`endif
+      gray
+    , gray_next
+    );
+
+`ifdef NV_FPGA_FIFOGEN
+input 			inc;
+`endif
+input  [2:0]		gray;
+output [2:0]                gray_next;
+
+
+wire			polarity;  // polarity of gray counter bits
+
+assign polarity = gray[0] ^ gray[1] ^ gray[2];
+
+assign gray_next = 
+`ifdef NV_FPGA_FIFOGEN
+ (~inc) ? gray : 
+`endif 
+                         { gray[2]^(polarity           &~gray[0]),
+                         gray[1]^(polarity&gray[0]),
+                         gray[0]^(~polarity) };
+
+endmodule // NV_NVDLA_CSB_MASTER_falcon2csb_fifo_gray_cntr_strict
+
+module NV_NVDLA_CSB_MASTER_falcon2csb_fifo_gray_cntr (
+      clk
+    , reset_
+    , inc
+    , gray
+    );
+
+input			clk;
+input			reset_;
+input 			inc;
+output [2:0]		gray;
+
+reg    [2:0]		gray;   // gray counter
+
+
+wire			polarity;  // polarity of gray counter bits
+
+assign polarity = gray[0] ^ gray[1] ^ gray[2];
+
+  always @( posedge clk or negedge reset_ ) begin
+    if ( !reset_ ) begin
+	gray     <=  3'd0;
+    end else if ( inc ) begin
+        gray     <=  { gray[2]^(polarity           &~gray[0]),
+                         gray[1]^(polarity&gray[0]),
+                         gray[0]^(~polarity) };
+    end
+end
+
+endmodule // NV_NVDLA_CSB_MASTER_falcon2csb_fifo_gray_cntr
+

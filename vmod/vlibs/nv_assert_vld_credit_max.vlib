@@ -1,0 +1,171 @@
+// ================================================================
+// NVDLA Open Source Project
+// 
+// Copyright(c) 2016 - 2017 NVIDIA Corporation.  Licensed under the
+// NVDLA Open Hardware License; Check "LICENSE" which comes with 
+// this distribution for more information.
+// ================================================================
+
+// File Name: nv_assert_vld_credit_max.vlib
+
+`ifdef MACROMODULE
+macromodule nv_assert_vld_credit_max (
+`else
+module nv_assert_vld_credit_max (
+`endif
+  clk, 
+  reset_, 
+  vld,
+  credit
+`ifdef FV_ASSERT_ON
+  , err
+`endif
+);
+
+//VCS coverage exclude_module
+
+  parameter severity_level = 0;
+  parameter init_credits = 1;
+  parameter credits_max = 65;
+  parameter options = 0;
+`ifdef DISABLE_ASSERT_MSG
+  parameter [0:0] msg="";
+`else
+  `ifdef TRUNCATE_ASSERT_MSG
+    parameter [64*8-1:0] msg="VIOLATION";
+  `else
+    parameter msg="VIOLATION";
+  `endif
+`endif
+
+  input clk;
+  input reset_;
+  input vld;
+  input credit;
+
+`ifndef EMU
+
+`ifdef FV_ASSERT_ON
+  output err;
+
+  wire  err;
+  reg   reg_err;
+`else
+
+`ifndef SYNTHESIS
+
+//  parameter assert_name = "ASSERT_VLD_CREDIT_MAX";
+
+  integer error_count;
+  initial error_count = 0;
+
+  `include "assertion_task.h"
+  `include "assertion_header.h"
+
+  `ifdef ASSERT_INIT_MSG
+    initial
+      assertion_init_msg; // Call the User Defined Init Message Routine
+  `endif
+  `ifdef ASSERT_ENABLE_ZERROR
+   initial begin
+           #1000;
+           if (vld === 1'bz) begin
+             $display("ZERROR: %m (%t) : Fix the unconnected vld to this assertion.", $time);
+             `ifdef ASSERT_EXIT_ON_ZERROR
+                $finish;
+             `endif
+           end
+   end
+   initial begin
+           #1000;
+           if (credit === 1'bz) begin
+             $display("ZERROR: %m (%t) : Fix the unconnected credit to this assertion.", $time);
+             `ifdef ASSERT_EXIT_ON_ZERROR
+                $finish;
+             `endif
+           end
+   end
+  `endif
+
+`endif
+`endif
+
+  `define LOG2_CREDITS_MAX (credits_max>=64  ? 32: \
+                           (credits_max>=32  ?  6: \
+                           (credits_max>=16  ?  5: \
+                           (credits_max>=8   ?  4: \
+                           (credits_max>=4   ?  3: \
+                           (credits_max>=2   ?  2: \
+                                               1  \
+                           )))))) 
+
+  reg [`LOG2_CREDITS_MAX-1:0] credits;
+
+`ifndef SYNTHESIS
+`ifdef ASSERT_ENABLE_ZERROR
+initial begin
+          #1000;
+          if ((reset_ === 1'bz)) begin
+              $display("ZERROR: %m (%t) : Fix the unconnected reset to this assertion.", $time);
+              `ifdef ASSERT_EXIT_ON_ZERROR
+               $finish;
+              `endif
+          end
+end
+`endif
+`endif
+
+`ifdef FV_ASSERT_SYNCH_RESET
+always @(posedge clk) begin
+`else
+always @(posedge clk or negedge reset_) begin
+`endif
+      if (~reset_) begin
+          credits <= init_credits;
+        `ifdef FV_ASSERT_ON
+		reg_err <= 1'b0;
+        `endif
+      end else begin
+          credits <= credits + credit - vld;
+          if (vld && credits==0 && !credit) begin
+            `ifdef FV_ASSERT_ON
+		    reg_err <= 1'b1;	
+            `else
+              assertion_error;
+            `endif
+          end
+      end
+  end
+
+`ifdef FV_ASSERT_ON
+assign err = reg_err || (options==1 && vld && credits==0 && !credit);
+`endif
+
+`endif // EMU
+
+
+// Instantiating a dummy buffer
+// CKBD4 UI_DummyBuf (.I(clk), .Z());
+// inside the assertion vlib, so that
+// the assertion module is NOT optimized away
+// during DC & RC emulation physical synthesis
+
+// Also adding embedded DC and RC dont-touch settings
+// on the assertion module
+
+`ifdef EMU
+
+ CKBD4 UI_DummyBuf (.I(clk), .Z());
+
+// synopsys dc_script_begin
+// synopsys dc_script_end
+
+// g2c if { [find / -null_ok -subdesign nv_assert_vld_credit_max*] != {} } { set_attr preserve 1 [find / -subdesign nv_assert_vld_credit_max*] }
+
+`endif // ifdef EMU
+
+`ifdef FV_ASSERT_ON 
+ `include "common_sva_assert.sva"
+`endif
+
+endmodule

@@ -1,0 +1,149 @@
++libext+.v+.sv+.vt+.gv+.vlib+.bvrl+
++incdir+.
++incdir+../dut_cleartext/dw
++incdir+../dut_cleartext/misc
++incdir+../dut_cleartext/defs
++incdir+../dut_cleartext/include_gmlit6
++incdir+../dut_cleartext/vlib_gmlit6
++incdir+../dut_cleartext/falcon_51
++incdir+../dut_cleartext/falcon_51_include
++incdir+../dut_cleartext/falcon_51_inc_fecs
++incdir+../dut_cleartext/falcon_51_inc_include
++incdir+../dut_cleartext/falcon_51_inc_gpccs
++incdir+../dut_cleartext/vmod_inc
+
++incdir+../dut_cleartext/vmod/acb
++incdir+../dut_cleartext/vmod/be
++incdir+../dut_cleartext/vmod/cbmgr
++incdir+../dut_cleartext/vmod/clk
++incdir+../dut_cleartext/vmod/crop
++incdir+../dut_cleartext/vmod/crstr
++incdir+../dut_cleartext/vmod/cwd
++incdir+../dut_cleartext/vmod/ds
++incdir+../dut_cleartext/vmod/fb_hub_folded
++incdir+../dut_cleartext/vmod/fe
++incdir+../dut_cleartext/vmod/fecs
++incdir+../dut_cleartext/vmod/frstr
++incdir+../dut_cleartext/vmod/fuse
++incdir+../dut_cleartext/vmod/gcc
++incdir+../dut_cleartext/vmod/gnic_folded
++incdir+../dut_cleartext/vmod/gpm_report
++incdir+../dut_cleartext/vmod/gpmpd
++incdir+../dut_cleartext/vmod/gpmsd
++incdir+../dut_cleartext/vmod/host
++incdir+../dut_cleartext/vmod/local_priv_ring
++incdir+../dut_cleartext/vmod/ltc
++incdir+../dut_cleartext/vmod/mmu
++incdir+../dut_cleartext/vmod/mpc
++incdir+../dut_cleartext/vmod/pd
++incdir+../dut_cleartext/vmod/pdb
++incdir+../dut_cleartext/vmod/pe
++incdir+../dut_cleartext/vmod/pel
++incdir+../dut_cleartext/vmod/pes
++incdir+../dut_cleartext/vmod/pmm
++incdir+../dut_cleartext/vmod/pri_ring
++incdir+../dut_cleartext/vmod/prop
++incdir+../dut_cleartext/vmod/pwr
++incdir+../dut_cleartext/vmod/rastwod
++incdir+../dut_cleartext/vmod/rasterarb
++incdir+../dut_cleartext/vmod/rdm
++incdir+../dut_cleartext/vmod/setup
++incdir+../dut_cleartext/vmod/sked
++incdir+../dut_cleartext/vmod/smm
++incdir+../dut_cleartext/vmod/swdx
++incdir+../dut_cleartext/vmod/ssync
++incdir+../dut_cleartext/vmod/tc
++incdir+../dut_cleartext/vmod/tex
++incdir+../dut_cleartext/vmod/wdxps
++incdir+../dut_cleartext/vmod/widclip
++incdir+../dut_cleartext/vmod/wwdx
++incdir+../dut_cleartext/vmod/zcull
++incdir+../dut_cleartext/vmod/zrop
+
+
+-y .
+-y ../dut_cleartext
+-y ../dut_cleartext/dw
+-y ../dut_cleartext/misc
+-y ../dut_cleartext/rams
+-y ../dut_cleartext/falcon_51
+-y ../dut_cleartext/falcon_51_jtag2falc
+-y ../dut_cleartext/falcon_51_fbif
+-y ../dut_cleartext/falcon_50_jtag2falc
+
+-y ../dut_cleartext/vlib_gmlit6
+-y ../dut_cleartext/vlib_bundle
+-y ../dut_cleartext/vlib_common
+-y ../dut_cleartext/vlib_ramchain
+-y ../dut_cleartext/vlib_retime
+-y ../dut_cleartext/vmod_nvtop_litter
+
+-y ../dut_cleartext/vmod/acb
+-y ../dut_cleartext/vmod/be
+-y ../dut_cleartext/vmod/cbmgr
+-y ../dut_cleartext/vmod/clk
+-y ../dut_cleartext/vmod/cbmgr
+-y ../dut_cleartext/vmod/ce
+-y ../dut_cleartext/vmod/crop
+-y ../dut_cleartext/vmod/crstr
+-y ../dut_cleartext/vmod/cwd
+-y ../dut_cleartext/vmod/cxbar_null
+-y ../dut_cleartext/vmod/ds
+-y ../dut_cleartext/vmod/fb_hub_folded
+-y ../dut_cleartext/vmod/fe
+-y ../dut_cleartext/vmod/fecs
+-y ../dut_cleartext/vmod/frstr
+-y ../dut_cleartext/vmod/fuse
+-y ../dut_cleartext/vmod/gcc
+-y ../dut_cleartext/vmod/gnic_folded
+-y ../dut_cleartext/vmod/gpm_report
+-y ../dut_cleartext/vmod/gpmpd
+-y ../dut_cleartext/vmod/gpmsd
+-y ../dut_cleartext/vmod/host
+-y ../dut_cleartext/vmod/local_priv_ring
+-y ../dut_cleartext/vmod/ltc
+-y ../dut_cleartext/vmod/mmu
+-y ../dut_cleartext/vmod/mpc
+-y ../dut_cleartext/vmod/nv_top
+-y ../dut_cleartext/vmod/pads
+-y ../dut_cleartext/vmod/pd
+-y ../dut_cleartext/vmod/pdb
+-y ../dut_cleartext/vmod/pe
+-y ../dut_cleartext/vmod/pel
+-y ../dut_cleartext/vmod/pes
+-y ../dut_cleartext/vmod/pesmerge
+-y ../dut_cleartext/vmod/pma
+-y ../dut_cleartext/vmod/pmm
+-y ../dut_cleartext/vmod/pri_ring
+-y ../dut_cleartext/vmod/priv_glue
+-y ../dut_cleartext/vmod/prop
+-y ../dut_cleartext/vmod/pwr
+-y ../dut_cleartext/vmod/rastwod
+-y ../dut_cleartext/vmod/rasterarb
+-y ../dut_cleartext/vmod/rdm
+-y ../dut_cleartext/vmod/setup
+-y ../dut_cleartext/vmod/scc
+-y ../dut_cleartext/vmod/sked
+-y ../dut_cleartext/vmod/smm
+-y ../dut_cleartext/vmod/swdx
+-y ../dut_cleartext/vmod/ssync
+-y ../dut_cleartext/vmod/tc
+-y ../dut_cleartext/vmod/tex
+-y ../dut_cleartext/vmod/wdxps
+-y ../dut_cleartext/vmod/widclip
+-y ../dut_cleartext/vmod/wwdx
+-y ../dut_cleartext/vmod/zcull
+-y ../dut_cleartext/vmod/zrop
+../dut_cleartext/vmod/gnic_folded/NV_MXBAR_GNIC_GPCARB_FOLD_ICIF_client.v
+../dut_cleartext/vmod/gnic_folded/NV_MXBAR_GNIC_GPCARB_FOLD_ICP_client.v
+  
+tb_top.v
+master_seq.v
+axi_master.v
+slave_mem_wrap.v
+memory.v
+axi_slave.v
+-v ../dut_cleartext/misc/mapped_cells.gv
+
++define+uvm_fatal=$display
++define+SYNTHESIS

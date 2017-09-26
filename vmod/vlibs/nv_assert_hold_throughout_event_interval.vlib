@@ -1,0 +1,207 @@
+// ================================================================
+// NVDLA Open Source Project
+// 
+// Copyright(c) 2016 - 2017 NVIDIA Corporation.  Licensed under the
+// NVDLA Open Hardware License; Check "LICENSE" which comes with 
+// this distribution for more information.
+// ================================================================
+
+// File Name: nv_assert_hold_throughout_event_interval.vlib
+
+`ifdef MACROMODULE
+macromodule nv_assert_hold_throughout_event_interval (
+`else
+module nv_assert_hold_throughout_event_interval (
+`endif
+  clk, 
+  reset_, 
+  start_event, 
+  test_expr, 
+  end_event
+`ifdef FV_ASSERT_ON
+  , err
+`endif
+);
+
+//VCS coverage exclude_module
+
+// synopsys template
+  parameter severity_level=0;
+  parameter width=1;
+  parameter options = 0;
+`ifdef DISABLE_ASSERT_MSG
+  parameter [0:0] msg="";
+`else
+  `ifdef TRUNCATE_ASSERT_MSG
+    parameter [64*8-1:0] msg="VIOLATION";
+  `else
+    parameter msg="VIOLATION";
+  `endif
+`endif
+  
+  input clk;
+  input reset_;
+  input start_event;
+  input [width-1:0] test_expr;
+  input end_event;
+
+`ifndef SYNTHESIS
+`ifdef ASSERT_ENABLE_ZERROR
+initial begin
+          #1000;
+          if ((reset_ === 1'bz)) begin
+              $display("ZERROR: %m (%t) : Fix the unconnected reset to this assertion.", $time);
+              `ifdef ASSERT_EXIT_ON_ZERROR
+               $finish;
+              `endif
+          end
+end
+`endif
+`endif
+
+`ifndef EMU
+
+  reg r_change;
+  reg [width-1:0] r_test_expr;
+  reg r_state;
+
+  parameter WIN_UNCHANGE_START = 1'b0;
+  parameter WIN_UNCHANGE_CHECK = 1'b1;
+  
+`ifdef FV_ASSERT_ON
+  output err;
+  //reg err;
+`else
+
+`ifndef SYNTHESIS
+
+//  parameter assert_name = "nv_assert_hold_throughout_event_interval";
+
+  initial begin
+    r_state=WIN_UNCHANGE_START;
+    r_change=1'b0;
+  end
+  
+  integer error_count;
+  initial error_count = 0;
+
+  `include "assertion_header.h"
+  `include "assertion_task.h"
+  
+  `ifdef ASSERT_INIT_MSG
+    initial
+      assertion_init_msg; // Call the User Defined Init Message Routine
+  `endif
+  `ifdef ASSERT_ENABLE_ZERROR
+   initial begin
+           #1000;
+           if (end_event === 1'bz) begin
+             $display("ZERROR: %m (%t) : Fix the unconnected end_event to this assertion.", $time);
+             `ifdef ASSERT_EXIT_ON_ZERROR
+                $finish;
+             `endif
+           end
+   end
+   initial begin
+           #1000;
+           for (integer i=0; i<= (width-1); i=i+1) begin
+            if (test_expr[i] === 1'bz) begin
+             $display("ZERROR: %m (%t) : Fix the unconnected test_expr[%d] to this assertion.", $time, i);
+             `ifdef ASSERT_EXIT_ON_ZERROR
+                $finish;
+             `endif
+            end
+           end
+   end
+   initial begin
+           #1000;
+           if (start_event === 1'bz) begin
+             $display("ZERROR: %m (%t) : Fix the unconnected start_event to this assertion.", $time);
+             `ifdef ASSERT_EXIT_ON_ZERROR
+                $finish;
+             `endif
+           end
+   end
+  `endif
+  
+`endif
+`endif
+
+`ifdef FV_ASSERT_SYNCH_RESET
+always @(posedge clk) begin
+`else
+always @(posedge clk or negedge reset_) begin
+`endif
+      if (~reset_) begin
+        r_state<=WIN_UNCHANGE_START;
+        r_change<=1'b0;
+        `ifdef FV_ASSERT_ON
+         // err <= 1'b0;
+        `endif
+      end else begin
+        if (reset_ != 0) begin  // active low reset
+          case (r_state)
+            WIN_UNCHANGE_START:
+            if (start_event == 1'b1) begin
+              r_change <= 1'b0;
+              r_state <= WIN_UNCHANGE_CHECK;
+              r_test_expr <= test_expr;
+            end
+            WIN_UNCHANGE_CHECK:
+              begin
+                if (r_test_expr != test_expr) begin
+                  r_change <= 1'b1;
+                end
+                // go to start state on last check
+                if (end_event == 1'b1) begin
+                  r_state <= WIN_UNCHANGE_START;
+                end
+                // Check that the property is true
+                if ((r_change == 1'b1) ||
+                    (r_test_expr != test_expr)) begin
+                  `ifdef FV_ASSERT_ON
+                    //err <= 1'b1;
+                  `else
+                    assertion_error;
+                  `endif
+                end
+                r_test_expr <= test_expr;
+              end
+          endcase
+        end
+      end
+  end // always
+
+  // no delay for err, so SV09 won't treat it as weekly embeddeing. used for
+  // SFV
+  `ifdef FV_ASSERT_ON
+  assign err = ((r_state == WIN_UNCHANGE_CHECK) && (r_test_expr != test_expr));
+  `endif
+
+`endif // EMU
+
+// Instantiating a dummy buffer
+// CKBD4 UI_DummyBuf (.I(clk), .Z());
+// inside the assertion vlib, so that 
+// the assertion module is NOT optimized away 
+// during DC & RC emulation physical synthesis
+ 
+// Also adding embedded DC and RC dont-touch settings
+// on the assertion module
+
+`ifdef EMU
+
+ CKBD4 UI_DummyBuf (.I(clk), .Z());
+
+// synopsys dc_script_begin
+// synopsys dc_script_end
+
+// g2c if { [find / -null_ok -subdesign nv_assert_hold_throughout_event_interval*] != {} } { set_attr preserve 1 [find / -subdesign nv_assert_hold_throughout_event_interval*] }
+
+`endif // ifdef EMU
+
+`ifdef FV_ASSERT_ON 
+ `include "common_sva_assert.sva"
+`endif
+
+endmodule

@@ -1,0 +1,47 @@
+#!/bin/sh
+#Create the tests from file tests_list which should have the dir path, e.g tests_bd/func_comp_one_tri
+#for var in `cat tests_list`
+#   do
+#      if [ -d $var ]
+#      then
+#         echo "directory $var exists so skipping"
+#      else
+#         echo "processing $var"
+#         mkdir $var; cd $var; p4 sync -f ...; cd ../..;
+#      fi
+#   done
+#exit;
+#if [ -d tests_256 ]
+#then
+#   echo "tests_256 exists"
+#else
+#   echo "cp -rp tests tests_256"
+#   cp -rp tests tests_256
+#fi
+#
+#if [ -d tests_bd_256 ]
+#then
+#   echo "tests_bd_256 exists"
+#else
+#   echo "cp -rp  tests_bd  tests_bd_256"
+#   cp -rp tests_bd  tests_bd_256
+#fi
+#
+#for var in `ls -1 tests_256`
+#   do
+#      echo "running: ../synth_tb/sim_scripts/inp_txn_to_hexdump.pl 256 tests_256/$var"
+#      ../synth_tb/sim_scripts/inp_txn_to_hexdump.pl 256 tests_256/$var
+#      mv *raw2 tests_256/$var
+#      mv input*raw* tests_256/$var
+#      #Loai: add this check 
+#      ../synth_tb/sim_scripts/gpuip-trace-check.pl tests_256/$var/input.txn.raw
+#   done
+for var in `ls -1 tests_bd_256`
+   do
+      echo "running: ../synth_tb/sim_scripts/inp_txn_to_hexdump.pl 256 tests_bd_256/$var"
+      ../synth_tb/sim_scripts/inp_txn_to_hexdump.pl 256 tests_bd_256/$var
+      mv *raw2 tests_bd_256/$var
+      mv input*raw* tests_bd_256/$var
+      #Loai: add this check 
+      ../synth_tb/sim_scripts/gpuip-trace-check.pl tests_bd_256/$var/input.txn.raw
+   done

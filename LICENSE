@@ -1,0 +1,207 @@
+NVIDIA Open NVDLA License and Agreement v1.0
+
+NVIDIA's Deep Learning Accelerator ("NVDLA") is a hardware design that
+accelerates inferencing in System-on-a-Chip designs.  Subject to the terms
+and conditions of this Open NVDLA License and Agreement, NVIDIA offers its
+NVDLA design on a royalty-free, open-source basis, promoting the adoption of
+deep learning inferencing in third-party designs and IoT devices, and
+expanding the overall market for AI.
+
+By exercising the rights granted hereunder, You accept and agree to be bound
+by these terms and conditions.  You are granted the rights hereunder in
+consideration of Your agreement to these terms and conditions.  If You do
+not agree to these terms and conditions, do not download or use the NVDLA
+Specification.
+
+If You are agreeing to these terms and conditions on behalf of a legal
+entity, You represent that You have the legal authority to bind the legal
+entity to these terms and conditions.
+
+In consideration of the mutual covenants contained herein, You agree as
+follows:
+
+1. DEFINITIONS.
+
+"NVDLA Specification" shall mean and include the design information, code,
+and documentation used in designing a deep learning accelerator or creating
+a DLA Product, which may include:  HDL, netlists, GDSII files, mask works,
+architectural descriptions, interface specifications, microcode, software
+source code, documentation source, and configuration files.
+
+"Contributor" shall mean NVIDIA and any owner of a NVDLA Contribution that
+NVIDIA has incorporated within the NVDLA Specification.
+
+"Derivative Work" shall mean any work that is based on (or derived from)
+any portion of the NVDLA Specification. For the purposes of this License,
+Derivative Works shall not include works that remain separable from, or
+merely link (or bind by name) to the interfaces of, any portion of the NVDLA
+Specification and Derivative Works thereof.
+
+"DLA Product" shall mean a semiconductor chip product or portions thereof
+designed or manufactured in accordance with a NVDLA Specification or a
+Derivative Work, including any semiconductor chip product embodying a mask
+work included in a NVDLA Specification or a Derivative Work.
+
+"NVDLA" means NVIDIA's Deep Learning Accelerator, a hardware design that
+accelerates inferencing in System-on-a-Chip designs.
+
+"NVDLA Contribution" shall mean any work of authorship, design, or
+inventorship that is intentionally submitted to NVIDIA for inclusion in the
+NVDLA Specification by a person authorized to submit the contribution on
+behalf of the owner.
+
+"NVDLA Patents" shall mean patents that are necessary to practice the NVDLA
+Specification and any Derivative Works.
+
+"NVDLA Patent Rights" shall mean the right to make, have made, use, sell,
+offer for sale, and import patents that are necessary to practice the NVDLA
+Specification and any Derivative Works.
+
+"Other NVDLA Rights" includes copyright, design right (whether registered or
+unregistered), semiconductor topography (mask work) rights, and database
+rights to the NVDLA Specification and any Derivative Work.  For the
+avoidance of doubt, Other NVDLA Rights does not include patents or
+trademarks.
+
+"License" and "Agreement" shall mean the terms and conditions for use,
+reproduction, and distribution as set forth in this document.
+
+"You" (or "Your") shall mean an individual or Legal Entity agreeing to the
+terms and conditions of this License.
+
+2. LICENSE TO NVDLA PATENTS.
+
+Subject to the terms and conditions of this License, NVIDIA and each
+Contributor hereby grant to You a perpetual, worldwide, non-exclusive,
+no-charge, royalty-free, irrevocable (except as stated in this section)
+license under the NVDLA Patents to make, have made, use, offer to sell,
+sell, import, and otherwise transfer DLA Products and the NVDLA
+Specification, where such license applies only to those patent claims
+licensable by such Contributor that are necessarily infringed either by (i)
+their Contribution(s) alone or (ii) the combination of their NVDLA
+Contribution(s) with the portion of the NVDLA Specification to which such
+NVDLA Contribution(s) was submitted.
+
+If You institute patent litigation against any entity (including a
+cross-claim or counterclaim in a lawsuit) alleging that any portion of the
+NVDLA Specification, a NVDLA Contribution incorporated within the NVDLA
+Specification, or any portion of a DLA Product directly or contributorily
+infringes any patent, then any patent licenses granted to You under this
+License and Agreement shall terminate as of the date such litigation is
+filed.
+
+3. LICENSE TO OTHER NVDLA RIGHTS.
+
+Subject to the terms and conditions of this License, NVIDIA and each
+Contributor hereby grant to You a perpetual, worldwide, non-exclusive,
+no-charge, royalty-free, irrevocable license under the Other NVDLA Rights to
+reproduce, prepare Derivative Works of, publicly display, publicly perform,
+sublicense, and distribute the NVDLA Specification and such Derivative
+Works, and to commercially exploit any mask works included in the NVDLA
+Specification or such Derivative Works.
+
+4. REDISTRIBUTION.
+
+You may reproduce and distribute copies of the NVDLA Specification or
+Derivative Works thereof in any medium, with or without modifications,
+provided that You meet the following conditions:
+
+  1. You must give any other recipients of the NVDLA Specification or
+     Derivative Works a copy of this License and Agreement; and
+
+  2. You must cause any modified files or other portions of the NVDLA
+     Specification to carry prominent notices stating that You changed such
+     files or other portions; and
+
+  3. You must retain, in any Derivative Works that You distribute, all
+     notices, including copyright, patent, trademark, and attribution
+     notices, from the NVDLA Specification, excluding those notices that do
+     not pertain to any part of the Derivative Works; and
+
+  4. You may add Your own copyright statement to Your modifications and may
+     provide additional or different license terms and conditions for use,
+     reproduction, or distribution of Your modifications, or for any such
+     Derivative Works as a whole, provided Your use, reproduction, and
+     distribution of the NVDLA Specification otherwise complies with the
+     conditions stated in this License and Agreement.
+
+5. SUBMISSION OF NVDLA CONTRIBUTIONS.
+
+You are not required to submit contributions to the NVDLA Specification, but
+you may do so at your discretion.  Unless You explicitly state otherwise,
+any NVDLA Contribution intentionally submitted by you to NVIDIA for
+inclusion in the NVDLA Specification shall be provided under the terms and
+conditions of this License and Agreement, without any additional terms or
+conditions.  NVIDIA is under no obligation to consider, review, or
+incorporate any NVDLA Contribution into any version of the NVDLA
+Specification
+
+6. TRADEMARKS.
+ 
+This License does not grant permission to use the trade names, trademarks,
+service marks, or product names ("Marks") of NVIDIA or any Contributor,
+except as required for reasonable and customary use in describing the origin
+of the NVDLA Specification.  For DLA Products that are compatible with NVDLA
+interfaces, NVIDIA and You may mutually agree on certain marketing
+activities and branding involving the use of NVIDIA's Marks under separate
+agreement and/or supplemental terms.
+
+7. NO IMPLIED RIGHTS.
+
+Except for the licenses expressly set forth herein, no other licenses are
+granted hereunder whether by implication, estoppel or otherwise.  This
+License and Agreement provides you with no implied rights or licenses to the
+intellectual property of NVIDIA or any Contributor.
+
+8. DISCLAIMER OF WARRANTY.
+
+Unless required by applicable law or agreed to in writing, NVIDIA provides
+the NVDLA Specification (and each Contributor provides its NVDLA
+Contributions) on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied, including, without limitation, any
+warranties or conditions of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or
+FITNESS FOR A PARTICULAR PURPOSE.
+
+You are solely responsible for determining the appropriateness of Your use
+of NVDLA, the NVDLA Specification, or any DLA Product, and You assume all
+associated risks, including but not limited to the risks and costs of damage
+to or loss of data, programs or equipment, and unavailability or
+interruption of operations.  You agree to comply with all regulations and
+safety standards applicable to Your use of NVDLA and the NVDLA
+Specification.  You acknowledge that the NVDLA and NVDLA Specification
+provided to You under this Agreement are not intended to be used, without
+additional safeguards and/or process technology, to control or operate
+machines that can lead to personal injury, death, or severe physical or
+environmental damage, and if You make, use, or sell such machines, You agree
+to assume all liability therefor and will comply with all applicable
+safety-related laws, regulations, and best industry practices.
+
+9. LIMITATION OF LIABILITY.
+
+In no event and under no legal theory, whether in tort (including
+negligence), contract, or otherwise, shall NVIDIA or any Contributor be
+liable to You for damages, including any direct, indirect, special,
+incidental, or consequential damages of any character arising as a result of
+this License and Agreement, or arising out of the use or inability to use
+any DLA Product (including but not limited to damages for loss of goodwill,
+work stoppage, computer failure or malfunction, or any and all other
+commercial damages or losses).
+
+10. WAIVER AND INDEMNITY.
+
+You agree to waive any and all claims against NVIDIA and each Contributor
+arising from Your use of NVDLA or the NVDLA Specification.  If Your use of
+the NVDLA, the NVDLA Specification, or any portion thereof, results in any
+liabilities, demands, damages, expenses or losses arising from such use,
+including any damages from products based on, or resulting from, Your use of
+NVDLA or the NVDLA Specification licensed under this Agreement, You shall
+indemnify and hold harmless NVIDIA and each Contributor to the extent
+permitted by law.  In addition, You agree to defend, indemnify, and hold
+NVIDIA and each Contributor harmless from any claim brought by a third party
+alleging any defect in the design, manufacture, or any Product which You
+make, have made, sell, or distribute pursuant to this Agreement.  Your sole
+remedy for any such matter shall be the immediate, unilateral termination of
+this Agreement.
+
+END OF OPEN NVDLA LICENSE AND AGREEMENT
+
