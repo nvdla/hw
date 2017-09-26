@@ -180,6 +180,9 @@ ifeq (${TB_TARGET},sv_tb)
 				-ntb_opts uvm \
 				+define+UVM_DISABLE_AUTO_ITEM_RECORDING  \
 			 	+define+UVM_NO_RELNOTES 
+	ifeq (${DESIGNWARE_NOEXIST},1)
+				TB_VCS_BLD_ARGS += +define+DESIGNWARE_NOEXIST
+	endif 
 else
 	ifeq (${TB_TARGET},synth_tb)
 		TBDIR := ${SYNTHTBDIR}
@@ -221,6 +224,9 @@ else
 	            +incdir+${DWDIR} \
 		    +incdir+.. 
 		TB_VCS_BLD_ARGS := ${TB_SIM_DIRS}
+		ifeq (${DESIGNWARE_NOEXIST},1)
+			TB_VCS_BLD_ARGS += +define+DESIGNWARE_NOEXIST
+		endif 
 	else
 		ifeq (${TB_TARGET},qt_synth_tb)
 			STARTBOARD := "2"
@@ -251,6 +257,9 @@ else
 			    +incdir+${TBDIR} \
 			    +incdir+.. 
 			TB_VCS_BLD_ARGS := ${TB_SIM_DIRS}
+			ifeq (${DESIGNWARE_NOEXIST},1)
+				TB_VCS_BLD_ARGS += +define+DESIGNWARE_NOEXIST
+			endif 
 		endif # if TB_TARGET == qt_synth_tb
 	endif # if TB_TARGET == synth_tb
 endif # if TB_TARGET == sv_tb
@@ -412,7 +421,6 @@ VCS_ARGS     := ${DEFFILE} \
                 +define+NVTOOLS_SYNC2D_GENERIC_CELL \
 		+define+NO_PERFMON_HISTOGRAM \
 		+define+PRAND_OFF \
-		-P ../dut/GetArgValPLI.tab \
 
 ifeq ($(SAIF),1)
 	VCS_ARGS += +vcs+saif_libcell
