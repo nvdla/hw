@@ -102,7 +102,7 @@ output [4:0]  datin_shifter;
 output [31:0] datout_offset;
 output [15:0] datout_scale;
 output [5:0]  datout_shifter;
-output [7:0]  dst_base_addr_high;
+output [31:0] dst_base_addr_high;
 output [26:0] dst_base_addr_low;
 output        dst_ram_type;
 output [26:0] dst_line_stride;
@@ -145,7 +145,7 @@ reg    [31:0] datout_offset;
 reg    [15:0] datout_scale;
 reg     [5:0] datout_shifter;
 reg           dma_en;
-reg     [7:0] dst_base_addr_high;
+reg    [31:0] dst_base_addr_high;
 reg    [26:0] dst_base_addr_low;
 reg    [26:0] dst_line_stride;
 reg           dst_ram_type;
@@ -201,7 +201,7 @@ assign nvdla_cdp_d_datin_shifter_0_out[31:0] = { 27'b0, datin_shifter };
 assign nvdla_cdp_d_datout_offset_0_out[31:0] = { datout_offset };
 assign nvdla_cdp_d_datout_scale_0_out[31:0] = { 16'b0, datout_scale };
 assign nvdla_cdp_d_datout_shifter_0_out[31:0] = { 26'b0, datout_shifter };
-assign nvdla_cdp_d_dst_base_addr_high_0_out[31:0] = { 24'b0, dst_base_addr_high };
+assign nvdla_cdp_d_dst_base_addr_high_0_out[31:0] = { dst_base_addr_high };
 assign nvdla_cdp_d_dst_base_addr_low_0_out[31:0] = { dst_base_addr_low, 5'b0 };
 assign nvdla_cdp_d_dst_compression_en_0_out[31:0] = { 31'b0, dst_compression_en };
 assign nvdla_cdp_d_dst_dma_cfg_0_out[31:0] = { 31'b0, dst_ram_type };
@@ -367,7 +367,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     datout_offset[31:0] <= 32'b00000000000000000000000000000000;
     datout_scale[15:0] <= 16'b0000000000000001;
     datout_shifter[5:0] <= 6'b000000;
-    dst_base_addr_high[7:0] <= 8'b00000000;
+    dst_base_addr_high[31:0] <= 32'b00000000000000000000000000000000;
     dst_base_addr_low[26:0] <= 27'b000000000000000000000000000;
     dst_ram_type <= 1'b0;
     dst_line_stride[26:0] <= 27'b000000000000000000000000000;
@@ -421,7 +421,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 
   // Register: NVDLA_CDP_D_DST_BASE_ADDR_HIGH_0    Field: dst_base_addr_high
   if (nvdla_cdp_d_dst_base_addr_high_0_wren) begin
-    dst_base_addr_high[7:0] <= reg_wr_data[7:0];
+    dst_base_addr_high[31:0] <= reg_wr_data[31:0];
   end
 
   // Register: NVDLA_CDP_D_DST_BASE_ADDR_LOW_0    Field: dst_base_addr_low

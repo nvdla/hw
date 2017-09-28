@@ -69,7 +69,7 @@ output  [9:0] reg2dp_partial_width_in_first;
 output  [9:0] reg2dp_partial_width_in_last;
 output  [9:0] reg2dp_partial_width_in_mid;
 output  [7:0] reg2dp_split_num;
-output  [7:0] reg2dp_src_base_addr_high;
+output [31:0] reg2dp_src_base_addr_high;
 output [26:0] reg2dp_src_base_addr_low;
 output [26:0] reg2dp_src_line_stride;
 output        reg2dp_src_ram_type;
@@ -105,7 +105,7 @@ wire    [9:0] reg2dp_d0_partial_width_in_first;
 wire    [9:0] reg2dp_d0_partial_width_in_last;
 wire    [9:0] reg2dp_d0_partial_width_in_mid;
 wire    [7:0] reg2dp_d0_split_num;
-wire    [7:0] reg2dp_d0_src_base_addr_high;
+wire   [31:0] reg2dp_d0_src_base_addr_high;
 wire   [26:0] reg2dp_d0_src_base_addr_low;
 wire   [26:0] reg2dp_d0_src_line_stride;
 wire          reg2dp_d0_src_ram_type;
@@ -125,7 +125,7 @@ wire    [9:0] reg2dp_d1_partial_width_in_first;
 wire    [9:0] reg2dp_d1_partial_width_in_last;
 wire    [9:0] reg2dp_d1_partial_width_in_mid;
 wire    [7:0] reg2dp_d1_split_num;
-wire    [7:0] reg2dp_d1_src_base_addr_high;
+wire   [31:0] reg2dp_d1_src_base_addr_high;
 wire   [26:0] reg2dp_d1_src_base_addr_low;
 wire   [26:0] reg2dp_d1_src_line_stride;
 wire          reg2dp_d1_src_ram_type;
@@ -177,7 +177,7 @@ reg     [9:0] reg2dp_partial_width_in_first;
 reg     [9:0] reg2dp_partial_width_in_last;
 reg     [9:0] reg2dp_partial_width_in_mid;
 reg     [7:0] reg2dp_split_num;
-reg     [7:0] reg2dp_src_base_addr_high;
+reg    [31:0] reg2dp_src_base_addr_high;
 reg    [26:0] reg2dp_src_base_addr_low;
 reg    [26:0] reg2dp_src_line_stride;
 reg           reg2dp_src_ram_type;
@@ -227,7 +227,7 @@ NV_NVDLA_PDP_RDMA_REG_dual u_dual_reg_d0 (
   ,.kernel_stride_width    (reg2dp_d0_kernel_stride_width[3:0])    //|> w
   ,.kernel_width           (reg2dp_d0_kernel_width[3:0])           //|> w
   ,.pad_width              (reg2dp_d0_pad_width[3:0])              //|> w
-  ,.src_base_addr_high     (reg2dp_d0_src_base_addr_high[7:0])     //|> w
+  ,.src_base_addr_high     (reg2dp_d0_src_base_addr_high[31:0])    //|> w
   ,.src_base_addr_low      (reg2dp_d0_src_base_addr_low[26:0])     //|> w
   ,.src_line_stride        (reg2dp_d0_src_line_stride[26:0])       //|> w
   ,.src_ram_type           (reg2dp_d0_src_ram_type)                //|> w
@@ -258,7 +258,7 @@ NV_NVDLA_PDP_RDMA_REG_dual u_dual_reg_d1 (
   ,.kernel_stride_width    (reg2dp_d1_kernel_stride_width[3:0])    //|> w
   ,.kernel_width           (reg2dp_d1_kernel_width[3:0])           //|> w
   ,.pad_width              (reg2dp_d1_pad_width[3:0])              //|> w
-  ,.src_base_addr_high     (reg2dp_d1_src_base_addr_high[7:0])     //|> w
+  ,.src_base_addr_high     (reg2dp_d1_src_base_addr_high[31:0])    //|> w
   ,.src_base_addr_low      (reg2dp_d1_src_base_addr_low[26:0])     //|> w
   ,.src_line_stride        (reg2dp_d1_src_line_stride[26:0])       //|> w
   ,.src_ram_type           (reg2dp_d1_src_ram_type)                //|> w

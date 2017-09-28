@@ -178,8 +178,8 @@ output [5:0]  cvt_truncate;
 output [15:0] cvt_offset;
 output [15:0] cvt_scale;
 output [31:0] cya;
-output [7:0]  datain_addr_high_0;
-output [7:0]  datain_addr_high_1;
+output [31:0] datain_addr_high_0;
+output [31:0] datain_addr_high_1;
 output [26:0] datain_addr_low_0;
 output [26:0] datain_addr_low_1;
 output        line_packed;
@@ -220,16 +220,16 @@ output [9:0]  rsv_per_uv_line;
 output [2:0]  rsv_height;
 output [4:0]  rsv_y_index;
 output [26:0] surf_stride;
-output [7:0]  weight_addr_high;
+output [31:0] weight_addr_high;
 output [26:0] weight_addr_low;
 output [24:0] weight_bytes;
 output        weight_format;
 output        weight_ram_type;
 output [17:0] byte_per_kernel;
 output [12:0] weight_kernel;
-output [7:0]  wgs_addr_high;
+output [31:0] wgs_addr_high;
 output [26:0] wgs_addr_low;
-output [7:0]  wmb_addr_high;
+output [31:0] wmb_addr_high;
 output [26:0] wmb_addr_low;
 output [20:0] wmb_bytes;
 output [5:0]  pad_bottom;
@@ -271,8 +271,8 @@ reg     [5:0] cvt_truncate;
 reg    [31:0] cya;
 reg     [3:0] data_bank;
 reg           data_reuse;
-reg     [7:0] datain_addr_high_0;
-reg     [7:0] datain_addr_high_1;
+reg    [31:0] datain_addr_high_0;
+reg    [31:0] datain_addr_high_1;
 reg    [26:0] datain_addr_low_0;
 reg    [26:0] datain_addr_low_1;
 reg    [12:0] datain_channel;
@@ -315,7 +315,7 @@ reg           skip_weight_rls;
 reg           surf_packed;
 reg    [26:0] surf_stride;
 reg    [26:0] uv_line_stride;
-reg     [7:0] weight_addr_high;
+reg    [31:0] weight_addr_high;
 reg    [26:0] weight_addr_low;
 reg     [3:0] weight_bank;
 reg    [24:0] weight_bytes;
@@ -323,9 +323,9 @@ reg           weight_format;
 reg    [12:0] weight_kernel;
 reg           weight_ram_type;
 reg           weight_reuse;
-reg     [7:0] wgs_addr_high;
+reg    [31:0] wgs_addr_high;
 reg    [26:0] wgs_addr_low;
-reg     [7:0] wmb_addr_high;
+reg    [31:0] wmb_addr_high;
 reg    [26:0] wmb_addr_low;
 reg    [20:0] wmb_bytes;
 
@@ -397,8 +397,8 @@ assign nvdla_cdma_d_cvt_cfg_0_out[31:0] = { 22'b0, cvt_truncate, 3'b0, cvt_en };
 assign nvdla_cdma_d_cvt_offset_0_out[31:0] = { 16'b0, cvt_offset };
 assign nvdla_cdma_d_cvt_scale_0_out[31:0] = { 16'b0, cvt_scale };
 assign nvdla_cdma_d_cya_0_out[31:0] = { cya };
-assign nvdla_cdma_d_dain_addr_high_0_0_out[31:0] = { 24'b0, datain_addr_high_0 };
-assign nvdla_cdma_d_dain_addr_high_1_0_out[31:0] = { 24'b0, datain_addr_high_1 };
+assign nvdla_cdma_d_dain_addr_high_0_0_out[31:0] = { datain_addr_high_0 };
+assign nvdla_cdma_d_dain_addr_high_1_0_out[31:0] = { datain_addr_high_1 };
 assign nvdla_cdma_d_dain_addr_low_0_0_out[31:0] = { datain_addr_low_0, 5'b0 };
 assign nvdla_cdma_d_dain_addr_low_1_0_out[31:0] = { datain_addr_low_1, 5'b0 };
 assign nvdla_cdma_d_dain_map_0_out[31:0] = { 15'b0, surf_packed, 15'b0, line_packed };
@@ -430,16 +430,16 @@ assign nvdla_cdma_d_pixel_offset_0_out[31:0] = { 13'b0, pixel_y_offset, 11'b0, p
 assign nvdla_cdma_d_reserved_x_cfg_0_out[31:0] = { 6'b0, rsv_per_uv_line, 6'b0, rsv_per_line };
 assign nvdla_cdma_d_reserved_y_cfg_0_out[31:0] = { 11'b0, rsv_y_index, 13'b0, rsv_height };
 assign nvdla_cdma_d_surf_stride_0_out[31:0] = { surf_stride, 5'b0 };
-assign nvdla_cdma_d_weight_addr_high_0_out[31:0] = { 24'b0, weight_addr_high };
+assign nvdla_cdma_d_weight_addr_high_0_out[31:0] = { weight_addr_high };
 assign nvdla_cdma_d_weight_addr_low_0_out[31:0] = { weight_addr_low, 5'b0 };
 assign nvdla_cdma_d_weight_bytes_0_out[31:0] = { weight_bytes, 7'b0 };
 assign nvdla_cdma_d_weight_format_0_out[31:0] = { 31'b0, weight_format };
 assign nvdla_cdma_d_weight_ram_type_0_out[31:0] = { 31'b0, weight_ram_type };
 assign nvdla_cdma_d_weight_size_0_0_out[31:0] = { 14'b0, byte_per_kernel };
 assign nvdla_cdma_d_weight_size_1_0_out[31:0] = { 19'b0, weight_kernel };
-assign nvdla_cdma_d_wgs_addr_high_0_out[31:0] = { 24'b0, wgs_addr_high };
+assign nvdla_cdma_d_wgs_addr_high_0_out[31:0] = { wgs_addr_high };
 assign nvdla_cdma_d_wgs_addr_low_0_out[31:0] = { wgs_addr_low, 5'b0 };
-assign nvdla_cdma_d_wmb_addr_high_0_out[31:0] = { 24'b0, wmb_addr_high };
+assign nvdla_cdma_d_wmb_addr_high_0_out[31:0] = { wmb_addr_high };
 assign nvdla_cdma_d_wmb_addr_low_0_out[31:0] = { wmb_addr_low, 5'b0 };
 assign nvdla_cdma_d_wmb_bytes_0_out[31:0] = { 4'b0, wmb_bytes, 7'b0 };
 assign nvdla_cdma_d_zero_padding_0_out[31:0] = { 2'b0, pad_bottom, 3'b0, pad_top, 2'b0, pad_right, 3'b0, pad_left };
@@ -696,8 +696,8 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     cvt_offset[15:0] <= 16'b0000000000000000;
     cvt_scale[15:0] <= 16'b0000000000000000;
     cya[31:0] <= 32'b00000000000000000000000000000000;
-    datain_addr_high_0[7:0] <= 8'b00000000;
-    datain_addr_high_1[7:0] <= 8'b00000000;
+    datain_addr_high_0[31:0] <= 32'b00000000000000000000000000000000;
+    datain_addr_high_1[31:0] <= 32'b00000000000000000000000000000000;
     datain_addr_low_0[26:0] <= 27'b000000000000000000000000000;
     datain_addr_low_1[26:0] <= 27'b000000000000000000000000000;
     line_packed <= 1'b0;
@@ -737,16 +737,16 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     rsv_height[2:0] <= 3'b000;
     rsv_y_index[4:0] <= 5'b00000;
     surf_stride[26:0] <= 27'b000000000000000000000000000;
-    weight_addr_high[7:0] <= 8'b00000000;
+    weight_addr_high[31:0] <= 32'b00000000000000000000000000000000;
     weight_addr_low[26:0] <= 27'b000000000000000000000000000;
     weight_bytes[24:0] <= 25'b0000000000000000000000000;
     weight_format <= 1'b0;
     weight_ram_type <= 1'b0;
     byte_per_kernel[17:0] <= 18'b000000000000000000;
     weight_kernel[12:0] <= 13'b0000000000000;
-    wgs_addr_high[7:0] <= 8'b00000000;
+    wgs_addr_high[31:0] <= 32'b00000000000000000000000000000000;
     wgs_addr_low[26:0] <= 27'b000000000000000000000000000;
-    wmb_addr_high[7:0] <= 8'b00000000;
+    wmb_addr_high[31:0] <= 32'b00000000000000000000000000000000;
     wmb_addr_low[26:0] <= 27'b000000000000000000000000000;
     wmb_bytes[20:0] <= 21'b000000000000000000000;
     pad_bottom[5:0] <= 6'b000000;
@@ -812,12 +812,12 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 
   // Register: NVDLA_CDMA_D_DAIN_ADDR_HIGH_0_0    Field: datain_addr_high_0
   if (nvdla_cdma_d_dain_addr_high_0_0_wren) begin
-    datain_addr_high_0[7:0] <= reg_wr_data[7:0];
+    datain_addr_high_0[31:0] <= reg_wr_data[31:0];
   end
 
   // Register: NVDLA_CDMA_D_DAIN_ADDR_HIGH_1_0    Field: datain_addr_high_1
   if (nvdla_cdma_d_dain_addr_high_1_0_wren) begin
-    datain_addr_high_1[7:0] <= reg_wr_data[7:0];
+    datain_addr_high_1[31:0] <= reg_wr_data[31:0];
   end
 
   // Register: NVDLA_CDMA_D_DAIN_ADDR_LOW_0_0    Field: datain_addr_low_0
@@ -1035,7 +1035,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 
   // Register: NVDLA_CDMA_D_WEIGHT_ADDR_HIGH_0    Field: weight_addr_high
   if (nvdla_cdma_d_weight_addr_high_0_wren) begin
-    weight_addr_high[7:0] <= reg_wr_data[7:0];
+    weight_addr_high[31:0] <= reg_wr_data[31:0];
   end
 
   // Register: NVDLA_CDMA_D_WEIGHT_ADDR_LOW_0    Field: weight_addr_low
@@ -1070,7 +1070,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 
   // Register: NVDLA_CDMA_D_WGS_ADDR_HIGH_0    Field: wgs_addr_high
   if (nvdla_cdma_d_wgs_addr_high_0_wren) begin
-    wgs_addr_high[7:0] <= reg_wr_data[7:0];
+    wgs_addr_high[31:0] <= reg_wr_data[31:0];
   end
 
   // Register: NVDLA_CDMA_D_WGS_ADDR_LOW_0    Field: wgs_addr_low
@@ -1080,7 +1080,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 
   // Register: NVDLA_CDMA_D_WMB_ADDR_HIGH_0    Field: wmb_addr_high
   if (nvdla_cdma_d_wmb_addr_high_0_wren) begin
-    wmb_addr_high[7:0] <= reg_wr_data[7:0];
+    wmb_addr_high[31:0] <= reg_wr_data[31:0];
   end
 
   // Register: NVDLA_CDMA_D_WMB_ADDR_LOW_0    Field: wmb_addr_low

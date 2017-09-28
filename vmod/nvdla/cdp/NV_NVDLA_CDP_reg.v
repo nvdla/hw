@@ -123,7 +123,7 @@ output [31:0] reg2dp_datout_offset;
 output [15:0] reg2dp_datout_scale;
 output  [5:0] reg2dp_datout_shifter;
 output        reg2dp_dma_en;
-output  [7:0] reg2dp_dst_base_addr_high;
+output [31:0] reg2dp_dst_base_addr_high;
 output [26:0] reg2dp_dst_base_addr_low;
 output [26:0] reg2dp_dst_line_stride;
 output        reg2dp_dst_ram_type;
@@ -189,7 +189,7 @@ wire   [31:0] reg2dp_d0_datout_offset;
 wire   [15:0] reg2dp_d0_datout_scale;
 wire    [5:0] reg2dp_d0_datout_shifter;
 wire          reg2dp_d0_dma_en;
-wire    [7:0] reg2dp_d0_dst_base_addr_high;
+wire   [31:0] reg2dp_d0_dst_base_addr_high;
 wire   [26:0] reg2dp_d0_dst_base_addr_low;
 wire   [26:0] reg2dp_d0_dst_line_stride;
 wire          reg2dp_d0_dst_ram_type;
@@ -209,7 +209,7 @@ wire   [31:0] reg2dp_d1_datout_offset;
 wire   [15:0] reg2dp_d1_datout_scale;
 wire    [5:0] reg2dp_d1_datout_shifter;
 wire          reg2dp_d1_dma_en;
-wire    [7:0] reg2dp_d1_dst_base_addr_high;
+wire   [31:0] reg2dp_d1_dst_base_addr_high;
 wire   [26:0] reg2dp_d1_dst_base_addr_low;
 wire   [26:0] reg2dp_d1_dst_line_stride;
 wire          reg2dp_d1_dst_ram_type;
@@ -283,7 +283,7 @@ reg    [31:0] reg2dp_datout_offset;
 reg    [15:0] reg2dp_datout_scale;
 reg     [5:0] reg2dp_datout_shifter;
 reg           reg2dp_dma_en;
-reg     [7:0] reg2dp_dst_base_addr_high;
+reg    [31:0] reg2dp_dst_base_addr_high;
 reg    [26:0] reg2dp_dst_base_addr_low;
 reg    [26:0] reg2dp_dst_line_stride;
 reg           reg2dp_dst_ram_type;
@@ -363,7 +363,7 @@ NV_NVDLA_CDP_REG_dual u_dual_reg_d0 (
   ,.datout_offset            (reg2dp_d0_datout_offset[31:0])         //|> w
   ,.datout_scale             (reg2dp_d0_datout_scale[15:0])          //|> w
   ,.datout_shifter           (reg2dp_d0_datout_shifter[5:0])         //|> w
-  ,.dst_base_addr_high       (reg2dp_d0_dst_base_addr_high[7:0])     //|> w
+  ,.dst_base_addr_high       (reg2dp_d0_dst_base_addr_high[31:0])    //|> w
   ,.dst_base_addr_low        (reg2dp_d0_dst_base_addr_low[26:0])     //|> w
   ,.dst_ram_type             (reg2dp_d0_dst_ram_type)                //|> w
   ,.dst_line_stride          (reg2dp_d0_dst_line_stride[26:0])       //|> w
@@ -403,7 +403,7 @@ NV_NVDLA_CDP_REG_dual u_dual_reg_d1 (
   ,.datout_offset            (reg2dp_d1_datout_offset[31:0])         //|> w
   ,.datout_scale             (reg2dp_d1_datout_scale[15:0])          //|> w
   ,.datout_shifter           (reg2dp_d1_datout_shifter[5:0])         //|> w
-  ,.dst_base_addr_high       (reg2dp_d1_dst_base_addr_high[7:0])     //|> w
+  ,.dst_base_addr_high       (reg2dp_d1_dst_base_addr_high[31:0])    //|> w
   ,.dst_base_addr_low        (reg2dp_d1_dst_base_addr_low[26:0])     //|> w
   ,.dst_ram_type             (reg2dp_d1_dst_ram_type)                //|> w
   ,.dst_line_stride          (reg2dp_d1_dst_line_stride[26:0])       //|> w

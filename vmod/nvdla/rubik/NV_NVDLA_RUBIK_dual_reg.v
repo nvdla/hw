@@ -85,13 +85,13 @@ input         nvdla_core_rstn;
 // Writable register flop/trigger outputs
 output [26:0] contract_stride_0;
 output [26:0] contract_stride_1;
-output [7:0]  dain_addr_high;
+output [31:0] dain_addr_high;
 output [26:0] dain_addr_low;
 output [26:0] dain_line_stride;
 output [26:0] dain_planar_stride;
 output        datain_ram_type;
 output [26:0] dain_surf_stride;
-output [7:0]  daout_addr_high;
+output [31:0] daout_addr_high;
 output [26:0] daout_addr_low;
 output [26:0] daout_line_stride;
 output [26:0] daout_planar_stride;
@@ -124,12 +124,12 @@ reg           arreggen_dump;
 // leda FM_2_23 on
 reg    [26:0] contract_stride_0;
 reg    [26:0] contract_stride_1;
-reg     [7:0] dain_addr_high;
+reg    [31:0] dain_addr_high;
 reg    [26:0] dain_addr_low;
 reg    [26:0] dain_line_stride;
 reg    [26:0] dain_planar_stride;
 reg    [26:0] dain_surf_stride;
-reg     [7:0] daout_addr_high;
+reg    [31:0] daout_addr_high;
 reg    [26:0] daout_addr_low;
 reg    [26:0] daout_line_stride;
 reg    [26:0] daout_planar_stride;
@@ -177,13 +177,13 @@ wire nvdla_rbk_d_perf_write_stall_0_wren = (reg_offset_wr == (32'h10060  & 32'h0
 
 assign nvdla_rbk_d_contract_stride_0_0_out[31:0] = { contract_stride_0, 5'b0 };
 assign nvdla_rbk_d_contract_stride_1_0_out[31:0] = { contract_stride_1, 5'b0 };
-assign nvdla_rbk_d_dain_addr_high_0_out[31:0] = { 24'b0, dain_addr_high };
+assign nvdla_rbk_d_dain_addr_high_0_out[31:0] = { dain_addr_high };
 assign nvdla_rbk_d_dain_addr_low_0_out[31:0] = { dain_addr_low, 5'b0 };
 assign nvdla_rbk_d_dain_line_stride_0_out[31:0] = { dain_line_stride, 5'b0 };
 assign nvdla_rbk_d_dain_planar_stride_0_out[31:0] = { dain_planar_stride, 5'b0 };
 assign nvdla_rbk_d_dain_ram_type_0_out[31:0] = { 31'b0, datain_ram_type };
 assign nvdla_rbk_d_dain_surf_stride_0_out[31:0] = { dain_surf_stride, 5'b0 };
-assign nvdla_rbk_d_daout_addr_high_0_out[31:0] = { 24'b0, daout_addr_high };
+assign nvdla_rbk_d_daout_addr_high_0_out[31:0] = { daout_addr_high };
 assign nvdla_rbk_d_daout_addr_low_0_out[31:0] = { daout_addr_low, 5'b0 };
 assign nvdla_rbk_d_daout_line_stride_0_out[31:0] = { daout_line_stride, 5'b0 };
 assign nvdla_rbk_d_daout_planar_stride_0_out[31:0] = { daout_planar_stride, 5'b0 };
@@ -313,13 +313,13 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
     contract_stride_0[26:0] <= 27'b000000000000000000000000000;
     contract_stride_1[26:0] <= 27'b000000000000000000000000000;
-    dain_addr_high[7:0] <= 8'b00000000;
+    dain_addr_high[31:0] <= 32'b00000000000000000000000000000000;
     dain_addr_low[26:0] <= 27'b000000000000000000000000000;
     dain_line_stride[26:0] <= 27'b000000000000000000000000000;
     dain_planar_stride[26:0] <= 27'b000000000000000000000000000;
     datain_ram_type <= 1'b0;
     dain_surf_stride[26:0] <= 27'b000000000000000000000000000;
-    daout_addr_high[7:0] <= 8'b00000000;
+    daout_addr_high[31:0] <= 32'b00000000000000000000000000000000;
     daout_addr_low[26:0] <= 27'b000000000000000000000000000;
     daout_line_stride[26:0] <= 27'b000000000000000000000000000;
     daout_planar_stride[26:0] <= 27'b000000000000000000000000000;
@@ -347,7 +347,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 
   // Register: NVDLA_RBK_D_DAIN_ADDR_HIGH_0    Field: dain_addr_high
   if (nvdla_rbk_d_dain_addr_high_0_wren) begin
-    dain_addr_high[7:0] <= reg_wr_data[7:0];
+    dain_addr_high[31:0] <= reg_wr_data[31:0];
   end
 
   // Register: NVDLA_RBK_D_DAIN_ADDR_LOW_0    Field: dain_addr_low
@@ -377,7 +377,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 
   // Register: NVDLA_RBK_D_DAOUT_ADDR_HIGH_0    Field: daout_addr_high
   if (nvdla_rbk_d_daout_addr_high_0_wren) begin
-    daout_addr_high[7:0] <= reg_wr_data[7:0];
+    daout_addr_high[31:0] <= reg_wr_data[31:0];
   end
 
   // Register: NVDLA_RBK_D_DAOUT_ADDR_LOW_0    Field: daout_addr_low

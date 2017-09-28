@@ -127,9 +127,9 @@ output         img2sbuf_p0_wr_en;
 output   [7:0] img2sbuf_p1_wr_addr;
 output [255:0] img2sbuf_p1_wr_data;
 output         img2sbuf_p1_wr_en;
-output  [54:0] img_dat2cvif_rd_req_pd;
+output  [78:0] img_dat2cvif_rd_req_pd;
 output         img_dat2cvif_rd_req_valid;
-output  [54:0] img_dat2mcif_rd_req_pd;
+output  [78:0] img_dat2mcif_rd_req_pd;
 output         img_dat2mcif_rd_req_valid;
 output         mcif2img_dat_rd_rsp_ready;
 output  [11:0] sg2pack_data_entries;
@@ -148,9 +148,9 @@ output         sg_is_done;
 input [2:0]         reg2dp_pixel_y_offset;
 input [12:0]         reg2dp_datain_height;
 input [0:0]       reg2dp_datain_ram_type;
-input [7:0] reg2dp_datain_addr_high_0;
+input [31:0] reg2dp_datain_addr_high_0;
 input [26:0]   reg2dp_datain_addr_low_0;
-input [7:0] reg2dp_datain_addr_high_1;
+input [31:0] reg2dp_datain_addr_high_1;
 input [26:0]   reg2dp_datain_addr_low_1;
 input [26:0]             reg2dp_line_stride;
 input [26:0]       reg2dp_uv_line_stride;
@@ -165,8 +165,8 @@ wire           cv_dma_rd_req_rdy;
 wire           cv_dma_rd_req_vld;
 wire   [513:0] cv_dma_rd_rsp_pd;
 wire           cv_dma_rd_rsp_vld;
-wire    [54:0] cv_int_rd_req_pd;
-wire    [54:0] cv_int_rd_req_pd_d0;
+wire    [78:0] cv_int_rd_req_pd;
+wire    [78:0] cv_int_rd_req_pd_d0;
 wire           cv_int_rd_req_ready;
 wire           cv_int_rd_req_ready_d0;
 wire           cv_int_rd_req_valid;
@@ -178,8 +178,8 @@ wire           cv_rd_req_rdyi;
 wire   [513:0] cvif2img_dat_rd_rsp_pd_d0;
 wire           cvif2img_dat_rd_rsp_ready_d0;
 wire           cvif2img_dat_rd_rsp_valid_d0;
-wire    [39:0] dma_rd_req_addr;
-wire    [54:0] dma_rd_req_pd;
+wire    [63:0] dma_rd_req_addr;
+wire    [78:0] dma_rd_req_pd;
 wire           dma_rd_req_rdy;
 wire    [14:0] dma_rd_req_size;
 wire           dma_rd_req_type;
@@ -205,8 +205,8 @@ wire           mc_dma_rd_req_rdy;
 wire           mc_dma_rd_req_vld;
 wire   [513:0] mc_dma_rd_rsp_pd;
 wire           mc_dma_rd_rsp_vld;
-wire    [54:0] mc_int_rd_req_pd;
-wire    [54:0] mc_int_rd_req_pd_d0;
+wire    [78:0] mc_int_rd_req_pd;
+wire    [78:0] mc_int_rd_req_pd_d0;
 wire           mc_int_rd_req_ready;
 wire           mc_int_rd_req_ready_d0;
 wire           mc_int_rd_req_valid;
@@ -224,10 +224,10 @@ wire     [3:0] pre_sub_h_end_d1;
 wire     [3:0] pre_sub_h_mid_d1;
 wire     [3:0] pre_sub_h_st_d1;
 wire           rd_req_rdyi;
-wire    [34:0] req_img_p0_addr_base_w;
+wire    [58:0] req_img_p0_addr_base_w;
 wire     [3:0] req_img_p0_burst_size;
 wire     [3:0] req_img_p0_burst_sub;
-wire    [34:0] req_img_p1_addr_base_w;
+wire    [58:0] req_img_p1_addr_base_w;
 wire     [4:0] req_img_p1_burst_size;
 wire     [4:0] req_img_p1_burst_sub;
 wire           req_reg_en;
@@ -364,8 +364,8 @@ reg     [11:0] pre_entry_st_w;
 reg      [3:0] pre_sub_h_end;
 reg      [3:0] pre_sub_h_mid;
 reg      [3:0] pre_sub_h_st;
-reg     [34:0] req_addr;
-reg     [34:0] req_addr_d1;
+reg     [58:0] req_addr;
+reg     [58:0] req_addr_d1;
 reg            req_adv;
 reg            req_bundle_end;
 reg            req_bundle_end_d1;
@@ -377,8 +377,8 @@ reg     [12:0] req_height_cnt_inc;
 reg     [12:0] req_height_cnt_w;
 reg            req_height_en;
 reg      [4:0] req_img_burst_size;
-reg     [34:0] req_img_p0_addr;
-reg     [34:0] req_img_p0_addr_base;
+reg     [58:0] req_img_p0_addr;
+reg     [58:0] req_img_p0_addr_base;
 reg      [3:0] req_img_p0_bundle_cnt;
 reg      [3:0] req_img_p0_bundle_cnt_w;
 reg     [11:0] req_img_p0_burst_cnt;
@@ -394,8 +394,8 @@ reg     [26:0] req_img_p0_line_offset_w;
 reg      [1:0] req_img_p0_sec_cnt;
 reg      [1:0] req_img_p0_sec_cnt_w;
 reg            req_img_p0_sec_en;
-reg     [34:0] req_img_p1_addr;
-reg     [34:0] req_img_p1_addr_base;
+reg     [58:0] req_img_p1_addr;
+reg     [58:0] req_img_p1_addr_base;
 reg      [4:0] req_img_p1_bundle_cnt;
 reg      [4:0] req_img_p1_bundle_cnt_w;
 reg     [10:0] req_img_p1_burst_cnt;
@@ -3160,7 +3160,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 end
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
-    req_addr_d1 <= {35{1'b0}};
+    req_addr_d1 <= {59{1'b0}};
   end else begin
   if ((req_reg_en) == 1'b1) begin
     req_addr_d1 <= req_addr;
@@ -4261,11 +4261,11 @@ assign dma_rd_req_rdy= rd_req_rdyi;
 NV_NVDLA_CDMA_IMG_SG_pipe_p1 pipe_p1 (
    .nvdla_core_clk      (nvdla_core_clk)          //|< i
   ,.nvdla_core_rstn     (nvdla_core_rstn)         //|< i
-  ,.dma_rd_req_pd       (dma_rd_req_pd[54:0])     //|< w
+  ,.dma_rd_req_pd       (dma_rd_req_pd[78:0])     //|< w
   ,.mc_dma_rd_req_vld   (mc_dma_rd_req_vld)       //|< w
   ,.mc_int_rd_req_ready (mc_int_rd_req_ready)     //|< w
   ,.mc_dma_rd_req_rdy   (mc_dma_rd_req_rdy)       //|> w
-  ,.mc_int_rd_req_pd    (mc_int_rd_req_pd[54:0])  //|> w
+  ,.mc_int_rd_req_pd    (mc_int_rd_req_pd[78:0])  //|> w
   ,.mc_int_rd_req_valid (mc_int_rd_req_valid)     //|> w
   );
 NV_NVDLA_CDMA_IMG_SG_pipe_p2 pipe_p2 (
@@ -4273,26 +4273,26 @@ NV_NVDLA_CDMA_IMG_SG_pipe_p2 pipe_p2 (
   ,.nvdla_core_rstn     (nvdla_core_rstn)         //|< i
   ,.cv_dma_rd_req_vld   (cv_dma_rd_req_vld)       //|< w
   ,.cv_int_rd_req_ready (cv_int_rd_req_ready)     //|< w
-  ,.dma_rd_req_pd       (dma_rd_req_pd[54:0])     //|< w
+  ,.dma_rd_req_pd       (dma_rd_req_pd[78:0])     //|< w
   ,.cv_dma_rd_req_rdy   (cv_dma_rd_req_rdy)       //|> w
-  ,.cv_int_rd_req_pd    (cv_int_rd_req_pd[54:0])  //|> w
+  ,.cv_int_rd_req_pd    (cv_int_rd_req_pd[78:0])  //|> w
   ,.cv_int_rd_req_valid (cv_int_rd_req_valid)     //|> w
   );
 
 assign mc_int_rd_req_valid_d0 = mc_int_rd_req_valid;
 assign mc_int_rd_req_ready = mc_int_rd_req_ready_d0;
-assign mc_int_rd_req_pd_d0[54:0] = mc_int_rd_req_pd[54:0];
+assign mc_int_rd_req_pd_d0[78:0] = mc_int_rd_req_pd[78:0];
 assign img_dat2mcif_rd_req_valid = mc_int_rd_req_valid_d0;
 assign mc_int_rd_req_ready_d0 = img_dat2mcif_rd_req_ready;
-assign img_dat2mcif_rd_req_pd[54:0] = mc_int_rd_req_pd_d0[54:0];
+assign img_dat2mcif_rd_req_pd[78:0] = mc_int_rd_req_pd_d0[78:0];
 
 
 assign cv_int_rd_req_valid_d0 = cv_int_rd_req_valid;
 assign cv_int_rd_req_ready = cv_int_rd_req_ready_d0;
-assign cv_int_rd_req_pd_d0[54:0] = cv_int_rd_req_pd[54:0];
+assign cv_int_rd_req_pd_d0[78:0] = cv_int_rd_req_pd[78:0];
 assign img_dat2cvif_rd_req_valid = cv_int_rd_req_valid_d0;
 assign cv_int_rd_req_ready_d0 = img_dat2cvif_rd_req_ready;
-assign img_dat2cvif_rd_req_pd[54:0] = cv_int_rd_req_pd_d0[54:0];
+assign img_dat2cvif_rd_req_pd[78:0] = cv_int_rd_req_pd_d0[78:0];
 
 // rd Channel: Response
 
@@ -4384,10 +4384,10 @@ assign dma_rd_rsp_pd = ({514{mc_dma_rd_rsp_vld}} & mc_dma_rd_rsp_pd)
 
 
 // PKT_PACK_WIRE( dma_read_cmd ,  dma_rd_req_ ,  dma_rd_req_pd )
-assign       dma_rd_req_pd[39:0] =     dma_rd_req_addr[39:0];
-assign       dma_rd_req_pd[54:40] =     dma_rd_req_size[14:0];
+assign       dma_rd_req_pd[63:0] =     dma_rd_req_addr[63:0];
+assign       dma_rd_req_pd[78:64] =     dma_rd_req_size[14:0];
 assign dma_rd_req_vld = req_valid_d1 & dma_req_fifo_ready & is_cbuf_ready & ~req_is_dummy_d1;
-assign dma_rd_req_addr = {req_addr_d1, 5'b0};
+assign dma_rd_req_addr = {req_addr_d1[58:0], 5'b0};
 assign dma_rd_req_size = {{10{1'b0}}, req_size_out_d1};
 assign dma_rd_req_type = reg2dp_datain_ram_type;
 assign dma_rd_rsp_rdy = ~dma_blocking;
@@ -7623,7 +7623,7 @@ endmodule // NV_NVDLA_CDMA_IMG_sg
 
 
 // **************************************************************************************************************
-// Generated by ::pipe -m -bc -is mc_int_rd_req_pd (mc_int_rd_req_valid,mc_int_rd_req_ready) <= dma_rd_req_pd[54:0] (mc_dma_rd_req_vld,mc_dma_rd_req_rdy)
+// Generated by ::pipe -m -bc -is mc_int_rd_req_pd (mc_int_rd_req_valid,mc_int_rd_req_ready) <= dma_rd_req_pd[78:0] (mc_dma_rd_req_vld,mc_dma_rd_req_rdy)
 // **************************************************************************************************************
 module NV_NVDLA_CDMA_IMG_SG_pipe_p1 (
    nvdla_core_clk
@@ -7637,25 +7637,25 @@ module NV_NVDLA_CDMA_IMG_SG_pipe_p1 (
   );
 input         nvdla_core_clk;
 input         nvdla_core_rstn;
-input  [54:0] dma_rd_req_pd;
+input  [78:0] dma_rd_req_pd;
 input         mc_dma_rd_req_vld;
 input         mc_int_rd_req_ready;
 output        mc_dma_rd_req_rdy;
-output [54:0] mc_int_rd_req_pd;
+output [78:0] mc_int_rd_req_pd;
 output        mc_int_rd_req_valid;
 reg           mc_dma_rd_req_rdy;
-reg    [54:0] mc_int_rd_req_pd;
+reg    [78:0] mc_int_rd_req_pd;
 reg           mc_int_rd_req_valid;
-reg    [54:0] p1_pipe_data;
-reg    [54:0] p1_pipe_rand_data;
+reg    [78:0] p1_pipe_data;
+reg    [78:0] p1_pipe_rand_data;
 reg           p1_pipe_rand_ready;
 reg           p1_pipe_rand_valid;
 reg           p1_pipe_ready;
 reg           p1_pipe_ready_bc;
 reg           p1_pipe_valid;
 reg           p1_skid_catch;
-reg    [54:0] p1_skid_data;
-reg    [54:0] p1_skid_pipe_data;
+reg    [78:0] p1_skid_data;
+reg    [78:0] p1_skid_pipe_data;
 reg           p1_skid_pipe_ready;
 reg           p1_skid_pipe_valid;
 reg           p1_skid_ready;
@@ -7677,12 +7677,12 @@ always @(
   `ifdef SYNTHESIS
   p1_pipe_rand_valid = mc_dma_rd_req_vld;
   mc_dma_rd_req_rdy = p1_pipe_rand_ready;
-  p1_pipe_rand_data = dma_rd_req_pd[54:0];
+  p1_pipe_rand_data = dma_rd_req_pd[78:0];
   `else
   // VCS coverage off
   p1_pipe_rand_valid = (p1_pipe_rand_active)? 1'b0 : mc_dma_rd_req_vld;
   mc_dma_rd_req_rdy = (p1_pipe_rand_active)? 1'b0 : p1_pipe_rand_ready;
-  p1_pipe_rand_data = (p1_pipe_rand_active)?  'bx : dma_rd_req_pd[54:0];
+  p1_pipe_rand_data = (p1_pipe_rand_active)?  'bx : dma_rd_req_pd[78:0];
   // VCS coverage on
   `endif
 end
@@ -8033,7 +8033,7 @@ endmodule // NV_NVDLA_CDMA_IMG_SG_pipe_p1
 
 
 // **************************************************************************************************************
-// Generated by ::pipe -m -bc -is cv_int_rd_req_pd (cv_int_rd_req_valid,cv_int_rd_req_ready) <= dma_rd_req_pd[54:0] (cv_dma_rd_req_vld,cv_dma_rd_req_rdy)
+// Generated by ::pipe -m -bc -is cv_int_rd_req_pd (cv_int_rd_req_valid,cv_int_rd_req_ready) <= dma_rd_req_pd[78:0] (cv_dma_rd_req_vld,cv_dma_rd_req_rdy)
 // **************************************************************************************************************
 module NV_NVDLA_CDMA_IMG_SG_pipe_p2 (
    nvdla_core_clk
@@ -8049,23 +8049,23 @@ input         nvdla_core_clk;
 input         nvdla_core_rstn;
 input         cv_dma_rd_req_vld;
 input         cv_int_rd_req_ready;
-input  [54:0] dma_rd_req_pd;
+input  [78:0] dma_rd_req_pd;
 output        cv_dma_rd_req_rdy;
-output [54:0] cv_int_rd_req_pd;
+output [78:0] cv_int_rd_req_pd;
 output        cv_int_rd_req_valid;
 reg           cv_dma_rd_req_rdy;
-reg    [54:0] cv_int_rd_req_pd;
+reg    [78:0] cv_int_rd_req_pd;
 reg           cv_int_rd_req_valid;
-reg    [54:0] p2_pipe_data;
-reg    [54:0] p2_pipe_rand_data;
+reg    [78:0] p2_pipe_data;
+reg    [78:0] p2_pipe_rand_data;
 reg           p2_pipe_rand_ready;
 reg           p2_pipe_rand_valid;
 reg           p2_pipe_ready;
 reg           p2_pipe_ready_bc;
 reg           p2_pipe_valid;
 reg           p2_skid_catch;
-reg    [54:0] p2_skid_data;
-reg    [54:0] p2_skid_pipe_data;
+reg    [78:0] p2_skid_data;
+reg    [78:0] p2_skid_pipe_data;
 reg           p2_skid_pipe_ready;
 reg           p2_skid_pipe_valid;
 reg           p2_skid_ready;
@@ -8087,12 +8087,12 @@ always @(
   `ifdef SYNTHESIS
   p2_pipe_rand_valid = cv_dma_rd_req_vld;
   cv_dma_rd_req_rdy = p2_pipe_rand_ready;
-  p2_pipe_rand_data = dma_rd_req_pd[54:0];
+  p2_pipe_rand_data = dma_rd_req_pd[78:0];
   `else
   // VCS coverage off
   p2_pipe_rand_valid = (p2_pipe_rand_active)? 1'b0 : cv_dma_rd_req_vld;
   cv_dma_rd_req_rdy = (p2_pipe_rand_active)? 1'b0 : p2_pipe_rand_ready;
-  p2_pipe_rand_data = (p2_pipe_rand_active)?  'bx : dma_rd_req_pd[54:0];
+  p2_pipe_rand_data = (p2_pipe_rand_active)?  'bx : dma_rd_req_pd[78:0];
   // VCS coverage on
   `endif
 end

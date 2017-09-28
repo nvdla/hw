@@ -178,7 +178,7 @@ output [12:0] reg2dp_channel;
 output [31:0] reg2dp_cvt_offset;
 output [15:0] reg2dp_cvt_scale;
 output  [5:0] reg2dp_cvt_shift;
-output  [7:0] reg2dp_dst_base_addr_high;
+output [31:0] reg2dp_dst_base_addr_high;
 output [26:0] reg2dp_dst_base_addr_low;
 output [26:0] reg2dp_dst_batch_stride;
 output [26:0] reg2dp_dst_line_stride;
@@ -318,7 +318,7 @@ wire   [12:0] reg2dp_d0_channel;
 wire   [31:0] reg2dp_d0_cvt_offset;
 wire   [15:0] reg2dp_d0_cvt_scale;
 wire    [5:0] reg2dp_d0_cvt_shift;
-wire    [7:0] reg2dp_d0_dst_base_addr_high;
+wire   [31:0] reg2dp_d0_dst_base_addr_high;
 wire   [26:0] reg2dp_d0_dst_base_addr_low;
 wire   [26:0] reg2dp_d0_dst_batch_stride;
 wire   [26:0] reg2dp_d0_dst_line_stride;
@@ -385,7 +385,7 @@ wire   [12:0] reg2dp_d1_channel;
 wire   [31:0] reg2dp_d1_cvt_offset;
 wire   [15:0] reg2dp_d1_cvt_scale;
 wire    [5:0] reg2dp_d1_cvt_shift;
-wire    [7:0] reg2dp_d1_dst_base_addr_high;
+wire   [31:0] reg2dp_d1_dst_base_addr_high;
 wire   [26:0] reg2dp_d1_dst_base_addr_low;
 wire   [26:0] reg2dp_d1_dst_batch_stride;
 wire   [26:0] reg2dp_d1_dst_line_stride;
@@ -521,7 +521,7 @@ reg           reg2dp_d0_op_en;
 reg           reg2dp_d0_op_en_w;
 reg           reg2dp_d1_op_en;
 reg           reg2dp_d1_op_en_w;
-reg     [7:0] reg2dp_dst_base_addr_high;
+reg    [31:0] reg2dp_dst_base_addr_high;
 reg    [26:0] reg2dp_dst_base_addr_low;
 reg    [26:0] reg2dp_dst_batch_stride;
 reg    [26:0] reg2dp_dst_line_stride;
@@ -670,7 +670,7 @@ NV_NVDLA_SDP_REG_dual u_dual_reg_d0 (
   ,.ew_mul_cvt_truncate      (reg2dp_d0_ew_mul_cvt_truncate[5:0])    //|> w
   ,.ew_mul_operand           (reg2dp_d0_ew_mul_operand[31:0])        //|> w
   ,.ew_truncate              (reg2dp_d0_ew_truncate[9:0])            //|> w
-  ,.dst_base_addr_high       (reg2dp_d0_dst_base_addr_high[7:0])     //|> w
+  ,.dst_base_addr_high       (reg2dp_d0_dst_base_addr_high[31:0])    //|> w
   ,.dst_base_addr_low        (reg2dp_d0_dst_base_addr_low[26:0])     //|> w
   ,.dst_batch_stride         (reg2dp_d0_dst_batch_stride[26:0])      //|> w
   ,.dst_ram_type             (reg2dp_d0_dst_ram_type)                //|> w
@@ -758,7 +758,7 @@ NV_NVDLA_SDP_REG_dual u_dual_reg_d1 (
   ,.ew_mul_cvt_truncate      (reg2dp_d1_ew_mul_cvt_truncate[5:0])    //|> w
   ,.ew_mul_operand           (reg2dp_d1_ew_mul_operand[31:0])        //|> w
   ,.ew_truncate              (reg2dp_d1_ew_truncate[9:0])            //|> w
-  ,.dst_base_addr_high       (reg2dp_d1_dst_base_addr_high[7:0])     //|> w
+  ,.dst_base_addr_high       (reg2dp_d1_dst_base_addr_high[31:0])    //|> w
   ,.dst_base_addr_low        (reg2dp_d1_dst_base_addr_low[26:0])     //|> w
   ,.dst_batch_stride         (reg2dp_d1_dst_batch_stride[26:0])      //|> w
   ,.dst_ram_type             (reg2dp_d1_dst_ram_type)                //|> w

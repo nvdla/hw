@@ -46,7 +46,7 @@ output  [514:0]  wr_req_pd;
 input            wr_req_rdy;
 
 input            dma_wr_cmd_vld;
-input   [53:0]   dma_wr_cmd_pd;
+input   [77:0]   dma_wr_cmd_pd;
 output           dma_wr_cmd_rdy;
 
 input            dma_wr_data_vld;
@@ -80,9 +80,9 @@ reg      [12:0] wr_data_cnt;
 reg             wr_req_stall_inc_d;
 reg      [31:0] wr_stall_cnt;
 wire            dbuf_nempty;
-wire   [513:54] dma_wr_cmd_hpd;
-wire     [53:0] dma_wr_cmd_opd;
-wire     [48:0] dma_wr_cmd_opdt;
+wire   [513:78] dma_wr_cmd_hpd;
+wire     [77:0] dma_wr_cmd_opd;
+wire     [72:0] dma_wr_cmd_opdt;
 wire            dma_wr_cmd_ordy;
 wire            dma_wr_cmd_ovld;
 wire            dma_wr_cmd_pop;
@@ -134,12 +134,13 @@ wire            wr_stall_cnt_dec;
 // todo nets
 
     
+
 assign   dp2reg_done = send_data_done & last_wr_cmd; 
 assign   wr_req_type = reg2dp_dataout_ram_type;
 assign   wr_req_vld  = dma_wr_cmd_req_vld || dma_wr_data_req_vld; 
 assign   wr_req_pd[514:514]      = dma_wr_cmd_pop ? 1'd0  /* PKT_nvdla_dma_wr_req_dma_write_cmd_ID  */  : 1'd1  /* PKT_nvdla_dma_wr_req_dma_write_data_ID  */ ;
 assign   wr_req_pd[513:0] = dma_wr_cmd_pop ? {dma_wr_cmd_hpd,dma_wr_cmd_opd} : {fifo_omask,dma_wr_data_opd};
-assign   dma_wr_cmd_hpd[513:54] = {460{1'b0}};
+assign   dma_wr_cmd_hpd[513:78] = {436{1'b0}};
 
 assign   dma_wr_cmd_ordy = send_cmd & wr_req_rdy; 
 assign   dma_wr_cmd_pop  = dma_wr_cmd_ordy  & dma_wr_cmd_ovld;
@@ -181,11 +182,11 @@ end
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
     last_wr_cmd <= 1'b0;
-    send_data_size[13:0] <= {14{1'b0}};
+    send_data_size <= {14{1'b0}};
   end else begin
     if (dma_wr_cmd_pop) begin
-        last_wr_cmd <= dma_wr_cmd_opd[53];
-        send_data_size[13:0] <= dma_wr_cmd_opd[52:40]+1;
+        last_wr_cmd <= dma_wr_cmd_opd[77:77];
+        send_data_size <= dma_wr_cmd_opd[76:64]+1;
     end
   end
 end
@@ -235,20 +236,20 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   end
 end
 
-assign  {mon_remain_dsize,remain_data_size[13:0]} = send_data_size[13:0] - wr_data_cnt[12:0];
-assign  fifo_omask[1:0] = remain_data_size[13:0] == 1'b1 ? 2'b01 : 2'b11;
+assign  {mon_remain_dsize,remain_data_size} = send_data_size - wr_data_cnt;
+assign  fifo_omask[1:0] = remain_data_size == 1'b1 ? 2'b01 : 2'b11;
 
-assign  wr_data_cnt_inc[13:0] = wr_data_cnt[12:0] + pop_size;
-assign  send_data_done  = dma_wr_data_pop & (wr_data_cnt_inc[13:0] >= send_data_size[13:0]);
+assign  wr_data_cnt_inc = wr_data_cnt + pop_size;
+assign  send_data_done  = dma_wr_data_pop & (wr_data_cnt_inc >= send_data_size);
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
-    wr_data_cnt[12:0] <= {13{1'b0}};
-    {mon_wr_dcnt_c,wr_data_cnt[12:0]} <= {14{1'b0}};
+    wr_data_cnt <= {13{1'b0}};
+    {mon_wr_dcnt_c,wr_data_cnt} <= {14{1'b0}};
   end else begin
     if (send_data_done) 
-        wr_data_cnt[12:0] <= 13'h0;
+        wr_data_cnt <= {13'b0}; 
     else if(dma_wr_data_pop) 
-        {mon_wr_dcnt_c,wr_data_cnt[12:0]} <= wr_data_cnt_inc;
+        {mon_wr_dcnt_c,wr_data_cnt} <= wr_data_cnt_inc;
   end
 end
 
@@ -267,17 +268,17 @@ end
 
 assign  dbuf_nempty = |dbuf_remain[3:0];                           
 
-assign    dma_wr_cmd_opd[53:0] = {dma_wr_cmd_opdt[48:0],5'h0};
+assign    dma_wr_cmd_opd[77:0] = {dma_wr_cmd_opdt[72:0],5'h0};
 
 NV_NVDLA_RUBIK_wrdma_cmd rbk_dma_wr_cmd_fifo (
    .nvdla_core_clk  (nvdla_core_clk)          //|< i
   ,.nvdla_core_rstn (nvdla_core_rstn)         //|< i
   ,.idata_prdy      (dma_wr_cmd_rdy)          //|> o
   ,.idata_pvld      (dma_wr_cmd_vld)          //|< i
-  ,.idata_pd        (dma_wr_cmd_pd[53:5])     //|< i
+  ,.idata_pd        (dma_wr_cmd_pd[77:5])     //|< i
   ,.odata_prdy      (dma_wr_cmd_ordy)         //|< w
   ,.odata_pvld      (dma_wr_cmd_ovld)         //|> w
-  ,.odata_pd        (dma_wr_cmd_opdt[48:0])   //|> w
+  ,.odata_pd        (dma_wr_cmd_opdt[72:0])   //|> w
   ,.pwrbus_ram_pd   (pwrbus_ram_pd[31:0])     //|< i
   );
 
