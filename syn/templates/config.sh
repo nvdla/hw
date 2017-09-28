@@ -19,7 +19,7 @@ export NVDLA_ROOT="/home/scratch.jwise_t19x/nvdla_git/hw-co/"
 # Where do I find the RTL source verilog/system verilog files?
 export RTL_SEARCH_PATH=" \
     $(ls -d ${NVDLA_ROOT}/vmod/nvdla/*) \
-    ${NVDLA_ROOT}/vmod/rams \
+    ${NVDLA_ROOT}/vmod/rams/synth \
     ${NVDLA_ROOT}/vmod/vlibs \
 "
 
@@ -64,11 +64,12 @@ export LINK_LIB="\
     ${RELEASE_DIR}/std_cell/nvidia/syn.A01/nvidia_stdcell_tsmc16ff_t9_sup_std_ssg_0c_0p72v.db \
     ${RELEASE_DIR}/std_cell/nvidia/syn.A01/nvidia_stdcell_tsmc16ff_t9_po4svt_std_ssg_0c_0p72v.db \
     ${RELEASE_DIR}/std_cell/nvidia/syn.A01/nvidia_stdcell_tsmc16ff_t9_svt_std_ssg_0c_0p72v.db \
-    ${RELEASE_DIR}/rams/nvgen/syn.A01/nvgen_rams_tsmc16ff_cust_mixvt_std_ssg_0c_0p72v0p72v.db \
     ${DC_PATH}/../libraries/syn/dw_foundation.sldb \
     ${DC_PATH}/../libraries/syn/gtech.db \
     ${DC_PATH}/../libraries/syn/standard.sldb \
+    /home/scratch.rshivananda_nvmobile_2/nvdla/hw/nvmobile_nvdla/rams/t194/synopsys_power/nvgen_rams_tsmc16ff_cust_mixvt_std_ssg_0c_0p72v0p72v.db \
 "
+
 export MW_LIB="\
     ${RELEASE_DIR}/std_cell/nvstd/apollo.A01/nvstd_stdcell_tsmc16ff_t9_po4svt_std \
     ${RELEASE_DIR}/std_cell/nvstd/apollo.A01/nvstd_stdcell_tsmc16ff_t9_hvt_std \
