@@ -5,7 +5,7 @@
 `define AXI_SLAVE_RID_WIDTH     `AXI_AID_WIDTH
 `define AXI_SLAVE_WID_WIDTH     `AXI_AID_WIDTH
 
-`define AXI_ADDR_WIDTH          32
+`define AXI_ADDR_WIDTH          64
 `define AXI_LEN_WIDTH           4
 `define AXI_SIZE_WIDTH          3
 `define DATABUS2MEM_WIDTH       512
@@ -142,7 +142,7 @@
 `define WR_ADDR_RANGE (`WORD_BYTES+`AXI_ADDR_WIDTH-`LOG2_MEM):(`WORD_BYTES+1)
 `define WR_LEN_RANGE  (`WORD_BYTES+`AXI_ADDR_WIDTH+`AXI_LEN_WIDTH-`LOG2_MEM):(`WORD_BYTES+`AXI_ADDR_WIDTH+1-`LOG2_MEM)
 `define WR_Q_MAX      (`WORD_BYTES+`WORD_SIZE+`AXI_ADDR_WIDTH+`AXI_LEN_WIDTH-`LOG2_MEM)
-`define WR_DATA_RANGE `WR_Q_MAX:(`WORD_BYTES+41+`AXI_LEN_WIDTH-`LOG2_MEM)
+`define WR_DATA_RANGE `WR_Q_MAX:(`WORD_BYTES+`AXI_ADDR_WIDTH+`AXI_LEN_WIDTH-`LOG2_MEM + 1)
 
 //Adjust latencies by measured latency from nvdla2saxi_axi_slave_wvalid to saxi2nvdla_axi_slave_bvalid
 //and nvdla2saxi_axi_slave_arvalid to saxi2nvdla_axi_slave_rvalid to hit the programmed latency.

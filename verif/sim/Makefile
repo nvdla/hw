@@ -89,7 +89,7 @@ CHDIR	:= cd
 # example: LSF_COMMAND       := qsub -P maxwell -q o_vcs_16G -m rel4or5 -I 
 # -K = block
 
-LSF_COMMAND       := 
+LSF_COMMAND       ?= 
 
 # ----------------------------------------------------------------------------
 # MAKE CMDLINE OVERRIDES
