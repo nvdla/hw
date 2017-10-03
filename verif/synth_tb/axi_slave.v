@@ -701,25 +701,25 @@ always @ (posedge clk) begin
     end
 end
 
-
+integer aid_i;
+integer aid_conf_i;
 always @ (posedge clk or negedge reset) begin
   if(!reset) begin
     wrid_fifo_rd_busy <= 1'b1;
     saxi2nvdla_axi_slave_bvalid <= 1'b0;
     sending_mem_wrresp2nvdla <= 1'b0;
-    for (integer i=0; i<(2**`AXI_AID_WIDTH); i++)
+    for (aid_i=0; aid_i<(2**`AXI_AID_WIDTH); aid_i++)
     begin
-//       rdata_table_valid[i] <= 0;
-        waddr_ptr_head[i] <= 0;
-        waddr_ptr_tail[i] <= 0;
-        waddr_ptr_mid[i] <= 0;
-        wdata_ptr_head[i] <= 0;
-        wdata_ptr_tail[i] <= 0;
+        waddr_ptr_head[aid_i] <= 0;
+        waddr_ptr_tail[aid_i] <= 0;
+        waddr_ptr_mid[aid_i] <= 0;
+        wdata_ptr_head[aid_i] <= 0;
+        wdata_ptr_tail[aid_i] <= 0;
     end
-    for (integer i=0; i<(2**(`AXI_AID_WIDTH+`MAX_WRITE_CONFLICT)); i++)
+    for (aid_conf_i=0; aid_conf_i<(2**(`AXI_AID_WIDTH+`MAX_WRITE_CONFLICT)); aid_conf_i++)
     begin
-        waddr_bank_av[i] <= 1'b0;
-        wdata_bank_dv[i] <= 1'b0;
+        waddr_bank_av[aid_conf_i] <= 1'b0;
+        wdata_bank_dv[aid_conf_i] <= 1'b0;
     end
   end else begin
 
@@ -764,6 +764,7 @@ end
 // Read Response
 assign {rdcmd2mem, rdcmd2mem_len, rdcmd2mem_id, rdcmd2mem_addr} = (rdid_fifo_rd_valid && ~rdid_fifo_rd_busy) ? rdid_fifo_rd_bus : {`ID_FIFO_DATA_LEN{1'b0}};
 
+integer aid_j;
 always @ (posedge clk or negedge reset) begin
   if(!reset) begin
     rdid_fifo_rd_busy <= 1'b1;
@@ -775,9 +776,9 @@ always @ (posedge clk or negedge reset) begin
     mem_rdret_araddr <= 0;
     rd_data_burst_count <= 4'b0000;
     shift_amount_retdata <= 0;
-    for (integer i=0; i<(2**`AXI_AID_WIDTH); i++)
+    for (aid_j=0; aid_j<(2**`AXI_AID_WIDTH); aid_j++)
     begin
-        rdata_table_valid[i] <= 0;
+        rdata_table_valid[aid_j] <= 0;
     end
   end else begin
 

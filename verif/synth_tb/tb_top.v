@@ -672,12 +672,14 @@ module top;
 `ifndef EMU_TB
 initial begin
 $dumpfile("bench_pk_pass.vcd");
-$vcdpluson (0,
+`ifdef VCS
+    $vcdpluson (0,
 //	top.nvdla_top.nvdla_core_wrap.nvdla_core.fgsx0_0.SYS.sys_logic.host,
 	top.slave_mem_wrap.axi_slave0,
 	top.slave_mem_wrap.axi_slave1,
 	top.slave_mem_wrap.syn_mem,
 	top.mem_clk_gen,top.clk, top.msc_clk_ip, top.reset, top.mem_clk_fast, top.mem_clk);
+`endif
 /*
 $dumpvars(0,top.slave_mem_wrap.axi_slave0,
 	top.slave_mem_wrap.axi_slave1,

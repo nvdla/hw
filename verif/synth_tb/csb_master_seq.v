@@ -21,10 +21,10 @@ input reset;
 output reg        mseq_pending_req;
 input             mcsb2mseq_consumed_req;
 output reg [62:0] mseq2mcsb_pd;
-input reg [31:0] mcsb2mseq_rdata;
-input mcsb2mseq_rvalid;
+input      [31:0] mcsb2mseq_rdata;
+input             mcsb2mseq_rvalid;
 
-input reg dut2mseq_intr0;
+input             dut2mseq_intr0;
 output reg        mseq2tb_test_done;
 
 
