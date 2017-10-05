@@ -28,8 +28,8 @@
 `define MSEQ_COMPARE_BITS 23:16
 `define MSEQ_NPOLLS_BITS 15:0
 `define MSEQ_FILENAME_BITS 383:128
-`define MSEQ_MEM_ADDR_BITS 119:80
-`define MSEQ_MEM_SIZE_BITS 79:48
+`define MSEQ_MEM_ADDR_BITS 119:56
+`define MSEQ_MEM_SIZE_BITS 55:24
 
 //PD_BITS are the top 16 bits of addr
 `define MSEQ_PD_BITS 119:105
@@ -91,11 +91,13 @@
 
 // DLA Address Range from 0x8000_0000 ~ 0x8fff_ffff. 0x5000_0000 ~ 0x5fff_ffff
 // Shares MEM_SIZE for now. If address range differs, dupilicate defines will need to be created
-`define DLA_ADDR_START     32'h8000_0000
-`define DBB_ADDR_START     32'h8000_0000
+`define DLA_ADDR_START     `AXI_ADDR_WIDTH'h8000_0000
+`define DBB_ADDR_START     `AXI_ADDR_WIDTH'h8000_0000
 `define DBB_MEM_SIZE       `MEM_SIZE
-`define CVSRAM_ADDR_START  32'h5000_0000
+`define CVSRAM_ADDR_START  `AXI_ADDR_WIDTH'h5000_0000
 `define CVSRAM_MEM_SIZE    `MEM_SIZE
+// Mask is used to decide which memory to load to and dump from
+`define DLA_ADDR_MASK      `AXI_ADDR_WIDTH'hffff_ffff_f000_0000
 
 `define DLA_CLOCK_DIVIDE              2
 `define DLATB_S2M_CHANNEL_COUNT       1
@@ -136,13 +138,21 @@
 `define RD_ADDR_RANGE   (`AXI_ADDR_WIDTH-`LOG2_MEM):1
 `define RD_LEN_RANGE    (`AXI_ADDR_WIDTH-`LOG2_MEM+`AXI_LEN_WIDTH):(`AXI_ADDR_WIDTH+1-`LOG2_MEM)
 
+//WR_DATA WR_LEN WR_ADDR WR_MASK WR_VALID
 `define WR_VALID      0
 `define WR_MASK_MIN   1
-`define WR_MASK_RANGE `WORD_BYTES:1
-`define WR_ADDR_RANGE (`WORD_BYTES+`AXI_ADDR_WIDTH-`LOG2_MEM):(`WORD_BYTES+1)
-`define WR_LEN_RANGE  (`WORD_BYTES+`AXI_ADDR_WIDTH+`AXI_LEN_WIDTH-`LOG2_MEM):(`WORD_BYTES+`AXI_ADDR_WIDTH+1-`LOG2_MEM)
-`define WR_Q_MAX      (`WORD_BYTES+`WORD_SIZE+`AXI_ADDR_WIDTH+`AXI_LEN_WIDTH-`LOG2_MEM)
-`define WR_DATA_RANGE `WR_Q_MAX:(`WORD_BYTES+`AXI_ADDR_WIDTH+`AXI_LEN_WIDTH-`LOG2_MEM + 1)
+`define WR_MASK_MAX   `WORD_BYTES
+`define WR_MASK_RANGE `WR_MASK_MAX:`WR_MASK_MIN
+`define WR_ADDR_MIN   `WR_MASK_MAX+1
+`define WR_ADDR_MAX   `WR_MASK_MAX+`AXI_ADDR_WIDTH-`LOG2_MEM
+`define WR_ADDR_RANGE `WR_ADDR_MAX:`WR_ADDR_MIN
+`define WR_LEN_MIN    `WR_ADDR_MAX+1
+`define WR_LEN_MAX    `WR_ADDR_MAX+`AXI_LEN_WIDTH
+`define WR_LEN_RANGE  `WR_LEN_MAX:`WR_LEN_MIN
+`define WR_DATA_MIN   `WR_LEN_MAX+1
+`define WR_DATA_MAX   `WR_LEN_MAX+`WORD_SIZE
+`define WR_DATA_RANGE `WR_DATA_MAX:`WR_DATA_MIN
+`define WR_Q_MAX      `WR_DATA_MAX
 
 //Adjust latencies by measured latency from nvdla2saxi_axi_slave_wvalid to saxi2nvdla_axi_slave_bvalid
 //and nvdla2saxi_axi_slave_arvalid to saxi2nvdla_axi_slave_rvalid to hit the programmed latency.
