@@ -23,6 +23,7 @@ module slave2mem_wr (
 input clk;
 input reset;
 parameter AXI_SLAVE_ID = 0;
+parameter MEM_ADDR_START=`DLA_ADDR_START; //Parameterize instance with DBB_ or CVSRAM
 
 input         slave2mem_cmd_wr;
 input [`AXI_ADDR_WIDTH-1:0]  slave2mem_addr;
@@ -38,17 +39,17 @@ output [`WORD_BYTES-1:0] q2mem_curr_wr_mask;
 output [`AXI_LEN_WIDTH-1:0] q2mem_curr_wr_len;
 input mem2q_wr_ready;
 
-reg [15:0]            config_mem[`NUM_CONFIGS-1:0];
+reg [`MSEQ_CONFIG_SIZE-1:0]            config_mem[`NUM_CONFIGS-1:0];
 reg [`WR_Q_MAX:0]     s_write_q[`QUEUE_SIZE-1:0];
 
 reg [`LOG2_Q-1:0] s_write_head;
 reg [`LOG2_Q-1:0] s_write_tail;
 reg [`LOG2_Q-1:0] s_write_count;
 reg s_write_count_inc, s_write_count_dec;
-wire [`LOG2_Q-1:0] s_write_latency; // Note if LOG2_Q changes, then config file may need to change.  Current config file is 16bits.
+wire [`LOG2_Q-1:0] s_write_latency; // Note if LOG2_Q changes, then config file may need to change.  Current config file is 12bits.
 integer i;
 
-assign q2mem_curr_wr_addr = s_write_q[s_write_tail][`WR_ADDR_RANGE] - (`DLA_ADDR_START >> `LOG2_MEM);
+assign q2mem_curr_wr_addr = s_write_q[s_write_tail][`WR_ADDR_RANGE] - (MEM_ADDR_START >> `LOG2_MEM);
 assign q2mem_curr_wr_mask = s_write_q[s_write_tail][`WR_MASK_RANGE];
 assign q2mem_curr_wr_data = s_write_q[s_write_tail][`WR_DATA_RANGE];
 assign q2mem_curr_wr_len  = s_write_q[s_write_tail][`WR_LEN_RANGE];
@@ -117,7 +118,7 @@ $display ("%0t: DEBUG2 mem2q_wr_ready=%h", $time, mem2q_wr_ready);
              s_write_q[s_write_tail][`WR_VALID] <= 1'b0;
              s_write_count_dec <= 1;
 
-			s_write_tail <= modAdd (s_write_tail, 'd1, `QUEUE_SIZE);
+             s_write_tail <= modAdd (s_write_tail, 'd1, `QUEUE_SIZE);
           end else begin
              mem2slave_wrresp_vld <= 0;
              s_write_count_dec <= 0;
@@ -125,7 +126,7 @@ $display ("%0t: DEBUG2 mem2q_wr_ready=%h", $time, mem2q_wr_ready);
       end else begin
           mem2slave_wrresp_vld <= 0;
           s_write_count_dec <= 0;
-			s_write_tail <= modAdd (s_write_tail, 'd1, `QUEUE_SIZE);
+          s_write_tail <= modAdd (s_write_tail, 'd1, `QUEUE_SIZE);
       end
 
 /*

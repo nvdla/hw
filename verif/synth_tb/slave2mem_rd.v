@@ -24,6 +24,7 @@ module slave2mem_rd (
 input clk;
 input reset;
 parameter AXI_SLAVE_ID=0;
+parameter MEM_ADDR_START=`DLA_ADDR_START; //Parameterize instance with DBB_ or CVSRAM
 
 input         slave2mem_cmd_rd;
 input [`AXI_ADDR_WIDTH-1:0]  slave2mem_addr;
@@ -39,18 +40,18 @@ output [`AXI_LEN_WIDTH-1:0] curr_rd_len;
 input [`WORD_SIZE-1:0] mem2slave_rdresp_data_tmp;
 input rdresp_data_ready;
 
-reg [15:0]            config_mem[`NUM_CONFIGS-1:0];
+reg [`MSEQ_CONFIG_SIZE-1:0]            config_mem[`NUM_CONFIGS-1:0];
 reg [`AXI_LEN_WIDTH+`AXI_ADDR_WIDTH-`LOG2_MEM:0] s_read_q [`QUEUE_SIZE-1:0];
 reg [`LOG2_Q-1:0] s_read_head;
 reg [`LOG2_Q-1:0] s_read_tail;
 reg [`LOG2_Q-1:0] s_read_count;
 reg s_read_count_inc,  s_read_count_dec;
-wire [`LOG2_Q-1:0] s_read_latency; // Note if LOG2_Q changes, then config file may need to change.  Current config file is 16bits.
+wire [`LOG2_Q-1:0] s_read_latency; // Note if LOG2_Q changes, then config file may need to change.  Current config file is 12bits.
 integer i;
 reg carry_out;
 
 assign curr_tail = s_read_tail;
-assign curr_rd_addr = s_read_q [s_read_tail] [`RD_ADDR_RANGE] - (`DLA_ADDR_START >> `LOG2_MEM);
+assign curr_rd_addr = s_read_q [s_read_tail] [`RD_ADDR_RANGE] - (MEM_ADDR_START >> `LOG2_MEM);
 assign curr_rd_len  = s_read_q [s_read_tail] [`RD_LEN_RANGE];
 assign s_read_latency  = config_mem[`S0_READ_LATENCY] - `READ_LATENCY_CORRECTION; //spyglass disable W123
 assign s_read_q_tail_valid = s_read_q[s_read_tail][`RD_VALID];
@@ -108,7 +109,7 @@ always @(posedge clk or negedge reset) begin
          if (rdresp_data_ready) begin
              mem2slave_rdresp_vld <= 1;
              mem2slave_rdresp_data <= mem2slave_rdresp_data_tmp;
-             $display("%0t SMEM: Slave %0d read address 0x%010x (mem address 0x%x) data 0x%0128x", $time, AXI_SLAVE_ID, ((`AXI_ADDR_WIDTH'b0 + curr_rd_addr) * `MEM_BYTES) + `DLA_ADDR_START, curr_rd_addr, mem2slave_rdresp_data_tmp); //spyglass disable SYNTH_5166 W213
+             $display("%0t SMEM: Slave %0d read address 0x%010x (mem address 0x%x) data 0x%0128x", $time, AXI_SLAVE_ID, ((`AXI_ADDR_WIDTH'b0 + curr_rd_addr) * `MEM_BYTES) + MEM_ADDR_START, curr_rd_addr, mem2slave_rdresp_data_tmp); //spyglass disable SYNTH_5166 W213
              s_read_q[s_read_tail][`RD_VALID] <= 1'b0;
              s_read_count_dec <= 1;
           	s_read_tail <= modAdd (s_read_tail, 1'd1, `QUEUE_SIZE);

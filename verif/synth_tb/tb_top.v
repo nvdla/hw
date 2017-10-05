@@ -677,7 +677,8 @@ $dumpfile("bench_pk_pass.vcd");
 //	top.nvdla_top.nvdla_core_wrap.nvdla_core.fgsx0_0.SYS.sys_logic.host,
 	top.slave_mem_wrap.axi_slave0,
 	top.slave_mem_wrap.axi_slave1,
-	top.slave_mem_wrap.syn_mem,
+	top.slave_mem_wrap.dbb_mem,
+	top.slave_mem_wrap.cvsram_mem,
 	top.mem_clk_gen,top.clk, top.msc_clk_ip, top.reset, top.mem_clk_fast, top.mem_clk);
 `endif
 /*

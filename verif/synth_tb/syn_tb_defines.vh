@@ -17,9 +17,6 @@
 `define SAXI2MEM_CMD_WR     1'b1
 `define SAXI2MEM_CMD_RD     1'b0
 
-// DLA Address Range from 0x8000_0000 ~ 0x8000_0000
-`define DLA_ADDR_START  32'h8000_0000
-
 /*****************************************************
  *************** MASTER SEQ RELATED ******************
  *****************************************************/ 
@@ -92,11 +89,19 @@
 `define MEM_BYTES   (`MEM_WIDTH/8)
 `define LOG2_MEM    ($clog2(`MEM_WIDTH)-3)
 
+// DLA Address Range from 0x8000_0000 ~ 0x8fff_ffff. 0x5000_0000 ~ 0x5fff_ffff
+// Shares MEM_SIZE for now. If address range differs, dupilicate defines will need to be created
+`define DLA_ADDR_START     32'h8000_0000
+`define DBB_ADDR_START     32'h8000_0000
+`define DBB_MEM_SIZE       `MEM_SIZE
+`define CVSRAM_ADDR_START  32'h5000_0000
+`define CVSRAM_MEM_SIZE    `MEM_SIZE
+
 `define DLA_CLOCK_DIVIDE              2
-`define DLATB_S2M_CHANNEL_COUNT       2
+`define DLATB_S2M_CHANNEL_COUNT       1
 
 // Define offsets inside the config_mem to find these configuration parameters
-`define NUM_CONFIGS           24
+`define MSEQ_CONFIG_SIZE      32
 `define S0_MAX_READS          0
 `define S0_MAX_WRITES         1
 `define S0_MAX_TOTAL          2
@@ -107,20 +112,18 @@
 `define S1_MAX_TOTAL          7
 `define S1_READ_LATENCY       8
 `define S1_WRITE_LATENCY      9
-`define MSEQ_POLL_INTERVAL_HI 10
-`define MSEQ_POLL_INTERVAL_LO 11
-`define MSEQ_RD_TIMEOUT_HI    12
-`define MSEQ_RD_TIMEOUT_LO    13
-`define MSEQ_WR_TIMEOUT_HI    14
-`define MSEQ_WR_TIMEOUT_LO    15
-`define MSEQ_CONT_ON_FAIL     16
-`define MSEQ_RD_POLLS_HI      17
-`define MSEQ_RD_POLLS_LO      18
-`define WR_PERC_0             19
-`define RD_PERC_0             20
-`define WR_PERC_1             21
-`define RD_PERC_1             22
-`define PERC_ALL              23
+`define MSEQ_POLL_INTERVAL    10
+`define MSEQ_RD_TIMEOUT       11
+`define MSEQ_WR_TIMEOUT       12
+`define MSEQ_INTR_TIMEOUT     13
+`define MSEQ_CONT_ON_FAIL     14
+`define MSEQ_RD_POLLS         15
+`define WR_PERC_0             16
+`define RD_PERC_0             17
+`define WR_PERC_1             18
+`define RD_PERC_1             19
+`define PERC_ALL              20
+`define NUM_CONFIGS           21
 
 `define WORD_SIZE   512
 `define WORD_BYTES  (`WORD_SIZE/8)
@@ -155,14 +158,14 @@
 //the max in-progress write requests that share same id
 `define MAX_WRITE_CONFLICT 64
 
+// Defines for if someone tries to add more slaves/channels to memory
 `define SLAVE_0      0
-`define SLAVE_1      1
-`define TOTAL_SLAVE  2
+`define TOTAL_SLAVE  1
 
 
 // Each channel includes a read port and a write port.
-//`define MAX_PORTS         (`TOTAL_SLAVE*2)
-`define MAX_PORTS           4
+`define MAX_PORTS         (`TOTAL_SLAVE*2)
+//`define MAX_PORTS           4
 // Want to scale sizes to 100 so that easy perc calc can be made.
 `define SCALE_FACTOR        100
 

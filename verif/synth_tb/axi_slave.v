@@ -243,7 +243,7 @@ reg     sending_mem_wrresp2nvdla;
 reg     memresp_wrfifo_rd_busy;
 reg     memresp_rdfifo_rd_busy;
 
-reg [15:0]            config_mem[`NUM_CONFIGS-1:0];
+reg [`MSEQ_CONFIG_SIZE-1:0]            config_mem[`NUM_CONFIGS-1:0];
 
 // Write fifo depths of 64
 // Write data fifo instance
