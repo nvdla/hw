@@ -7,4 +7,5 @@ verif/sim
 !verif/sim/Makefile
 !verif/sim/check*.pl
 vmod/dw_components/
+outdir/
 .nvprojectname
