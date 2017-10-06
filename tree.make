@@ -1,1 +1,1 @@
-PROJECTS := big
+PROJECTS := big small
