@@ -1,0 +1,17 @@
+#!/usr/bin/env perl
+##
+## depth - print the depth to top of tree by checking for the file TOT
+##
+
+my $depth = '.';
+# stop checking for TOT once the inodes of $depth and $depth/.. match (at root)
+my @ost = stat( $depth );
+my @st = stat( "$depth/.." );
+while ($st[1] != $ost[1])
+{
+	last if (-f "$depth/LICENSE") ;
+	$depth .= '/..';
+	@ost = @st;
+	@st = stat( "$depth/.." );
+}
+print $depth;
