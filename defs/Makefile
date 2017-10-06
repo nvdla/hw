@@ -1,5 +1,4 @@
-DEPTH  := $(shell ../bin/depth)
-OUTDIR ?= outdir
+DEPTH  = $(shell ../bin/depth)
 include $(DEPTH)/make/common.make
 # ======================
 # BACKENDS: define the output file type, add more if you want

@@ -18,22 +18,14 @@ _default:: default
 ##
 ## always include the top-level user-editable configuration file tree.make to pick up PROJECTS
 ##
-#include $(DEPTH)/$(TREE_MAKE)
+TREE_MAKE ?= tree.make
+include $(DEPTH)/$(TREE_MAKE)
+PROJECT ?= $(firstword $(PROJECTS))
+
 OUTDIR ?= outdir
 
-# Check that PROJECTS is set (unless overridden through command line)
-ifneq ($(origin PROJECTS),command line)
-  ifeq (,$(strip $(PROJECTS)))
-    ifneq (,$(wildcard $(TREE_MAKE)))
-      $(error Please enter a project name in 'export PROJECTS := <project name>' in your tree.make, exiting...)
-    endif
-  endif
-endif
-
 # use the gnu tools in preference to others
-#include $(DEPTH)/make/tools.mk
-CPP  := /home/gnu/bin/cpp
-SED  := /bin/sed
+include $(DEPTH)/make/tools.mk
 
 # this gross little gmakism returns the last directory component of PWD
 #PWD := $(shell pwd)
