@@ -1,4 +1,4 @@
-#!/home/utils/perl-5.8.8/bin/perl
+#!/usr/bin/env perl
 
 use strict;
 

@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 
 %configHash = (
 'max_rd_outstanding_per_channel0' => [ '180', 'Slave 0 Max Reads (384)', 0 ],

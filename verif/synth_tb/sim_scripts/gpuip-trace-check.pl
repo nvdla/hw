@@ -1,4 +1,4 @@
-#! /usr/bin/perl
+#! /usr/bin/env perl
 
 # Simple trace validation.
 # Ideally the file format would include some form of checksum in a comment field!
