@@ -13,7 +13,6 @@ module syn_axi_slave (
     saxi2nvdla_axi_slave_rdata,
     saxi2nvdla_axi_slave_rid,
     saxi2nvdla_axi_slave_rlast,
-    saxi2nvdla_axi_slave_rresp,
     saxi2nvdla_axi_slave_rvalid,
     saxi2nvdla_axi_slave_wready,
 
@@ -74,7 +73,6 @@ output reg                              saxi2nvdla_axi_slave_bvalid          ;
 output reg    [`DATABUS2MEM_WIDTH-1:0]  saxi2nvdla_axi_slave_rdata           ;
 output reg  [`AXI_SLAVE_RID_WIDTH-1:0]  saxi2nvdla_axi_slave_rid             ;
 output reg                              saxi2nvdla_axi_slave_rlast           ;
-output reg                       [1:0]  saxi2nvdla_axi_slave_rresp           ;
 output reg                              saxi2nvdla_axi_slave_rvalid          ;
 output reg                              saxi2nvdla_axi_slave_wready          ;
 
@@ -640,10 +638,12 @@ always @ (posedge clk or negedge reset) begin
       saxi2mem_size_wr <= from_wr_fifo_size;
 
       // Shift data/wstrb if addr is not 64-Byte aligned
-      if((from_wr_fifo_addr & `AXI_ADDR_WIDTH'h0020) == `AXI_ADDR_WIDTH'h0020) begin  
+      if((from_wr_fifo_addr & `AXI_ADDR_WIDTH'h1f) != `AXI_ADDR_WIDTH'h00) begin
         // Shift data by 32 Bytes
         saxi2mem_data <= (from_fifo_wdata << 256);
         saxi2mem_wstrb <= (from_fifo_wstrb << 32);
+        $display("Error: Addresses unaligned to 64B boundaries are unsupported");
+        $finish;
       end else begin
         saxi2mem_data <= from_fifo_wdata;
         saxi2mem_wstrb <= from_fifo_wstrb;
@@ -808,7 +808,8 @@ always @ (posedge clk or negedge reset) begin
       mem_rdret_araddr  <= rdcmd2mem_addr;
       rd_data_burst_count <= 4'b0000;
     end     // rdid_fifo_rd_busy
-
+    
+    // Invalidate rdata table entry on last beat
     if (saxi2nvdla_axi_slave_rlast) begin
        //display ReadResp info
 `ifdef AXI_MEM_DEBUG
@@ -819,6 +820,7 @@ always @ (posedge clk or negedge reset) begin
       rdata_table_valid[mem_rdret_id] <= 1'b0; 
     end
 
+    // Master and slave are valid/ready. Validate table entry
     if(saxi2nvdla_axi_slave_arready & nvdla2saxi_axi_slave_arvalid) begin
       if (rdata_table_valid[nvdla2saxi_axi_slave_arid]) begin  
 `ifdef AXI_MEM_DEBUG
@@ -834,61 +836,52 @@ always @ (posedge clk or negedge reset) begin
     end
 
     if(sending_mem_rdresp2nvdla) begin
+      // Send out first beat regardless of slave rready. It holds until rready is seen
       // For this first beat pick it directly out of the fifo outputs, rest of the beats use mem_rdret* info
       // mem_rdret_data has the data from memory, process it based on addr/size
       if(rd_data_burst_count == 4'b0000) begin      // First read beat to be sent back to DLA
         rdata_table_timestamp[rdcmd2mem_id] <= $time;
         rdata_table_data[rdcmd2mem_id][`DATABUS2MEM_WIDTH-1:0] <= 0;
         rdata_table_len[rdcmd2mem_id] <= rdcmd2mem_len;
-        if((rdcmd2mem_len == 4'b0001) && ((rdcmd2mem_addr & `AXI_ADDR_WIDTH'h0020) == `AXI_ADDR_WIDTH'h0020)) begin  // 2 data transfers out of the 64 byte return data - decide based on the address which one to send.  Check for 64-bit alignment
-            saxi2nvdla_axi_slave_rdata <= memresp_rdfifo_rd_bus[`DATABUS2MEM_WIDTH-1: 256];
-            rdata_table_data[rdcmd2mem_id][`DATABUS2MEM_WIDTH-1:256] <= memresp_rdfifo_rd_bus[`DATABUS2MEM_WIDTH-1:256];
-`ifdef AXI_MEM_DEBUG
-            $display("%0t ReadResp_temp(Channel%0d): count = 0x%x, RDATA = 0x%032x", $time, AXI_SLAVE_ID, rd_data_burst_count, memresp_rdfifo_rd_bus[`DATABUS2MEM_WIDTH-1: 256]); // spyglass disable  W213
-`endif
-            shift_amount_retdata <= 256;
+        if((rdcmd2mem_addr & `AXI_ADDR_WIDTH'h1f) != `AXI_ADDR_WIDTH'h00) begin
+          $display("Error: Addresses unaligned to 64B boundaries are unsupported");
         end
-        else begin
+        // Length of 0. one 64B transfer. NVDLA only supports 64 bytes size so the shift amount is useless unless NVDLA supports size
+        //if(rdcmd2mem_len == 4'b0000) begin
             saxi2nvdla_axi_slave_rdata <= memresp_rdfifo_rd_bus[`DATABUS2MEM_WIDTH-1: 0];
             rdata_table_data[rdcmd2mem_id][`DATABUS2MEM_WIDTH-1:0] <= memresp_rdfifo_rd_bus[`DATABUS2MEM_WIDTH-1: 0];
+        // Length doesn't matter here 
+        //end
 `ifdef AXI_MEM_DEBUG
-            $display("%0t ReadResp_temp(Channel%0d): count = 0x%x, RDATA = 0x%0128x, len=%d", $time, AXI_SLAVE_ID, rd_data_burst_count, memresp_rdfifo_rd_bus[`DATABUS2MEM_WIDTH-1:0], rdcmd2mem_len); // spyglass disable  W213
+        $display("%0t ReadResp_temp(Channel%0d): count = 0x%x, RDATA = 0x%0128x, len=%d", $time, AXI_SLAVE_ID, rd_data_burst_count, memresp_rdfifo_rd_bus[`DATABUS2MEM_WIDTH-1:0], rdcmd2mem_len); // spyglass disable  W213
 `endif
-            shift_amount_retdata <= 512;
-        end
 
         saxi2nvdla_axi_slave_rvalid <= 1'b1;
         saxi2nvdla_axi_slave_rid <= rdcmd2mem_id;
 `ifdef AXI_MEM_DEBUG
         $display("%0t ReadResp_temp(Channel%0d): RID = 0x%010x", $time, AXI_SLAVE_ID, rdcmd2mem_id); // spyglass disable  W213
 `endif
-        saxi2nvdla_axi_slave_rresp <= 2'b00;    // TODO: Check if this means OKAY response !
         saxi2nvdla_axi_slave_rlast <= (rd_data_burst_count == rdcmd2mem_len);
-        rd_data_burst_count <= 1;
-      end else begin
+        rd_data_burst_count <= 1; // Same as +=1 
+      end else begin //rd_data_burst_count > 0
         if(nvdla2saxi_axi_slave_rready && (rd_data_burst_count <= mem_rdret_arlen)) begin // nvdla accepted the data move to the next one
           saxi2nvdla_axi_slave_rvalid <= 1'b1;
           saxi2nvdla_axi_slave_rid <= mem_rdret_id;
 `ifdef AXI_MEM_DEBUG
           $display("%0t ReadResp_temp(Channel%0d): RID = 0x%08x", $time, AXI_SLAVE_ID, mem_rdret_id); // spyglass disable  W213
 `endif
-          saxi2nvdla_axi_slave_rresp <= 2'b00;    // TODO: Check if this means OKAY response !
-          saxi2nvdla_axi_slave_rdata <= (mem_rdret_data >> shift_amount_retdata) & {512{1'b1}};
-
-
-//          rdata_table_data[rdcmd2mem_id][127+rd_data_burst_count*128 -: 128] <= (mem_rdret_data >> shift_amount_retdata) & {128{1'b1}};
-
-          rdata_table_data[rdcmd2mem_id] = (rdata_table_data[rdcmd2mem_id] &
-              ~({256{1'b1}} << (256 * rd_data_burst_count))) |
-              ((mem_rdret_data >> shift_amount_retdata) << (256 * rd_data_burst_count));
+          // Latter beats pull from mem_rdret instead of fifo outputs
+          //saxi2nvdla_axi_slave_rdata <= mem_rdret_data;
+          //rdata_table_data[rdcmd2mem_id] = mem_rdret_data;
+          // Well memrd_ret_data updates when rdid_fifo_rd_busy==0 memresp_rdfifo_rd_busy==0 && memresp_rdfifo_rd_valid==1. But we get 64B reponses so we always want memresp_rdfifo_rd_bus instead of holding onto mem_rdret data to split up the return data
+          saxi2nvdla_axi_slave_rdata <= memresp_rdfifo_rd_bus;
+          rdata_table_data[rdcmd2mem_id] = memresp_rdfifo_rd_bus;
 
 `ifdef AXI_MEM_DEBUG
-// This may be wrong, only displays 128 bits of 512 bit bus
-          $display("hmm %0t ReadResp_temp(Channel%0d): count = 0x%x, RDATA = 0x%032x, prev saxi2nvdla_rdata=0x%032x", $time, AXI_SLAVE_ID, rd_data_burst_count, mem_rdret_data[127+shift_amount_retdata -: 128], saxi2nvdla_axi_slave_rdata); // spyglass disable  W213
+          $display("%0t ReadResp_temp(Channel%0d): count = 0x%x, RDATA = 0x%0128x, prev saxi2nvdla_rdata=0x%0128x", $time, AXI_SLAVE_ID, rd_data_burst_count, mem_rdret_data[`DATABUS2MEM_WIDTH-1:0], saxi2nvdla_axi_slave_rdata); // spyglass disable  W213
 `endif
           saxi2nvdla_axi_slave_rlast <= (rd_data_burst_count == mem_rdret_arlen);
           rd_data_burst_count <= rd_data_burst_count + 1;
-          shift_amount_retdata <= shift_amount_retdata + 256; // Shifting position by 16 bytes - 256 bits
         end     // rready
       end   // rd_data_burst_count
 

@@ -13,7 +13,6 @@ module syn_slave_mem_wrap (
     saxi2nvdla_axi_slave0_rdata                  ,
     saxi2nvdla_axi_slave0_rid                    ,
     saxi2nvdla_axi_slave0_rlast                  ,
-    saxi2nvdla_axi_slave0_rresp                  ,
     saxi2nvdla_axi_slave0_rvalid                 ,
     saxi2nvdla_axi_slave0_wready                 ,
 
@@ -25,7 +24,6 @@ module syn_slave_mem_wrap (
     saxi2nvdla_axi_slave1_rdata                  ,
     saxi2nvdla_axi_slave1_rid                    ,
     saxi2nvdla_axi_slave1_rlast                  ,
-    saxi2nvdla_axi_slave1_rresp                  ,
     saxi2nvdla_axi_slave1_rvalid                 ,
     saxi2nvdla_axi_slave1_wready                 ,
 
@@ -94,7 +92,6 @@ output                                saxi2nvdla_axi_slave0_bvalid          ;
 output                        [`DATABUS2MEM_WIDTH-1:0] saxi2nvdla_axi_slave0_rdata           ;
 output     [`AXI_SLAVE_RID_WIDTH-1:0] saxi2nvdla_axi_slave0_rid             ;
 output                                saxi2nvdla_axi_slave0_rlast           ;
-output                          [1:0] saxi2nvdla_axi_slave0_rresp           ;
 output                                saxi2nvdla_axi_slave0_rvalid          ;
 output                                saxi2nvdla_axi_slave0_wready          ;
 
@@ -106,7 +103,6 @@ output                                saxi2nvdla_axi_slave1_bvalid          ;
 output                        [`DATABUS2MEM_WIDTH-1:0] saxi2nvdla_axi_slave1_rdata           ;
 output     [`AXI_SLAVE_RID_WIDTH-1:0] saxi2nvdla_axi_slave1_rid             ;
 output                                saxi2nvdla_axi_slave1_rlast           ;
-output                          [1:0] saxi2nvdla_axi_slave1_rresp           ;
 output                                saxi2nvdla_axi_slave1_rvalid          ;
 output                                saxi2nvdla_axi_slave1_wready          ;
 
@@ -207,7 +203,6 @@ wire            axi_clk                ;
     ,.saxi2nvdla_axi_slave_rdata      (saxi2nvdla_axi_slave0_rdata  )
     ,.saxi2nvdla_axi_slave_rid        (saxi2nvdla_axi_slave0_rid    )
     ,.saxi2nvdla_axi_slave_rlast      (saxi2nvdla_axi_slave0_rlast  )
-    ,.saxi2nvdla_axi_slave_rresp      (saxi2nvdla_axi_slave0_rresp  )
     ,.saxi2nvdla_axi_slave_rvalid     (saxi2nvdla_axi_slave0_rvalid )
     ,.saxi2nvdla_axi_slave_wready     (saxi2nvdla_axi_slave0_wready )
 
@@ -266,7 +261,6 @@ wire            axi_clk                ;
     ,.saxi2nvdla_axi_slave_rdata      (saxi2nvdla_axi_slave1_rdata  )
     ,.saxi2nvdla_axi_slave_rid        (saxi2nvdla_axi_slave1_rid    )
     ,.saxi2nvdla_axi_slave_rlast      (saxi2nvdla_axi_slave1_rlast  )
-    ,.saxi2nvdla_axi_slave_rresp      (saxi2nvdla_axi_slave1_rresp  )
     ,.saxi2nvdla_axi_slave_rvalid     (saxi2nvdla_axi_slave1_rvalid )
     ,.saxi2nvdla_axi_slave_wready     (saxi2nvdla_axi_slave1_wready )
 
