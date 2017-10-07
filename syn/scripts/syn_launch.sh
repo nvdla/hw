@@ -24,7 +24,7 @@ DEFAULT_FLOW_CONFIG=$FLOW_ROOT/default_config.sh
 timestamp=$(date +%Y%m%d_%H%M)
 config="./config.sh"
 mode="wlm"
-build="osdla_syn_$timestamp"
+build="nvdla_syn_$timestamp"
 modules=""
 restore_db=""
 
