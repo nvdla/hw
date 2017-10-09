@@ -1,1 +1,1 @@
-PROJECTS := big small
+PROJECTS := nv_large nv_small

@@ -18,14 +18,14 @@ _default:: default
 ##
 ## always include the top-level user-editable configuration file tree.make to pick up PROJECTS
 ##
-TREE_MAKE ?= tree.make
-include $(DEPTH)/$(TREE_MAKE)
+#TREE_MAKE ?= tree.make
+#include $(TREE_ROOT)/$(TREE_MAKE)
 PROJECT ?= $(firstword $(PROJECTS))
 
 OUTDIR ?= outdir
 
 # use the gnu tools in preference to others
-include $(DEPTH)/make/tools.mk
+include $(TREE_ROOT)/make/tools.mk
 
 # this gross little gmakism returns the last directory component of PWD
 #PWD := $(shell pwd)
@@ -35,11 +35,11 @@ include $(DEPTH)/make/tools.mk
 ## paths to useful places in the tree
 ##
 
-#DEFDIR := $(DEPTH)/defs
-#MANDIR := $(DEPTH)/manuals
-#MAKDIR := $(DEPTH)/make
-#CMODDIR := $(DEPTH)/cmod
-#VMODDIR := $(DEPTH)/vmod
+#DEFDIR := $(TREE_ROOT)/defs
+#MANDIR := $(TREE_ROOT)/manuals
+#MAKDIR := $(TREE_ROOT)/make
+#CMODDIR := $(TREE_ROOT)/cmod
+#VMODDIR := $(TREE_ROOT)/vmod
 #VINCDIR := $(VMODDIR)/include
 #VLIBDIR := $(VMODDIR)/vlibs
 #SYNTH_RAMDIR := $(VMODDIR)/rams/synth

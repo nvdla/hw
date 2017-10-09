@@ -1,15 +1,14 @@
-# NVDLA Open Source Project
-
-> File: README.md
-> 
-> Commands to generate rtl, ral and cmod for register
-> 
 > Copyright(c) 2016 - 2017 NVIDIA Corporation.  Licensed under the
 > NVDLA Open Hardware License; Check "LICENSE" which comes with 
 > this distribution for more information.
+> 
+> File: README.md
+> 
 
+Make sure you have java 1.7 or later version installed
+Update variable JAVA in make/tools.mk to point to your local java installation
 
-## command
+then you can use below command to generate rtl, ral and cmod
 ```
 make
 ```
