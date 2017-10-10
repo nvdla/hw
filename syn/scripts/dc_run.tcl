@@ -141,6 +141,8 @@ setVar DONT_UNGROUP_LIST ""
 setVar HORIZONTAL_LAYERS ""
 setVar VERTICAL_LAYERS ""
 
+setVar QA_MODE ""
+
 if {[shell_is_in_exploration_mode]} {
     set de_log_html_filename ${LOG_DIR}/${MODULE}_de.html
 }
@@ -178,8 +180,6 @@ set alib_library_analysis_path   ${DLIB_DIR}/${MODULE}
 # Read logical/timing libs
 puts "${synMsgInfo} Read library and create alib"
 read_file -format db $target_library
-puts "${synMsgInfo} Analyze alibs"
-alib_analyze_libs
 
 
 # Search path
@@ -251,6 +251,14 @@ if ![ link ] {
     puts "${synMsgErr} Failed to link. Aborting..."
     exit 1
 }
+
+if {$QA_MODE == "link_only"} {
+    puts "${synMsgInfo} Design linked successfully. Exiting gracefully."
+    exit 0
+}
+
+puts "${synMsgInfo} Analyze alibs"
+alib_analyze_libs
 
 # Write out a DDC at this point. 
 write -f ddc -hier -o ${DB_DIR}/${MODULE}.elaborated.ddc

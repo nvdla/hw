@@ -27,6 +27,7 @@ mode="wlm"
 build="nvdla_syn_$timestamp"
 modules=""
 restore_db=""
+qa_mode=""
 
 while [ $# -gt 0 ]
 do
@@ -51,6 +52,10 @@ do
           error=0
           shift
           restore_db="$1" ;;
+      -qa_mode)
+          error=0
+          shift
+          qa_mode="$1" ;;
         *)
           echo Error: unrecognized argument: $1
           usage ;; 
@@ -72,6 +77,9 @@ source $config
 # enable license queuing
 export SNPSLMD_QUEUE=true
 
+# If user is running QA mode, then pass that on to the TCL scripts
+export QA_MODE="$qa_mode"
+
 if [ -z "$modules" ] && [ -z "$TOP_NAMES" ] ; then
     echo "[ERROR]: TOP_NAMES cannot be empty. Aborting"
     exit
@@ -91,7 +99,6 @@ export NET_DIR="$BUILD_NAME/net"
 export REPORT_DIR="$BUILD_NAME/report"
 export SCRIPTS_DIR="$BUILD_NAME/scripts"
 export SEARCH_PATH=". $BUILD_NAME/src"
-
 # Helper function to create BUILD sandbox
 dataprep()
 {
