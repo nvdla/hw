@@ -1,5 +1,6 @@
-include ../tree.make
-include $(TREE_ROOT)/make/common.make
+DEPTH := ..
+include $(DEPTH)/tree.make
+include $(DEPTH)/make/common.make
 
 # ======================
 # BACKENDS: define the output file type, add more if you want
@@ -11,7 +12,7 @@ OBJECTS = $(BACKENDS:%=project.%)
 
 # the output dir
 DIRNAME := $(subst .,,$(suffix $(subst /,.,$(shell pwd))))
-OUT_DIR = $(TREE_ROOT)/$(OUTDIR)/$(PROJECT)/$(DIRNAME)
+OUT_DIR = $(DEPTH)/$(OUTDIR)/$(PROJECT)/$(DIRNAME)
 
 default: $(OBJECTS)
 	@rm $(OUT_DIR)/project.def

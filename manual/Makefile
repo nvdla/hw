@@ -1,9 +1,9 @@
-include ../tree.make
-include $(TREE_ROOT)/make/common.make
+DEPTH := ..
+include $(DEPTH)/make/common.make
 
 # the output dir
 DIRNAME := $(subst .,,$(suffix $(subst /,.,$(shell pwd))))
-OUT_DIR = $(TREE_ROOT)/$(OUTDIR)/$(PROJECT)/$(DIRNAME)
+OUT_DIR = $(DEPTH)/$(OUTDIR)/$(PROJECT)/$(DIRNAME)
 
 #====================================
 # FIXME: change below test parameters and rdl input to real one 
