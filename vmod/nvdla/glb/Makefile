@@ -1,15 +1,15 @@
-DEPTH := ../..
+DEPTH := ../../..
 include $(DEPTH)/make/common.make
 
 # ======================
 V_FILES := $(shell find . -name "*.v")
-V_FILES += $(shell find . -name "*.vlib")
+V_FILES += $(shell find . -name "*.vh")
 
-S_FILES  := $(filter-out ./HLS%,$(V_FILES))
+S_FILES  := $(V_FILES)
 
 # the output dir
 DIRNAME := $(subst .,,$(suffix $(subst /,.,$(shell pwd))))
-OUT_DIR := $(DEPTH)/$(OUTDIR)/$(PROJECT)/vmod/$(DIRNAME)
+OUT_DIR := $(DEPTH)/$(OUTDIR)/$(PROJECT)/vmod/nvdla/$(DIRNAME)
 
 O_FILES := $(addprefix $(OUT_DIR)/,$(S_FILES))
 

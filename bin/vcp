@@ -54,8 +54,8 @@ while (my $line = <$ofile_st_fh>) {
 close $ofile_st_fh;
 close $ofile_fh;
 
-#unlink $file_in_st;
-#unlink $file_out_st;
+unlink $file_in_st;
+unlink $file_out_st;
 
 print STDERR "$file_out successfully written\n" if ($verbose) ;
 
