@@ -12,4 +12,9 @@ This repository contains all RTL, C-model, and testbench code associated with th
   * verif/ -- trace-player testbench for basic sanity validation
     * verif/traces/ -- sample traces associated with various networks
 
+## Environment Requirement
+    CPP:  gcc-4.0 or later is required and update CPP variable in make/tools.mk
+    PERL: perl-5.8.8 or later is required and set as your default perl, use "/usr/bin/env perl -v" to check
+    JAVA: jdk1.7 or later is required and update JAVA variable in make/tools.mk
+
 For more information, please visit [NVDLA website](http://nvdla.org/).
