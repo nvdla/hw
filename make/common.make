@@ -10,10 +10,11 @@
 ECHO ?= echo
 EXIT ?= exit
 
-ifeq (1,$(VERBOSE))
-AT := 
-else 
+
+ifeq (1,$(QUITE))
 AT := @
+else 
+AT :=
 endif
 
 

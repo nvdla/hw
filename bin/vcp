@@ -29,7 +29,7 @@ open my $ifile_st_fh,">",$file_in_st;
 
 while (my $line = <$ifile_fh>) {
     $line =~ s/'/_&qt&_/g;
-    $line =~ s/^\s##/_&&_/;
+    $line =~ s/^\s##/_&pdpd&_/;
     if ($line =~ /^\s*#\s*(define|undef|if|ifdef|ifndef|elif|else|endif|error|pragma)/) {
         # keep there
     } else {

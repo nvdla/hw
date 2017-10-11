@@ -28,10 +28,10 @@ $(OUT_DIR)/project.def : $(PROJECT).spec Makefile
 # RULES: do text substitution for different backends, add more rules when you add more backends
 # ======================
 project.h : $(OUT_DIR)/project.def
-	@$(SED) 's/DEFINE/#define/g' $< > $(OUT_DIR)/$@
+	$(AT)$(DEFGEN) -i $< -o $(OUT_DIR)/$@ -b c
 
 project.vh : $(OUT_DIR)/project.def
-	@$(SED) 's/DEFINE/`define/g' $< > $(OUT_DIR)/$@
+	$(AT)$(DEFGEN) -i $< -o $(OUT_DIR)/$@ -b v
 
 # ======================
 .PHONE: clean
