@@ -1,0 +1,68 @@
+#!/usr/bin/env perl
+
+##
+## build tree
+##
+use Getopt::Long;
+use Data::Dumper;
+
+my $MAKE = "make";
+
+GetOptions (
+             "help|h" => sub {usage(); exit 0},
+           ) or die "Unrecognized options @ARGV";
+
+
+my @subs = qw(
+            defs
+            manual
+            vmod/vlibs
+            vmod/include
+            vmod/nvdla/cbuf
+            vmod/nvdla/apb2csb
+            vmod/nvdla/bdma
+            vmod/nvdla/cacc
+            vmod/nvdla/car
+            vmod/nvdla/cdma
+            vmod/nvdla/cdp
+            vmod/nvdla/cmac
+            vmod/nvdla/csb_master
+            vmod/nvdla/csc
+            vmod/nvdla/glb
+            vmod/nvdla/nocif
+            vmod/nvdla/pdp
+            vmod/nvdla/retiming
+            vmod/nvdla/rubik
+            vmod/nvdla/sdp
+            vmod/nvdla/top
+            );
+
+foreach my $project (get_projects("tree.make")) {
+    foreach my $sub (@subs) {
+        system("$MAKE PROJECT=$project -C $sub ");
+    }
+}
+
+
+sub get_projects {
+    my $file = shift;
+
+    my @projects;
+    open my $fh,"<",$file or die;
+    while (my $line = <$fh>) {
+        chomp $line;
+        next unless $line =~ /^\s*PROJECTS/;
+        my $str = $1 if $line =~ /=(.*)/;
+        @projects = split(' ',$str);
+    }
+    close $fh;
+
+    print Dumper(\@projects);
+    return @projects;
+}
+
+sub usage()
+{
+    print
+    	"Usage: tmake\n",
+}

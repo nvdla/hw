@@ -22,6 +22,7 @@ TREE_MAKE ?= tree.make
 include $(DEPTH)/$(TREE_MAKE)
 
 PROJECT ?= $(firstword $(PROJECTS))
+
 OUTDIR ?= outdir
 
 # use the gnu tools in preference to others

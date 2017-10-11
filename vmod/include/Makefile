@@ -2,8 +2,9 @@ DEPTH := ../..
 include $(DEPTH)/make/common.make
 
 # ======================
-V_FILES := $(shell find . -name "*.v")
-V_FILES += $(shell find . -name "*.vlib")
+V_FILES := $(shell find . -name "*.vh")
+V_FILES += $(shell find . -name "*.h")
+V_FILES += $(shell find . -name "*.v")
 
 S_FILES  := $(filter-out ./HLS%,$(V_FILES))
 
