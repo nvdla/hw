@@ -2,9 +2,8 @@ DEPTH := ../..
 include $(DEPTH)/make/common.make
 
 # ======================
-V_FILES := $(shell find . -name "*.vh")
-V_FILES += $(shell find . -name "*.h")
-V_FILES += $(shell find . -name "*.v")
+V_FILES := $(shell find . -name "*.v")
+V_FILES += $(shell find . -name "*.vlib")
 
 S_FILES  := $(filter-out ./HLS%,$(V_FILES))
 
@@ -27,7 +26,9 @@ default: $(O_FILES)
 	@echo "=============================================="
 
 $(O_FILES) : $(OUT_DIR)/% : % Makefile $(PROJ_HEAD) $(VCP) 
+ifeq (,$(wildcard $(OUT_DIR)))
 	mkdir -p $(OUT_DIR)
+endif
 	$(VCP) -i $< -o $@ -imacros $(PROJ_HEAD) -cpp $(CPP)
 
 # ======================

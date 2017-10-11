@@ -41,8 +41,8 @@ foreach my $project (get_projects("tree.make")) {
     foreach my $sub (@subs) {
         system("$MAKE PROJECT=$project -C $sub ");
     }
+    print "$project is built complete\n";
 }
-
 
 sub get_projects {
     my $file = shift;

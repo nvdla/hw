@@ -26,7 +26,9 @@ default: $(O_FILES)
 	@echo "=============================================="
 
 $(O_FILES) : $(OUT_DIR)/% : % Makefile $(PROJ_HEAD) $(VCP) 
+ifeq (,$(wildcard $(OUT_DIR)))
 	mkdir -p $(OUT_DIR)
+endif
 	$(VCP) -i $< -o $@ -imacros $(PROJ_HEAD) -cpp $(CPP)
 
 # ======================
