@@ -24,14 +24,14 @@ default: $(O_FILES)
 
 VCP_FILES  := $(V_FILES:%=%.vcp)
 $(VCP_FILES) : %.vcp : % $(PROJ_HEAD) $(VCP) 
-	$(VCP) -i $< -o $@ -imacros $(PROJ_HEAD) -cpp $(CPP)
+	$(AT)$(VCP) -i $< -o $@ -imacros $(PROJ_HEAD) -cpp $(CPP)
 
 $(O_FILES) : $(OUT_DIR)/% : %.vcp Makefile $(EPERL)
 ifeq (,$(wildcard $(OUT_DIR)))
-	mkdir -p $(OUT_DIR)
+	@mkdir -p $(OUT_DIR)
 endif
-	$(EPERL) -o $@ $< 
-	rm $<
+	$(AT)$(EPERL) -q -o $@ $< 
+	@rm $<
 
 # ======================
 .PHONE: clean

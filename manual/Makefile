@@ -18,7 +18,7 @@ REG_U = regs_ral.sv
 REG_C = cmod
 REG_D = dmod
 default:
-	$(JAVA) -jar Ordt.jar -parms $(REG_PARMS) -systemverilog $(REG_S) -verilog $(REG_V) -uvmregs $(REG_U) -cppmod $(REG_C) -cppdrvmod $(REG_D) $(REG_RDL)
+	$(AT)$(JAVA) -jar Ordt.jar -parms $(REG_PARMS) -systemverilog $(REG_S) -verilog $(REG_V) -uvmregs $(REG_U) -cppmod $(REG_C) -cppdrvmod $(REG_D) $(REG_RDL)
 	@mkdir -p $(OUT_DIR)
 	@cp -f $(REG_V) $(OUT_DIR)/; rm $(REG_V) -rf
 	@cp -f $(REG_U) $(OUT_DIR)/; rm $(REG_U) -rf

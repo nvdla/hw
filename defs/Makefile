@@ -22,7 +22,7 @@ default: $(OBJECTS)
 
 $(OUT_DIR)/project.def : $(PROJECT).spec Makefile
 	@mkdir -p $(OUT_DIR)
-	$(CPP) -undef -nostdinc -P -C $< -o $@
+	$(AT)$(CPP) -undef -nostdinc -P -C $< -o $@
 
 # ======================
 # RULES: do text substitution for different backends, add more rules when you add more backends

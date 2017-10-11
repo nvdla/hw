@@ -5,43 +5,53 @@
 ##
 use Getopt::Long;
 use Data::Dumper;
+use YAML qw(LoadFile);
 
 my $MAKE = "make";
 
+#=============================
+## Options
+#=============================
+my @build;
 GetOptions (
              "help|h" => sub {usage(); exit 0},
+             "build|b=s" => \@build,
            ) or die "Unrecognized options @ARGV";
 
+#=============================
+## Global Variables
+#=============================
+my $tree = LoadFile("etc/build.config");
+my %done;
 
-my @subs = qw(
-            defs
-            manual
-            vmod/vlibs
-            vmod/include
-            vmod/nvdla/cbuf
-            vmod/nvdla/apb2csb
-            vmod/nvdla/bdma
-            vmod/nvdla/cacc
-            vmod/nvdla/car
-            vmod/nvdla/cdma
-            vmod/nvdla/cdp
-            vmod/nvdla/cmac
-            vmod/nvdla/csb_master
-            vmod/nvdla/csc
-            vmod/nvdla/glb
-            vmod/nvdla/nocif
-            vmod/nvdla/pdp
-            vmod/nvdla/retiming
-            vmod/nvdla/rubik
-            vmod/nvdla/sdp
-            vmod/nvdla/top
-            );
+while (%$tree) {
+    my ($key,$value) = each %$tree;
+    
+    #print Dumper($tree);
+    my $leaf = find_any_leaf($key);
 
-foreach my $project (get_projects("tree.make")) {
-    foreach my $sub (@subs) {
-        system("$MAKE PROJECT=$project -C $sub ");
+    #print "key=$key\n"; 
+    #print "leaf=$leaf\n"; 
+
+    foreach my $sandbox (@{$tree->{$leaf}{sandbox}}) {
+        system("$MAKE -C $sandbox")==0 or die "$sandbox build fail: $?";
     }
-    print "$project is built complete\n";
+    
+    $done{$leaf} = 1;
+    delete $tree->{$leaf};
+}
+
+sub find_any_leaf {
+    my $key = shift;
+
+    my $leaf;
+    if (exists $tree->{$key}{dependencies}) {
+        foreach my $dep (@{$tree->{$key}{dependencies}}) {
+            next if exists $done{$dep};
+            return find_any_leaf($dep);
+        }
+    }
+    return $key;
 }
 
 sub get_projects {
@@ -57,7 +67,7 @@ sub get_projects {
     }
     close $fh;
 
-    print Dumper(\@projects);
+    #print Dumper(\@projects);
     return @projects;
 }
 

@@ -10,6 +10,13 @@
 ECHO ?= echo
 EXIT ?= exit
 
+ifeq (1,$(VERBOSE))
+AT := 
+else 
+AT := @
+endif
+
+
 ##
 ## _default should always be the first dependency (you can add extra local actions with default::)
 ##
