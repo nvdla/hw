@@ -152,7 +152,7 @@ our $DIFFS;
 our $INDENT;
 our $COMMENT;
 
-my ($InFile,$TmpFile,$OutFile);
+my ($InFile,$TmpFile);
 foreach $InFile (@InFiles) {
   $TmpFile = "${InFile}.eperl";
   next unless &TestInput ($InFile);
@@ -265,12 +265,13 @@ sub CreateOutput {
   }
   elsif ($opt_o) {
     $CmpDiffs = &System ("cmp -s $TmpFile $OutFile", 1);
+
     if ($CmpDiffs) {
       &System ("mv $TmpFile $OutFile");
       print STDERR "$Program: $OutFile modified.\n" unless ($opt_q);
     }
     else {
-      &System ("/bin/rm -f $TmpFile") unless ($opt_norm);
+      &System ("mv $TmpFile $OutFile");
       print STDERR "$Program: $OutFile unchanged.\n" unless ($opt_q);
     }
   }
