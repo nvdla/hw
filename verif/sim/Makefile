@@ -287,10 +287,13 @@ REGRESSTYPE  :? ALL
 #Dont use trailing backslash for last test, messes with regress target
 ifeq ($(MINIREGRESS),1)
 FUNC_REGRESS_LIST := ../traces/traceplayer/sanity0 \
-		     ../traces/traceplayer/sanity1 \
-		     ../traces/traceplayer/sanity2 \
-		     ../traces/traceplayer/sanity3 \
-		     ../traces/traceplayer/sanity3_cvsram
+	 		../traces/traceplayer/sanity1 \
+			../traces/traceplayer/sanity2 \
+			../traces/traceplayer/sanity3 \
+			../traces/traceplayer/sanity3_cvsram \
+			../traces/traceplayer/conv_8x8_fc_int16 \
+			../traces/traceplayer/pdp_max_pooling_int16 \
+		 	../traces/traceplayer/sdp_relu_int16
 
 PERF_REGRESS_LIST :=
 APP_REGRESS_LIST  := 
@@ -300,7 +303,9 @@ FUNC_REGRESS_LIST := ../traces/traceplayer/sanity0 \
 			../traces/traceplayer/sanity2 \
 			../traces/traceplayer/sanity3 \
 			../traces/traceplayer/sanity3_cvsram \
-			../traces/first_release/conv_8x8_fc_int16
+			../traces/traceplayer/conv_8x8_fc_int16 \
+			../traces/traceplayer/pdp_max_pooling_int16 \
+			../traces/traceplayer/sdp_relu_int16
 
 APP_REGRESS_LIST  := 
 PERF_REGRESS_LIST := 
