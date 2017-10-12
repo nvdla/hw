@@ -27,6 +27,7 @@ module memresp_fifo (
     , rd_busy
     , rd_req
     , rd_data
+    , rd_count
     );
 
 input         clk;
@@ -41,6 +42,7 @@ input  [511:0] wr_data;
 input         rd_busy;
 output        rd_req;
 output [511:0] rd_data;
+output   [8:0] rd_count;
 
 
 

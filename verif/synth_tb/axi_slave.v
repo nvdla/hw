@@ -240,6 +240,7 @@ reg     sending_mem_rdresp2nvdla;
 reg     sending_mem_wrresp2nvdla;
 reg     memresp_wrfifo_rd_busy;
 reg     memresp_rdfifo_rd_busy;
+wire [8:0] memresp_rdfifo_rd_count;
 
 reg [`MSEQ_CONFIG_SIZE-1:0]            config_mem[`NUM_CONFIGS-1:0];
 
@@ -333,6 +334,7 @@ memresp_fifo mem2slave_rdrspdata_fifo (
    ,.rd_data                        (memresp_rdfifo_rd_bus)
    ,.rd_req                         (memresp_rdfifo_rd_valid)
    ,.rd_busy                        (memresp_rdfifo_rd_busy)
+   ,.rd_count                       (memresp_rdfifo_rd_count)
 );
 memresp_fifo mem2slave_wrrspdata_fifo (
     .clk                            (clk)
@@ -383,6 +385,7 @@ reg [`WORD_SIZE-1:0]           wdata_bank_wdata[(2**`AXI_AID_WIDTH)*`MAX_WRITE_C
 reg [(`DATABUS2MEM_WIDTH/8)-1:0]                     wdata_bank_wstrb[(2**`AXI_AID_WIDTH)*`MAX_WRITE_CONFLICT-1 : 0];
 reg                            wdata_bank_dv   [(2**`AXI_AID_WIDTH)*`MAX_WRITE_CONFLICT-1 : 0];         //data valid
 
+reg save_idfifo_signals;
 
 
 
@@ -639,7 +642,7 @@ always @ (posedge clk or negedge reset) begin
 
       // Shift data/wstrb if addr is not 64-Byte aligned
       if((from_wr_fifo_addr & `AXI_ADDR_WIDTH'h1f) != `AXI_ADDR_WIDTH'h00) begin
-        // Shift data by 32 Bytes
+// Shift data by 32 Bytes
         saxi2mem_data <= (from_fifo_wdata << 256);
         saxi2mem_wstrb <= (from_fifo_wstrb << 32);
         $display("Error: Addresses unaligned to 64B boundaries are unsupported");
@@ -762,12 +765,13 @@ always @ (posedge clk or negedge reset) begin
 end
 
 // Read Response
-assign {rdcmd2mem, rdcmd2mem_len, rdcmd2mem_id, rdcmd2mem_addr} = (rdid_fifo_rd_valid && ~rdid_fifo_rd_busy) ? rdid_fifo_rd_bus : {`ID_FIFO_DATA_LEN{1'b0}};
+assign {rdcmd2mem, rdcmd2mem_len, rdcmd2mem_id, rdcmd2mem_addr} = (rdid_fifo_rd_valid) ? rdid_fifo_rd_bus : {`ID_FIFO_DATA_LEN{1'b0}};
 
 integer aid_j;
 always @ (posedge clk or negedge reset) begin
   if(!reset) begin
     rdid_fifo_rd_busy <= 1'b1;
+    memresp_rdfifo_rd_busy <= 1'b1;
     saxi2nvdla_axi_slave_rvalid <= 1'b0;
     sending_mem_rdresp2nvdla <= 1'b0;
     mem_rdret_data <= 0;
@@ -776,33 +780,149 @@ always @ (posedge clk or negedge reset) begin
     mem_rdret_araddr <= 0;
     rd_data_burst_count <= 4'b0000;
     shift_amount_retdata <= 0;
+    save_idfifo_signals <= 0;
     for (aid_j=0; aid_j<(2**`AXI_AID_WIDTH); aid_j++)
     begin
         rdata_table_valid[aid_j] <= 0;
     end
   end else begin
 
-    if(nvdla2saxi_axi_slave_rready) begin // Slave has accepted the response that was driven during the last cycle
-      saxi2nvdla_axi_slave_rvalid <= 1'b0;
-      saxi2nvdla_axi_slave_rlast <= 1'b0;
-      if(rd_data_burst_count == (mem_rdret_arlen + 1)) begin    // if last beat
-        sending_mem_rdresp2nvdla <= 1'b0;
-        rd_data_burst_count <= 4'b0000;
+//    if(nvdla2saxi_axi_slave_rready) begin // Slave has accepted the response that was driven during the last cycle
+//      saxi2nvdla_axi_slave_rvalid <= 1'b0;
+//      saxi2nvdla_axi_slave_rlast <= 1'b0;
+//      if(rd_data_burst_count == (mem_rdret_arlen + 1)) begin    // if last beat
+//        sending_mem_rdresp2nvdla <= 1'b0;
+//        rd_data_burst_count <= 4'b0000;
+//      end else if (!memresp_rdfifo_wr_empty) begin // if not last beat and fifo has data then keep trying to send
+//        sending_mem_rdresp2nvdla <= 1'b1;
+//        if (!sending_mem_rdresp2nvdla) begin //On posedge of sending
+//          save_idfifo_signals <= 1;
+//          memresp_rdfifo_rd_busy <= 1'b0;
+//        end
+//      end
+//    end
+//
+//    if(sending_mem_rdresp2nvdla && nvdla2saxi_axi_slave_rready) begin
+//      if(memresp_rdfifo_wr_empty) begin
+//        rdid_fifo_rd_busy <= 1'b1; 
+//        memresp_rdfifo_rd_busy <= 1'b1;
+//      end else begin  
+//        if(rd_data_burst_count == mem_rdret_arlen) begin    // if last beat
+//          rdid_fifo_rd_busy <= 1'b0; //only shift id once len has been serviced
+//        end
+//        else begin
+//          rdid_fifo_rd_busy <= 1'b1;
+//        end
+//        if(rd_data_burst_count > (mem_rdret_arlen-1) || (mem_rdret_arlen==0 && rd_data_burst_count > mem_rdret_arlen)) begin //pop early
+//          memresp_rdfifo_rd_busy <= 1'b1; //Stop pulling after last
+//        end else begin
+//          memresp_rdfifo_rd_busy <= 1'b0; //keep shifting for new values
+//        end 
+//      end
+//    end     // mem2saxi_resp
+//    else if(!sending_mem_rdresp2nvdla) begin
+//      rdid_fifo_rd_busy <= 1'b1;  
+//      //memresp_rdfifo_rd_busy <= 1'b1;
+//      saxi2nvdla_axi_slave_rvalid <= 1'b0;
+//      saxi2nvdla_axi_slave_rlast <= 1'b0;
+//    end
+    if (!nvdla2saxi_axi_slave_rready && !sending_mem_rdresp2nvdla) begin
+      //default values
+        saxi2nvdla_axi_slave_rvalid <= 0;
+        saxi2nvdla_axi_slave_rlast <= 0;
+        rd_data_burst_count <= 0;
+        memresp_rdfifo_rd_busy <= 1;
+        rdid_fifo_rd_busy <= 1;
+        save_idfifo_signals <= 0;
+    end else if (nvdla2saxi_axi_slave_rready && !sending_mem_rdresp2nvdla) begin
+      //default values, try to set sending
+      if (memresp_rdfifo_rd_valid && rdid_fifo_rd_valid && (memresp_rdfifo_rd_count >= rdcmd2mem_len)) begin
+        sending_mem_rdresp2nvdla <= 1;
+        if(rd_data_burst_count == rdcmd2mem_len) begin
+          saxi2nvdla_axi_slave_rlast <= 1;
+          rd_data_burst_count <= rd_data_burst_count+1;
+          rdid_fifo_rd_busy <= 0;
+          save_idfifo_signals <= 1;
+          // Only send data right away if len==0 otherwise for larger lens, beat 0 stays out for 2 cycles
+          saxi2nvdla_axi_slave_rdata <= memresp_rdfifo_rd_bus;
+          saxi2nvdla_axi_slave_rid <= rdcmd2mem_id;
+          saxi2nvdla_axi_slave_rvalid <= 1'b1;
+        end else begin
+          saxi2nvdla_axi_slave_rlast <= 0;
+          //rd_data_burst_count <= rd_data_burst_count+1;
+          rdid_fifo_rd_busy <= 1; //Not popping rdid_fifo until rlast
+        end
+        //Shift fifos for new values. Need to save rdid until rlast
+        memresp_rdfifo_rd_busy <= 0;
+      end else begin
+        memresp_rdfifo_rd_busy <= 1;
+        rdid_fifo_rd_busy <= 1;
+        saxi2nvdla_axi_slave_rvalid <= 1'b0;
+      end
+    end else if (!nvdla2saxi_axi_slave_rready && sending_mem_rdresp2nvdla) begin
+      save_idfifo_signals <= 0;
+      memresp_rdfifo_rd_busy <= 1;
+      rdid_fifo_rd_busy <= 1;
+      //hold values
+        //sending_mem_rdresp2nvdla <= sending_mem_rdresp2nvdla;
+        //saxi2nvdla_axi_slave_rlast <= saxi2nvdla_axi_slave_rlast;
+        //rd_data_burst_count <= rd_data_burst_count;
+    end else if (nvdla2saxi_axi_slave_rready && sending_mem_rdresp2nvdla) begin
+      //push new values
+      save_idfifo_signals <= 0;
+      if(rd_data_burst_count > rdcmd2mem_len) begin
+        sending_mem_rdresp2nvdla <= 0;
+        rd_data_burst_count <= 0;
+        saxi2nvdla_axi_slave_rvalid <= 0;
+        saxi2nvdla_axi_slave_rlast <= 0;
+        memresp_rdfifo_rd_busy <= 1;
+        rdid_fifo_rd_busy <= 1;
+      end else if(rd_data_burst_count == rdcmd2mem_len) begin
+        if (memresp_rdfifo_rd_valid) begin
+          //sending_mem_rdresp2nvdla <= 0;
+          //saxi2nvdla_axi_slave_rlast <= 0;
+          //rd_data_burst_count = 0;
+          //saxi2nvdla_axi_slave_rvalid <= 1'b0;
+          //memresp_rdfifo_rd_busy <= 1;
+          //rdid_fifo_rd_busy <= 1;
+          saxi2nvdla_axi_slave_rlast <= 1;
+          rd_data_burst_count <= rd_data_burst_count + 1;
+          saxi2nvdla_axi_slave_rdata <= memresp_rdfifo_rd_bus;
+          saxi2nvdla_axi_slave_rid <= rdcmd2mem_id;
+          saxi2nvdla_axi_slave_rvalid <= 1'b1;
+          memresp_rdfifo_rd_busy <= 1; //Make rdfifo busy. New txn will pop this instead
+          rdid_fifo_rd_busy <= 0;
+          save_idfifo_signals <= 1;
+        end else begin
+          rdid_fifo_rd_busy <= 1;
+          saxi2nvdla_axi_slave_rvalid <= 1'b0;
+          memresp_rdfifo_rd_busy <= 1;
+        end
+      end else begin
+        sending_mem_rdresp2nvdla <= sending_mem_rdresp2nvdla;
+        saxi2nvdla_axi_slave_rlast <= 0;
+        rdid_fifo_rd_busy <= 1;
+        if (memresp_rdfifo_rd_valid) begin
+          rd_data_burst_count <= rd_data_burst_count+1;
+          saxi2nvdla_axi_slave_rdata <= memresp_rdfifo_rd_bus;
+          saxi2nvdla_axi_slave_rid <= rdcmd2mem_id;
+          saxi2nvdla_axi_slave_rvalid <= 1'b1;
+          memresp_rdfifo_rd_busy <= 0;
+        end else begin
+          saxi2nvdla_axi_slave_rvalid <= 1'b0;
+          memresp_rdfifo_rd_busy <= 1;
+        end
       end
     end
 
-    if(!memresp_rdfifo_wr_empty & !sending_mem_rdresp2nvdla) begin
-      // Read out the id from the issued fifo
-      rdid_fifo_rd_busy <= 1'b0;
-      memresp_rdfifo_rd_busy <= 1'b0;
-      sending_mem_rdresp2nvdla <= 1'b1;
-    end else begin
-      rdid_fifo_rd_busy <= 1'b1;
-      memresp_rdfifo_rd_busy <= 1'b1;
-    end     // mem2saxi_resp
-
-    if(~rdid_fifo_rd_busy & ~memresp_rdfifo_rd_busy) begin
+    // The data should only be used if nvdla axi is smaller than memory port
+    // In which case these hold the rdfifo value to split and shift data back
+    // The other signals should be used multiple times for multiple beats
+    // Need to take care that id_fifo_busy is tapped less often if len>0
+    if(~memresp_rdfifo_rd_busy) begin //if not busy (reading) 
       mem_rdret_data    <= (memresp_rdfifo_rd_valid && ~memresp_rdfifo_rd_busy) ? memresp_rdfifo_rd_bus : {`DATABUS2MEM_WIDTH{1'b0}};
+    end
+    if(save_idfifo_signals) begin
       mem_rdret_id      <= rdcmd2mem_id;
       mem_rdret_arlen   <= rdcmd2mem_len;
       mem_rdret_araddr  <= rdcmd2mem_addr;
@@ -836,6 +956,7 @@ always @ (posedge clk or negedge reset) begin
     end
 
     if(sending_mem_rdresp2nvdla) begin
+      //save_idfifo_signals <= 0;
       // Send out first beat regardless of slave rready. It holds until rready is seen
       // For this first beat pick it directly out of the fifo outputs, rest of the beats use mem_rdret* info
       // mem_rdret_data has the data from memory, process it based on addr/size
@@ -846,42 +967,38 @@ always @ (posedge clk or negedge reset) begin
         if((rdcmd2mem_addr & `AXI_ADDR_WIDTH'h1f) != `AXI_ADDR_WIDTH'h00) begin
           $display("Error: Addresses unaligned to 64B boundaries are unsupported");
         end
-        // Length of 0. one 64B transfer. NVDLA only supports 64 bytes size so the shift amount is useless unless NVDLA supports size
-        //if(rdcmd2mem_len == 4'b0000) begin
-            saxi2nvdla_axi_slave_rdata <= memresp_rdfifo_rd_bus[`DATABUS2MEM_WIDTH-1: 0];
-            rdata_table_data[rdcmd2mem_id][`DATABUS2MEM_WIDTH-1:0] <= memresp_rdfifo_rd_bus[`DATABUS2MEM_WIDTH-1: 0];
-        // Length doesn't matter here 
-        //end
+
+        //saxi2nvdla_axi_slave_rdata <= memresp_rdfifo_rd_bus;
+        rdata_table_data[rdcmd2mem_id] <= memresp_rdfifo_rd_bus;
+        if (memresp_rdfifo_rd_valid) begin
+          //saxi2nvdla_axi_slave_rvalid <= 1'b1;
+          //saxi2nvdla_axi_slave_rid <= rdcmd2mem_id;
+          //rd_data_burst_count <= rd_data_burst_count + 1;
+          //saxi2nvdla_axi_slave_rlast <= (rd_data_burst_count == rdcmd2mem_len);
+        end else begin
+          //saxi2nvdla_axi_slave_rvalid <= 1'b0;
+        end
+        
 `ifdef AXI_MEM_DEBUG
         $display("%0t ReadResp_temp(Channel%0d): count = 0x%x, RDATA = 0x%0128x, len=%d", $time, AXI_SLAVE_ID, rd_data_burst_count, memresp_rdfifo_rd_bus[`DATABUS2MEM_WIDTH-1:0], rdcmd2mem_len); // spyglass disable  W213
-`endif
-
-        saxi2nvdla_axi_slave_rvalid <= 1'b1;
-        saxi2nvdla_axi_slave_rid <= rdcmd2mem_id;
-`ifdef AXI_MEM_DEBUG
         $display("%0t ReadResp_temp(Channel%0d): RID = 0x%010x", $time, AXI_SLAVE_ID, rdcmd2mem_id); // spyglass disable  W213
 `endif
-        saxi2nvdla_axi_slave_rlast <= (rd_data_burst_count == rdcmd2mem_len);
-        rd_data_burst_count <= 1; // Same as +=1 
       end else begin //rd_data_burst_count > 0
         if(nvdla2saxi_axi_slave_rready && (rd_data_burst_count <= mem_rdret_arlen)) begin // nvdla accepted the data move to the next one
-          saxi2nvdla_axi_slave_rvalid <= 1'b1;
-          saxi2nvdla_axi_slave_rid <= mem_rdret_id;
+          //saxi2nvdla_axi_slave_rdata <= memresp_rdfifo_rd_bus;
+          rdata_table_data[mem_rdret_id] <= memresp_rdfifo_rd_bus;
+          if (memresp_rdfifo_rd_valid) begin
+            //saxi2nvdla_axi_slave_rvalid <= 1'b1;
+            //saxi2nvdla_axi_slave_rid <= mem_rdret_id; //Latter beats use saved id value
+            //rd_data_burst_count <= rd_data_burst_count + 1;
+            //saxi2nvdla_axi_slave_rlast <= (rd_data_burst_count == mem_rdret_arlen);
+          end else begin
+            //saxi2nvdla_axi_slave_rvalid <= 1'b0;
+          end
 `ifdef AXI_MEM_DEBUG
           $display("%0t ReadResp_temp(Channel%0d): RID = 0x%08x", $time, AXI_SLAVE_ID, mem_rdret_id); // spyglass disable  W213
-`endif
-          // Latter beats pull from mem_rdret instead of fifo outputs
-          //saxi2nvdla_axi_slave_rdata <= mem_rdret_data;
-          //rdata_table_data[rdcmd2mem_id] = mem_rdret_data;
-          // Well memrd_ret_data updates when rdid_fifo_rd_busy==0 memresp_rdfifo_rd_busy==0 && memresp_rdfifo_rd_valid==1. But we get 64B reponses so we always want memresp_rdfifo_rd_bus instead of holding onto mem_rdret data to split up the return data
-          saxi2nvdla_axi_slave_rdata <= memresp_rdfifo_rd_bus;
-          rdata_table_data[rdcmd2mem_id] = memresp_rdfifo_rd_bus;
-
-`ifdef AXI_MEM_DEBUG
           $display("%0t ReadResp_temp(Channel%0d): count = 0x%x, RDATA = 0x%0128x, prev saxi2nvdla_rdata=0x%0128x", $time, AXI_SLAVE_ID, rd_data_burst_count, mem_rdret_data[`DATABUS2MEM_WIDTH-1:0], saxi2nvdla_axi_slave_rdata); // spyglass disable  W213
 `endif
-          saxi2nvdla_axi_slave_rlast <= (rd_data_burst_count == mem_rdret_arlen);
-          rd_data_burst_count <= rd_data_burst_count + 1;
         end     // rready
       end   // rd_data_burst_count
 

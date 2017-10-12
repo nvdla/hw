@@ -129,21 +129,21 @@ slave2mem_wr #(`SLAVE_0, MEM_ADDR_START) slave2mem_wr_0 (
 );
 
 slave2mem_rd #(`SLAVE_0, MEM_ADDR_START) slave2mem_rd_0 (
-   .clk                         (slow_clk)
-   ,.reset                      (reset)
-   ,.slave2mem_cmd_rd           (slave2mem_cmd_rd[`SLAVE_0])
-   ,.slave2mem_addr             (slave2mem_addr_rd[(`AXI_ADDR_WIDTH*(`SLAVE_0+1)-1)-:`AXI_ADDR_WIDTH])
-   ,.mem2slave_rd_ready         (mem2slave_rd_ready[`SLAVE_0])
-   ,.mem2slave_rdresp_vld       (mem2slave_rdresp_vld[`SLAVE_0])
-   ,.mem2slave_rdresp_data      (mem2slave_rdresp_data[(`WORD_SIZE*(`SLAVE_0+1)-1)-:`WORD_SIZE])
-   ,.slave2mem_len              (slave2mem_len_rd[(`AXI_LEN_WIDTH*(`SLAVE_0+1)-1)-:`AXI_LEN_WIDTH])
-   ,.slave2mem_size             (slave2mem_size_rd[(`AXI_SIZE_WIDTH*(`SLAVE_0+1)-1)-:`AXI_SIZE_WIDTH])
-   ,.s_read_q_tail_valid        (s_read_q_tail_valid)
-   ,.curr_tail                  (rd_valid_id[(`LOG2_Q*(`SLAVE_0+1)-1)-:`LOG2_Q])
-   ,.curr_rd_addr               (curr_rd_addr[((`AXI_ADDR_WIDTH-`LOG2_MEM)*(`SLAVE_0+1)-1)-:(`AXI_ADDR_WIDTH-`LOG2_MEM)])
-   ,.curr_rd_len                (curr_rd_len[(`AXI_LEN_WIDTH*(`SLAVE_0+1)-1)-:`AXI_LEN_WIDTH])
-   ,.mem2slave_rdresp_data_tmp  (mem2slave_rdresp_data_tmp)
-   ,.rdresp_data_ready          (rd_ready)
+   .clk                         (slow_clk) //i
+   ,.reset                      (reset)    //i
+   ,.slave2mem_cmd_rd           (slave2mem_cmd_rd[`SLAVE_0]) //i
+   ,.slave2mem_addr             (slave2mem_addr_rd[(`AXI_ADDR_WIDTH*(`SLAVE_0+1)-1)-:`AXI_ADDR_WIDTH]) //i
+   ,.mem2slave_rd_ready         (mem2slave_rd_ready[`SLAVE_0]) //o
+   ,.mem2slave_rdresp_vld       (mem2slave_rdresp_vld[`SLAVE_0]) //o
+   ,.mem2slave_rdresp_data      (mem2slave_rdresp_data[(`WORD_SIZE*(`SLAVE_0+1)-1)-:`WORD_SIZE]) //o
+   ,.slave2mem_len              (slave2mem_len_rd[(`AXI_LEN_WIDTH*(`SLAVE_0+1)-1)-:`AXI_LEN_WIDTH]) //i
+   ,.slave2mem_size             (slave2mem_size_rd[(`AXI_SIZE_WIDTH*(`SLAVE_0+1)-1)-:`AXI_SIZE_WIDTH]) //i
+   ,.s_read_q_tail_valid        (s_read_q_tail_valid) //o
+   ,.curr_tail                  (rd_valid_id[(`LOG2_Q*(`SLAVE_0+1)-1)-:`LOG2_Q]) //oo
+   ,.curr_rd_addr               (curr_rd_addr[((`AXI_ADDR_WIDTH-`LOG2_MEM)*(`SLAVE_0+1)-1)-:(`AXI_ADDR_WIDTH-`LOG2_MEM)]) //o
+   ,.curr_rd_len                (curr_rd_len[(`AXI_LEN_WIDTH*(`SLAVE_0+1)-1)-:`AXI_LEN_WIDTH]) //o
+   ,.mem2slave_rdresp_data_tmp  (mem2slave_rdresp_data_tmp) //i
+   ,.rdresp_data_ready          (rd_ready) //i
 );
 
 // spyglass disable_block W430 W213 SYNTH_5143
