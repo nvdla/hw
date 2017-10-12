@@ -2,8 +2,8 @@ DEPTH := ../..
 include $(DEPTH)/make/common.make
 
 # ======================
-V_FILES := $(shell find . -name "*.v")
-V_FILES += $(shell find . -name "*.vlib")
+V_FILES := $(shell find . -name "*.vh")
+V_FILES += $(shell find . -name "*.v")
 
 # the output dir
 DIRNAME := $(subst .,,$(suffix $(subst /,.,$(shell pwd))))

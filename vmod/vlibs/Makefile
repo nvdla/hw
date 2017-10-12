@@ -3,6 +3,7 @@ include $(DEPTH)/make/common.make
 
 # ======================
 V_FILES := $(shell find . -name "*.v")
+V_FILES += $(shell find . -name "*.h")
 V_FILES += $(shell find . -name "*.vlib")
 
 # the output dir

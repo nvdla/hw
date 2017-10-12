@@ -13,47 +13,64 @@ my $MAKE = "make";
 #=============================
 ## Options
 #=============================
-my @build;
+my @build = (vmod);
 my $opt_m=""; # optins passed to make
 my $log = "build.log";
 my $run = 1;
+my $project;
 GetOptions (
              "help|h" => sub {usage(); exit 0},
              "build|b=s" => \@build,
              "opt_m=s"   => \$opt_m,
              "log=s"     => \$log,
+             "project=s" => \$project,
              "run!"      => \$run,
            ) or die "Unrecognized options @ARGV";
 
+print Dumper(\@build);
 #=============================
 ## Global Variables
 #=============================
 my $log_tmp = $log.".tmp";
 
-my %done;
 
 system ("rm -rf $log");
 system ("touch  $log");
 
-foreach my $project (get_projects("tree.make")) {
+my @projects = $project ? ($project) : get_projects("tree.make");
+foreach my $project (@projects) {
     my $tree = LoadFile("etc/build.config");
-    # print Dumper($tree);
-    while (my ($key,$val) = each %$tree) {
+    my $done;
+    #print Dumper($tree);
+    while (%$tree) {
+        my @keys = keys %$tree;
+        
+        my $key="unknown";
+        foreach my $i (0..$#keys) {
+            #print "key$i=$keys[$i]\n";
+            if (grep {$keys[$i] =~ /^$_/} @build) {
+                $key = $keys[$i];
+                #print "find:key=$key\n";
+                last;
+            }
+        }
+        # all -build target is built;
+        #print "key=$key\n";
+        last if ($key eq "unknown");
 
         #print Dumper($tree);
 
-        #print "key=$key\n";
         
-        my $leaf = find_any_leaf($tree,$key);
+        my $leaf = find_any_leaf($tree,$key,$done);
     
-        #print "leaf=$leaf\n";
+        print "leaf=$leaf\n";
     
         foreach my $sandbox (@{$tree->{$leaf}{sandbox}}) {
                 system("$MAKE -C $sandbox PROJECT=$project $opt_m | tee $log_tmp")==0 or die "$sandbox build fail: $?" if $run;
                 system ("cat $log_tmp >> $log") if $run;
         }
         
-        $done{$leaf} = 1;
+        $done->{$leaf} = 1;
         delete $tree->{$leaf};
     }
 }
@@ -68,14 +85,15 @@ print $tee "="x46,"\n";
 sub find_any_leaf {
     my $tree = shift;
     my $key = shift;
+    my $done = shift;
 
     my $leaf;
     if (exists $tree->{$key}{dependencies}) {
         #print "find_any_leaf:key=$key\n";
-        #print Dumper (\@{$tree->{$key}{dependencies}});
         foreach my $dep (@{$tree->{$key}{dependencies}}) {
-            next if exists $done{$dep};
-            return find_any_leaf($tree,$dep);
+            #print "find_any_leaf:dep=$dep\n";
+            next if exists $done->{$dep};
+            return find_any_leaf($tree,$dep,$done);
         }
     }
     return $key;

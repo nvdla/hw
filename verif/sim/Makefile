@@ -109,7 +109,7 @@ VPD_DUMP_NAME    ?= vcdplus.vpd
 VERDI_DUMP_NAME  ?= debussy.fsdb
 SILOTI_DUMP_NAME ?= siloti
 # Set to 1 if you do not have access to Synopsys Designware modules
-DESIGNWARE_NOEXIST ?= 0
+DESIGNWARE_NOEXIST ?= 1
 
 XPROP	    ?= 0
 SAIF	    ?= 0
@@ -121,10 +121,10 @@ TOPDIR       := ${dir ${shell ${PWD}}}
 DUTDIR       := ${TOPDIR}dut
 SIMDIR       := ${TOPDIR}sim
 SYNTHTBDIR   := ${TOPDIR}synth_tb
-VLIBDIR      := ${TOPDIR}../vmod/vlibs
-VMODINCDIR   := ${TOPDIR}../vmod/include
+VLIBDIR      := ${TOPDIR}../outdir/nv_large/vmod/vlibs
+VMODINCDIR   := ${TOPDIR}../outdir/nv_large/vmod/include
 ifeq (${DESIGNWARE_NOEXIST},1)
-DWDIR        := ${TOPDIR}../vmod/vlibs
+DWDIR        := ${TOPDIR}../outdir/nv_large/vmod/vlibs
 DWFILES      := ${DWDIR}/NV_DW02_tree.v \
                     ${DWDIR}/NV_DW_lsd.v \
                     ${DWDIR}/NV_DW_minmax.v
@@ -276,7 +276,8 @@ LNMSG  := Using cleartext directories
 else # TARGET != cleartext
 endif # if TARGET == cleartext
 
-
+# default:
+default:    all
 
 # ----------------------------------------------------------------------------
 # REGRESSION SUITE
