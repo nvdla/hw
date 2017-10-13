@@ -11,7 +11,6 @@ set_max_area 0
 set_ideal_network [get_ports direct_reset_]
 set_ideal_network [get_ports dla_reset_rstn]
 set_ideal_network [get_ports test_mode]
-set_ideal_network [get_ports nvdla_core_rstn]
 set_ideal_network [get_pins u_partition_a_reset/synced_rstn]    # [get_ports nvdla_core_rstn]
 create_clock [get_ports nvdla_core_clk]  -period 0.9  -waveform {0 0.45}
 set_clock_transition -min -fall 0.05 [get_clocks nvdla_core_clk]
