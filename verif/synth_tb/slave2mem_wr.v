@@ -38,6 +38,7 @@ output [`WORD_SIZE-1:0] q2mem_curr_wr_data;
 output [`WORD_BYTES-1:0] q2mem_curr_wr_mask;
 output [`AXI_LEN_WIDTH-1:0] q2mem_curr_wr_len;
 input mem2q_wr_ready;
+reg [`AXI_LEN_WIDTH-1:0] mem2q_wrresp_burst_count;
 
 reg [`MSEQ_CONFIG_SIZE-1:0]            config_mem[`NUM_CONFIGS-1:0];
 reg [`WR_Q_MAX:0]     s_write_q[`QUEUE_SIZE-1:0];
@@ -62,6 +63,7 @@ end
 
 always @(posedge clk or negedge reset) begin
    if(!reset) begin
+      mem2q_wrresp_burst_count <= 0;
       mem2slave_wr_ready  <= 1;
       mem2slave_wrresp_vld<= 0;
       s_write_head        <= s_write_latency;
@@ -91,7 +93,7 @@ always @(posedge clk or negedge reset) begin
 				s_write_q[s_write_head][`WR_MASK_RANGE] <= slave2mem_wr_mask;
 				s_write_q[s_write_head][`WR_ADDR_RANGE] <= slave2mem_addr[`AXI_ADDR_WIDTH-1:`LOG2_MEM];
 				s_write_q[s_write_head][`WR_DATA_RANGE] <= slave2mem_data;
-				s_write_q[s_write_head][`WR_LEN_RANGE] <= slave2mem_cmd_wr;
+				s_write_q[s_write_head][`WR_LEN_RANGE] <= slave2mem_len_wr;
 				$display("%0t SMEM: Received slave %0d write addr 0x%010x mask 0x%016x data 0x%0128x", $time, AXI_SLAVE_ID, slave2mem_addr, slave2mem_wr_mask, slave2mem_data);
 
 				s_write_head <= modAdd (s_write_head, 'd1, `QUEUE_SIZE);
@@ -111,10 +113,16 @@ always @(posedge clk or negedge reset) begin
       
       // Return results and increment tail pointers for slave 0
       if( s_write_q[s_write_tail][`WR_VALID] == 1'b1 ) begin
-$display ("%0t: DEBUG1 mem2q_wr_ready=%h", $time, mem2q_wr_ready);
+//$display ("%0t: DEBUG1 mem2q_wr_ready=%h", $time, mem2q_wr_ready);
           if (mem2q_wr_ready) begin
-$display ("%0t: DEBUG2 mem2q_wr_ready=%h", $time, mem2q_wr_ready);
-             mem2slave_wrresp_vld <= 1;
+//$display ("%0t: DEBUG2 mem2q_wr_ready=%h", $time, mem2q_wr_ready);
+             if(mem2q_wrresp_burst_count < s_write_q[s_write_tail][`WR_LEN_RANGE]) begin
+               mem2slave_wrresp_vld <= 0; //Only increment once per id
+               mem2q_wrresp_burst_count <= mem2q_wrresp_burst_count + 1;
+             end else begin
+               mem2slave_wrresp_vld <= 1; //Only increment once per id
+               mem2q_wrresp_burst_count <= 0;
+             end
              s_write_q[s_write_tail][`WR_VALID] <= 1'b0;
              s_write_count_dec <= 1;
 

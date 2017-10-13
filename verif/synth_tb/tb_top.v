@@ -103,7 +103,6 @@ module top;
     wire                            axi_slave0_bready          ;
     wire                            axi_slave0_rready          ;
     wire   [`DATABUS2MEM_WIDTH-1:0] axi_slave0_wdata           ;
-    wire [`AXI_SLAVE_WID_WIDTH-1:0] axi_slave0_wid             ;
     wire                            axi_slave0_wlast           ;
     wire [(`DATABUS2MEM_WIDTH/8)-1:0] axi_slave0_wstrb           ;
     wire                            axi_slave0_wvalid          ;
@@ -129,7 +128,6 @@ module top;
     wire                            axi_slave1_bready          ;
     wire                            axi_slave1_rready          ;
     wire                    [`DATABUS2MEM_WIDTH-1:0] axi_slave1_wdata           ;
-    wire [`AXI_SLAVE_WID_WIDTH-1:0] axi_slave1_wid             ;
     wire                            axi_slave1_wlast           ;
     wire [(`DATABUS2MEM_WIDTH/8)-1:0] axi_slave1_wstrb           ;
     wire                            axi_slave1_wvalid          ;
@@ -264,7 +262,6 @@ module top;
        ,.nvdla2saxi_axi_slave0_bready                 (axi_slave0_bready          )
        ,.nvdla2saxi_axi_slave0_rready                 (axi_slave0_rready_vip      )
        ,.nvdla2saxi_axi_slave0_wdata                  (axi_slave0_wdata           )
-       ,.nvdla2saxi_axi_slave0_wid                    (axi_slave0_wid             )
        ,.nvdla2saxi_axi_slave0_wlast                  (axi_slave0_wlast           )
        ,.nvdla2saxi_axi_slave0_wstrb                  (axi_slave0_wstrb           )
        ,.nvdla2saxi_axi_slave0_wvalid                 (axi_slave0_wvalid_vip      )
@@ -290,7 +287,6 @@ module top;
        ,.nvdla2saxi_axi_slave1_bready                 (axi_slave1_bready          )
        ,.nvdla2saxi_axi_slave1_rready                 (axi_slave1_rready_vip      )
        ,.nvdla2saxi_axi_slave1_wdata                  (axi_slave1_wdata           )
-       ,.nvdla2saxi_axi_slave1_wid                    (axi_slave1_wid             )
        ,.nvdla2saxi_axi_slave1_wlast                  (axi_slave1_wlast           )
        ,.nvdla2saxi_axi_slave1_wstrb                  (axi_slave1_wstrb           )
        ,.nvdla2saxi_axi_slave1_wvalid                 (axi_slave1_wvalid_vip      )

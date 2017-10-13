@@ -37,7 +37,6 @@ module syn_axi_slave (
     nvdla2saxi_axi_slave_bready,
     nvdla2saxi_axi_slave_rready,
     nvdla2saxi_axi_slave_wdata,
-    nvdla2saxi_axi_slave_wid,
     nvdla2saxi_axi_slave_wlast,
     nvdla2saxi_axi_slave_wstrb,
     nvdla2saxi_axi_slave_wvalid,
@@ -97,7 +96,7 @@ input                               nvdla2saxi_axi_slave_awvalid         ;
 input                               nvdla2saxi_axi_slave_bready          ;
 input                               nvdla2saxi_axi_slave_rready          ;
 input     [`DATABUS2MEM_WIDTH-1:0]  nvdla2saxi_axi_slave_wdata           ;
-input   [`AXI_SLAVE_WID_WIDTH-1:0]  nvdla2saxi_axi_slave_wid             ;
+reg     [`AXI_SLAVE_WID_WIDTH-1:0]  nvdla2saxi_axi_slave_wid             ;
 input                               nvdla2saxi_axi_slave_wlast           ;
 input [(`DATABUS2MEM_WIDTH/8)-1:0]  nvdla2saxi_axi_slave_wstrb           ;
 input                               nvdla2saxi_axi_slave_wvalid          ;
@@ -120,6 +119,7 @@ input           mem2saxi_rd_ready   ;
 input           mem2saxi_wr_ready   ;
 
 reg           slave_wlast_d1;
+reg           slave_wready_wvalid_d1;
 reg           slave_awready_awvalid_d1;
 reg           slave_arready_arvalid_d1;
 
@@ -132,11 +132,10 @@ reg        [`AXI_AID_WIDTH-1:0]     mem_rdret_id;
 reg        [`AXI_LEN_WIDTH-1:0]     mem_rdret_arlen;
 reg       [`AXI_ADDR_WIDTH-1:0]     mem_rdret_araddr;
 reg        [`AXI_LEN_WIDTH-1:0]     rd_data_burst_count;
+reg        [`AXI_LEN_WIDTH-1:0]     wr_data_burst_count;
 
-reg   [`WDATA_FIFO_DATA_LEN-1:0]   wdata_aggregated;   // 64 Bytes data bus
-reg                       [63:0]   wstrb_aggregated;   // 64 bits strobe bus for each byte of the data bus
-reg                        [9:0]   shift_amount;       // Max shift_amount of 48 bytes - Value 48*8 = 384 = 9'b110000000
-reg                        [6:0]   shift_amount_wstrb;       // Max shift_amount_wstrb of 64 bits = 64 = 7'b1000000
+reg   [`WDATA_FIFO_DATA_LEN-1:0]   wdata_beat;   // 64 Bytes data bus
+reg                       [63:0]   wstrb_beat;   // 64 bits strobe bus for each byte of the data bus
 reg    [`ADDR_FIFO_DATA_LEN-1:0]   waddr_fifo_bus;
 reg    [`ADDR_FIFO_DATA_LEN-1:0]   raddr_fifo_bus;
 
@@ -171,7 +170,6 @@ wire    [`AXI_LEN_WIDTH-1:0]    rdcmd2mem_len;
 wire    [`AXI_AID_WIDTH-1:0]    rdcmd2mem_id;
 wire   [`AXI_ADDR_WIDTH-1:0]    rdcmd2mem_addr;
 
-reg         [31:0]  shift_amount_retdata;
 
 // All the fifo wires
 // data wires
@@ -236,6 +234,7 @@ reg     axi_slave_awfifo_rd_busy;
 reg     axi_slave_arfifo_rd_busy;
 reg     wrid_fifo_rd_busy;
 reg     rdid_fifo_rd_busy;
+reg     sending_wdata_to_mem;
 reg     sending_mem_rdresp2nvdla;
 reg     sending_mem_wrresp2nvdla;
 reg     memresp_wrfifo_rd_busy;
@@ -401,10 +400,12 @@ end
 always @(posedge clk or negedge reset) begin
   if(!reset) begin
     slave_wlast_d1 <= 1'b0;
+    slave_wready_wvalid_d1 <= 1'b0;
     slave_awready_awvalid_d1 <= 1'b0;
     slave_arready_arvalid_d1 <= 1'b0;
   end else begin
     slave_wlast_d1 <= (nvdla2saxi_axi_slave_wlast & nvdla2saxi_axi_slave_wvalid & saxi2nvdla_axi_slave_wready);
+    slave_wready_wvalid_d1 <= (nvdla2saxi_axi_slave_wvalid & saxi2nvdla_axi_slave_wready);
     slave_awready_awvalid_d1 <= (saxi2nvdla_axi_slave_awready & nvdla2saxi_axi_slave_awvalid);
     slave_arready_arvalid_d1 <= (saxi2nvdla_axi_slave_arready & nvdla2saxi_axi_slave_arvalid);
   end
@@ -414,10 +415,9 @@ end
 // Signals - wid, wdata, wstrb, wlast, wvalid, wready
 always @(posedge clk or negedge reset) begin
   if(!reset) begin
-    wdata_aggregated <= 0;
-    wstrb_aggregated <= 0;
-    shift_amount <= 0;
-    shift_amount_wstrb <= 0;
+    nvdla2saxi_axi_slave_wid <= 0;
+    wdata_beat <= 0;
+    wstrb_beat <= 0;
     saxi2nvdla_axi_slave_wready <= 1'b1;
 
     waddr_fifo_bus <= 0;
@@ -426,56 +426,54 @@ always @(posedge clk or negedge reset) begin
     raddr_fifo_bus <= 0;
     saxi2nvdla_axi_slave_arready <= 1'b1;
   end else begin
-    // Clearing wdata_aggregated and wstrb_aggregated
+    // Clearing wdata_beat and wstrb_beat
     if(slave_wlast_d1) begin    // writing into the fifo's in this cycle
-//      $display("AXI_MEM_XACTION: WriteReq_delay: CHANNEL=%0d START_TIME=%0t END_TIME=%0t AWID=0x%08x AWLEN=0x%08x AWSIZE=0x%08x AWADDR=0x%010x AWBURST=0x%08x AWLOCK=0x%08x AWPORT=0x%08x WID=0x%08x WDATA=0x%0128x", AXI_SLAVE_ID, waddr_info.waddr_timestamp,$time, waddr_info.id, waddr_info.len, waddr_info.size, waddr_info.addr, waddr_info.burst, waddr_info.lock, waddr_info.port,wdata_aggregated[`WDATA_FIFO_DATA_LEN-1:`WDATA_FIFO_DATA_LEN-`AXI_AID_WIDTH], wdata_aggregated[`WDATA_FIFO_DATA_LEN-`AXI_AID_WIDTH-1:0]);
-      wdata_aggregated <= 0;
-      wstrb_aggregated <= 0;
+//      $display("AXI_MEM_XACTION: WriteReq_delay: CHANNEL=%0d START_TIME=%0t END_TIME=%0t AWID=0x%08x AWLEN=0x%08x AWSIZE=0x%08x AWADDR=0x%010x AWBURST=0x%08x AWLOCK=0x%08x AWPORT=0x%08x WID=0x%08x WDATA=0x%0128x", AXI_SLAVE_ID, waddr_info.waddr_timestamp,$time, waddr_info.id, waddr_info.len, waddr_info.size, waddr_info.addr, waddr_info.burst, waddr_info.lock, waddr_info.port,wdata_beat[`WDATA_FIFO_DATA_LEN-1:`WDATA_FIFO_DATA_LEN-`AXI_AID_WIDTH], wdata_beat[`WDATA_FIFO_DATA_LEN-`AXI_AID_WIDTH-1:0]);
+      wdata_beat <= 0;
+      wstrb_beat <= 0;
     end
 
     // Wdata aggregation and writing logic
     if(saxi2nvdla_axi_slave_wready & nvdla2saxi_axi_slave_wvalid) begin
-      if(nvdla2saxi_axi_slave_wlast) begin
-        wdata_aggregated <= {nvdla2saxi_axi_slave_wid, (wdata_aggregated[`DATABUS2MEM_WIDTH-1:0] | ((nvdla2saxi_axi_slave_wdata << shift_amount)& {512{1'b1}}))};
-        wstrb_aggregated <= (wstrb_aggregated | ((nvdla2saxi_axi_slave_wstrb << shift_amount_wstrb) & {64{1'b1}}));
-        if (waddr_bank_av[{nvdla2saxi_axi_slave_wid, waddr_ptr_mid[nvdla2saxi_axi_slave_wid]}]) begin
-            //both addr and data are ready
-            $display("AXI_MEM_XACTION: WriteReq: CHANNEL=%0d START_TIME=%0t END_TIME=%0t AWID=0x%08x AWLEN=0x%08x AWSIZE=0x%08x AWADDR=0x%010x AWBURST=0x%08x AWLOCK=0x%08x AWPORT=0x%08x WID=0x%08x WDATA=0x%0128x WSTRB=0x%064x", 
-            AXI_SLAVE_ID, 
-            waddr_bank_timestamp[{nvdla2saxi_axi_slave_wid, waddr_ptr_mid[nvdla2saxi_axi_slave_wid]}],
-            $time, 
-            waddr_bank_id   [{nvdla2saxi_axi_slave_wid, waddr_ptr_mid[nvdla2saxi_axi_slave_wid]}], 
-            waddr_bank_len  [{nvdla2saxi_axi_slave_wid, waddr_ptr_mid[nvdla2saxi_axi_slave_wid]}], 
-            waddr_bank_size [{nvdla2saxi_axi_slave_wid, waddr_ptr_mid[nvdla2saxi_axi_slave_wid]}], 
-            waddr_bank_addr [{nvdla2saxi_axi_slave_wid, waddr_ptr_mid[nvdla2saxi_axi_slave_wid]}], 
-            waddr_bank_burst[{nvdla2saxi_axi_slave_wid, waddr_ptr_mid[nvdla2saxi_axi_slave_wid]}], 
-            waddr_bank_lock [{nvdla2saxi_axi_slave_wid, waddr_ptr_mid[nvdla2saxi_axi_slave_wid]}], 
-            waddr_bank_port [{nvdla2saxi_axi_slave_wid, waddr_ptr_mid[nvdla2saxi_axi_slave_wid]}], 
-            nvdla2saxi_axi_slave_wid, (wdata_aggregated[`DATABUS2MEM_WIDTH-1:0] | ((nvdla2saxi_axi_slave_wdata << shift_amount) & {512{1'b1}})), 
-            (wstrb_aggregated[63:0] | ((nvdla2saxi_axi_slave_wstrb << shift_amount_wstrb))& {64{1'b1}}));  // spyglass disable  W213
-`ifdef AXI_MEM_DEBUG
-            $display("wdata_ptrs\[%0d\].head=0x%0x", nvdla2saxi_axi_slave_wid, wdata_ptr_head[nvdla2saxi_axi_slave_awid]); // spyglass disable  W213
-`endif
-            wdata_bank_dv[{nvdla2saxi_axi_slave_wid, wdata_ptr_head[nvdla2saxi_axi_slave_wid]}] <= 1'b1;
-            wdata_ptr_head[nvdla2saxi_axi_slave_wid] <= (wdata_ptr_head[nvdla2saxi_axi_slave_wid]+1) % `MAX_WRITE_CONFLICT;
-
-            waddr_ptr_mid[nvdla2saxi_axi_slave_wid] <= (waddr_ptr_mid [nvdla2saxi_axi_slave_wid]+1) % `MAX_WRITE_CONFLICT;
-        end else begin
-`ifdef AXI_MEM_DEBUG
-            $display("Write data is coming, but addr not received yet. ID=0x%08x", nvdla2saxi_axi_slave_wid); // spyglass disable  W213
-`endif
-        end
-        shift_amount <= 0;
-        shift_amount_wstrb <= 0;
-        saxi2nvdla_axi_slave_wready <= 1'b0;
-        // I want to zero it out after writing into the fifo also assert wready - triggered in fifo write
-      end else begin
+      if(!nvdla2saxi_axi_slave_wlast) begin
+        //Put txn in wdata fifo
         saxi2nvdla_axi_slave_wready <= (~wdfifo_wr_busy & (((outstanding_wrdata_count+wrdata_count_inc-wrdata_count_dec) & 16'hffff)< config_mem[`S0_MAX_WRITES]));    // wdata !FIFO_FULL	
-        wdata_aggregated <= (wdata_aggregated | ((nvdla2saxi_axi_slave_wdata << shift_amount) & {519{1'b1}}));        // TODO: Check width mismatch issues here
-        wstrb_aggregated <= (wstrb_aggregated | ((nvdla2saxi_axi_slave_wstrb << shift_amount_wstrb) & {64{1'b1}}));
-        shift_amount <= shift_amount + 128;  /* shift 16 bytes */
-        shift_amount_wstrb <= shift_amount_wstrb + 16;  /* shift 16 bits in this case */
+      end else begin
+        //saxi2nvdla_axi_slave_wready <= 1'b0;
+        nvdla2saxi_axi_slave_wid <= nvdla2saxi_axi_slave_wid + 1;
+        saxi2nvdla_axi_slave_wready <= (~wdfifo_wr_busy & (((outstanding_wrdata_count+wrdata_count_inc-wrdata_count_dec) & 15'hffff)< config_mem[`S0_MAX_WRITES]));    // wdata !FIFO_FULL	
+        // I want to zero it out after writing into the fifo also assert wready - triggered in fifo write
       end     // wlast - ifelse
+
+      wdata_beat <= {nvdla2saxi_axi_slave_wid, nvdla2saxi_axi_slave_wdata}; //Tack on wid
+      wstrb_beat <= nvdla2saxi_axi_slave_wstrb;
+
+      if (waddr_bank_av[{nvdla2saxi_axi_slave_wid, waddr_ptr_mid[nvdla2saxi_axi_slave_wid]}]) begin
+          //both addr and data are ready
+          $display("AXI_MEM_XACTION: WriteReq: CHANNEL=%0d START_TIME=%0t END_TIME=%0t AWID=0x%08x AWLEN=0x%08x AWSIZE=0x%08x AWADDR=0x%010x AWBURST=0x%08x AWLOCK=0x%08x AWPORT=0x%08x WID=0x%08x WDATA=0x%0128x WSTRB=0x%064x", 
+          AXI_SLAVE_ID, 
+          waddr_bank_timestamp[{nvdla2saxi_axi_slave_wid, waddr_ptr_mid[nvdla2saxi_axi_slave_wid]}],
+          $time, 
+          waddr_bank_id   [{nvdla2saxi_axi_slave_wid, waddr_ptr_mid[nvdla2saxi_axi_slave_wid]}], 
+          waddr_bank_len  [{nvdla2saxi_axi_slave_wid, waddr_ptr_mid[nvdla2saxi_axi_slave_wid]}], 
+          waddr_bank_size [{nvdla2saxi_axi_slave_wid, waddr_ptr_mid[nvdla2saxi_axi_slave_wid]}], 
+          waddr_bank_addr [{nvdla2saxi_axi_slave_wid, waddr_ptr_mid[nvdla2saxi_axi_slave_wid]}], 
+          waddr_bank_burst[{nvdla2saxi_axi_slave_wid, waddr_ptr_mid[nvdla2saxi_axi_slave_wid]}], 
+          waddr_bank_lock [{nvdla2saxi_axi_slave_wid, waddr_ptr_mid[nvdla2saxi_axi_slave_wid]}], 
+          waddr_bank_port [{nvdla2saxi_axi_slave_wid, waddr_ptr_mid[nvdla2saxi_axi_slave_wid]}], 
+          nvdla2saxi_axi_slave_wid, nvdla2saxi_axi_slave_wdata, nvdla2saxi_axi_slave_wstrb);  // spyglass disable  W213
+`ifdef AXI_MEM_DEBUG
+          $display("wdata_ptrs\[%0d\].head=0x%0x", nvdla2saxi_axi_slave_wid, wdata_ptr_head[nvdla2saxi_axi_slave_awid]); // spyglass disable  W213
+`endif
+          wdata_bank_dv[{nvdla2saxi_axi_slave_wid, wdata_ptr_head[nvdla2saxi_axi_slave_wid]}] <= 1'b1;
+          wdata_ptr_head[nvdla2saxi_axi_slave_wid] <= (wdata_ptr_head[nvdla2saxi_axi_slave_wid]+1) % `MAX_WRITE_CONFLICT;
+
+          waddr_ptr_mid[nvdla2saxi_axi_slave_wid] <= (waddr_ptr_mid [nvdla2saxi_axi_slave_wid]+1) % `MAX_WRITE_CONFLICT;
+      end else begin
+`ifdef AXI_MEM_DEBUG
+          $display("Write data is coming, but addr not received yet. ID=0x%08x", nvdla2saxi_axi_slave_wid); // spyglass disable  W213
+`endif
+      end
     end else begin
       saxi2nvdla_axi_slave_wready <= (~wdfifo_wr_busy & (((outstanding_wrdata_count+wrdata_count_inc-wrdata_count_dec) & 16'hffff) < config_mem[`S0_MAX_WRITES]));    // wdata !FIFO_FULL 
     end
@@ -507,7 +505,8 @@ always @(posedge clk or negedge reset) begin
           waddr_bank_port [{nvdla2saxi_axi_slave_awid, waddr_ptr_head[nvdla2saxi_axi_slave_awid]}] <= nvdla2saxi_axi_slave_awprot;
           waddr_bank_av   [{nvdla2saxi_axi_slave_awid, waddr_ptr_head[nvdla2saxi_axi_slave_awid]}] <= 1'b1;
           waddr_ptr_head[nvdla2saxi_axi_slave_awid] <= (waddr_ptr_head[nvdla2saxi_axi_slave_awid]+1) % `MAX_WRITE_CONFLICT;
-          saxi2nvdla_axi_slave_awready <= 1'b0;
+          //saxi2nvdla_axi_slave_awready <= 1'b0; //Why are we dropping it? Its silly and makes waves more confusing
+          saxi2nvdla_axi_slave_awready <= (~awfifo_wr_busy & (((outstanding_wraddr_count+wraddr_count_inc-wraddr_count_dec) & 16'hffff) < config_mem[`S0_MAX_WRITES]));   // waddr !FIFO_FULL
       end
     end else begin
       saxi2nvdla_axi_slave_awready <= (~awfifo_wr_busy & (((outstanding_wraddr_count+wraddr_count_inc-wraddr_count_dec) & 16'hffff) < config_mem[`S0_MAX_WRITES]));   // waddr !FIFO_FULL
@@ -531,11 +530,11 @@ always @(posedge clk or negedge reset) begin
 end
 
 
-assign axi_slave_wdfifo_wr_valid = slave_wlast_d1;
-assign axi_slave_wdfifo_wr_bus = wdata_aggregated;
+assign axi_slave_wdfifo_wr_valid = slave_wready_wvalid_d1;
+assign axi_slave_wdfifo_wr_bus = wdata_beat;
 
-assign axi_slave_wsfifo_wr_valid = slave_wlast_d1;
-assign axi_slave_wsfifo_wr_bus = wstrb_aggregated;
+assign axi_slave_wsfifo_wr_valid = slave_wready_wvalid_d1;
+assign axi_slave_wsfifo_wr_bus = wstrb_beat;
 
 assign axi_slave_awfifo_wr_valid = slave_awready_awvalid_d1;
 assign axi_slave_awfifo_wr_bus = waddr_fifo_bus;
@@ -551,8 +550,7 @@ assign wdfifo_rd_valid_busy = {`WDATA_FIFO_DATA_LEN{(axi_slave_wdfifo_rd_valid &
 
 //assign {from_fifo_id, from_fifo_addr, from_fifo_len, from_fifo_size} = (~axi_slave_awfifo_rd_busy & axi_slave_awfifo_rd_valid) ? axi_slave_awfifo_rd_bus : (~axi_slave_arfifo_rd_busy & axi_slave_arfifo_rd_valid) ? axi_slave_arfifo_rd_bus : {`ADDR_FIFO_DATA_LEN{1'b0}} ;
 assign {from_rd_fifo_id, from_rd_fifo_addr, from_rd_fifo_len, from_rd_fifo_size} = (~axi_slave_arfifo_rd_busy & axi_slave_arfifo_rd_valid) ? axi_slave_arfifo_rd_bus : {`ADDR_FIFO_DATA_LEN{1'b0}} ;
-assign {from_wr_fifo_id, from_wr_fifo_addr, from_wr_fifo_len, from_wr_fifo_size} = (~axi_slave_awfifo_rd_busy & axi_slave_awfifo_rd_valid) ? axi_slave_awfifo_rd_bus : {`ADDR_FIFO_DATA_LEN{1'b0}} ;
-
+assign {from_wr_fifo_id, from_wr_fifo_addr, from_wr_fifo_len, from_wr_fifo_size} = (axi_slave_awfifo_rd_valid) ? axi_slave_awfifo_rd_bus : {`ADDR_FIFO_DATA_LEN{1'b0}};
 assign {from_fifo_wid, from_fifo_wdata} = (~axi_slave_wdfifo_rd_busy & axi_slave_wdfifo_rd_valid) ? axi_slave_wdfifo_rd_bus : {`WDATA_FIFO_DATA_LEN{1'b0}} ;
 assign from_fifo_wstrb = (~axi_slave_wsfifo_rd_busy & axi_slave_wsfifo_rd_valid) ? axi_slave_wsfifo_rd_bus : {64{1'b0}} ;
 
@@ -568,57 +566,52 @@ always @ (posedge clk or negedge reset) begin
     reg_id_fifo_wr_bus <= 0;
     saxi2mem_cmd_rd <= 1'b0;
     saxi2mem_cmd_wr <= 1'b0;
+    sending_wdata_to_mem <= 0;
+    wr_data_burst_count <= 0;
   end else begin
 
-  // TODO: For now there is always a one-cycle gap between one read and the next out of these fifo's, fix later
-  // That is why the rd_busy are AND'd in the equations below - else there is a two cycle read even when there is just one entry in the FIFO
-
-  // Arbitration logic to decide which fifo (write or read) to read out of and send to memory
-/*  if(   (!wdfifo_wr_empty & !awfifo_wr_empty & !arfifo_wr_empty & read_readfifo)
-    ||  (!wdfifo_wr_empty & !awfifo_wr_empty & arfifo_wr_empty & axi_slave_awfifo_rd_busy & axi_slave_wdfifo_rd_busy)
-    ) begin
-      read_readfifo <= 1'b0;
-      axi_slave_arfifo_rd_busy <= 1;
-      read_writefifo <= 1'b1;
-      axi_slave_awfifo_rd_busy <= 0;
-      axi_slave_wdfifo_rd_busy <= 0;
-      axi_slave_wsfifo_rd_busy <= 0;
-    end else if(    (!wdfifo_wr_empty & !awfifo_wr_empty & !arfifo_wr_empty & read_writefifo)
-               ||   (!arfifo_wr_empty & wdfifo_wr_empty & awfifo_wr_empty & axi_slave_arfifo_rd_busy)
-    ) begin
-      read_readfifo <= 1'b1;
-      axi_slave_arfifo_rd_busy <= 0;
-      read_writefifo <= 1'b0;
-      axi_slave_awfifo_rd_busy <= 1;
-      axi_slave_wdfifo_rd_busy <= 1;
-      axi_slave_wsfifo_rd_busy <= 1;
-    end else begin
-      axi_slave_arfifo_rd_busy <= 1;
-      axi_slave_awfifo_rd_busy <= 1;
-      axi_slave_wdfifo_rd_busy <= 1;
-      axi_slave_wsfifo_rd_busy <= 1;
-    end
-*/
-
-  if (wdfifo_wr_empty & awfifo_wr_empty & arfifo_wr_empty) begin
-    axi_slave_arfifo_rd_busy <= 1;
+  if (wdfifo_wr_empty & awfifo_wr_empty) begin
     axi_slave_awfifo_rd_busy <= 1;
     axi_slave_wdfifo_rd_busy <= 1;
     axi_slave_wsfifo_rd_busy <= 1;
+    wr_data_burst_count <= 0;
+    sending_wdata_to_mem <= 0;
   end else begin
-    if (!axi_slave_awfifo_rd_busy) axi_slave_awfifo_rd_busy <= 1;
-    if (!axi_slave_wdfifo_rd_busy) axi_slave_wdfifo_rd_busy <= 1;
-    if (!axi_slave_wsfifo_rd_busy) axi_slave_wsfifo_rd_busy <= 1;
-    if (!axi_slave_arfifo_rd_busy) axi_slave_arfifo_rd_busy <= 1;
-    if (!wdfifo_wr_empty & !awfifo_wr_empty & axi_slave_awfifo_rd_busy & axi_slave_wdfifo_rd_busy & mem2saxi_wr_ready)
-    begin
-      axi_slave_awfifo_rd_busy <= 0;
+    if (!wdfifo_wr_empty & !awfifo_wr_empty & axi_slave_awfifo_rd_busy & axi_slave_wdfifo_rd_busy & mem2saxi_wr_ready) begin
+      axi_slave_awfifo_rd_busy <= 1; //Dont pop awfifo til done with from_fifo data, so when burst_count >= from_wr_fifo_len
       axi_slave_wdfifo_rd_busy <= 0;
       axi_slave_wsfifo_rd_busy <= 0;
-    end 
-    if (!arfifo_wr_empty & axi_slave_arfifo_rd_busy & mem2saxi_rd_ready)
-    begin
+      wr_data_burst_count <= wr_data_burst_count + 1;
+      sending_wdata_to_mem <= 1;
+    end else if (sending_wdata_to_mem && (wr_data_burst_count <= from_wr_fifo_len)) begin
+      // If we popped a new txn, keep popping wd/wsfifo until hit length, stop popping awfifo
+      axi_slave_awfifo_rd_busy <= 1;
+      axi_slave_wdfifo_rd_busy <= 0;
+      axi_slave_wsfifo_rd_busy <= 0;
+      wr_data_burst_count <= wr_data_burst_count + 1;
+      sending_wdata_to_mem <= 1;
+    end else if (sending_wdata_to_mem && (wr_data_burst_count > from_wr_fifo_len)) begin
+      axi_slave_wdfifo_rd_busy <= 1;
+      axi_slave_wsfifo_rd_busy <= 1;
+      axi_slave_awfifo_rd_busy <= 0;
+      wr_data_burst_count <= 0;
+      sending_wdata_to_mem <= 0;
+    end else begin
+      axi_slave_wdfifo_rd_busy <= 1;
+      axi_slave_wsfifo_rd_busy <= 1;
+      axi_slave_awfifo_rd_busy <= 1;
+      wr_data_burst_count <= 0;
+      sending_wdata_to_mem <= 0;
+    end
+  end
+ 
+  if (arfifo_wr_empty) begin
+    axi_slave_arfifo_rd_busy <= 1;
+  end else begin
+    if (!arfifo_wr_empty & axi_slave_arfifo_rd_busy & mem2saxi_rd_ready) begin
       axi_slave_arfifo_rd_busy <= 0;
+    end else begin
+      axi_slave_arfifo_rd_busy <= 1;
     end
   end
 
@@ -627,16 +620,17 @@ always @ (posedge clk or negedge reset) begin
     // Issued read previous cycle - so data should be available now // axi_slave_wdfifo_rd_bus, axi_slave_awfifo_rd_bus
     // Also write the wid into a buffer to match up for the response to send to DLA
     reg_id_fifo_wr_bus <= 0;
-    if(~axi_slave_awfifo_rd_busy & ~axi_slave_wdfifo_rd_busy) begin
-      if(from_wr_fifo_id != from_fifo_wid) begin
+    if(~axi_slave_wdfifo_rd_busy) begin
+      // There's no wid in this minified protocol
+      //if(from_wr_fifo_id != from_fifo_wid) begin
         // TODO: Error out here for now, require writes to be in order
-        $display("ids doesn't matach! from_wr_fifo_id=0x%08x from_fifo_wid=0x%08x",from_wr_fifo_id, from_fifo_wid); // spyglass disable  W213
-      end
+      //  $display("ids doesn't matach! from_wr_fifo_id=0x%08x from_fifo_wid=0x%08x",from_wr_fifo_id, from_fifo_wid); // spyglass disable  W213
+      //end
 
       //saxi2mem_valid <= 1'b1;
       //saxi2mem_cmd <= `SAXI2MEM_CMD_WR;
       saxi2mem_cmd_wr <= 1'b1;
-      saxi2mem_addr_wr <= from_wr_fifo_addr & {{(`AXI_ADDR_WIDTH-6){1'b1}},6'h00};
+      saxi2mem_addr_wr <= (from_wr_fifo_addr & {{(`AXI_ADDR_WIDTH-6){1'b1}},6'h00})+((wr_data_burst_count-1) * (1<<from_wr_fifo_size));
       saxi2mem_len_wr <= from_wr_fifo_len;
       saxi2mem_size_wr <= from_wr_fifo_size;
 
@@ -746,7 +740,7 @@ always @ (posedge clk or negedge reset) begin
       waddr_bank_time_delta = $time - waddr_bank_timestamp[{wrcmd2mem_id, waddr_ptr_tail[wrcmd2mem_id]}];
       $display("AXI_MEM_XACTION: WriteResp: CHANNEL=%0d TIME=%0t LATENCY=%0t BID=0x%08x",AXI_SLAVE_ID, $time, waddr_bank_time_delta, wrcmd2mem_id); // spyglass disable  W213
 `ifdef AXI_MEM_DEBUG
-      $display("Poping waddr_ptrs[%0d].tail=0x%0x, wdata_ptrs[%0d].tail=0x%0x; Before poping waddr_ptrs[%0d].head=0x%0x, wdata_ptrs[%0d].head=0x%0x there are %0d items left in addrQ, %0d items in dataQ for this ID", 
+      $display("Popping waddr_ptrs[%0d].tail=0x%0x, wdata_ptrs[%0d].tail=0x%0x; Before popping waddr_ptrs[%0d].head=0x%0x, wdata_ptrs[%0d].head=0x%0x there are %0d items left in addrQ, %0d items in dataQ for this ID", 
       wrcmd2mem_id, waddr_ptr_tail[wrcmd2mem_id], 
       wrcmd2mem_id, wdata_ptr_tail[wrcmd2mem_id], 
       wrcmd2mem_id, waddr_ptr_head[wrcmd2mem_id], 
@@ -761,6 +755,7 @@ always @ (posedge clk or negedge reset) begin
       saxi2nvdla_axi_slave_bvalid <= 1'b1;
       sending_mem_wrresp2nvdla <= 1'b0;
     end     // wrid_fifo_rd_busy
+
   end   // !reset
 end
 
@@ -779,7 +774,6 @@ always @ (posedge clk or negedge reset) begin
     mem_rdret_arlen <= 0;
     mem_rdret_araddr <= 0;
     rd_data_burst_count <= 4'b0000;
-    shift_amount_retdata <= 0;
     save_idfifo_signals <= 0;
     for (aid_j=0; aid_j<(2**`AXI_AID_WIDTH); aid_j++)
     begin
@@ -787,45 +781,6 @@ always @ (posedge clk or negedge reset) begin
     end
   end else begin
 
-//    if(nvdla2saxi_axi_slave_rready) begin // Slave has accepted the response that was driven during the last cycle
-//      saxi2nvdla_axi_slave_rvalid <= 1'b0;
-//      saxi2nvdla_axi_slave_rlast <= 1'b0;
-//      if(rd_data_burst_count == (mem_rdret_arlen + 1)) begin    // if last beat
-//        sending_mem_rdresp2nvdla <= 1'b0;
-//        rd_data_burst_count <= 4'b0000;
-//      end else if (!memresp_rdfifo_wr_empty) begin // if not last beat and fifo has data then keep trying to send
-//        sending_mem_rdresp2nvdla <= 1'b1;
-//        if (!sending_mem_rdresp2nvdla) begin //On posedge of sending
-//          save_idfifo_signals <= 1;
-//          memresp_rdfifo_rd_busy <= 1'b0;
-//        end
-//      end
-//    end
-//
-//    if(sending_mem_rdresp2nvdla && nvdla2saxi_axi_slave_rready) begin
-//      if(memresp_rdfifo_wr_empty) begin
-//        rdid_fifo_rd_busy <= 1'b1; 
-//        memresp_rdfifo_rd_busy <= 1'b1;
-//      end else begin  
-//        if(rd_data_burst_count == mem_rdret_arlen) begin    // if last beat
-//          rdid_fifo_rd_busy <= 1'b0; //only shift id once len has been serviced
-//        end
-//        else begin
-//          rdid_fifo_rd_busy <= 1'b1;
-//        end
-//        if(rd_data_burst_count > (mem_rdret_arlen-1) || (mem_rdret_arlen==0 && rd_data_burst_count > mem_rdret_arlen)) begin //pop early
-//          memresp_rdfifo_rd_busy <= 1'b1; //Stop pulling after last
-//        end else begin
-//          memresp_rdfifo_rd_busy <= 1'b0; //keep shifting for new values
-//        end 
-//      end
-//    end     // mem2saxi_resp
-//    else if(!sending_mem_rdresp2nvdla) begin
-//      rdid_fifo_rd_busy <= 1'b1;  
-//      //memresp_rdfifo_rd_busy <= 1'b1;
-//      saxi2nvdla_axi_slave_rvalid <= 1'b0;
-//      saxi2nvdla_axi_slave_rlast <= 1'b0;
-//    end
     if (!nvdla2saxi_axi_slave_rready && !sending_mem_rdresp2nvdla) begin
       //default values
         saxi2nvdla_axi_slave_rvalid <= 0;

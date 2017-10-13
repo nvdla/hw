@@ -2,6 +2,7 @@
 # write_reg(reg_addr, reg_data, misc_bits)
 load_mem 0x50064080 0xb480 input_feature_map.dat 
 load_mem 0x5002dfe0 0x36000 input_weight.dat 
+load_mem 0x500000e0 0x2da80 initialize_output_region.dat 
 write_reg 0xffff2c01 0x0 #NVDLA_SDP.S_POINTER_0
 read_reg 0xffff2c01 0x00010001 0x00000000 #NVDLA_SDP.S_POINTER_0
 write_reg 0xffff2c3a 0x0 #NVDLA_SDP.D_PERF_LUT_OFLOW_0
