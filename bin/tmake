@@ -14,10 +14,11 @@ my $MAKE = "make";
 #=============================
 ## Options
 #=============================
-my @build = (verif);
+my @build;
 my $only;
 my $opt_m=""; # optins passed to make
 my $log = "build.log";
+my $outdir = "outdir";
 my $run = 1;
 my $debug = 0;
 my $project;
@@ -28,16 +29,19 @@ GetOptions (
              "only=s" => \$only,
              "opt_m=s"   => \$opt_m,
              "log=s"     => \$log,
+             "outdir=s"     => \$outdir,
              "project=s" => \$project,
              "run!"      => \$run,
              "debug"     => \$debug,
              "clober|clean"      => \$clobber,
            ) or die "Unrecognized options @ARGV";
 
+push @build, "verif" unless defined @build;
 #=============================
 ## Global Variables
 #=============================
 my $cfg = "etc/build.config";
+my $outdir_log = "$outdir/$log";
 #
 #=============================
 ## MAIN
@@ -50,8 +54,9 @@ build();
 sub build {
     my $log_tmp = $log.".tmp";
     
-    system ("rm -rf $log");
-    system ("touch  $log");
+    system ("rm -rf $outdir_log");
+    system ("mkdir -p $outdir");
+    system ("touch  $outdir_log");
     
     my @projects = $project ? ($project) : get_projects("tree.make");
     foreach my $project (@projects) {
@@ -64,7 +69,7 @@ sub build {
                 
             foreach my $sandbox (@{$tree->{$only}{sandbox}}) {
                 system("$MAKE -C $sandbox PROJECT=$project $opt_m | tee $log_tmp")==0 or die "$sandbox build fail: $?" if $run;
-                system ("cat $log_tmp >> $log") if $run;
+                system ("cat $log_tmp >> $outdir_log") if $run;
             }
             
         } else {
@@ -92,7 +97,7 @@ sub build {
             
                 foreach my $sandbox (@{$tree->{$leaf}{sandbox}}) {
                     system("$MAKE -C $sandbox PROJECT=$project $opt_m | tee $log_tmp")==0 or die "$sandbox build fail: $?" if $run;
-                    system ("cat $log_tmp >> $log") if $run;
+                    system ("cat $log_tmp >> $outdir_log") if $run;
                 }
                 
                 $done->{$leaf} = 1;
@@ -102,8 +107,8 @@ sub build {
     }
     system ("rm -rf $log_tmp");
     
-    print "logfile: $log\n";
-    my $tee = IO::Tee->new(\*STDOUT, $log);
+    print "logfile: $outdir_log\n";
+    my $tee = IO::Tee->new(\*STDOUT, $outdir_log);
     print $tee "="x46,"\n";
     print $tee "="x18,"BUILD PASS","="x18,"\n";
     print $tee "="x46,"\n";

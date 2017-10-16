@@ -9,4 +9,3 @@ verif/sim
 vmod/dw_components/
 outdir/
 .nvprojectname
-build.log
