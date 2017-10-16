@@ -13,6 +13,10 @@ use File::Basename;
 my ($Progdir) = dirname ($0);
 my ($Program) = basename ($0);
 
+use FindBin qw($Bin);
+#use lib "$Bin/../vmod/plugins";
+#use eplugin;
+
 ################################################################
 # usage
 ################################################################

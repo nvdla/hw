@@ -78,7 +78,7 @@ sub gen_define {
     open my $i_fh, "<", $ifile or &Error ("file not found: $ifile");
     open my $o_fh, ">", $ofile or &Error ("file not found: $ofile");
     while (my $line = <$i_fh>) {
-        if ($line =~ /^\s*%define\s*(\w+)\s*(\d+)/) {
+        if ($line =~ /^\s*%define\s*(\w+)\s*(\d+)?/) {
             my $def = "";
             if ($backend eq "c") {
                 $def = "#define ";
@@ -92,9 +92,9 @@ sub gen_define {
                 &Error ("no $backend backend is supported yet!")
             }
             my $key = $1;
-            my $val = $2;
+            my $val = $2 ? " $2" : "";
 
-            my $new_line = $def.$key." ".$val;
+            my $new_line = $def.$key.$val;
             print $o_fh $new_line,"\n";
         }
         print;
