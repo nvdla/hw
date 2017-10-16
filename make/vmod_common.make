@@ -21,9 +21,11 @@ REL_PATH_FROM_TOT = $(shell $(DEPTH)/bin/depth -from_tot)
 OUT_DIR := $(DEPTH)/$(OUTDIR)/$(PROJECT)/$(REL_PATH_FROM_TOT)
 O_FILES := $(addprefix $(OUT_DIR)/,$(V_FILES))
 
+TOT := $(shell $(DEPTH)/bin/depth -abs_tot)
+
 default: $(O_FILES)
 	@echo "=============================================="
-	@echo "files are generated under $(OUT_DIR)"
+	@echo "files are generated under $(TOT)/$(OUTDIR)/$(PROJECT)/$(REL_PATH_FROM_TOT)"
 	@echo "=============================================="
 
 VCP_FILES  := $(V_FILES:%=%.vcp)
