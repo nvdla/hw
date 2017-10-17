@@ -441,7 +441,7 @@ always @(posedge clk or negedge reset) begin
       end else begin
         //saxi2nvdla_axi_slave_wready <= 1'b0;
         nvdla2saxi_axi_slave_wid <= nvdla2saxi_axi_slave_wid + 1;
-        saxi2nvdla_axi_slave_wready <= (~wdfifo_wr_busy & (((outstanding_wrdata_count+wrdata_count_inc-wrdata_count_dec) & 15'hffff)< config_mem[`S0_MAX_WRITES]));    // wdata !FIFO_FULL	
+        saxi2nvdla_axi_slave_wready <= (~wdfifo_wr_busy & (((outstanding_wrdata_count+wrdata_count_inc-wrdata_count_dec) & 16'hffff)< config_mem[`S0_MAX_WRITES]));    // wdata !FIFO_FULL	
         // I want to zero it out after writing into the fifo also assert wready - triggered in fifo write
       end     // wlast - ifelse
 
