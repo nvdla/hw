@@ -37,7 +37,7 @@ ifeq (,$(wildcard $(OUT_DIR)))
 	@mkdir -p $(OUT_DIR)
 endif
 	#$(EPERL) -o $@ $< 
-	$(PERL) -I $(DEPTH)/vmod/plugins -Meplugin $(EPERL) -o $@ $< 
+	$(PERL) -I $(DEPTH)/vmod/plugins -Meperl $(EPERL) -o $@ $< 
 	@rm $<
 
 # ======================

@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 
-package eplugin;
+package flop;
 use strict;
 use warnings FATAL => qw(all);
 
@@ -10,7 +10,7 @@ use Text::ParseWords qw(shellwords);
 
 =head1 FLOP
 
-  &eplugin::flop [-en <enable>] [-d <pin>] [-q <pin>] [-clk <clk>] [-rst <rst>] [-rval <hex>] [-wid <value>]
+  &eperl::flop("[-en <enable>] [-d <pin>] [-q <pin>] [-clk <clk>] [-rst <rst>] [-rval <hex>] [-wid <value>]");
 
   Required Inputs:
     NONE
@@ -26,6 +26,9 @@ use Text::ParseWords qw(shellwords);
     -wid  <num>  :  wid of input/output pin, 1 by default
 
 =cut
+
+use base ("Exporter");
+our @EXPORT = qw(flop);
 
 sub flop {
     my $args = shift;
@@ -98,35 +101,4 @@ sub flop {
     print $code; 
 }
 
-=head1 PIPE
-
-  &eplugin::pipe TODO
-
-  Required Inputs:
-    TODO
-
-  Optional Inputs:
-    TODO
-   
-=cut
-
-sub pipe {
-}
-
-=head1 ARB
-
-  &eplugin::arb TODO
-
-  Required Inputs:
-    TODO
-
-  Optional Inputs:
-    TODO
-   
-=cut
-
-sub arb {
-}
-
 1;
-
