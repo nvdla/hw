@@ -10,18 +10,15 @@ V_FILES += $(shell find . -name "*.v")
 V_FILES += $(shell find . -name "*.vlib")
 
 # GET Project Define file path/name
-OUT_DEF_DIR := $(DEPTH)/$(OUTDIR)/$(PROJECT)/defs
+OUT_DEF_DIR := $(DEPTH)/$(OUTDIR)/$(PROJECT)/spec/defs
 PROJ_HEAD   := $(OUT_DEF_DIR)/project.h
 ifeq (,$(wildcard $(PROJ_HEAD)))
-    $(error $(PROJ_HEAD) does not exists, please make hw/defs first, exiting...)
+    $(error $(PROJ_HEAD) does not exists, please make hw/spec/defs first, exiting...)
 endif
 
 # GET OUTPUT FILE PATH
-REL_PATH_FROM_TOT := $(shell $(DEPTH)/tools/bin/depth -from_tot)
 OUT_DIR := $(DEPTH)/$(OUTDIR)/$(PROJECT)/$(REL_PATH_FROM_TOT)
 O_FILES := $(addprefix $(OUT_DIR)/,$(V_FILES))
-
-TOT := $(shell $(DEPTH)/tools/bin/depth -abs_tot)
 
 default: $(O_FILES)
 	@echo "=============================================="

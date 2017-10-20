@@ -1,5 +1,4 @@
-DEPTH := ..
-include $(DEPTH)/tree.make
+DEPTH := ../..
 include $(DEPTH)/tools/make/common.make
 
 # ======================
@@ -11,8 +10,7 @@ BACKENDS = h vh
 OBJECTS = $(BACKENDS:%=project.%)
 
 # the output dir
-DIRNAME := $(subst .,,$(suffix $(subst /,.,$(shell pwd))))
-OUT_DIR = $(DEPTH)/$(OUTDIR)/$(PROJECT)/$(DIRNAME)
+OUT_DIR = $(TOT)/$(OUTDIR)/$(PROJECT)/$(REL_PATH_FROM_TOT)
 
 default: $(OBJECTS)
 	@rm $(OUT_DIR)/project.def

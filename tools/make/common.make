@@ -42,7 +42,8 @@ include $(DEPTH)/tools/make/tools.mk
 
 ##
 ## paths to useful places in the tree
-##
+TOT := $(shell $(DEPTH)/tools/bin/depth -abs_tot)
+REL_PATH_FROM_TOT := $(shell $(DEPTH)/tools/bin/depth -from_tot)
 
 
 # Useful target to get the value of a variable.
