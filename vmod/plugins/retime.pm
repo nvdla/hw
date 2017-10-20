@@ -93,6 +93,7 @@ sub retime {
         my $SIG_NXT = $sig_nxt."[$range]";
         my $SIG_CUR = $sig_cur."[$range]";
         
+        push @code, "${INDENT}reg [$range] $sig_nxt;";
         push @code, "${INDENT}always (posedge $clk) begin";
         push @code, "${INDENT}    if ($cg_en_str) begin" if $cg_en_i;
         push @code, "${INDENT}        $SIG_NXT <= $SIG_CUR;";
@@ -105,6 +106,7 @@ sub retime {
         if ($cg_en_rtm) {
             my $cg_en_nxt = $cg_en_i."_d$stage";
             if ($stage < $stages or $cg_en_o) {
+                push @code, "${INDENT}reg $cg_en_nxt;";
                 push @code, "${INDENT}always (posedge $clk) begin";
                 push @code, "${INDENT}    $cg_en_nxt <= $cg_en_cur;";
                 push @code, "${INDENT}end";
@@ -116,11 +118,13 @@ sub retime {
 
     ### OUTPUT
     # bus
+    push @code, "${INDENT}wire [$range] $sig_o;";
     push @code, "${INDENT}assign $sig_o = $sig_cur;";
     push @code, "";
 
     # enable
     if ($cg_en_o) {
+        push @code, "${INDENT}wire $cg_en_o;";
         push @code, "${INDENT}assign $cg_en_o = $cg_en_cur;";
         push @code, "";
     }

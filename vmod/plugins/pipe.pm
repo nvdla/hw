@@ -151,10 +151,12 @@ sub _pipe {
     
     # READY
     push @code, "// PIPE READY";
+    push @code, "wire $ro;";
     push @code, "${INDENT}assign $ro = $ri || !$vo;";
     push @code, "";
     # VALID
     push @code, "// PIPE VALID";
+    push @code, "reg $vo;";
     push @code, "${INDENT}always (posedge $clk or negedge $rst) begin";
     push @code, "${INDENT}    if (!$rst) begin";
     push @code, "${INDENT}        $vo <= 1'b0;";
@@ -167,6 +169,7 @@ sub _pipe {
     push @code, "";
     # DATA
     push @code, "// PIPE DATA";
+    push @code, "reg [$range] $do;";
     push @code, "${INDENT}always (posedge $clk) begin";
     push @code, "${INDENT}    if ($ro && $vi) begin";
     push @code, "${INDENT}        $DO <= $DI;";
@@ -200,6 +203,8 @@ sub _skid {
     
     # READY
     push @code, "// SKID READY";
+    push @code, "reg $ro;";
+    push @code, "reg $rs;";
     push @code, "${INDENT}always (posedge $clk or negedge $rst) begin";
     push @code, "${INDENT}   if (!$rst) begin";
     push @code, "${INDENT}       $ro <= 1'b1;";
@@ -213,6 +218,7 @@ sub _skid {
 
     # VALID
     push @code, "// SKID VALID";
+    push @code, "reg $vs;";
     push @code, "${INDENT}always (posedge $clk or negedge $rst) begin";
     push @code, "${INDENT}    if (!$rst) begin";
     push @code, "${INDENT}        $vs <= 1'b0;";
@@ -227,6 +233,7 @@ sub _skid {
     
     # DATA
     push @code, "// SKID DATA";
+    push @code, "reg [$range] $ds;";
     push @code, "${INDENT}always (posedge $clk) begin";
     push @code, "${INDENT}    if ($rs & $vi) begin";
     push @code, "${INDENT}        $DS <= $DI;";

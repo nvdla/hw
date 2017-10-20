@@ -72,6 +72,7 @@ sub flop {
     # CODE BODY
     #================================
     my @code = ();
+    push @code, "${INDENT}reg [$range] $q;";
     push @code, "${INDENT}always (posedge $clk or negedge $rst) begin";
     push @code, "${INDENT}   if (!$rst) begin";
     push @code, "${INDENT}       ${Q} <= ${wid}'h${rval};";
