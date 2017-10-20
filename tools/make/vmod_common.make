@@ -17,11 +17,11 @@ ifeq (,$(wildcard $(PROJ_HEAD)))
 endif
 
 # GET OUTPUT FILE PATH
-REL_PATH_FROM_TOT := $(shell $(DEPTH)/bin/depth -from_tot)
+REL_PATH_FROM_TOT := $(shell $(DEPTH)/tools/bin/depth -from_tot)
 OUT_DIR := $(DEPTH)/$(OUTDIR)/$(PROJECT)/$(REL_PATH_FROM_TOT)
 O_FILES := $(addprefix $(OUT_DIR)/,$(V_FILES))
 
-TOT := $(shell $(DEPTH)/bin/depth -abs_tot)
+TOT := $(shell $(DEPTH)/tools/bin/depth -abs_tot)
 
 default: $(O_FILES)
 	@echo "=============================================="

@@ -40,7 +40,7 @@ push @build, "verif" unless defined @build;
 #=============================
 ## Global Variables
 #=============================
-my $cfg = "etc/build.config";
+my $cfg = "tools/etc/build.config";
 my $outdir_log = "$outdir/$log";
 #
 #=============================

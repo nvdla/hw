@@ -2,10 +2,10 @@
 # TREE TOOL setup
 #=================
 # pre-process for ifdef/define
-VCP := $(DEPTH)/bin/vcp
+VCP := $(DEPTH)/tools/bin/vcp
 
 # embedded perl 
-EPERL := $(DEPTH)/bin/eperl
+EPERL := $(DEPTH)/tools/bin/eperl
 
 # define generator
-DEFGEN  := $(DEPTH)/bin/defgen
+DEFGEN  := $(DEPTH)/tools/bin/defgen
