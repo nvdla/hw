@@ -52,9 +52,10 @@ build();
 ## SUB
 #=============================
 sub build {
-    my $log_tmp = $log.".tmp";
+    my $outdir_log_tmp = "$outdir/$log".".tmp";
     
-    system ("rm -rf $outdir_log");
+    #system ("rm -rf $outdir_log");
+    unlink $outdir_log;
     system ("mkdir -p $outdir");
     system ("touch  $outdir_log");
     
@@ -68,8 +69,8 @@ sub build {
             croak "[ERROR]: build target $only does not exist in $cfg" unless $tree->{$only};
                 
             foreach my $sandbox (@{$tree->{$only}{sandbox}}) {
-                system("$MAKE -C $sandbox PROJECT=$project $opt_m | tee $log_tmp")==0 or die "$sandbox build fail: $?" if $run;
-                system ("cat $log_tmp >> $outdir_log") if $run;
+                system("$MAKE -C $sandbox PROJECT=$project $opt_m | tee $outdir_log_tmp")==0 or die "$sandbox build fail: $?" if $run;
+                system ("cat $outdir_log_tmp >> $outdir_log") if $run;
             }
             
         } else {
@@ -96,8 +97,8 @@ sub build {
                 print "leaf=$leaf\n" if $debug;
             
                 foreach my $sandbox (@{$tree->{$leaf}{sandbox}}) {
-                    system("$MAKE -C $sandbox PROJECT=$project $opt_m | tee $log_tmp")==0 or die "$sandbox build fail: $?" if $run;
-                    system ("cat $log_tmp >> $outdir_log") if $run;
+                    system("$MAKE -C $sandbox PROJECT=$project $opt_m | tee $outdir_log_tmp")==0 or die "$sandbox build fail: $?" if $run;
+                    system ("cat $outdir_log_tmp >> $outdir_log") if $run;
                 }
                 
                 $done->{$leaf} = 1;
@@ -105,7 +106,8 @@ sub build {
             }
         }
     }
-    system ("rm -rf $log_tmp");
+    #system ("rm -rf $outdir_log_tmp");
+    unlink $outdir_log_tmp;
     
     print "logfile: $outdir_log\n";
     my $tee = IO::Tee->new(\*STDOUT, $outdir_log);
