@@ -1,6 +1,6 @@
 DEPTH := ..
 include $(DEPTH)/tree.make
-include $(DEPTH)/make/common.make
+include $(DEPTH)/tools/make/common.make
 
 # ======================
 # BACKENDS: define the output file type, add more if you want

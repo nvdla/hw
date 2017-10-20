@@ -1,2 +1,2 @@
 DEPTH := ../..
-include $(DEPTH)/make/vmod_common.make
+include $(DEPTH)/tools/make/vmod_common.make

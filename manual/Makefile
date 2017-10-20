@@ -1,9 +1,10 @@
 DEPTH := ..
-include $(DEPTH)/make/common.make
+include $(DEPTH)/tools/make/common.make
 
 # the output dir
-DIRNAME := $(subst .,,$(suffix $(subst /,.,$(shell pwd))))
-OUT_DIR = $(DEPTH)/$(OUTDIR)/$(PROJECT)/$(DIRNAME)
+REL_PATH_FROM_TOT := $(shell $(DEPTH)/bin/depth -from_tot)
+TOT := $(shell $(DEPTH)/bin/depth -abs_tot)
+OUT_DIR = $(TOT)/$(OUTDIR)/$(PROJECT)/$(REL_PATH_FROM_TOT)
 
 #====================================
 # FIXME: change below test parameters and rdl input to real one 

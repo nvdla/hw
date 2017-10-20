@@ -34,7 +34,7 @@ PROJECT ?= $(firstword $(PROJECTS))
 OUTDIR ?= outdir
 
 # use the gnu tools in preference to others
-include $(DEPTH)/make/tools.mk
+include $(DEPTH)/tools/make/tools.mk
 
 # this gross little gmakism returns the last directory component of PWD
 #PWD := $(shell pwd)

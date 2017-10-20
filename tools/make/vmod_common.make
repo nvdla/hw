@@ -2,7 +2,7 @@
 ##
 ## vmod_common.make - common defs and rules for vmod
 ##
-include $(DEPTH)/make/common.make
+include $(DEPTH)/tools/make/common.make
 
 V_FILES := $(shell find . -name "*.vh")
 V_FILES += $(shell find . -name "*.h")
@@ -17,7 +17,7 @@ ifeq (,$(wildcard $(PROJ_HEAD)))
 endif
 
 # GET OUTPUT FILE PATH
-REL_PATH_FROM_TOT = $(shell $(DEPTH)/bin/depth -from_tot)
+REL_PATH_FROM_TOT := $(shell $(DEPTH)/bin/depth -from_tot)
 OUT_DIR := $(DEPTH)/$(OUTDIR)/$(PROJECT)/$(REL_PATH_FROM_TOT)
 O_FILES := $(addprefix $(OUT_DIR)/,$(V_FILES))
 
