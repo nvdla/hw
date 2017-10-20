@@ -85,6 +85,33 @@ Example:
 1 B
   //| eperl: generated_end (DO NOT EDIT ABOVE)
 
+Eperl Plugin:
+Some build-in plugin will generate verilog logic, and you can invoke them as:
+
+//: &eperl::<plugin>("<options>");
+
+Please find all supported plugin under hw/vmod/plugins/eperl.pm
+
+Examplel
+//: &eperl::flop("-wid 10 -en enable");
+//| eperl: generated_beg (DO NOT EDIT BELOW)
+  reg [9:0] q;
+  always (posedge clk or negedge rst) begin
+     if (!rst) begin
+         q[9:0] <= 10'h0;
+     end else begin
+         if (enable == 1'b1) begin
+             q[9:0] <= d[9:0];
+         // VCS coverage off
+         end else if (enable == 1'b0) begin
+         end else begin
+             q[9:0] <= {10{1'bx}};
+         // VCS coverage on
+         end
+     end
+  end
+//| eperl: generated_end (DO NOT EDIT ABOVE)
+
 END
 
 }
