@@ -29,7 +29,8 @@ open my $ifile_st_fh,">",$file_in_st;
 
 while (my $line = <$ifile_fh>) {
     $line =~ s/'/_&qt&_/g;
-    $line =~ s/^\s##/_&pdpd&_/;
+    $line =~ s/^\s*##/_&pdpd&_/g;
+    $line =~ s/^\s*\/\//_&slsl&_/g;
     if ($line =~ /^\s*#\s*(define|undef|if|ifdef|ifndef|elif|else|endif|error|pragma)/) {
         # keep there
     } else {
@@ -49,6 +50,7 @@ while (my $line = <$ofile_st_fh>) {
     $line =~ s/_&qt&_/'/g;
     $line =~ s/_&pdpd&_/##/g;
     $line =~ s/_&pd&_/#/g;
+    $line =~ s(_&slsl&_)(//)g;
     print $ofile_fh $line;
 }
 close $ofile_st_fh;
