@@ -271,11 +271,3 @@ sub EVAL {
   eval ($Script);
   return ($@);
 }
-
-#=======================
-# Functions
-#=======================
-sub log2 {
-  my $n = shift;
-  return int (log($n)/log(2));
-}

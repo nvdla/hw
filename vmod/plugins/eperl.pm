@@ -8,6 +8,25 @@ use warnings FATAL => qw(all);
 use flop;
 use pipe;
 use retime;
+use assert;
+ 
+sub vprintl {
+  my @list = @_;
+  foreach my $item (@list) {
+    print $item, "\n";
+  } 
+} 
+    
 
+sub vprinti {
+  my @list = @_;
+  my $item;
+  my $line;
+  foreach $item (@list) {
+    foreach $line (split ("\n", $item)) {
+      next unless ($line =~ s/^\s*\|\s?//);
+      print "$line\n";
+    }
+  }
+}
 1;
-
