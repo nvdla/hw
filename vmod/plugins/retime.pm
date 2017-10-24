@@ -94,7 +94,7 @@ sub retime {
         my $SIG_CUR = $sig_cur."[$range]";
         
         push @code, "${INDENT}reg [$range] $sig_nxt;";
-        push @code, "${INDENT}always (posedge $clk) begin";
+        push @code, "${INDENT}always @(posedge $clk) begin";
         push @code, "${INDENT}    if ($cg_en_str) begin" if $cg_en_i;
         push @code, "${INDENT}        $SIG_NXT <= $SIG_CUR;";
         push @code, "${INDENT}    end" if $cg_en_i;
@@ -107,7 +107,7 @@ sub retime {
             my $cg_en_nxt = $cg_en_i."_d$stage";
             if ($stage < $stages or $cg_en_o) {
                 push @code, "${INDENT}reg $cg_en_nxt;";
-                push @code, "${INDENT}always (posedge $clk) begin";
+                push @code, "${INDENT}always @(posedge $clk) begin";
                 push @code, "${INDENT}    $cg_en_nxt <= $cg_en_cur;";
                 push @code, "${INDENT}end";
                 push @code, "";

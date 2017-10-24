@@ -60,6 +60,9 @@ use base ("Exporter");
 our @EXPORT = qw(pipe);
 
 my @code = ();
+my @ports = ();
+my @regs = ();
+my @wires = ();
 my $clk = "clk";
 my $rst = "rst";
 my $indent= 0;
@@ -74,6 +77,7 @@ sub pipe {
     
     my $prefix = "pipe";
     my $wid = 1;
+    my $module;
     my $is;
     my $os;
     GetOptions (
@@ -81,6 +85,7 @@ sub pipe {
                'is'    => \$is,
                'os'    => \$os,
                'wid=s' => \$wid,
+               'module|m=s' => \$module,
                'clk=s' => \$clk,
                'rst=s' => \$rst,
                'indent=s' => \$indent,
@@ -104,6 +109,25 @@ sub pipe {
     my $DO = $do."[$range]";
     my $INDENT = " "x$indent;
 
+    push @ports, "${INDENT}input  $clk;";
+    push @ports, "${INDENT}input  $rst;";
+
+    push @ports, "${INDENT}input  $vi;";
+    push @ports, "${INDENT}output $ro;";
+    push @ports, "${INDENT}input  [$range] $di;";
+    
+    push @ports, "${INDENT}output $vo;";
+    push @ports, "${INDENT}input  $ri;";
+    push @ports, "${INDENT}output [$range] $do;";
+    
+    my @pins;
+    push @pins, $vi;
+    push @pins, $di;
+    push @pins, $ro;
+    push @pins, $vo;
+    push @pins, $do;
+    push @pins, $ri;
+
     #================================
     # HEAD
     #================================
@@ -117,21 +141,45 @@ sub pipe {
     # os
     ($vi,$di,$ro) = _skid($vi,$di,$ro,$range) if $os;
 
-
     #================================
     # TAIL
     #================================
+    push @code, "// PIPE OUTPUT";
     push @code, "${INDENT}assign $ro = $ri;";
     push @code, "${INDENT}assign $vo = $vi;";
     push @code, "${INDENT}assign $do = $di;";
     
-    my $code = join("\n",@code);
-    $code .= "\n";
+    my $regs = join("\n",@regs)."\n";
+    
+    my $wire = join("\n",@wires)."\n";
+
+    my $code = join("\n",@code)."\n";
 
     #================================
     # PRINT OUT
     #================================
+    if ($module) {
+        print "${INDENT}module $module (";
+        print "\n   ";
+        print join("\n${INDENT}  ,",@pins);
+        print "\n";
+        print "${INDENT}  );\n";
+        print "// Port\n";
+        print join("\n",@ports);
+        print "\n";
+    }
+    print "// Reg\n";
+    print $regs;
+
+    print "// Wire\n";
+    print $wire;
+
+    print "// Code\n";
     print $code;
+    
+    if ($module) {
+        print "${INDENT}endmodule";
+    }
 }
 
 sub _pipe {
@@ -151,13 +199,13 @@ sub _pipe {
     
     # READY
     push @code, "// PIPE READY";
-    push @code, "wire $ro;";
+    push @regs, "reg    $vo;";
+    push @wires, "wire   $ro;";
     push @code, "${INDENT}assign $ro = $ri || !$vo;";
     push @code, "";
     # VALID
     push @code, "// PIPE VALID";
-    push @code, "reg $vo;";
-    push @code, "${INDENT}always (posedge $clk or negedge $rst) begin";
+    push @code, "${INDENT}always @(posedge $clk or negedge $rst) begin";
     push @code, "${INDENT}    if (!$rst) begin";
     push @code, "${INDENT}        $vo <= 1'b0;";
     push @code, "${INDENT}    end else begin";
@@ -169,8 +217,8 @@ sub _pipe {
     push @code, "";
     # DATA
     push @code, "// PIPE DATA";
-    push @code, "reg [$range] $do;";
-    push @code, "${INDENT}always (posedge $clk) begin";
+    push @regs, "reg    [$range] $do;";
+    push @code, "${INDENT}always @(posedge $clk) begin";
     push @code, "${INDENT}    if ($ro && $vi) begin";
     push @code, "${INDENT}        $DO <= $DI;";
     push @code, "${INDENT}    end";
@@ -203,9 +251,9 @@ sub _skid {
     
     # READY
     push @code, "// SKID READY";
-    push @code, "reg $ro;";
-    push @code, "reg $rs;";
-    push @code, "${INDENT}always (posedge $clk or negedge $rst) begin";
+    push @regs, "reg    $ro;";
+    push @regs, "reg    $rs;";
+    push @code, "${INDENT}always @(posedge $clk or negedge $rst) begin";
     push @code, "${INDENT}   if (!$rst) begin";
     push @code, "${INDENT}       $ro <= 1'b1;";
     push @code, "${INDENT}       $rs <= 1'b1;";
@@ -218,8 +266,8 @@ sub _skid {
 
     # VALID
     push @code, "// SKID VALID";
-    push @code, "reg $vs;";
-    push @code, "${INDENT}always (posedge $clk or negedge $rst) begin";
+    push @regs, "reg    $vs;";
+    push @code, "${INDENT}always @(posedge $clk or negedge $rst) begin";
     push @code, "${INDENT}    if (!$rst) begin";
     push @code, "${INDENT}        $vs <= 1'b0;";
     push @code, "${INDENT}    end else begin";
@@ -233,8 +281,8 @@ sub _skid {
     
     # DATA
     push @code, "// SKID DATA";
-    push @code, "reg [$range] $ds;";
-    push @code, "${INDENT}always (posedge $clk) begin";
+    push @regs, "reg    [$range] $ds;";
+    push @code, "${INDENT}always @(posedge $clk) begin";
     push @code, "${INDENT}    if ($rs & $vi) begin";
     push @code, "${INDENT}        $DS <= $DI;";
     push @code, "${INDENT}    end";
