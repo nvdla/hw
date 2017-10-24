@@ -9,3 +9,4 @@ verif/sim
 vmod/dw_components/
 outdir/
 .nvprojectname
+tree.make
