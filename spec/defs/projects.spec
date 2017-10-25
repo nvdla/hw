@@ -145,7 +145,6 @@
 
 #if defined(CBUF_BANK_DEPTH_512)
     %define NVDLA_CBUF_BANK_DEPTH 512
-#elif 
 #else
     #error "only NVDLA_CBUF_BANK_DEPTH_512 can be set"
 #endif
