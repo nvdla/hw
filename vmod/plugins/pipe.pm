@@ -8,6 +8,9 @@ use Carp qw(croak);
 use Getopt::Long qw(GetOptions);
 use Text::ParseWords qw(shellwords);
 
+use flop;
+use EperlUtil;
+
 =head1 PIPE
 
   &eperl::pipe("[-is|os] [-wid <n>]");
@@ -102,8 +105,7 @@ sub pipe {
     my $do = $prefix."_do";
 
 
-    my $msb = eval($wid-1);
-    my $range = "$msb:0";
+    my $range = "$wid-1:0";
     
     my $DI = $di."[$range]";
     my $DO = $do."[$range]";
@@ -149,36 +151,33 @@ sub pipe {
     push @code, "${INDENT}assign $vo = $vi;";
     push @code, "${INDENT}assign $do = $di;";
     
-    my $regs = join("\n",@regs)."\n";
+    my $regs = join("\n",@regs);
     
-    my $wire = join("\n",@wires)."\n";
+    my $wire = join("\n",@wires);
 
-    my $code = join("\n",@code)."\n";
+    my $code = join("\n",@code);
 
     #================================
     # PRINT OUT
     #================================
     if ($module) {
-        print "${INDENT}module $module (";
-        print "\n   ";
-        print join("\n${INDENT}  ,",@pins);
-        print "\n";
-        print "${INDENT}  );\n";
-        print "// Port\n";
-        print join("\n",@ports);
-        print "\n";
+        vprintl "${INDENT}module $module (";
+        vprintl join("\n${INDENT}  ,",@pins);
+        vprintl "${INDENT}  );";
+        vprintl "// Port";
+        vprintl join("\n",@ports);
     }
-    print "// Reg\n";
-    print $regs;
+    vprintl "// Reg";
+    vprintl $regs;
 
-    print "// Wire\n";
-    print $wire;
+    vprintl "// Wire";
+    vprintl $wire;
 
-    print "// Code\n";
-    print $code;
+    vprintl "// Code";
+    vprintl $code;
     
     if ($module) {
-        print "${INDENT}endmodule";
+        vprintl "${INDENT}endmodule";
     }
 }
 
@@ -200,7 +199,7 @@ sub _pipe {
     # READY
     push @code, "// PIPE READY";
     push @regs, "reg    $vo;";
-    push @wires, "wire   $ro;";
+    push @wires,"wire   $ro;";
     push @code, "${INDENT}assign $ro = $ri || !$vo;";
     push @code, "";
     # VALID

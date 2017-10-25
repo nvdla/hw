@@ -10,24 +10,23 @@ use Text::ParseWords qw(shellwords);
 
 =head1 retime
 
-  &eperl::retime("-i <sig> -o <sig> [-wid <n>] [-stage <n>] [-clk <clk>] [-rst <rst>] [-cg_en_i <sig>] [-cg_en_o <sig>] [-cg_en_rtm]");
+  &eperl::retime("-i <sig> -o <sig> [-wid <n>] [-stage <n>] [-clk <clk>] [-cg_en_i <sig>] [-cg_en_o <sig>] [-cg_en_rtm]");
 
   OPTIONS:
     Required:
-      -i   <sig>      : input bus name
-      -o   <sig>      : output bus name
 
     Optional:
+      -i   <sig>      : input bus name, sig_i by default
+      -o   <sig>      : output bus name, sig_o by default
+
       -clk <clk>      : clock name, default is clk
-      -rst <rst>      : reset name, default is rst
       -wid <n>        : width of the bus, default is 1
 
-      -stage <n>      : number of stage bus will be retimed
+      -stage <n>      : number of stage bus will be retimed (0 is feedthrough), 1 by default
 
-      -cg_en_i <sig>  : input clock enable signal to gate the bus
+      -cg_en_i <sig>  : input clock enable signal to gate the bus, none by default
       -cg_en_o <sig>  : output clock enable signal from cg_en_i, with retime or assign according to option of -cg_en_rtm 
       -cg_en_rtm      : cg_en_o is retimed along with the bus, default is assign from, not retimed
-
 
 =cut
 
@@ -48,7 +47,6 @@ sub retime {
     my $stages= 1;
     
     my $clk   = "clk";
-    my $rst   = "rst";
     
     my $cg_en_i;
     my $cg_en_o;
@@ -61,10 +59,9 @@ sub retime {
                'wid=s'     => \$wid,
                'stage=s'   => \$stages,
                'clk=s'     => \$clk,
-               'rst=s'     => \$rst,
-               'cg_en_i=s'     => \$cg_en_i,
-               'cg_en_o=s'     => \$cg_en_o,
-               'cg_en_rtm'     => \$cg_en_rtm,
+               'cg_en_i=s' => \$cg_en_i,
+               'cg_en_o=s' => \$cg_en_o,
+               'cg_en_rtm' => \$cg_en_rtm,
                'indent=s'  => \$indent,
                )  or die "Unrecognized options @ARGV";
     
@@ -73,8 +70,7 @@ sub retime {
     #================================
     my $INDENT = " "x$indent;
 
-    my $msb = eval($wid-1);
-    my $range = "$msb:0";
+    my $range = "$wid-1";
     
     #================================
     # CODE BODY
