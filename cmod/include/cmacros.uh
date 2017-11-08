@@ -1,0 +1,1649 @@
+// ================================================================
+// NVDLA Open Source Project
+// 
+// Copyright(c) 2016 - 2017 NVIDIA Corporation.  Licensed under the
+// NVDLA Open Hardware License; Check "LICENSE" which comes with 
+// this distribution for more information.
+// ================================================================
+
+#if !defined(CMACROS_UH)
+#define CMACROS_UH
+
+#if !defined(NV_XC)
+#include <iostream>
+#endif
+//#include "ccov_def.h"
+//
+// wrapper macros for unified spec-generated headers (.uh files)
+//
+// DO NOT ADD VIRTUAL METHODS or anything else which will cause these classes
+// to become anything other than plain-old datatypes! If you really need to
+// virtualize something, create your own wrapper class elsewhere.
+//
+
+#define __STDC_FORMAT_MACROS
+#include <inttypes.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+//#include "VdkRegisterIF.h"
+//
+// _get_pkt_fld - helper inline to extract a packet field which potentially straddles a 32-bit boundary
+//
+
+static inline uint32_t _get_pkt_fld( const uint32_t *puData, uint32_t uMSB, uint32_t uLSB, uint32_t uMask )
+{
+	if ((uMSB ^ uLSB) >> 5)
+	{
+		return( ((puData[uLSB >> 5] >> (uLSB & 0x1f)) | (puData[uMSB >> 5] << (32 - (uLSB & 0x1f)))) & uMask );
+	}
+	else
+	{
+		return( (puData[uLSB >> 5] >> (uLSB & 0x1f)) & uMask );
+	}
+}
+
+//
+// _get_pkt_fld_64 - helper inline to extract a 64-bit packet field which straddles 32-bit boundaries
+//
+
+static inline uint64_t _get_pkt_fld_64( const uint32_t *pcuData, uint32_t uMSB, uint32_t uLSB, uint32_t uMask )
+{
+	if ((uMSB - uLSB) >= 32)
+	{
+		uint64_t ullLSB = uint64_t(_get_pkt_fld( pcuData, uLSB + 31, uLSB, (uint32_t)-1 ));
+		uint64_t ullMSB = uint64_t(_get_pkt_fld( pcuData, uMSB, uLSB + 32, uMask ));
+		return( (ullMSB << 32) | ullLSB );
+	}
+	else return( uint64_t(_get_pkt_fld( pcuData, uMSB, uLSB, uMask )) );
+}
+
+//
+// _get_signed_pkt_fld - helper inline to extract a signed packet field which potentially straddles a 32-bit boundary
+//
+
+static inline int32_t _get_signed_pkt_fld( const uint32_t *pcuData, uint32_t uMSB, uint32_t uLSB, uint32_t uMask )
+{
+	int32_t nVal = int32_t(_get_pkt_fld( pcuData, uMSB, uLSB, uMask ));
+	uint32_t uSignBits = 31 - (uMSB - uLSB);
+	return( (nVal << uSignBits) >> uSignBits );
+}
+
+//
+// _get_signed_pkt_fld_64 - helper inline to extract a signed 64-bit packet field which straddles 32-bit boundaries
+//
+
+static inline int64_t _get_signed_pkt_fld_64( const uint32_t *pcuData, uint32_t uMSB, uint32_t uLSB, uint32_t uMask )
+{
+	int64_t llVal = int64_t(_get_pkt_fld_64( pcuData, uMSB, uLSB, uMask ));
+	uint32_t uSignBits = 63 - (uMSB - uLSB);
+	return( (llVal << uSignBits) >> uSignBits );
+}
+
+//
+// _set_pkt_fld - helper inline to pack a field which potentially straddles a 32-bit boundary
+//
+
+static inline void _set_pkt_fld( uint32_t *puData, uint32_t uMSB, uint32_t uLSB, uint32_t uMask, uint32_t uVal )
+{
+	puData[uLSB >> 5] &= ~(uMask << (uLSB & 0x1f));
+	puData[uLSB >> 5] |= ((uVal & uMask) << (uLSB & 0x1f));
+	if ((uMSB ^ uLSB) >> 5)
+	{
+		puData[uMSB >> 5] &= ~(uMask >> (32 - (uLSB & 0x1f)));
+		puData[uMSB >> 5] |= ((uVal & uMask) >> (32 - (uLSB & 0x1f)));
+	}
+}
+
+//
+// _set_pkt_fld_64 - helper inline to pack a 64-bit packet field which straddles 32-bit boundaries
+//
+
+static inline void _set_pkt_fld_64( uint32_t *puData, uint32_t uMSB, uint32_t uLSB, uint32_t uMask, uint64_t ullVal )
+{
+	if ((uMSB - uLSB) >= 32)
+	{
+		_set_pkt_fld( puData, uLSB + 31, uLSB, (uint32_t)-1, uint32_t(ullVal) );
+		_set_pkt_fld( puData, uMSB, uLSB + 32, uMask, uint32_t(ullVal >> 32) );
+	}
+	else _set_pkt_fld( puData, uMSB, uLSB, uMask, uint32_t(ullVal) );
+}
+
+//
+// _parse_reg_name_tab - search a table (string) of the form "name\0val\0name2\0val2\0\0"
+//
+
+static inline bool _parse_reg_name_tab( const char *&pTab, const char *&pName )
+{
+	const char *pt = pTab;
+
+	while (pt[0])
+	{
+		const char *pn = pName;
+		uint32_t i = 0;
+
+		// skip matching non-null characters
+		while ((pt[i] == pn[i]) && pt[i] && pn[i]) ++i;
+
+		if (pt[i])
+		{
+			// no match, skip to null at end of name
+			do ++i; while (pt[i]) ;
+		}
+		else if (!pn[i] || (pn[i] == ':') || (pn[i] == '[') || (pn[i] == '='))
+		{
+			// match, return value following name's null and return pointer to end of pName
+			pTab = &pt[i + 1];
+			pName = &pn[i];
+			return( true );
+		}
+
+		// no match but pt[i] is at the name's null, skip it
+		++i;
+
+		// skip value in table
+		while (pt[i]) ++i;
+		// skip value's null
+		++i;
+
+		// point at next table entry
+		pt += i;
+	}
+
+	return( false );
+}
+
+//
+// _parse_reg_enum_val - inline helper to return pName's match of a string ",enm=val"...
+//
+
+static inline bool _parse_reg_enum_val( const char *pTab, const char *&pName, uint32_t &uVal )
+{
+	while (*pTab++ == ',')
+	{
+		int32_t i = 0;
+
+		// skip till strings no longer match or the enm name ends at the '='
+		while ((pTab[i] == pName[i]) && (pTab[i] != '=') && pTab[i] && pName[i]) ++i;
+
+		if ((pTab[i] == '=') && ((pName[i] == ' ') || !pName[i]))
+		{
+			// matched, return value and update end of pName
+			uVal = strtoul( &pTab[i + 1], NULL, 0 );
+			pName += i;
+			return( true );
+		}
+		
+		// skip to next comma or end of string
+		while (pTab[i] && (pTab[i] != '=')) ++i;
+		if (pTab[i] == '=') ++i;
+		while (pTab[i] && (pTab[i] != ',')) ++i;
+		pTab += i;
+	}
+
+	return( false );
+}
+
+//
+// _parse_field_set - inline helper which parses sets of FLD=<value> strings
+//
+
+static inline bool _parse_field_set( const char *pcTab, const char *pcszBuff, uint32_t *puVal, uint32_t *puMask = NULL )
+{
+	const char *pn = pcszBuff;
+
+	while (pn[0])
+	{
+		const char *pt = pcTab;
+
+		// must be one of the names we recognize (repeats are allowed)
+		if (!_parse_reg_name_tab( pt, pn )) return( false );
+
+		// must be an assignment
+		if (pn[0] != '=') return( false );
+		++pn;
+
+		// parse "msb:lsb[,enm=val]..."
+		uint32_t uMSB = strtol( pt, (char **)&pt, 0 );
+		if (pt[0] != ':') return( false );
+		++pt;
+		uint32_t uLSB = strtol( pt, (char **)&pt, 0 );
+		// reconstruct uMask because we care about parse table size more than perf for parsing
+		uint32_t uMask = ((uint32_t)-1) >> (31 - (uMSB - uLSB));
+
+		// if the assigned value is numeric grab it, else match an enum
+		uint32_t uVal = 0;
+		if ((pn[0] >= '0') && (pn[0] <= '9'))
+		{
+			uVal = strtoul( pn, (char **)&pn, 0 );
+		}
+		else // enum
+		{
+			if (!_parse_reg_enum_val( pt, pn, uVal )) return( false );
+		}
+
+		// store the field and the mask
+		if (puVal) _set_pkt_fld( puVal, uMSB, uLSB, uMask, uVal );
+		if (puMask) _set_pkt_fld( puMask, uMSB, uLSB, uMask, uMask );
+
+		// skip whitespace
+		if (*pn == ' ') ++pn;
+	}
+
+	return( true );
+}
+
+//
+// MK_UPKT_CLASS(pkt) - generate a class which supports get/set and Print of each field for a packet
+//
+
+#define _MK_UPKT_METH_RETDECL(pkt,fld,enm) __MK_UPKT_METH_RETDECL(pkt,fld,enm)
+#define __MK_UPKT_METH_RETDECL(pkt,fld,enm) _MK_UPKT_ENM_##enm(pkt,fld)
+#define _MK_UPKT_ENM_NOENM(pkt,fld)
+#define _MK_UPKT_ENM_ENM(pkt,fld) enum Enm##fld { LIST_PKT_ENM_##pkt##_##fld( _MK_UPKT_ENM_VALS ) };
+#define _MK_UPKT_ENM_VALS(pkt,fld,enm,val) e##fld##_##enm = val,
+
+#define _MK_UPKT_METH_RETTYPE(pkt,fld,enm) __MK_UPKT_METH_RETTYPE(pkt,fld,enm)
+#define __MK_UPKT_METH_RETTYPE(pkt,fld,enm) _MK_UPKT_ENMRET_##enm(pkt,fld)
+#define _MK_UPKT_ENMRET_NOENM(pkt,fld) uint32_t
+#define _MK_UPKT_ENMRET_ENM(pkt,fld) Enm##fld
+
+#define _MK_UPKT_METH_PRINT(pkt,fld,enm) __MK_UPKT_METH_PRINT(pkt,fld,enm)
+#define __MK_UPKT_METH_PRINT(pkt,fld,enm) _MK_UPKT_ENMPR_##enm(pkt,fld)
+#define _MK_UPKT_ENMPR_NOENM_WIDTH(bits) (((bits) + 3) >> 2)
+#define _MK_UPKT_ENMPR_NOENM(pkt,fld) #fld"=0x%0*x", _MK_UPKT_ENMPR_NOENM_WIDTH(PKT_FLD_fsiz(pkt##_##fld)), v
+#define _MK_UPKT_METH_PRINT_64(pkt,fld) #fld"=0x%0*" PRIx64, _MK_UPKT_ENMPR_NOENM_WIDTH(PKT_FLD_fsiz(pkt##_##fld)), v
+#define _MK_UPKT_ENMPR_ENM(pkt,fld) #fld"=%s", LIST_PKT_ENM_##pkt##_##fld( _MK_UPKT_ENMPR_VALS ) "(unknown)"
+#define _MK_UPKT_ENMPR_VALS(pkt,fld,enm,val) (v == val) ? #enm :
+
+// If "str" matches any of the enum names in the specified packet/field, set that field
+// to the matching value.
+#define _MK_SETENUM_METH(pkt,fld) \
+	bool Set_##fld(const char *str) \
+        { \
+                LIST_PKT_ENM_##pkt##_##fld( _MK_SETENUM_CASES ) \
+                return false; \
+        }
+#define _MK_SETENUM_CASES(pkt,fld,enm,val) \
+        if (! strcmp(str, #enm)) \
+        { \
+                u##fld(e##fld##_##enm); \
+                return true; \
+        }
+
+// If "str" matches any of the values in _any_ of the enum fields of the specified
+// packet, set the corresponding field to the matching enum value.
+#define _MK_SETANON_METH(pkt,fld) \
+        if (Set_##fld(str)) \
+        { \
+                return true; \
+        }
+
+// Get a string matching the enum name
+#define _MK_GETENUM_METH(pkt,fld) \
+        std::string Get_##fld() \
+        { \
+                LIST_PKT_ENM_##pkt##_##fld( _MK_GETENUM_CASES ) \
+                return (std::string) #fld + "_?"; \
+        }
+#define _MK_GETENUM_CASES(pkt,fld,enm,val) \
+        if (u##fld() == val) \
+        { \
+            return (std::string) #enm; \
+        }
+
+// Display a string matching the enum name
+#define _MK_PRINTENUM_METH(pkt,fld) \
+        bool Print_##fld(std::ostream &outputFile) \
+        { \
+                LIST_PKT_ENM_##pkt##_##fld( _MK_PRINTENUM_CASES ) \
+                outputFile << #fld "_?"; \
+                return false; \
+        }
+#define _MK_PRINTENUM_CASES(pkt,fld,enm,val) \
+        if (u##fld() == val) \
+        { \
+                outputFile << #enm; \
+                return true; \
+        }
+
+#define _MK_UPKT_METH(pkt,fld) \
+	_MK_UPKT_METH_RETDECL(pkt,fld,PKT_FLD_enum(pkt##_##fld)) \
+	_MK_UPKT_METH_RETTYPE(pkt,fld,PKT_FLD_enum(pkt##_##fld)) f##fld() const \
+	{ \
+		return (_MK_UPKT_METH_RETTYPE(pkt,fld,PKT_FLD_enum(pkt##_##fld))) \
+		        _get_pkt_fld( Data(), \
+                        PKT_FLD_fsiz(pkt##_##fld) >= 32 ? PKT_FLD_lsb(pkt##_##fld) + 31 : PKT_FLD_msb(pkt##_##fld), \
+                        PKT_FLD_lsb(pkt##_##fld), \
+                        PKT_FLD_mask(pkt##_##fld) ); \
+	} \
+	uint32_t u##fld() const \
+	{ \
+		return _get_pkt_fld( Data(), \
+                       PKT_FLD_fsiz(pkt##_##fld) >= 32 ? PKT_FLD_lsb(pkt##_##fld) + 31 : PKT_FLD_msb(pkt##_##fld), \
+                       PKT_FLD_lsb(pkt##_##fld), \
+                       PKT_FLD_mask(pkt##_##fld) ); \
+	} \
+	uint64_t ull##fld() const \
+	{ \
+		return _get_pkt_fld_64( Data(), \
+                       PKT_FLD_fsiz(pkt##_##fld) >= 64 ? PKT_FLD_lsb(pkt##_##fld) + 63 : PKT_FLD_msb(pkt##_##fld), \
+                       PKT_FLD_lsb(pkt##_##fld), \
+                       PKT_FLD_mask(pkt##_##fld) ); \
+	} \
+	int32_t s##fld() const \
+	{ \
+		return _get_signed_pkt_fld( Data(), \
+                       PKT_FLD_fsiz(pkt##_##fld) >= 32 ? PKT_FLD_lsb(pkt##_##fld) + 31 : PKT_FLD_msb(pkt##_##fld), \
+                       PKT_FLD_lsb(pkt##_##fld), \
+                       PKT_FLD_mask(pkt##_##fld) ); \
+	} \
+	int64_t sll##fld() const \
+	{ \
+		return _get_signed_pkt_fld_64( Data(), \
+                       PKT_FLD_fsiz(pkt##_##fld) >= 64 ? PKT_FLD_lsb(pkt##_##fld) + 63 : PKT_FLD_msb(pkt##_##fld), \
+                       PKT_FLD_lsb(pkt##_##fld), \
+                       PKT_FLD_mask(pkt##_##fld) ); \
+	} \
+	void f##fld( _MK_UPKT_METH_RETTYPE(pkt,fld,PKT_FLD_enum(pkt##_##fld)) val ) \
+	{ \
+		_set_pkt_fld( Data(), \
+                              PKT_FLD_fsiz(pkt##_##fld) >= 32 ? PKT_FLD_lsb(pkt##_##fld) + 31 : PKT_FLD_msb(pkt##_##fld), \
+                              PKT_FLD_lsb(pkt##_##fld), \
+                              PKT_FLD_mask(pkt##_##fld), \
+                              (uint32_t)val ); \
+	} \
+	void u##fld( uint32_t uVal ) \
+	{ \
+		_set_pkt_fld( Data(), \
+                              PKT_FLD_fsiz(pkt##_##fld) >= 32 ? PKT_FLD_lsb(pkt##_##fld) + 31 : PKT_FLD_msb(pkt##_##fld), \
+                              PKT_FLD_lsb(pkt##_##fld), \
+                              PKT_FLD_mask(pkt##_##fld), \
+                              uVal ); \
+	} \
+	void ull##fld( uint64_t ullVal ) \
+	{ \
+		_set_pkt_fld_64( Data(), \
+                                 PKT_FLD_fsiz(pkt##_##fld) >= 64 ? PKT_FLD_lsb(pkt##_##fld) + 63 : PKT_FLD_msb(pkt##_##fld), \
+                                 PKT_FLD_lsb(pkt##_##fld), \
+                                 PKT_FLD_mask(pkt##_##fld), \
+                                 ullVal ); \
+	} \
+    void pg##fld( uint32_t *puBuff ) const \
+    { \
+		uint32_t lsb = PKT_FLD_lsb(pkt##_##fld); \
+		const uint32_t msb = PKT_FLD_msb(pkt##_##fld); \
+		while ((msb - lsb) >= 32) \
+		{ \
+			*puBuff++ = _get_pkt_fld( Data(), lsb + 31, lsb, (uint32_t)-1 ); \
+			lsb += 32; \
+		} \
+		if (msb >= lsb) \
+			*puBuff = _get_pkt_fld( Data(), msb, lsb, PKT_FLD_mask(pkt##_##fld) ); \
+	} \
+    void ps##fld( const uint32_t *puBuff ) \
+    { \
+		uint32_t lsb = PKT_FLD_lsb(pkt##_##fld); \
+		const uint32_t msb = PKT_FLD_msb(pkt##_##fld); \
+		while ((msb - lsb) >= 32) \
+		{ \
+			_set_pkt_fld( Data(), lsb + 31, lsb, (uint32_t)-1, *puBuff++ ); \
+			lsb += 32; \
+		} \
+		if (msb >= lsb) \
+			_set_pkt_fld( Data(), msb, lsb, PKT_FLD_mask(pkt##_##fld), *puBuff ); \
+    } \
+	int32_t Print##fld( char *pszBuff, int32_t nSize ) const \
+	{ \
+		int32_t n = 0; \
+                if (PKT_FLD_fsiz(pkt##_##fld) > 64) \
+		{ \
+                	uint32_t uNumWords = (PKT_FLD_fsiz(pkt##_##fld) + 31) / 32; \
+                        uint32_t uBuff[uNumWords]; \
+                        pg##fld(uBuff); \
+                        int32_t ln = snprintf( pszBuff, nSize, #fld "=0x%0*x", ((PKT_FLD_fsiz(pkt##_##fld) % 32U) + 3) >> 2, uBuff[ -- uNumWords ] ); \
+			pszBuff += ln; nSize -= ln; n += ln; \
+			while (uNumWords --) { \
+                        	ln = snprintf( pszBuff, nSize, "%08x", uBuff[uNumWords] ); \
+                                pszBuff += ln; nSize -= ln; n += ln; \
+			} \
+		} \
+		else if (PKT_FLD_fsiz(pkt##_##fld) > 32) \
+		{ \
+			int64_t v = ull##fld(); \
+			n = snprintf( pszBuff, nSize, _MK_UPKT_METH_PRINT_64(pkt,fld) ); \
+		} \
+		else \
+		{ \
+			_MK_UPKT_METH_RETTYPE(pkt,fld,PKT_FLD_enum(pkt##_##fld)) v = f##fld(); \
+			n = snprintf( pszBuff, nSize, _MK_UPKT_METH_PRINT(pkt,fld,PKT_FLD_enum(pkt##_##fld)) ); \
+		} \
+		if (n > nSize) n = nSize; \
+		return( n ); \
+	}
+
+#define _MK_UPKT_PRINT(pkt,fld) \
+	if (nSize > 1) \
+	{ \
+		*p++ = ' '; --nSize; \
+		int32_t n = Print##fld( p, nSize ); \
+		p += n; nSize -= n; \
+	}
+
+// returns the size of the packet in INTs
+#define UPKT_CLASS_INTS(pkt) \
+	((PKT_size(pkt) + 0x1f) >> 5)
+
+// create a "name" "msb:lsb[,enum=val...]" table describing a packet's fields for _parse_field_set
+#define _MK_UPKT_PARSE_TAB(pkt,fld) \
+	#fld "\0" \
+	__MK_UPKT_PARSE_TAB(pkt,fld,PKT_FLD_msb(pkt##_##fld),PKT_FLD_lsb(pkt##_##fld),PKT_FLD_enum(pkt##_##fld)) \
+	"\0"
+#define __MK_UPKT_PARSE_TAB(pkt,fld,msb,lsb,enm) ___MK_UPKT_PARSE_TAB(pkt,fld,msb,lsb,enm)
+#define ___MK_UPKT_PARSE_TAB(pkt,fld,msb,lsb,enm) \
+	#msb ":" #lsb _MK_UPKT_PARSE_TAB_##enm(pkt,fld)
+#define _MK_UPKT_PARSE_TAB_NOENM(pkt,fld)
+#define _MK_UPKT_PARSE_TAB_ENM(pkt,fld) \
+	LIST_PKT_ENM_##pkt##_##fld( _MK_UPKT_PARSE_TAB_ENM_VALS ) 
+#define _MK_UPKT_PARSE_TAB_ENM_VALS(pkt,fld,enm,val) "," #enm "=" #val
+
+#define MK_UPKT_CLASS(pkt) \
+class C##pkt \
+{ \
+private: \
+	uint32_t	uData[UPKT_CLASS_INTS(pkt)]; \
+public: \
+	uint32_t *Data() { return( uData ); } \
+	const uint32_t *Data() const { return( uData ); } \
+        C##pkt () { Clear(); } \
+	void Get( uint32_t *puData ) const \
+	{ \
+		for (uint32_t i = 0; i < UPKT_CLASS_INTS(pkt); ++i) \
+			puData[i] = uData[i]; \
+	} \
+	void Set( const uint32_t *pcuData ) \
+	{ \
+		for (uint32_t i = 0; i < UPKT_CLASS_INTS(pkt); ++i) \
+			uData[i] = pcuData[i]; \
+	} \
+	void Clear() \
+	{ \
+		for (uint32_t i = 0; i < UPKT_CLASS_INTS(pkt); ++i) \
+			uData[i] = 0; \
+	} \
+	LIST_PKT_FLD_##pkt(_MK_UPKT_METH) \
+        LIST_PKT_FLD_##pkt(_MK_SETENUM_METH) \
+        LIST_PKT_FLD_##pkt(_MK_GETENUM_METH) \
+        LIST_PKT_FLD_##pkt(_MK_PRINTENUM_METH) \
+        bool Set_Anon( const char *str ) \
+        { \
+                LIST_PKT_FLD_##pkt(_MK_SETANON_METH) \
+                return false; \
+        } \
+	int32_t Print( char *pszBuff, int32_t nSize ) const \
+	{ \
+		int32_t n = snprintf( pszBuff, nSize, "%s:", #pkt ); \
+		if (n > nSize) n = nSize; \
+		char *p = pszBuff + n; \
+		nSize -= n; \
+		LIST_PKT_FLD_##pkt(_MK_UPKT_PRINT) \
+		return( p - pszBuff ); \
+	} \
+	bool Parse( const char *pcszBuff, uint32_t *puVal, uint32_t *puMask = 0 ) \
+	{ \
+		return( _parse_field_set( LIST_PKT_FLD_##pkt(_MK_UPKT_PARSE_TAB) "\0", pcszBuff, puVal, puMask ) ); \
+	} \
+}; \
+
+//
+// CPKT_GENERIC wrapper template (virtualizes packet methods but hides fields)
+//
+// example usage: 
+//
+//     MK_UPKT_CLASS(EXAMPLEPKT)
+//     CEXAMPLEPKT Pkt;
+//     CPKT_GENERIC_BASE *pGenericPkt = new CPKT_GENERIC<CEXAMPLEPKT>( Pkt )
+//
+
+#define LIST_CPKT_API(_) \
+_(uint32_t *,Data,(),()) \
+_(const uint32_t *,Data,() const,()) \
+_(void,Get,( uint32_t *puData ) const,( puData )) \
+_(void,Set,( const uint32_t *pcuData ),( pcuData )) \
+_(void,Clear,(),()) \
+_(int32_t,Print,( char *pszBuff, int32_t nSize ) const,( pszBuff, nSize )) \
+_(bool,Parse,( const char *pcszBuff, uint32_t *puVal, uint32_t *puMask = 0 ),( pcszBuff, puVal, puMask ))
+
+class CPKT_GENERIC_BASE
+{
+public:
+    #define MK_PKT_GENERIC_BASE(ret,name,proto,call) \
+    virtual ret name proto = 0;
+    LIST_CPKT_API(MK_PKT_GENERIC_BASE)
+    virtual ~CPKT_GENERIC_BASE () {};
+};
+
+template <typename T> class CPKT_GENERIC: public CPKT_GENERIC_BASE
+{
+private:
+    T &Pkt;
+
+public:
+    CPKT_GENERIC( T &p ) : Pkt( p ) {}
+    #define MK_PKT_GENERIC(ret,name,proto,call) \
+    virtual ret name proto { return Pkt.name call; }
+    LIST_CPKT_API(MK_PKT_GENERIC)
+};
+
+//
+// MK_UREG_BASES(name,offset) - generate a constant for each element of LIST_ADDRESS_SPACES
+//
+
+#define MK_UREG_BASES(name,offset) const uint32_t BASE_##name = offset;
+
+//
+// MK_UREG_CLASS(base,reg,type) - generate a class which supports get/set and Print of each field for a register
+//
+
+#define _MK_UREG_METH_RETDECL(base,reg,fld,enm) __MK_UREG_METH_RETDECL(base,reg,fld,enm)
+#define __MK_UREG_METH_RETDECL(base,reg,fld,enm) _MK_UREG_ENM_##enm(base,reg,fld)
+#define _MK_UREG_ENM_NOENM(base,reg,fld)
+#define _MK_UREG_ENM_ENM(base,reg,fld) enum Enm##fld { LIST_REG_ENM_##base##_##reg##_##fld( _MK_UREG_ENM_VALS ) };
+#define _MK_UREG_ENM_VALS(base,reg,fld,enm,val) e##fld##_##enm = val,
+
+#define _MK_UREG_METH_RETTYPE(base,reg,fld,enm) __MK_UREG_METH_RETTYPE(base,reg,fld,enm)
+#define __MK_UREG_METH_RETTYPE(base,reg,fld,enm) _MK_UREG_ENMRET_##enm(base,reg,fld)
+#define _MK_UREG_ENMRET_NOENM(base,reg,fld) uint32_t
+#define _MK_UREG_ENMRET_ENM(base,reg,fld) Enm##fld
+
+#define _MK_UREG_METH_PRINT(base,reg,fld,enm) __MK_UREG_METH_PRINT(base,reg,fld,enm)
+#define __MK_UREG_METH_PRINT(base,reg,fld,enm) _MK_UREG_ENMPR_##enm(base,reg,fld)
+#define _MK_UREG_ENMPR_NOENM(base,reg,fld) #fld"=0x%x", v
+#define _MK_UREG_ENMPR_ENM(base,reg,fld) #fld"=%s", LIST_REG_ENM_##base##_##reg##_##fld( _MK_UREG_ENMPR_VALS ) "(unknown)"
+#define _MK_UREG_ENMPR_VALS(base,reg,fld,enm,val) (v == val) ? #enm :
+
+#define _MK_UREG_METH(base,reg,fld) \
+	_MK_UREG_METH_RETDECL(base,reg,fld,REG_FLD_enum(base##_##reg##_##fld)) \
+	_MK_UREG_METH_RETTYPE(base,reg,fld,REG_FLD_enum(base##_##reg##_##fld)) f##fld() const \
+	{ \
+		return( (_MK_UREG_METH_RETTYPE(base,reg,fld,REG_FLD_enum(base##_##reg##_##fld))) \
+		_get_pkt_fld( Data(), REG_FLD_msb(base##_##reg##_##fld), REG_FLD_lsb(base##_##reg##_##fld), REG_FLD_mask(base##_##reg##_##fld) ) ); \
+	} \
+	uint32_t u##fld() const \
+	{ \
+		return( _get_pkt_fld( Data(), REG_FLD_msb(base##_##reg##_##fld), REG_FLD_lsb(base##_##reg##_##fld), REG_FLD_mask(base##_##reg##_##fld) ) ); \
+	} \
+	int32_t s##fld() const \
+	{ \
+		return( _get_signed_pkt_fld( Data(), REG_FLD_msb(base##_##reg##_##fld), REG_FLD_lsb(base##_##reg##_##fld), REG_FLD_mask(base##_##reg##_##fld) ) ); \
+	} \
+	void f##fld( _MK_UREG_METH_RETTYPE(base,reg,fld,REG_FLD_enum(base##_##reg##_##fld)) val ) \
+	{ \
+		_set_pkt_fld( Data(), REG_FLD_msb(base##_##reg##_##fld), REG_FLD_lsb(base##_##reg##_##fld), REG_FLD_mask(base##_##reg##_##fld), (uint32_t)val ); \
+	} \
+	void u##fld( uint32_t val ) \
+	{ \
+		_set_pkt_fld( Data(), REG_FLD_msb(base##_##reg##_##fld), REG_FLD_lsb(base##_##reg##_##fld), REG_FLD_mask(base##_##reg##_##fld), val ); \
+	} \
+	int32_t Print##fld( char *pszBuff, int32_t nSize ) const \
+	{ \
+		_MK_UREG_METH_RETTYPE(base,reg,fld,REG_FLD_enum(base##_##reg##_##fld)) v = f##fld(); \
+		int32_t n = snprintf( pszBuff, nSize, _MK_UREG_METH_PRINT(base,reg,fld,REG_FLD_enum(base##_##reg##_##fld)) ); \
+		if (n > nSize) n = nSize; \
+		return( n ); \
+	}
+
+#define _MK_UREG_PRINT(base,reg,fld) \
+	if (nSize > 1) \
+	{ \
+		*p++ = ' '; --nSize; \
+		int32_t n = Print##fld( p, nSize ); \
+		p += n; nSize -= n; \
+	}
+
+// create a "name" "msb:lsb[,enum=val...]" table describing a register's fields for _parse_field_set
+#define _MK_UREG_PARSE_TAB(base,reg,fld) \
+	#fld "\0" \
+	__MK_UREG_PARSE_TAB(base,reg,fld,REG_FLD_msb(base##_##reg##_##fld),REG_FLD_lsb(base##_##reg##_##fld),REG_FLD_enum(base##_##reg##_##fld)) \
+	"\0"
+#define __MK_UREG_PARSE_TAB(base,reg,fld,msb,lsb,enm) ___MK_UREG_PARSE_TAB(base,reg,fld,msb,lsb,enm)
+#define ___MK_UREG_PARSE_TAB(base,reg,fld,msb,lsb,enm) \
+	#msb ":" #lsb _MK_UREG_PARSE_TAB_##enm(base,reg,fld)
+#define _MK_UREG_PARSE_TAB_NOENM(base,reg,fld)
+#define _MK_UREG_PARSE_TAB_ENM(base,reg,fld) \
+	LIST_REG_ENM_##base##_##reg##_##fld( _MK_UREG_PARSE_TAB_ENM_VALS ) 
+#define _MK_UREG_PARSE_TAB_ENM_VALS(base,reg,fld,enm,val) "," #enm "=" #val
+
+// If "str" matches any of the enum names in the specified packet/field, set that field
+// to the matching value.
+#define _MK_UREG_SETENUM_METH(base,reg,fld) \
+        bool Set_##fld(const char *str) \
+        { \
+                LIST_REG_ENM_##base##_##reg##_##fld( _MK_UREG_SETENUM_CASES ) \
+                return false; \
+        }
+#define _MK_UREG_SETENUM_CASES(base,reg,fld,enm,val) \
+        if (! strcmp(str, #enm)) \
+        { \
+                u##fld(e##fld##_##enm); \
+                return true; \
+        }
+
+#define _MK_UREG_GETENUM_METH(base,reg,fld) \
+        std::string Get_##fld() \
+        { \
+                LIST_REG_ENM_##base##_##reg##_##fld( _MK_UREG_GETENUM_CASES ) \
+                return (std::string) #fld + "_?"; \
+        }
+#define _MK_UREG_GETENUM_CASES(base,reg,fld,enm,val) \
+        if (u##fld() == val) \
+        { \
+                return (std::string) #enm; \
+        }
+
+// Display a string matching the enum name
+#define _MK_UREG_PRINTENUM_METH(base,reg,fld) \
+        bool Print_##fld(std::ostream &outputFile) \
+        { \
+                LIST_REG_ENM_##base##_##reg##_##fld( _MK_UREG_PRINTENUM_CASES ) \
+                outputFile << #fld "_?"; \
+                return false; \
+        }
+#define _MK_UREG_PRINTENUM_CASES(base,reg,fld,enm,val) \
+        if (u##fld() == val) \
+        { \
+                outputFile << #enm; \
+                return true; \
+        }
+
+
+#define make_cregstr(s) make_regname_str(s)
+#define make_regname_str(s) #s
+
+#define MK_UREG_CLASS(base,reg,type) \
+class C##base##_##reg \
+{ \
+private: \
+	uint32_t	uData; \
+public: \
+        C##base##_##reg() { Reset();  } \
+	uint32_t	*Data() { return( &uData ); } \
+	const uint32_t *Data() const { return( &uData ); } \
+	uint32_t	Get() { return( uData ); } \
+	void	Set( uint32_t u ) { uData = u;  } \
+	bool	SetSCR( uint32_t u ,uint32_t SECGrp) { \
+            bool sec_lock=(uData>>29) & 0x1;\
+            uint32_t sec_owner=(uData>>24) & 0x7;\
+            SECGrp=~SECGrp;\
+            if(!sec_lock && (SECGrp & (1 << sec_owner))){\
+                uData=u;\
+                return true;\
+            }else \
+            return false;\
+        }\
+	uint32_t	GetDefined() const \
+        { \
+            return( uData & REG_mask(base##_##reg)); \
+        } \
+	void	SetDefined( uint32_t u ) \
+        { \
+            uData = (u & REG_mask(base##_##reg)); \
+        } \
+        uint32_t    GetReadable() const \
+        { \
+            uint32_t r_mask = ReadMask(); \
+            return( uData & r_mask ); \
+        } \
+	void	SetWritable( uint32_t u ) \
+        { \
+            uint32_t rw_mask = ReadWriteMask(); \
+            uint32_t w_mask = WriteMask(); \
+            uData = (uData & (rw_mask & ~w_mask)) | (u & w_mask); \
+        } \
+        uint32_t    ReadWriteMask() const \
+        { \
+            return( REG_mask(base##_##reg) ); \
+        } \
+        uint32_t    WriteMask() const \
+        { \
+            uint32_t w_mask = 0; \
+            LIST_REG_FLD_##base##_##reg(_MK_UREGSET_WRITE_MASK_FLD); \
+            return( w_mask ); \
+        } \
+        uint32_t    ReadMask() const \
+        { \
+            uint32_t r_mask = 0; \
+            LIST_REG_FLD_##base##_##reg(_MK_UREGSET_READ_MASK_FLD); \
+            return( r_mask ); \
+        } \
+        const char *Name() const \
+        { \
+            return ( #base "_" #reg ); \
+        } \
+	void	Reset() { uData = REG_rstv(base##_##reg); } \
+	LIST_REG_FLD_##base##_##reg(_MK_UREG_METH) \
+        LIST_REG_FLD_##base##_##reg(_MK_UREG_SETENUM_METH) \
+        LIST_REG_FLD_##base##_##reg(_MK_UREG_GETENUM_METH) \
+        LIST_REG_FLD_##base##_##reg(_MK_UREG_PRINTENUM_METH) \
+	int32_t Print( char *pszBuff, int32_t nSize, int32_t nIndex = -1 ) const \
+	{ \
+		int32_t n; \
+		if (nIndex >= 0) n = snprintf( pszBuff, nSize, "%s[%d]:", #base "_" #reg, nIndex ); \
+		else n = snprintf( pszBuff, nSize, "%s:", #base "_" #reg ); \
+		if (n > nSize) n = nSize; \
+		char *p = pszBuff + n; \
+		nSize -= n; \
+		LIST_REG_FLD_##base##_##reg(_MK_UREG_PRINT) \
+		return( p - pszBuff ); \
+	} \
+	bool Parse( const char *pcszBuff, uint32_t *puVal, uint32_t *puMask = 0 ) \
+	{ \
+		return( _parse_field_set( LIST_REG_FLD_##base##_##reg(_MK_UREG_PARSE_TAB) "\0", pcszBuff, puVal, puMask ) ); \
+	} \
+}; \
+
+//
+// MK_UREGSET_CLASS(base) - generate a class which contains a group of registers
+//
+
+// declare the register (r) and it's shadow (s) for doing deferred updates
+#define _MK_UREGSET_ARRY_REG(base,reg)
+#define _MK_UREGSET_ARRY_ARY(base,reg) [REG_asiz(base##_##reg)]
+#define _MK_UREGSET_DECL(base,reg,type) \
+	C##base##_##reg r##reg _MK_UREGSET_ARRY_##type(base,reg); \
+	C##base##_##reg s##reg _MK_UREGSET_ARRY_##type(base,reg);
+
+#define _MK_UREGSET_DECODE_REG(base,reg) \
+	(uOff == REG_off(base##_##reg))
+#define _MK_UREGSET_DECODE_ARY(base,reg) \
+	((uOff >= REG_off(base##_##reg)) && (uOff < (REG_off(base##_##reg) + REG_asiz(base##_##reg) * REG_size(base##_##reg))))
+#define _MK_UREGSET_INDEX_REG(rs,base,reg) rs##reg
+// HACK HACK HACK make sure we're indexing by the same amount as the addressing is incrementing!!!
+#define _MK_UREGSET_INDEX_ARY(rs,base,reg) rs##reg[(uOff - REG_off(base##_##reg)) / REG_size(base##_##reg)]
+
+// Get a register value for .Get(offset, puData) - used like
+// LIST_**base**_REGS(_MK_UREGSET_GET_REG) to operate only on REG types,
+// ignoring ARY types in the list.
+#define _MK_UREGSET_GET_REG_ARY(base,reg)
+#define _MK_UREGSET_GET_REG_REG(base,reg) \
+        case (REG_off(base##_##reg)): \
+		if (puData) *puData = _MK_UREGSET_INDEX_REG(r,base,reg).Get(); \
+		return( e##reg );
+#define _MK_UREGSET_GET_REG(base,reg,type) \
+        _MK_UREGSET_GET_REG_##type(base,reg)
+
+// Get a register array value for .Get(offset, puData)
+#define _MK_UREGSET_GET_ARY_ARY(base,reg) \
+        if (_MK_UREGSET_DECODE_ARY(base,reg)) \
+	{ \
+		if (puData) *puData = _MK_UREGSET_INDEX_ARY(r,base,reg).Get(); \
+		return( e##reg ); \
+	} else
+#define _MK_UREGSET_GET_ARY_REG(base,reg)
+#define _MK_UREGSET_GET_ARY(base,reg,type) \
+        _MK_UREGSET_GET_ARY_##type(base,reg)
+
+// Set a register value for .Set(offset, uData)
+#define _MK_UREGSET_SET_REG_ARY(base,reg)
+#define _MK_UREGSET_SET_REG_REG(base,reg) \
+        case (REG_off(base##_##reg)): \
+		_MK_UREGSET_INDEX_REG(r,base,reg).Set( uData ); \
+		return( e##reg );
+#define _MK_UREGSET_SET_REG(base,reg,type) \
+        _MK_UREGSET_SET_REG_##type(base,reg)
+
+// Set a register array value for .Set(offset, uData)
+#define _MK_UREGSET_SET_ARY_ARY(base,reg) \
+        if (_MK_UREGSET_DECODE_ARY(base,reg)) \
+	{ \
+		_MK_UREGSET_INDEX_ARY(r,base,reg).Set( uData ); \
+		return( e##reg ); \
+	} else
+#define _MK_UREGSET_SET_ARY_REG(base,reg)
+#define _MK_UREGSET_SET_ARY(base,reg,type) \
+        _MK_UREGSET_SET_ARY_##type(base,reg)
+// Set a register value for .Set(offset,uData,SECGrp)
+#define _MK_UREGSET_SET_SCRREG_ARY(base,reg)
+#define _MK_UREGSET_SET_SCRREG_REG(base,reg) \
+        case (REG_off(base##_##reg)): \
+		return(_MK_UREGSET_INDEX_REG(r,base,reg).SetSCR( uData,SECGrp )); 
+#define _MK_UREGSET_SET_SCRREG(base,reg,type) \
+        _MK_UREGSET_SET_SCRREG_##type(base,reg)
+
+// Set a register array value for .Set(offset, uData)
+#define _MK_UREGSET_SET_SCRARY_ARY(base,reg) \
+        if (_MK_UREGSET_DECODE_ARY(base,reg)) \
+	{ \
+		return(_MK_UREGSET_INDEX_ARY(r,base,reg).SetSCR( uData ,SECGrp));\
+	} else
+#define _MK_UREGSET_SET_SCRARY_REG(base,reg)
+#define _MK_UREGSET_SET_SCRARY(base,reg,type) \
+        _MK_UREGSET_SET_SCRARY_##type(base,reg)
+
+// get a register value with undefined fields forced to zero
+#define _MK_UREGSET_GET_W_READ_WRITE_MASK(base,reg,type) \
+        if (_MK_UREGSET_DECODE_##type(base,reg)) \
+        { \
+                if (puData) *puData = _MK_UREGSET_INDEX_##type(r,base,reg).Get() & REG_mask(base##_##reg); \
+                return( e##reg ); \
+        } else
+
+// update all defined fields, clear undefined fields (defined = readable, writeable, or both)
+#define _MK_UREGSET_SET_W_READ_WRITE_MASK(base,reg,type) \
+        if (_MK_UREGSET_DECODE_##type(base,reg)) \
+        { \
+                uData &= REG_mask(base##_##reg); \
+                _MK_UREGSET_INDEX_##type(r,base,reg).Set( uData ); \
+                return( e##reg ); \
+        } else
+
+// retrieve register value with undefined and write-only fields set to zero (reports all readable fields)
+#define _MK_UREGSET_GET_W_READ_MASK(base,reg,type) \
+        if (_MK_UREGSET_DECODE_##type(base,reg)) \
+        { \
+                uint32_t r_mask = 0; \
+                LIST_REG_FLD_##base##_##reg(_MK_UREGSET_READ_MASK_FLD); \
+                if (puData) *puData = _MK_UREGSET_INDEX_##type(r,base,reg).Get() & r_mask; \
+                return( e##reg ); \
+        } else
+
+// update all writeable fields, preserve read only fields, clear undefined fields
+#define _MK_UREGSET_SET_W_WRITE_MASK(base,reg,type) \
+        if (_MK_UREGSET_DECODE_##type(base,reg)) \
+        { \
+                uint32_t rw_mask = REG_mask(base##_##reg); \
+                uint32_t w_mask = 0; \
+                LIST_REG_FLD_##base##_##reg(_MK_UREGSET_WRITE_MASK_FLD); \
+                uData = (_MK_UREGSET_INDEX_##type(r,base,reg).Get() & (rw_mask & ~w_mask)) | (uData & w_mask); \
+                _MK_UREGSET_INDEX_##type(r,base,reg).Set( uData ); \
+                return( e##reg ); \
+        } else
+
+// check address of a register
+#define _MK_UREGSET_CHECKADDR(base,reg,type) \
+	if (_MK_UREGSET_DECODE_##type(base,reg)) \
+	{ \
+		return( true ); \
+	} else
+
+// reset a register value
+#define _MK_UREGSET_RESETALL_ARY(pre,base,reg) \
+	for (uint32_t uOff = REG_off(base##_##reg); uOff < REG_off(base##_##reg) + REG_asiz(base##_##reg) * REG_size(base##_##reg); uOff += REG_size(base##_##reg)) \
+	{ \
+		_MK_UREGSET_INDEX_ARY(pre,base,reg).Reset(); \
+	}
+#define _MK_UREGSET_RESETALL_REG(pre,base,reg) \
+	_MK_UREGSET_INDEX_REG(pre,base,reg).Reset();
+#define _MK_UREGSET_RESETALL(base,reg,type) \
+	_MK_UREGSET_RESETALL_##type(r,base,reg) \
+	_MK_UREGSET_RESETALL_##type(s,base,reg)
+
+#define _MK_UREGSET_ADD_PARENT_ARY(pre,base,reg) \
+	for (uint32_t uOff = REG_off(base##_##reg); uOff < REG_off(base##_##reg) + REG_asiz(base##_##reg) * REG_size(base##_##reg); uOff += REG_size(base##_##reg)) \
+	{ \
+	}
+#define _MK_UREGSET_ADD_PARENT_ALL(base,reg,type) \
+	_MK_UREGSET_ADD_PARENT_##type(r,base,reg) 
+
+
+// mark a register dirty
+#define _MK_UREGSET_DIRTY(base,reg,type) \
+	if (_MK_UREGSET_DECODE_##type(base,reg)) \
+	{ \
+		_MK_UREGSET_INDEX_##type(s,base,reg).Set( ~_MK_UREGSET_INDEX_##type(r,base,reg).Get() ); \
+		return; \
+	} else
+
+// mark a register clean
+#define _MK_UREGSET_CLEAN(base,reg,type) \
+	if (_MK_UREGSET_DECODE_##type(base,reg)) \
+	{ \
+		_MK_UREGSET_INDEX_##type(s,base,reg).Set( _MK_UREGSET_INDEX_##type(r,base,reg).Get() ); \
+		return; \
+	} else
+
+// mark all registers in set as dirty
+#define _MK_UREGSET_DIRTYALL_REG(base,reg) \
+	_MK_UREGSET_INDEX_REG(s,base,reg).Set( ~_MK_UREGSET_INDEX_REG(r,base,reg).Get() );
+
+#define _MK_UREGSET_DIRTYALL_ARY(base,reg) \
+	for (uint32_t uOff = REG_off(base##_##reg); uOff < REG_off(base##_##reg) + REG_asiz(base##_##reg) * REG_size(base##_##reg); uOff += REG_size(base##_##reg)) \
+	{ \
+		_MK_UREGSET_INDEX_ARY(s,base,reg).Set( ~_MK_UREGSET_INDEX_ARY(r,base,reg).Get() ); \
+	}
+#define _MK_UREGSET_DIRTYALL(base,reg,type) _MK_UREGSET_DIRTYALL_##type(base,reg)
+
+// return the index into an array register based on offset
+#define _MK_UREGSET_ARRAYINDEX_REG(base,reg)
+#define _MK_UREGSET_ARRAYINDEX_ARY(base,reg) \
+	if (_MK_UREGSET_DECODE_ARY(base,reg)) \
+	{ \
+		return( (int32_t)(uOff - REG_off(base##_##reg)) ); \
+	}
+#define _MK_UREGSET_ARRAYINDEX(base,reg,type) \
+	_MK_UREGSET_ARRAYINDEX_##type(base,reg)
+
+// print a register to a string
+#define _MK_UREGSET_PRINT_REG(base,reg) \
+	if (_MK_UREGSET_DECODE_REG(base,reg)) \
+	{ \
+		return( _MK_UREGSET_INDEX_REG(r,base,reg).Print( pszBuff, nSize ) ); \
+	} else
+#define _MK_UREGSET_PRINT_ARY(base,reg) \
+	if (_MK_UREGSET_DECODE_ARY(base,reg)) \
+	{ \
+		return( _MK_UREGSET_INDEX_ARY(r,base,reg).Print( pszBuff, nSize, uOff - REG_off(base##_##reg) ) ); \
+	} else
+#define _MK_UREGSET_PRINT(base,reg,type) \
+	_MK_UREGSET_PRINT_##type(base,reg)
+
+// create a name/offset table for _parse_reg_name_tab
+#define _MK_UREGSET_PARSE_TAB(base,reg,type) __MK_UREGSET_PARSE_TAB(reg,REG_off(base##_##reg))
+#define __MK_UREGSET_PARSE_TAB(reg,off) ___MK_UREGSET_PARSE_TAB(reg,off)
+#define ___MK_UREGSET_PARSE_TAB(reg,off) #reg "\0" #off "\0"
+
+// parse a register at an offset
+#define _MK_UREGSET_PARSE_REG(base,reg) \
+	if (_MK_UREGSET_DECODE_REG(base,reg)) \
+	{ \
+		if (puOff) *puOff = REG_off(base##_##reg); \
+		if (pn[0] == '=') \
+		{ \
+			if (puVal) *puVal = strtoul( &pn[1], NULL, 0 ); \
+			if (puMask) *puMask = REG_mask(base##_##reg); \
+			return( true ); \
+		} \
+		else if ((pn[0] == ':') && (pn[1] == ' ')) \
+		{ \
+			return( _MK_UREGSET_INDEX_REG(r,base,reg).Parse( &pn[2], puVal, puMask ) ); \
+		} \
+		return( true ); \
+	} else
+#define _MK_UREGSET_PARSE_ARY(base,reg) \
+	if (_MK_UREGSET_DECODE_ARY(base,reg)) \
+	{ \
+		if (uIndex >= REG_asiz(base##_##reg) * REG_size(base##_##reg)) return( false ); \
+		if (puOff) *puOff = uIndex + REG_off(base##_##reg); \
+		if (pn[0] == '=') \
+		{ \
+			if (puVal) *puVal = strtoul( &pn[1], NULL, 0 ); \
+			if (puMask) *puMask = REG_mask(base##_##reg); \
+			return( true ); \
+		} \
+		else if ((pn[0] == ':') && (pn[1] == ' ')) \
+		{ \
+			return( _MK_UREGSET_INDEX_ARY(r,base,reg).Parse( &pn[2], puVal, puMask ) ); \
+		} \
+		return( true ); \
+	} else
+#define _MK_UREGSET_PARSE(base,reg,type) \
+	_MK_UREGSET_PARSE_##type(base,reg)
+
+// callback function for Iterate() and Update() methods
+// for Iterate, returns true if register should be counted
+// for Update, returns true if register updated
+typedef bool (*PFNREGSETITERATOR)( void *pCtx, uint32_t uOff, uint32_t uData );
+typedef bool (*PFNREGSETCOPY)( void *pCtx, uint32_t uOff, uint32_t &uData );
+
+// register iterator (visits all registers in set)
+#define _MK_UREGSET_ITERATE_REG(base,reg) \
+	if (pfnIterate( pCtx, REG_off(base##_##reg), _MK_UREGSET_INDEX_REG(r,base,reg).Get() )) \
+	{ \
+		++uIterated; \
+	}
+#define _MK_UREGSET_ITERATE_ARY(base,reg) \
+	for (uOff = REG_off(base##_##reg); uOff < REG_off(base##_##reg) + REG_asiz(base##_##reg) * REG_size(base##_##reg); uOff += REG_size(base##_##reg)) \
+	{ \
+		if (pfnIterate( pCtx, uOff, _MK_UREGSET_INDEX_ARY(r,base,reg).Get() )) \
+		{ \
+			++uIterated; \
+		} \
+	}
+#define _MK_UREGSET_ITERATE(base,reg,type) _MK_UREGSET_ITERATE_##type(base,reg)
+
+// update only dirty registers (ones Set since last update)
+#define _MK_UREGSET_UPDATE_REG(base,reg) \
+	if (_MK_UREGSET_INDEX_REG(r,base,reg).Get() != _MK_UREGSET_INDEX_REG(s,base,reg).Get()) \
+	{ \
+		uint32_t uData = _MK_UREGSET_INDEX_REG(r,base,reg).Get(); \
+		if (pfnUpdate( pCtx, REG_off(base##_##reg), uData )) \
+		{ \
+			_MK_UREGSET_INDEX_REG(s,base,reg).Set( uData ); \
+		} \
+		++uDirty; \
+	}
+#define _MK_UREGSET_UPDATE_ARY(base,reg) \
+	for (uOff = REG_off(base##_##reg); uOff < REG_off(base##_##reg) + REG_asiz(base##_##reg) * REG_size(base##_##reg); uOff += REG_size(base##_##reg)) \
+	{ \
+		if (_MK_UREGSET_INDEX_ARY(r,base,reg).Get() != _MK_UREGSET_INDEX_ARY(s,base,reg).Get()) \
+		{ \
+			uint32_t uData = _MK_UREGSET_INDEX_ARY(r,base,reg).Get(); \
+			if (pfnUpdate( pCtx, uOff, uData )) \
+			{ \
+				_MK_UREGSET_INDEX_ARY(s,base,reg).Set( uData ); \
+			} \
+			++uDirty; \
+		} \
+	}
+#define _MK_UREGSET_UPDATE(base,reg,type) _MK_UREGSET_UPDATE_##type(base,reg)
+
+// copy only dirty registers (ones Set since last update)
+#define _MK_UREGSET_COPY_REG(base,reg) \
+	if (_MK_UREGSET_INDEX_REG(r,base,reg).Get() != _MK_UREGSET_INDEX_REG(s,base,reg).Get()) \
+	{ \
+		if (pfnCopy( pCtx, REG_off(base##_##reg), *_MK_UREGSET_INDEX_REG(r,base,reg).Data() )) \
+		{ \
+			_MK_UREGSET_INDEX_REG(s,base,reg).Set( _MK_UREGSET_INDEX_REG(r,base,reg).Get() ); \
+		} \
+		++uDirty; \
+	}
+#define _MK_UREGSET_COPY_ARY(base,reg) \
+	for (uOff = REG_off(base##_##reg); uOff < REG_off(base##_##reg) + REG_asiz(base##_##reg) * REG_size(base##_##reg); uOff += REG_size(base##_##reg)) \
+	{ \
+		if (_MK_UREGSET_INDEX_ARY(r,base,reg).Get() != _MK_UREGSET_INDEX_ARY(s,base,reg).Get()) \
+		{ \
+			if (pfnCopy( pCtx, uOff, *_MK_UREGSET_INDEX_ARY(r,base,reg).Data() )) \
+			{ \
+				_MK_UREGSET_INDEX_ARY(s,base,reg).Set( _MK_UREGSET_INDEX_ARY(r,base,reg).Get() ); \
+			} \
+			++uDirty; \
+		} \
+	}
+#define _MK_UREGSET_COPY(base,reg,type) _MK_UREGSET_COPY_##type(base,reg)
+
+// create an enum which maps names to register offsets (and leaves space for array regs)
+#define _MK_UREGSET_ENM_REG(base,reg) \
+	e##reg = REG_off(base##_##reg),
+#define _MK_UREGSET_ENM_ARY(base,reg) \
+	e##reg = REG_off(base##_##reg), \
+	e##reg##__LAST = REG_off(base##_##reg) + (REG_asiz(base##_##reg) * REG_size(base##_##reg)) - 1,
+#define _MK_UREGSET_ENM(base,reg,type) _MK_UREGSET_ENM_##type(base,reg)
+
+// macro to report masks with defined fields (defined = readable, writeable, or both)
+#define _MK_UREGSET_READ_WRITE_MASK(base, reg, type) \
+        if (_MK_UREGSET_DECODE_##type(base,reg)) \
+        { \
+                return (REG_mask(base##_##reg)); \
+        } \
+        else
+
+// macros to generate write masks
+#define _MK_UREGSET_WRITE_MASK_FLD(base, reg, fld) \
+        if (REG_FLD_read(base##_##reg##_##fld) & 2) \
+                w_mask |= REG_FLD_mask(base##_##reg##_##fld) << REG_FLD_lsb(base##_##reg##_##fld);
+
+#define _MK_UREGSET_WRITE_MASK(base, reg, type) \
+        if (_MK_UREGSET_DECODE_##type(base,reg)) \
+        { \
+                uint32_t w_mask = 0; \
+                LIST_REG_FLD_##base##_##reg(_MK_UREGSET_WRITE_MASK_FLD); \
+                return( w_mask ); \
+        } \
+        else
+
+// macros to generate read masks
+#define _MK_UREGSET_READ_MASK_FLD(base, reg, fld) \
+        if (REG_FLD_read(base##_##reg##_##fld) & 1) \
+                r_mask |= REG_FLD_mask(base##_##reg##_##fld) << REG_FLD_lsb(base##_##reg##_##fld);
+
+#define _MK_UREGSET_READ_MASK(base, reg, type) \
+        if (_MK_UREGSET_DECODE_##type(base,reg)) \
+        { \
+                uint32_t r_mask = 0; \
+                LIST_REG_FLD_##base##_##reg(_MK_UREGSET_READ_MASK_FLD); \
+                return( r_mask ); \
+        } \
+        else
+
+// macro to return basic register name
+#define _MK_UREGSET_NAME(base, reg, type) \
+        if (_MK_UREGSET_DECODE_##type(base,reg)) \
+        { \
+                name = #base "_" #reg ; \
+        } \
+        else
+
+class CREGSET
+{
+private:
+	uint32_t		uBase;
+public:
+	void SetBase( uint32_t uNewBase ) { uBase = uNewBase; }
+	uint32_t Base() const { return( uBase ); }
+};
+
+#define MK_UREGSET_CLASS(base) \
+LIST_##base##_REGS(MK_UREG_CLASS) \
+class C##base##_REGSET : public CREGSET \
+{ \
+public: \
+	LIST_##base##_REGS(_MK_UREGSET_DECL) \
+	enum Enm##base { LIST_##base##_REGS(_MK_UREGSET_ENM) eNoDecode }; \
+	Enm##base Get( uint32_t uOff, uint32_t *puData ) \
+	{ \
+		switch (uOff) { \
+		LIST_##base##_REGS(_MK_UREGSET_GET_REG) \
+                default: \
+                         break; \
+                } \
+                LIST_##base##_REGS(_MK_UREGSET_GET_ARY) \
+                \
+              	Fail( "Failed to decode " #base " register read at offset 0x%x", uOff ); \
+	        return( eNoDecode ); \
+	} \
+        Enm##base Set( uint32_t uOff, uint32_t uData ) \
+        { \
+                switch (uOff) { \
+		LIST_##base##_REGS(_MK_UREGSET_SET_REG) \
+                default: \
+                         break; \
+                } \
+                LIST_##base##_REGS(_MK_UREGSET_SET_ARY) \
+                \
+              	Fail( "Failed to decode " #base " register read at offset 0x%x", uOff ); \
+	        return( eNoDecode ); \
+        } \
+        bool SetSCR( uint32_t uOff, uint32_t uData ,uint32_t SECGrp) \
+        { \
+                switch (uOff) { \
+		LIST_##base##_REGS(_MK_UREGSET_SET_SCRREG) \
+                default: \
+                    return false; \
+                } \
+                LIST_##base##_REGS(_MK_UREGSET_SET_SCRARY) \
+                \
+              	Fail( "Failed to decode " #base " register read at offset 0x%x", uOff ); \
+	        return false; \
+        } \
+        Enm##base GetDefined( uint32_t uOff, uint32_t *puData ) \
+        { \
+                LIST_##base##_REGS(_MK_UREGSET_GET_W_READ_WRITE_MASK) \
+                Fail( "Failed to decode " #base " register read with rw_mask at offset 0x%x", uOff ); \
+                return( eNoDecode ); \
+        } \
+        Enm##base SetDefined( uint32_t uOff, uint32_t uData ) \
+        { \
+                LIST_##base##_REGS(_MK_UREGSET_SET_W_READ_WRITE_MASK) \
+                Fail( "Failed to decode " #base " register write with rw_mask at offset 0x%x, data 0x%08x", uOff, uData ); \
+                return( eNoDecode ); \
+        } \
+        Enm##base GetReadable( uint32_t uOff, uint32_t *puData ) \
+        { \
+                LIST_##base##_REGS(_MK_UREGSET_GET_W_READ_MASK) \
+                Fail( "Failed to decode " #base " register read with r_mask at offset 0x%x", uOff ); \
+                return( eNoDecode ); \
+        } \
+        Enm##base SetWritable( uint32_t uOff, uint32_t uData ) \
+        { \
+                LIST_##base##_REGS(_MK_UREGSET_SET_W_WRITE_MASK) \
+                Fail( "Failed to decode " #base " register write with w_mask at offset 0x%x, data 0x%08x", uOff, uData ); \
+                return( eNoDecode ); \
+        } \
+	bool CheckAddr( uint32_t uOff ) const \
+	{ \
+		LIST_##base##_REGS(_MK_UREGSET_CHECKADDR) \
+		return( false ); \
+	} \
+	void Dirty( uint32_t uOff ) \
+	{ \
+		LIST_##base##_REGS(_MK_UREGSET_DIRTY) \
+		Fail( "Failed to decode " #base " register dirty at offset 0x%x", uOff ); \
+	} \
+	void Clean( uint32_t uOff ) \
+	{ \
+		LIST_##base##_REGS(_MK_UREGSET_CLEAN) \
+		Fail( "Failed to decode " #base " register clean at offset 0x%x", uOff ); \
+	} \
+	void DirtyAll() \
+	{ \
+		LIST_##base##_REGS(_MK_UREGSET_DIRTYALL) \
+	} \
+	void ResetAll() \
+	{ \
+		LIST_##base##_REGS(_MK_UREGSET_RESETALL) \
+	} \
+	void RegisterParent(void *parent) \
+	{ \
+		LIST_##base##_REGS(_MK_UREGSET_ADD_PARENT_ALL) \
+	} \
+	int32_t ArrayIndex( uint32_t uOff ) const \
+	{ \
+		LIST_##base##_REGS(_MK_UREGSET_ARRAYINDEX) \
+		return( -1 ); \
+	} \
+        uint32_t ReadWriteMask( uint32_t uOff ) const \
+        { \
+                LIST_##base##_REGS(_MK_UREGSET_READ_WRITE_MASK) \
+                Fail( "Failed to decode " #base " register rw_mask at offset 0x%x", uOff ); \
+                return( 0 ); \
+        } \
+	uint32_t WriteMask( uint32_t uOff ) const \
+	{ \
+		LIST_##base##_REGS(_MK_UREGSET_WRITE_MASK) \
+		Fail( "Failed to decode " #base " register w_mask at offset 0x%x", uOff ); \
+		return( 0 ); \
+	} \
+        uint32_t ReadMask( uint32_t uOff ) const \
+        { \
+                LIST_##base##_REGS(_MK_UREGSET_READ_MASK) \
+                Fail( "Failed to decode " #base " register r_mask at offset 0x%x", uOff ); \
+                return( 0 ); \
+        } \
+        const char *Name( uint32_t uOff ) const \
+        { \
+                const char *name = ""; \
+                LIST_##base##_REGS(_MK_UREGSET_NAME) \
+                name = #base "_UNKNOWN"; \
+                return name; \
+        } \
+	int32_t Print( char *pszBuff, int32_t nSize, uint32_t uOff ) const \
+	{ \
+		LIST_##base##_REGS(_MK_UREGSET_PRINT) \
+		*pszBuff = '\0'; \
+		return( 0 ); \
+	} \
+	bool Parse( const char *pcszBuff, uint32_t *puOff, uint32_t *puVal = NULL, uint32_t *puMask = NULL ) \
+	{ \
+		const char *pt = LIST_##base##_REGS(_MK_UREGSET_PARSE_TAB) "\0"; \
+		const char *pn = pcszBuff; \
+		if (_parse_reg_name_tab( pt, pn )) \
+		{ \
+			uint32_t uIndex = 0; \
+			uint32_t uOff = strtol( pt, NULL, 0 ); \
+			if (pn[0] == '[') \
+			{ \
+				uIndex = strtol( &pn[1], (char **)&pn, 0 ); \
+				if (pn[0] == ']') ++pn; \
+			} \
+            (void)uIndex; (void)uOff; \
+			LIST_##base##_REGS(_MK_UREGSET_PARSE) \
+			return( false ); \
+		} \
+		return( false ); \
+	} \
+	uint32_t Iterate( PFNREGSETITERATOR pfnIterate, void *pCtx ) \
+	{ \
+		uint32_t uOff, uIterated = 0; \
+		LIST_##base##_REGS(_MK_UREGSET_ITERATE) \
+		(void)uOff; \
+		return( uIterated ); \
+	} \
+	uint32_t Update( PFNREGSETITERATOR pfnUpdate, void *pCtx ) \
+	{ \
+		uint32_t uOff, uDirty = 0; \
+		LIST_##base##_REGS(_MK_UREGSET_UPDATE) \
+		(void)uOff; \
+		return( uDirty ); \
+	} \
+	uint32_t Copy( PFNREGSETCOPY pfnCopy, void *pCtx ) \
+	{ \
+		uint32_t uOff, uDirty = 0; \
+		LIST_##base##_REGS(_MK_UREGSET_COPY) \
+		(void)uOff; \
+		return( uDirty ); \
+	} \
+}; \
+
+//
+// CREGSET_GENERIC wrapper template (virtualizes methods but hides registers)
+//
+// example usage: 
+//
+//     MK_UREGSET_CLASS(EXAMPLE)
+//     CEXAMPLE_REGSET Reg;
+//     CREGSET_GENERIC_BASE *pGeneric = new CREGSET_GENERIC<CEXAMPLE_REGSET>( Reg )
+//
+
+#define LIST_CREGSET_API(_) \
+_(uint32_t,Get,( uint32_t uOff, uint32_t *puData ) const,( uOff, puData )) \
+_(uint32_t,Set,( uint32_t uOff, uint32_t uData ),( uOff, uData )) \
+_(uint32_t,GetDefined,( uint32_t uOff, uint32_t *puData ) const,( uOff, puData )) \
+_(uint32_t,SetDefined,( uint32_t uOff, uint32_t uData ),( uOff, uData )) \
+_(uint32_t,GetReadable,( uint32_t uOff, uint32_t *puData ) const,( uOff, puData )) \
+_(uint32_t,SetWritable,( uint32_t uOff, uint32_t uData ),( uOff, uData )) \
+_(bool,CheckAddr,( uint32_t uOff ) const,( uOff )) \
+_(void,Dirty,( uint32_t uOff ),( uOff )) \
+_(void,Clean,( uint32_t uOff ),( uOff )) \
+_(void,DirtyAll,(),()) \
+_(void,ResetAll,(),()) \
+_(int32_t,ArrayIndex,( uint32_t uOff ) const,( uOff )) \
+_(uint32_t,ReadWriteMask,( uint32_t uOff ) const,( uOff )) \
+_(uint32_t,WriteMask,( uint32_t uOff ) const,( uOff )) \
+_(uint32_t,ReadMask,( uint32_t uOff ) const,( uOff )) \
+_(const char *,Name,( uint32_t uOff ) const,( uOff )) \
+_(int32_t,Print,( char *pszBuff, int32_t nSize, uint32_t uOff ) const,( pszBuff, nSize, uOff )) \
+_(bool,Parse,( const char *pcszBuff, uint32_t *puOff, uint32_t *puVal = NULL, uint32_t *puMask = NULL ),( pcszBuff, puOff, puVal, puMask )) \
+_(uint32_t,Iterate,( PFNREGSETITERATOR pfnIterate, void *pCtx ),( pfnIterate, pCtx )) \
+_(uint32_t,Update,( PFNREGSETITERATOR pfnUpdate, void *pCtx ),( pfnUpdate, pCtx )) \
+_(uint32_t,Copy,( PFNREGSETCOPY pfnCopy, void *pCtx ),( pfnCopy, pCtx ))
+
+class CREGSET_GENERIC_BASE
+{
+public:
+    #define MK_REGSET_GENERIC_BASE(ret,name,proto,call) \
+    virtual ret name proto = 0;
+    LIST_CREGSET_API(MK_REGSET_GENERIC_BASE)
+    virtual ~CREGSET_GENERIC_BASE() {};
+};
+
+template <typename T> class CREGSET_GENERIC: public CREGSET_GENERIC_BASE
+{
+private:
+    T &RegSet;
+
+public:
+    CREGSET_GENERIC( T &rs ) : RegSet( rs ) {}
+    #define MK_REGSET_GENERIC(ret,name,proto,call) \
+    virtual ret name proto { return RegSet.name call; }
+    LIST_CREGSET_API(MK_REGSET_GENERIC)
+};
+
+
+
+#define MK_UREG_DECL_CLASS(base,reg,type) \
+class C##base##_##reg \
+{ \
+private: \
+	uint32_t	uData; \
+public: \
+    C##base##_##reg(); \
+	uint32_t	*Data();\
+	const uint32_t *Data() const ;\
+	uint32_t	Get() ;\
+	void	Set( uint32_t u )  ;\
+	bool	SetSCR( uint32_t u ,uint32_t SECGrp) ;\
+	uint32_t	GetDefined() const ;\
+	void	SetDefined( uint32_t u ) ;\
+    uint32_t    GetReadable() const ; \
+	void	SetWritable( uint32_t u ) ; \
+    uint32_t    ReadWriteMask() const ; \
+    uint32_t    WriteMask() const ;\
+    uint32_t    ReadMask() const; \
+    const char *Name() const ;\
+	void	Reset();\
+    LIST_REG_FLD_##base##_##reg(_MK_UREG_METH) \
+    LIST_REG_FLD_##base##_##reg(_MK_UREG_SETENUM_METH) \
+    LIST_REG_FLD_##base##_##reg(_MK_UREG_GETENUM_METH) \
+    LIST_REG_FLD_##base##_##reg(_MK_UREG_PRINTENUM_METH) \
+	int32_t Print( char *pszBuff, int32_t nSize, int32_t nIndex = -1 ) const;\
+	bool Parse( const char *pcszBuff, uint32_t *puVal, uint32_t *puMask = 0 ); \
+}; \
+
+
+#define MK_UREG_DEFN_CLASS(base,reg,type) \
+    C##base##_##reg :: C##base##_##reg() { Reset();  } \
+	uint32_t* C##base##_##reg :: Data() { return( &uData ); } \
+	const uint32_t* C##base##_##reg :: Data() const { return( &uData ); } \
+	uint32_t	C##base##_##reg :: Get() { return( uData ); } \
+	void	C##base##_##reg :: Set( uint32_t u ) { uData = u;  } \
+	bool	C##base##_##reg :: SetSCR( uint32_t u ,uint32_t SECGrp) { \
+            bool sec_lock=(uData>>29) & 0x1;\
+            uint32_t sec_owner=(uData>>24) & 0x7;\
+            SECGrp=~SECGrp;\
+            if(!sec_lock && (SECGrp & (1 << sec_owner))){\
+                uData=u;\
+                return true;\
+            }else \
+            return false;\
+        }\
+	uint32_t	C##base##_##reg :: GetDefined() const \
+        { \
+            return( uData & REG_mask(base##_##reg)); \
+        } \
+	void	C##base##_##reg :: SetDefined( uint32_t u ) \
+        { \
+            uData = (u & REG_mask(base##_##reg)); \
+        } \
+        uint32_t    C##base##_##reg :: GetReadable() const \
+        { \
+            uint32_t r_mask = ReadMask(); \
+            return( uData & r_mask ); \
+        } \
+	void	C##base##_##reg :: SetWritable( uint32_t u ) \
+        { \
+            uint32_t rw_mask = ReadWriteMask(); \
+            uint32_t w_mask = WriteMask(); \
+            uData = (uData & (rw_mask & ~w_mask)) | (u & w_mask); \
+        } \
+        uint32_t    C##base##_##reg :: ReadWriteMask() const \
+        { \
+            return( REG_mask(base##_##reg) ); \
+        } \
+        uint32_t    C##base##_##reg :: WriteMask() const \
+        { \
+            uint32_t w_mask = 0; \
+            LIST_REG_FLD_##base##_##reg(_MK_UREGSET_WRITE_MASK_FLD); \
+            return( w_mask ); \
+        } \
+        uint32_t    C##base##_##reg :: ReadMask() const \
+        { \
+            uint32_t r_mask = 0; \
+            LIST_REG_FLD_##base##_##reg(_MK_UREGSET_READ_MASK_FLD); \
+            return( r_mask ); \
+        } \
+        const char* C##base##_##reg :: Name() const \
+        { \
+            return ( #base "_" #reg ); \
+        } \
+	void	C##base##_##reg :: Reset() { uData = REG_rstv(base##_##reg); } \
+	int32_t C##base##_##reg :: Print( char *pszBuff, int32_t nSize, int32_t nIndex) const \
+	{ \
+		int32_t n; \
+		if (nIndex >= 0) n = snprintf( pszBuff, nSize, "%s[%d]:", #base "_" #reg, nIndex ); \
+		else n = snprintf( pszBuff, nSize, "%s:", #base "_" #reg ); \
+		if (n > nSize) n = nSize; \
+		char *p = pszBuff + n; \
+		nSize -= n; \
+		LIST_REG_FLD_##base##_##reg(_MK_UREG_PRINT) \
+		return( p - pszBuff ); \
+	} \
+	bool C##base##_##reg :: Parse( const char *pcszBuff, uint32_t *puVal, uint32_t *puMask ) \
+	{ \
+		return( _parse_field_set( LIST_REG_FLD_##base##_##reg(_MK_UREG_PARSE_TAB) "\0", pcszBuff, puVal, puMask ) ); \
+	} \
+
+
+#define _MK_UREGSET_ADD_PARENT_REG(pre,base,reg) 
+#define MK_UREGSET_DECL_CLASS(base) \
+LIST_##base##_REGS(MK_UREG_DECL_CLASS) \
+class C##base##_REGSET : public CREGSET \
+{ \
+public: \
+	LIST_##base##_REGS(_MK_UREGSET_DECL) \
+	enum Enm##base { LIST_##base##_REGS(_MK_UREGSET_ENM) eNoDecode }; \
+	Enm##base Get( uint32_t uOff, uint32_t *puData ); \
+    Enm##base Set( uint32_t uOff, uint32_t uData ); \
+    bool SetSCR( uint32_t uOff, uint32_t uData ,uint32_t SECGrp);\
+    Enm##base GetDefined( uint32_t uOff, uint32_t *puData ); \
+    Enm##base SetDefined( uint32_t uOff, uint32_t uData ); \
+    Enm##base GetReadable( uint32_t uOff, uint32_t *puData ); \
+    Enm##base SetWritable( uint32_t uOff, uint32_t uData ); \
+	bool CheckAddr( uint32_t uOff ) const; \
+	void Dirty( uint32_t uOff ); \
+	void Clean( uint32_t uOff ); \
+	void DirtyAll(); \
+	void ResetAll(); \
+	void RegisterParent(void *parent) ;\
+	int32_t ArrayIndex( uint32_t uOff ) const; \
+    uint32_t ReadWriteMask( uint32_t uOff ) const; \
+	uint32_t WriteMask( uint32_t uOff ) const; \
+    uint32_t ReadMask( uint32_t uOff ) const ;\
+    const char *Name( uint32_t uOff ) const; \
+	int32_t Print( char *pszBuff, int32_t nSize, uint32_t uOff ) const; \
+	bool Parse( const char *pcszBuff, uint32_t *puOff, uint32_t *puVal = NULL, uint32_t *puMask = NULL ); \
+	uint32_t Iterate( PFNREGSETITERATOR pfnIterate, void *pCtx ); \
+	uint32_t Update( PFNREGSETITERATOR pfnUpdate, void *pCtx ); \
+	uint32_t Copy( PFNREGSETCOPY pfnCopy, void *pCtx ); \
+}; \
+
+
+#define MK_UREGSET_DEFN_CLASS(base) \
+LIST_##base##_REGS(MK_UREG_DEFN_CLASS) \
+	C##base##_REGSET ::Enm##base C##base##_REGSET :: Get( uint32_t uOff, uint32_t *puData ) \
+	{ \
+		switch (uOff) { \
+		LIST_##base##_REGS(_MK_UREGSET_GET_REG) \
+                default: \
+                         break; \
+                } \
+                LIST_##base##_REGS(_MK_UREGSET_GET_ARY) \
+                \
+              	Fail( "Failed to decode " #base " register read at offset 0x%x", uOff ); \
+	        return( eNoDecode ); \
+	} \
+    C##base##_REGSET ::Enm##base C##base##_REGSET :: Set( uint32_t uOff, uint32_t uData ) \
+    { \
+            switch (uOff) { \
+	LIST_##base##_REGS(_MK_UREGSET_SET_REG) \
+            default: \
+                     break; \
+            } \
+            LIST_##base##_REGS(_MK_UREGSET_SET_ARY) \
+            \
+          	Fail( "Failed to decode " #base " register read at offset 0x%x", uOff ); \
+	    return( eNoDecode ); \
+    } \
+    bool C##base##_REGSET :: SetSCR( uint32_t uOff, uint32_t uData ,uint32_t SECGrp) \
+    { \
+            switch (uOff) { \
+	LIST_##base##_REGS(_MK_UREGSET_SET_SCRREG) \
+            default: \
+                return false; \
+            } \
+            LIST_##base##_REGS(_MK_UREGSET_SET_SCRARY) \
+            \
+          	Fail( "Failed to decode " #base " register read at offset 0x%x", uOff ); \
+	    return false; \
+    } \
+    C##base##_REGSET ::Enm##base C##base##_REGSET :: GetDefined( uint32_t uOff, uint32_t *puData ) \
+    { \
+            LIST_##base##_REGS(_MK_UREGSET_GET_W_READ_WRITE_MASK) \
+            Fail( "Failed to decode " #base " register read with rw_mask at offset 0x%x", uOff ); \
+            return( eNoDecode ); \
+    } \
+    C##base##_REGSET ::Enm##base C##base##_REGSET :: SetDefined( uint32_t uOff, uint32_t uData ) \
+    { \
+            LIST_##base##_REGS(_MK_UREGSET_SET_W_READ_WRITE_MASK) \
+            Fail( "Failed to decode " #base " register write with rw_mask at offset 0x%x, data 0x%08x", uOff, uData ); \
+            return( eNoDecode ); \
+    } \
+    C##base##_REGSET ::Enm##base C##base##_REGSET :: GetReadable( uint32_t uOff, uint32_t *puData ) \
+    { \
+            LIST_##base##_REGS(_MK_UREGSET_GET_W_READ_MASK) \
+            Fail( "Failed to decode " #base " register read with r_mask at offset 0x%x", uOff ); \
+            return( eNoDecode ); \
+    } \
+    C##base##_REGSET ::Enm##base C##base##_REGSET :: SetWritable( uint32_t uOff, uint32_t uData ) \
+    { \
+            LIST_##base##_REGS(_MK_UREGSET_SET_W_WRITE_MASK) \
+            Fail( "Failed to decode " #base " register write with w_mask at offset 0x%x, data 0x%08x", uOff, uData ); \
+            return( eNoDecode ); \
+    } \
+	bool C##base##_REGSET :: CheckAddr( uint32_t uOff ) const \
+	{ \
+		LIST_##base##_REGS(_MK_UREGSET_CHECKADDR) \
+		return( false ); \
+	} \
+	void C##base##_REGSET :: Dirty( uint32_t uOff ) \
+	{ \
+		LIST_##base##_REGS(_MK_UREGSET_DIRTY) \
+		Fail( "Failed to decode " #base " register dirty at offset 0x%x", uOff ); \
+	} \
+	void C##base##_REGSET :: Clean( uint32_t uOff ) \
+	{ \
+		LIST_##base##_REGS(_MK_UREGSET_CLEAN) \
+		Fail( "Failed to decode " #base " register clean at offset 0x%x", uOff ); \
+	} \
+	void C##base##_REGSET :: DirtyAll() \
+	{ \
+		LIST_##base##_REGS(_MK_UREGSET_DIRTYALL) \
+	} \
+	void C##base##_REGSET :: ResetAll() \
+	{ \
+		LIST_##base##_REGS(_MK_UREGSET_RESETALL) \
+	} \
+	void C##base##_REGSET :: RegisterParent(void *parent) \
+	{ \
+		LIST_##base##_REGS(_MK_UREGSET_ADD_PARENT_ALL) \
+	} \
+	int32_t C##base##_REGSET :: ArrayIndex( uint32_t uOff ) const \
+	{ \
+		LIST_##base##_REGS(_MK_UREGSET_ARRAYINDEX) \
+		return( -1 ); \
+	} \
+    uint32_t C##base##_REGSET :: ReadWriteMask( uint32_t uOff ) const \
+    { \
+            LIST_##base##_REGS(_MK_UREGSET_READ_WRITE_MASK) \
+            Fail( "Failed to decode " #base " register rw_mask at offset 0x%x", uOff ); \
+            return( 0 ); \
+    } \
+	uint32_t C##base##_REGSET :: WriteMask( uint32_t uOff ) const \
+	{ \
+		LIST_##base##_REGS(_MK_UREGSET_WRITE_MASK) \
+		Fail( "Failed to decode " #base " register w_mask at offset 0x%x", uOff ); \
+		return( 0 ); \
+	} \
+    uint32_t C##base##_REGSET :: ReadMask( uint32_t uOff ) const \
+    { \
+            LIST_##base##_REGS(_MK_UREGSET_READ_MASK) \
+            Fail( "Failed to decode " #base " register r_mask at offset 0x%x", uOff ); \
+            return( 0 ); \
+    } \
+    const char* C##base##_REGSET :: Name( uint32_t uOff ) const \
+    { \
+            const char *name = ""; \
+            LIST_##base##_REGS(_MK_UREGSET_NAME) \
+            name = #base "_UNKNOWN"; \
+            return name; \
+    } \
+	int32_t C##base##_REGSET :: Print( char *pszBuff, int32_t nSize, uint32_t uOff ) const \
+	{ \
+		LIST_##base##_REGS(_MK_UREGSET_PRINT) \
+		*pszBuff = '\0'; \
+		return( 0 ); \
+	} \
+	bool C##base##_REGSET :: Parse( const char *pcszBuff, uint32_t *puOff, uint32_t *puVal, uint32_t *puMask ) \
+	{ \
+		const char *pt = LIST_##base##_REGS(_MK_UREGSET_PARSE_TAB) "\0"; \
+		const char *pn = pcszBuff; \
+		if (_parse_reg_name_tab( pt, pn )) \
+		{ \
+			uint32_t uIndex = 0; \
+			uint32_t uOff = strtol( pt, NULL, 0 ); \
+			if (pn[0] == '[') \
+			{ \
+				uIndex = strtol( &pn[1], (char **)&pn, 0 ); \
+				if (pn[0] == ']') ++pn; \
+			} \
+            (void)uIndex; (void)uOff; \
+			LIST_##base##_REGS(_MK_UREGSET_PARSE) \
+			return( false ); \
+		} \
+		return( false ); \
+	} \
+	uint32_t C##base##_REGSET :: Iterate( PFNREGSETITERATOR pfnIterate, void *pCtx ) \
+	{ \
+		uint32_t uOff, uIterated = 0; \
+		LIST_##base##_REGS(_MK_UREGSET_ITERATE) \
+		(void)uOff; \
+		return( uIterated ); \
+	} \
+	uint32_t C##base##_REGSET :: Update( PFNREGSETITERATOR pfnUpdate, void *pCtx ) \
+	{ \
+		uint32_t uOff, uDirty = 0; \
+		LIST_##base##_REGS(_MK_UREGSET_UPDATE) \
+		(void)uOff; \
+		return( uDirty ); \
+	} \
+	uint32_t C##base##_REGSET :: Copy( PFNREGSETCOPY pfnCopy, void *pCtx ) \
+	{ \
+		uint32_t uOff, uDirty = 0; \
+		LIST_##base##_REGS(_MK_UREGSET_COPY) \
+		(void)uOff; \
+		return( uDirty ); \
+	} \
+
+
+
+
+#endif // !defined(CMACROS_UH)
