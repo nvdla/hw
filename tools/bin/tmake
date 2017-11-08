@@ -36,7 +36,7 @@ GetOptions (
              "clober|clean"      => \$clobber,
            ) or die "Unrecognized options @ARGV";
 
-push @build, "verif" unless defined @build;
+push @build, "verif" unless @build;
 #=============================
 ## Global Variables
 #=============================
