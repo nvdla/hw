@@ -314,7 +314,11 @@ initial begin
     wr_limit_override_value = 0;  // to keep viva happy with dangles
     if ( $test$plusargs( "raddr_fifo_wr_limit" ) ) begin
         wr_limit_override = 1;
-        $value$plusargs("raddr_fifo_wr_limit", wr_limit_override_value);
+        `ifdef VIVADO
+          wr_limit_override_value = $value$plusargs("raddr_fifo_wr_limit");
+        `else
+          $value$plusargs("raddr_fifo_wr_limit", wr_limit_override_value);
+        `endif
     end
 end
 
@@ -363,36 +367,76 @@ initial begin
     stall_cycles_min       = 1;
     stall_cycles_max       = 10;
 
-    if (!$value$plusargs("global_rollpli_seed0=%d", seed0)) begin 
+    `ifdef VIVADO
+      seed0 = $value$plusargs("global_rollpli_seed0=%d");
+      if (!seed0) begin 
+        seed0 = $value$plusargs("seed0=%d");
+        if (!seed0) seed0=16'h0123;
+      end 
+      seed1 = $value$plusargs("global_rollpli_seed1=%d");
+      if (!seed1) begin    
+        seed1 = $value$plusargs("seed1=%d");
+        if (!seed1) seed1=16'h4567;
+      end
+      seed2 = $value$plusargs("global_rollpli_seed2=%d");
+      if (!seed2) begin    
+        seed2 = $value$plusargs("seed2=%d");
+        if (!seed2) seed0=16'h89ab;
+      end
+    `else
+      if (!$value$plusargs("global_rollpli_seed0=%d", seed0)) begin
         if (!$value$plusargs("seed0=%d", seed0)) seed0=16'h0123;
-    end 
-    if (!$value$plusargs("global_rollpli_seed1=%d", seed1)) begin
+      end
+      if (!$value$plusargs("global_rollpli_seed1=%d", seed1)) begin
         if (!$value$plusargs("seed1=%d", seed1)) seed1=16'h4567;
-    end
-    if (!$value$plusargs("global_rollpli_seed2=%d", seed2)) begin
+      end
+      if (!$value$plusargs("global_rollpli_seed2=%d", seed2)) begin
         if (!$value$plusargs("seed2=%d", seed2)) seed2=16'h89ab;
-    end
+      end
+    `endif
+
+
 `ifdef USE_ROLLPLI
     $Seed48PLI(seed0, seed1, seed2, "auto");
 `endif
 
-    if ( $test$plusargs( "raddr_fifo_fifo_stall_probability" ) ) begin
+    `ifdef VIVADO
+      if ( $test$plusargs( "raddr_fifo_fifo_stall_probability" ) ) begin
+        stall_probability = $value$plusargs("raddr_fifo_fifo_stall_probability");
+      end else if ( $test$plusargs( "default_fifo_stall_probability" ) ) begin
+        stall_probability = $value$plusargs("default_fifo_stall_probability");
+      end
+
+      if ( $test$plusargs( "raddr_fifo_fifo_stall_cycles_min" ) ) begin
+        stall_cycles_min = $value$plusargs("raddr_fifo_fifo_stall_cycles_min");
+      end else if ( $test$plusargs( "default_fifo_stall_cycles_min" ) ) begin
+        stall_cycles_min = $value$plusargs("default_fifo_stall_cycles_min");
+      end
+
+      if ( $test$plusargs( "raddr_fifo_fifo_stall_cycles_max" ) ) begin
+        stall_cycles_max = $value$plusargs("raddr_fifo_fifo_stall_cycles_max");
+      end else if ( $test$plusargs( "default_fifo_stall_cycles_max" ) ) begin
+        stall_cycles_max = $value$plusargs("default_fifo_stall_cycles_max");
+      end
+    `else
+      if ( $test$plusargs( "raddr_fifo_fifo_stall_probability" ) ) begin
         $value$plusargs("raddr_fifo_fifo_stall_probability", stall_probability);
-    end else if ( $test$plusargs( "default_fifo_stall_probability" ) ) begin
+      end else if ( $test$plusargs( "default_fifo_stall_probability" ) ) begin
         $value$plusargs("default_fifo_stall_probability", stall_probability);
-    end
+      end
 
-    if ( $test$plusargs( "raddr_fifo_fifo_stall_cycles_min" ) ) begin
+      if ( $test$plusargs( "raddr_fifo_fifo_stall_cycles_min" ) ) begin
         $value$plusargs("raddr_fifo_fifo_stall_cycles_min", stall_cycles_min);
-    end else if ( $test$plusargs( "default_fifo_stall_cycles_min" ) ) begin
+      end else if ( $test$plusargs( "default_fifo_stall_cycles_min" ) ) begin
         $value$plusargs("default_fifo_stall_cycles_min", stall_cycles_min);
-    end
+      end
 
-    if ( $test$plusargs( "raddr_fifo_fifo_stall_cycles_max" ) ) begin
+      if ( $test$plusargs( "raddr_fifo_fifo_stall_cycles_max" ) ) begin
         $value$plusargs("raddr_fifo_fifo_stall_cycles_max", stall_cycles_max);
-    end else if ( $test$plusargs( "default_fifo_stall_cycles_max" ) ) begin
+      end else if ( $test$plusargs( "default_fifo_stall_cycles_max" ) ) begin
         $value$plusargs("default_fifo_stall_cycles_max", stall_cycles_max);
-    end
+      end
+    `endif
 
     if ( stall_cycles_min < 1 ) begin
         stall_cycles_min = 1;
