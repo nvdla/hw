@@ -8,7 +8,7 @@ TARGET ?= libnvdla_cmod.so
 BUILD_DIR ?= $(DEPTH)/$(OUTDIR)/$(PROJECT)/$(REL_PATH_FROM_TOT)
 SRC_DIR ?= $(DEPTH)/cmod
 
-PREFIX ?=$(BUILD_DIR)
+PREFIX ?=$(BUILD_DIR)/release
 
 SYSTEMC_INC_DIR ?= $(SYSTEMC)/include
 SYSTEMC_LIB_DIR ?= $(SYSTEMC)/lib-linux64
@@ -152,7 +152,7 @@ LDFLAGS ?= -shared $(addprefix -l,$($(notdir $(SYSTEMC_LIBRARIES)):lib%.so=%)) $
 $(BUILD_DIR)/$(TARGET): $(OBJS) 
 	$(CC) $(OBJS) -o $@ $(LDFLAGS) -L$(BUILD_DIR)
 
-default: $(BUILD_DIR)/$(TARGET)
+default: $(BUILD_DIR)/$(TARGET) install
 	@echo "=============================================="
 	@echo "files are generated under $(TOT)/$(OUTDIR)/$(PROJECT)/$(REL_PATH_FROM_TOT)"
 	@echo "=============================================="
@@ -175,6 +175,9 @@ install:
 	$(CP) $(SRC_DIR)/include/scsim_common.h $(PREFIX)/include
 	$(CP) $(SRC_DIR)/include/NV_nvdla_top_base.h $(PREFIX)/include
 	$(CP) $(SRC_DIR)/nvdla_top/NV_nvdla.h $(PREFIX)/include
+	@echo "=============================================="
+	@echo "release files are installed to $(PREFIX)"
+	@echo "=============================================="
 
 -include $(DEPS)
 
