@@ -1,9 +1,12 @@
--include ../tree.make
+DEPTH := ..
+
+-include $(DEPTH)/tools/make/common.make
+-include $(DEPTH)/tree.make
 
 TARGET ?= libnvdla_cmod.so
 
-BUILD_DIR ?= ./build
-SRC_DIR ?= .
+BUILD_DIR ?= $(DEPTH)/$(OUTDIR)/$(PROJECT)/$(REL_PATH_FROM_TOT)
+SRC_DIR ?= $(DEPTH)/cmod
 
 PREFIX ?=$(BUILD_DIR)
 
@@ -148,6 +151,11 @@ LDFLAGS ?= -shared $(addprefix -l,$($(notdir $(SYSTEMC_LIBRARIES)):lib%.so=%)) $
 
 $(BUILD_DIR)/$(TARGET): $(OBJS) 
 	$(CC) $(OBJS) -o $@ $(LDFLAGS) -L$(BUILD_DIR)
+
+default: $(BUILD_DIR)/$(TARGET)
+	@echo "=============================================="
+	@echo "files are generated under $(TOT)/$(OUTDIR)/$(PROJECT)/$(REL_PATH_FROM_TOT)"
+	@echo "=============================================="
 
 $(BUILD_DIR)/%.cpp.o: %.cpp
 	$(MKDIR_P) $(dir $@)
