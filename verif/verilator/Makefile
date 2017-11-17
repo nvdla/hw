@@ -25,10 +25,10 @@ $(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator/VNV_nvdla: $(DEPTH)/$(OUTDIR)/$(PROJECT)
 	cp nvdla.cpp $(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator/nvdla.cpp
 	make -C $(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator -f VNV_nvdla.mk CC=$(CLANG) CXX=$(CLANG)++ VM_PARALLEL_BUILDS=1
 
-$(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator/test/%: $(DEPTH)/verif/traces/traceplayer/%
+$(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator/test/%/trace.bin: $(DEPTH)/verif/traces/traceplayer/% input_txn_to_verilator.pl
 	rm -rf $@
-	mkdir -p $@
-	$(PERL) input_txn_to_verilator.pl $< $@/trace.bin
+	mkdir -p $(dir $@)
+	$(PERL) input_txn_to_verilator.pl $< $@
 
-run: $(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator/test/$(TEST) $(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator/VNV_nvdla
+run: $(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator/test/$(TEST)/trace.bin $(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator/VNV_nvdla
 	cd $(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator/test/$(TEST) && ../../VNV_nvdla trace.bin

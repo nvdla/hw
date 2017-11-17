@@ -105,21 +105,19 @@ while(<$inf>)
       $exp_data = $values[3];
       
       print $ouf pack("CLLL", 3, hex($address), hex($bitmask), hex($exp_data));
-    } elsif ($values[0] =~ /dump_mem/) {
-      my $addr = $values[1];
-      my $offset = $values[2];
-      my $mem_out = $values[3];
-      
-      print $ouf pack("CLLL", 4, hex($addr), hex($offset), length($mem_out)) . $mem_out;
-    } elsif ($values[0] =~ /load_mem/) {
+    } elsif ($values[0] =~ /(load|dump)_mem/) {
       my $addr = $values[1];
       my $offset = $values[2];
       my $mem_in = $values[3];
       my $raw_file;
       my $mem_out;
       my $minf, my $mouf;
+      my $cmd;
       
-      print $ouf pack("CLL", 5, hex($addr), hex($offset));
+      $cmd = 5 if ($values[0] =~ /load_mem/);
+      $cmd = 4 if ($values[0] =~ /dump_mem/);
+      
+      print $ouf pack("CLL", $cmd, hex($addr), hex($offset));
       open $minf, "<". "$test_dir/$mem_in";
 
       print "File $load_file_counter $addr $offset\n";
@@ -151,8 +149,12 @@ while(<$inf>)
       else {
         die "only .dat files supported in this tool so far";
       }
-
+      
       close $minf;
+      
+      if ($values[0] =~ /dump_mem/) {
+       print $ouf pack("L", length($mem_in)) . $mem_in;
+      }
     }
 #print " HexString: $hex_string" . "\n";
 #my @split_hex = ($hex_string =~ m/../g);

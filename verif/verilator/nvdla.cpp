@@ -49,11 +49,14 @@ class CSBMaster {
 	
 	VNV_nvdla *dla;
 	
+	int _test_passed;
+	
 public:
 	CSBMaster(VNV_nvdla *_dla) {
 		dla = _dla;
 		
 		dla->csb2nvdla_valid = 0;
+		_test_passed = 1;
 	}
 
 	void read(uint32_t addr, uint32_t mask, uint32_t data) {
@@ -114,6 +117,7 @@ public:
 				printf("(%lu) invalid response -- trying again\n", ticks);
 				if (!op.tries) {
 					printf("(%lu) ERROR: timed out reading response\n", ticks);
+					_test_passed = 0;
 					opq.pop();
 				}
 			} else
@@ -153,6 +157,10 @@ public:
 	
 	bool done() {
 		return opq.empty();
+	}
+	
+	int test_passed() {
+		return _test_passed;
 	}
 };
 
@@ -441,6 +449,8 @@ class TraceLoader {
 	
 	CSBMaster *csb;
 	AXIResponder<uint64_t> *axi_dbb, *axi_cvsram;
+	
+	int _test_passed;
 
 public:
 	enum stop_type {	
@@ -453,6 +463,7 @@ public:
 		csb = _csb;
 		axi_dbb = _axi_dbb;
 		axi_cvsram = _axi_cvsram;
+		_test_passed = 1;
 	}
 	
 	void load(const char *fname) {
@@ -499,12 +510,16 @@ public:
 			case 4: {
 				uint32_t addr;
 				uint32_t len;
+				uint8_t *buf;
 				uint32_t namelen;
 				char *fname;
 				axi_op op;
 				
 				VERILY_READ(&addr, 4);
 				VERILY_READ(&len, 4);
+				buf = (uint8_t *)malloc(len);
+				VERILY_READ(buf, len);
+				
 				VERILY_READ(&namelen, 4);
 				fname = (char *) malloc(namelen+1);
 				VERILY_READ(fname, namelen);
@@ -513,6 +528,7 @@ public:
 				op.opcode = AXI_DUMPMEM;
 				op.addr = addr;
 				op.len = len;
+				op.buf = buf;
 				op.fname = fname;
 				opq.push(op);
 				csb->ext_event(TRACE_AXIEVENT);
@@ -586,6 +602,8 @@ public:
 		}
 		case AXI_DUMPMEM: {
 			int fd;
+			const uint8_t *buf = op.buf;
+			int matched = 1;
 			
 			printf("AXI: dumping memory to %s\n", op.fname);
 			fd = creat(op.fname, 0666);
@@ -596,11 +614,19 @@ public:
 			while (op.len) {
 				uint8_t da = axi->read(op.addr);
 				write(fd, &da, 1);
-			
+				if (da != *buf && matched) {
+					printf("AXI: FAIL: mismatch at memory address %08x (exp 0x%02x, got 0x%02x), and maybe others too\n", op.addr, *buf, da);
+					matched = 0;
+					_test_passed = 0;
+				}
+				buf++;
 				op.addr++;
 				op.len--;
 			}
 			close(fd);
+			
+			if (matched)
+				printf("AXI: memory dump matched reference\n");
 			break;
 		}
 		default:
@@ -608,6 +634,10 @@ public:
 		}
 		
 		opq.pop();
+	}
+	
+	int test_passed() {
+		return _test_passed;
 	}
 };
 
@@ -812,4 +842,18 @@ int main(int argc, const char **argv, char **env) {
 	}
 	
 	printf("done at %lu ticks\n", ticks);
+
+	if (!trace->test_passed()) {
+		printf("*** FAIL: test failed due to output mismatch\n");
+		return 1;
+	}
+	
+	if (!csb->test_passed()) {
+		printf("*** FAIL: test failed due to CSB read mismatch\n");
+		return 2;
+	}
+	
+	printf("*** PASS\n");
+	
+	return 0;
 }
