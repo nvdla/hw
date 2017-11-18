@@ -17,7 +17,7 @@ croak "$tree_make_vm does not exists" unless -e $tree_make_vm;
 
 system ("chmod +w $tot/tree.make") if $run;
 system ("cp $tree_make_vm $tot/tree.make") if $run;
-system ("$tot/tools/bin/tmake -project nv_large") if $run;
+system ("$tot/tools/bin/tmake -project nv_full") if $run;
 
 my $log = "$tot/outdir/build.log";
 open(L, "<${log}") or die("ERROR: Can't read log file $log\n");

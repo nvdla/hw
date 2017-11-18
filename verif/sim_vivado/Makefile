@@ -117,10 +117,10 @@ TOPDIR       := ${dir ${shell ${PWD}}}
 DUTDIR       := ${TOPDIR}dut
 SIMDIR       := ${TOPDIR}sim_vivado
 SYNTHTBDIR   := ${TOPDIR}synth_tb
-VLIBDIR      := ${TOPDIR}../outdir/nv_large/vmod/vlibs
-VMODINCDIR   := ${TOPDIR}../outdir/nv_large/vmod/include
+VLIBDIR      := ${TOPDIR}../outdir/nv_full/vmod/vlibs
+VMODINCDIR   := ${TOPDIR}../outdir/nv_full/vmod/include
 ifeq (${DESIGNWARE_NOEXIST},1)
-DWDIR        := ${TOPDIR}../outdir/nv_large/vmod/vlibs
+DWDIR        := ${TOPDIR}../outdir/nv_full/vmod/vlibs
 DWFILES      := ${DWDIR}/NV_DW02_tree.v \
                     ${DWDIR}/NV_DW_lsd.v \
                     ${DWDIR}/NV_DW_minmax.v
