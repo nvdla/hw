@@ -342,6 +342,8 @@ endif
 
 ifeq ($(GUI),1)
   XSIM_RUN_ARGS := --gui
+else
+  XSIM_RUN_ARGS := --runall
 endif
 
 # ----------------------------------------------------------------------------
@@ -376,7 +378,7 @@ run: ${XILINX_EXECUTABLE}
 	${RM} -f ${VCS_LOGFILE} ; \
 	${SYNTHCFGGEN} ${PLUSARGS} ${DEFAULT_PLUSARGS}; \
 	${SYNTHINPVECGEN} ${SIMTESTDIR} ; \
-	${LSF_COMMAND} $(XILINX_HOME)/bin/xsim top --runall --log ${VCS_LOGFILE} ${XSIM_RUN_ARGS} ${PLUSARGS} ${TESTDIR_PLUSARGS_ONE} ${DEFAULT_PLUSARGS} ${DUMP_ARGS} -testplusarg input_file=${SIMTESTDIR}/${INPUTVECTORS} -testplusarg input_dir=${SIMTESTDIR} ; \
+	${LSF_COMMAND} $(XILINX_HOME)/bin/xsim top --log ${VCS_LOGFILE} ${XSIM_RUN_ARGS} ${PLUSARGS} ${TESTDIR_PLUSARGS_ONE} ${DEFAULT_PLUSARGS} ${DUMP_ARGS} -testplusarg input_file=${SIMTESTDIR}/${INPUTVECTORS} -testplusarg input_dir=${SIMTESTDIR} ; \
 	${CHECKTEST} ./$(TESTLOG); \
 	${ECHO} " " ; \
 	${ECHO} "NVINFO : ===============================================================" ; \
@@ -427,7 +429,7 @@ endif
 	${RM} -f ${VCS_LOGFILE} ; \
 	${SYNTHCFGGEN} ${PLUSARGS} ${DEFAULT_PLUSARGS}; \
 	${SYNTHINPVECGEN} ${SIMDIR}/${notdir $<}${TESTSUFFIX} ; \
-	${LSF_COMMAND} $(XILINX_HOME)/bin/xsim top --runall --log ${VCS_LOGFILE} ${XSIM_RUN_ARGS} ${PLUSARGS} ${TESTDIR_PLUSARGS_ONE} ${DEFAULT_PLUSARGS} ${DUMP_ARGS} -testplusarg input_file=${SIMTESTDIR}/${INPUTVECTORS} -testplusarg input_dir=${SIMTESTDIR} ; \
+	${LSF_COMMAND} $(XILINX_HOME)/bin/xsim top --log ${VCS_LOGFILE} ${XSIM_RUN_ARGS} ${PLUSARGS} ${TESTDIR_PLUSARGS_ONE} ${DEFAULT_PLUSARGS} ${DUMP_ARGS} -testplusarg input_file=${SIMTESTDIR}/${INPUTVECTORS} -testplusarg input_dir=${SIMTESTDIR} ; \
 
 regress_list :
 	${QUIET}${ECHO} $(FULLTESTLOGLIST)
