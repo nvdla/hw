@@ -149,8 +149,8 @@ begin
 	// Return value contains data from right most data of the string.
 	`ifdef VIVADO
 	s = $sformatf ("%m");
-	`else
 	modName = s.atoi();
+	`else
 	modName = $sformatf ("%m");
 	`endif
 
