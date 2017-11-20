@@ -58,7 +58,7 @@ begin
 	s = $sformatf ("%m");
 	modName = s.atoi();
 	`else
-	modName = $sformatf ("%m");
+	modName = int'($sformatf ("%m"));
 	`endif
 
 	// Create hash from module name.
@@ -151,7 +151,7 @@ begin
 	s = $sformatf ("%m");
 	modName = s.atoi();
 	`else
-	modName = $sformatf ("%m");
+	modName = int'($sformatf ("%m"));
 	`endif
 
 	// Create hash from module name.
