@@ -150,7 +150,7 @@ CPPFLAGS ?= $(INC_FLAGS) -MMD -MP -fPIC -Wall -Werror -DSC_INCLUDE_DYNAMIC_PROCE
 LDFLAGS ?= -shared $(addprefix -l,$($(notdir $(SYSTEMC_LIBRARIES)):lib%.so=%)) $(LD_FLAGS)
 
 $(BUILD_DIR)/$(TARGET): $(OBJS) 
-	$(CC) $(OBJS) -o $@ $(LDFLAGS) -L$(BUILD_DIR)
+	$(GCC) $(OBJS) -o $@ $(LDFLAGS) -L$(BUILD_DIR)
 
 default: $(BUILD_DIR)/$(TARGET) install
 	@echo "=============================================="
@@ -159,7 +159,7 @@ default: $(BUILD_DIR)/$(TARGET) install
 
 $(BUILD_DIR)/%.cpp.o: %.cpp
 	$(MKDIR_P) $(dir $@)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
+	$(GCC) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
 
 .PHONY: clean
 
