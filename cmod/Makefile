@@ -3,6 +3,10 @@ DEPTH := ..
 -include $(DEPTH)/tools/make/common.make
 -include $(DEPTH)/tree.make
 
+ifeq ($(SYSTEMC),)
+$(error SYSTEMC variable must be defined in tree.make to build Cmodel)
+endif
+
 TARGET ?= libnvdla_cmod.so
 
 BUILD_DIR ?= $(DEPTH)/$(OUTDIR)/$(PROJECT)/$(REL_PATH_FROM_TOT)

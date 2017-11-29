@@ -9,10 +9,11 @@ TREE_MAKE := tree.make
 
 default: $(TREE_MAKE)
 
-DEFAULT_CPP  := /home/utils/gcc-4.0.0/bin/cpp
-DEFAULT_GCC  := /home/utils/gcc-4.0.0/bin/g++
+DEFAULT_CPP  := /home/utils/gcc-4.9.3/bin/cpp
+DEFAULT_GCC  := /home/utils/gcc-4.9.3/bin/g++
 DEFAULT_PERL := /home/utils/perl-5.8.8/bin/perl
 DEFAULT_JAVA := /home/utils/java/jdk1.8.0_131/bin/java
+DEFAULT_SYSTEMC := /home/utils/systemc-2.3.1/release/linux-x86_64-gcc4.9.3/
 DEFAULT_PROJ := nv_full
 
 $(TREE_MAKE): Makefile
@@ -46,6 +47,9 @@ $(TREE_MAKE): Makefile
 	@echo "  																  " >> $@ 	
 	@echo "## java: used in hardware regester spec compilation (not in current release)                       " >> $@
 	@read -p "Enter java path          (Press ENTER to use: $(DEFAULT_JAVA)):" opt_java; if [ "_$$opt_java" = "_" ]; then echo "JAVA := $(DEFAULT_JAVA)" >> $@;  else echo "JAVA := $$opt_java" >> $@; fi
+	@echo "  																  " >> $@ 	
+	@echo "## systemc: needed for Cmodel build (optional)                       " >> $@
+	@read -p "Enter systemc path       (Press ENTER to use: $(DEFAULT_SYSTEMC)):" opt_systemc; if [ "_$$opt_systemc" = "_" ]; then echo "SYSTEMC := $(DEFAULT_SYSTEMC)" >> $@;  else echo "SYSTEMC := $$opt_systemc" >> $@; fi
 	@echo
 	@echo "====================================================================="
 	@echo "$@ is created successfully, and you can edit $@ manually if necessary"
