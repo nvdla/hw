@@ -13,7 +13,7 @@ DEFAULT_CPP  := /home/utils/gcc-4.9.3/bin/cpp
 DEFAULT_GCC  := /home/utils/gcc-4.9.3/bin/g++
 DEFAULT_PERL := /home/utils/perl-5.8.8/bin/perl
 DEFAULT_JAVA := /home/utils/java/jdk1.8.0_131/bin/java
-DEFAULT_SYSTEMC := /home/utils/systemc-2.3.1/release/linux-x86_64-gcc4.9.3/
+DEFAULT_SYSTEMC := /usr/local/systemc-2.3.0/
 DEFAULT_PROJ := nv_full
 
 $(TREE_MAKE): Makefile
