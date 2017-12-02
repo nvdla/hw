@@ -320,10 +320,14 @@ write_reg 0xffff1404 0x1 #NVDLA_CDMA.D_OP_ENABLE_0
 read_reg 0xffff1404 0x00000001 0x00000001 #NVDLA_CDMA.D_OP_ENABLE_0
 wait
 write_reg 0xffff0003 0xffffffff #NVDLA_GLB.S_INTR_STATUS_0
+read_reg 0xffff0003 0xffffffff 0x0 #NVDLA_GLB.S_INTR_STATUS_0
 wait
 write_reg 0xffff0003 0xffffffff #NVDLA_GLB.S_INTR_STATUS_0
+read_reg 0xffff0003 0xffffffff 0x0 #NVDLA_GLB.S_INTR_STATUS_0
 wait
 write_reg 0xffff0003 0xffffffff #NVDLA_GLB.S_INTR_STATUS_0
+read_reg 0xffff0003 0xffffffff 0x0 #NVDLA_GLB.S_INTR_STATUS_0
 wait
 write_reg 0xffff0003 0xffffffff #NVDLA_GLB.S_INTR_STATUS_0
+read_reg 0xffff0003 0xffffffff 0x0 #NVDLA_GLB.S_INTR_STATUS_0
 dump_mem 0x50000020 0x15200 output_feature_map.dat 

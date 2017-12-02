@@ -44,13 +44,22 @@ reg [(`RANDFUNC_MODNAME_LEN*8)-1:0] modName;
 reg [31:0] hash, arg;
 integer i;
 
+`ifdef VIVADO
+  string s;
+`endif
+
 begin
 	//	hash = 32'h9e3779b9;
 	hash = 0;
 	// Convert current module hierarchical name to a reg.
 	// Note $sformatf() converts strings right to left.  i.e.
 	// Return value contains data from right most data of the string.
-	modName = $sformatf ("%m");
+	`ifdef VIVADO
+	s = $sformatf ("%m");
+	modName = s.atoi();
+	`else
+	modName = int'($sformatf ("%m"));
+	`endif
 
 	// Create hash from module name.
 	for (i = 0; i < (`RANDFUNC_MODNAME_LEN/4); i = i + 1) begin
@@ -129,14 +138,21 @@ input in1;
 reg [(`RANDFUNC_MODNAME_LEN*8)-1:0] modName;
 reg [31:0] hash, arg;
 integer i;
-
+`ifdef VIVADO
+  string s;
+`endif
 begin
 	//	hash = 32'h9e3779b9;
 	hash = 0;
 	// Convert current module hierarchical name to a reg.
 	// Note $sformatf() converts strings right to left.  i.e.
 	// Return value contains data from right most data of the string.
-	modName = $sformatf ("%m");
+	`ifdef VIVADO
+	s = $sformatf ("%m");
+	modName = s.atoi();
+	`else
+	modName = int'($sformatf ("%m"));
+	`endif
 
 	// Create hash from module name.
 	for (i = 0; i < (`RANDFUNC_MODNAME_LEN/4); i = i + 1) begin

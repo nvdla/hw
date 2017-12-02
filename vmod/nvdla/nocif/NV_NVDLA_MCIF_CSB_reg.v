@@ -333,7 +333,10 @@ initial begin
   arreggen_dump                  = $test$plusargs("arreggen_dump_wr");
   arreggen_abort_on_rowr         = $test$plusargs("arreggen_abort_on_rowr");
   arreggen_abort_on_invalid_wr   = $test$plusargs("arreggen_abort_on_invalid_wr");
+`ifdef VERILATOR
+`else
   $timeformat(-9, 2, "ns", 15);
+`endif
 end
 
 always @(posedge nvdla_core_clk) begin

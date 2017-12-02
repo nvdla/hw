@@ -9,11 +9,14 @@ TREE_MAKE := tree.make
 
 default: $(TREE_MAKE)
 
-DEFAULT_CPP  := /home/utils/gcc-4.0.0/bin/cpp
-DEFAULT_GCC  := /home/utils/gcc-4.0.0/bin/g++
+DEFAULT_CPP  := /home/utils/gcc-4.9.3/bin/cpp
+DEFAULT_GCC  := /home/utils/gcc-4.9.3/bin/g++
 DEFAULT_PERL := /home/utils/perl-5.8.8/bin/perl
 DEFAULT_JAVA := /home/utils/java/jdk1.8.0_131/bin/java
-DEFAULT_PROJ := nv_large nv_small
+DEFAULT_SYSTEMC := /usr/local/systemc-2.3.0/
+DEFAULT_VERILATOR := verilator
+DEFAULT_CLANG     := clang
+DEFAULT_PROJ := nv_full
 
 $(TREE_MAKE): Makefile
 	@echo "Creating tree.make to setup your working environment and projects"
@@ -46,6 +49,15 @@ $(TREE_MAKE): Makefile
 	@echo "  																  " >> $@ 	
 	@echo "## java: used in hardware regester spec compilation (not in current release)                       " >> $@
 	@read -p "Enter java path          (Press ENTER to use: $(DEFAULT_JAVA)):" opt_java; if [ "_$$opt_java" = "_" ]; then echo "JAVA := $(DEFAULT_JAVA)" >> $@;  else echo "JAVA := $$opt_java" >> $@; fi
+	@echo "  																  " >> $@ 	
+	@echo "## systemc: needed for Cmodel build (optional)                       " >> $@
+	@read -p "Enter systemc path       (Press ENTER to use: $(DEFAULT_SYSTEMC)):" opt_systemc; if [ "_$$opt_systemc" = "_" ]; then echo "SYSTEMC := $(DEFAULT_SYSTEMC)" >> $@;  else echo "SYSTEMC := $$opt_systemc" >> $@; fi
+	@echo "  																  " >> $@ 	
+	@echo "## verilator: used to build testbench without VCS (optional)" >> $@
+	@read -p "OPTIONAL: Enter verilator path (Press ENTER to use: $(DEFAULT_VERILATOR)):" opt_verilator; if [ "_$$opt_verilator" = "_" ]; then echo "VERILATOR := $(DEFAULT_VERILATOR)" >> $@;  else echo "VERILATOR := $$opt_verilator" >> $@; fi
+	@echo "  																  " >> $@ 	
+	@echo "## clang: used to build Verilated binaries (optional)" >> $@
+	@read -p "OPTIONAL: Enter clang path     (Press ENTER to use: $(DEFAULT_CLANG)):" opt_clang; if [ "_$$opt_clang" = "_" ]; then echo "CLANG := $(DEFAULT_CLANG)" >> $@;  else echo "CLANG := $$opt_clang" >> $@; fi
 	@echo
 	@echo "====================================================================="
 	@echo "$@ is created successfully, and you can edit $@ manually if necessary"

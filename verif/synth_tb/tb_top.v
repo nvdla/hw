@@ -470,6 +470,20 @@ module top;
         max_wr_outstanding = 512;
         max_rd_outstanding = 512;
 `else
+	`ifdef VIVADO
+	max_txn_outstanding = $value$plusargs("max_txn_outstanding_per_channel=%d");
+	if(!max_txn_outstanding) begin
+            max_txn_outstanding = 512;
+        end
+        max_wr_outstanding = $value$plusargs("max_wr_outstanding_per_channel=%d");
+        if(!max_wr_outstanding) begin
+            max_wr_outstanding = 512;
+        end
+        max_rd_outstanding = $value$plusargs("max_rd_outstanding_per_channel=%d");
+        if(!max_rd_outstanding) begin
+            max_rd_outstanding = 512;
+        end
+	`else
         if(!($value$plusargs("max_txn_outstanding_per_channel=%d", max_txn_outstanding))) begin
             max_txn_outstanding = 512;
         end
@@ -479,6 +493,7 @@ module top;
         if(!($value$plusargs("max_rd_outstanding_per_channel=%d",  max_rd_outstanding))) begin
             max_rd_outstanding = 512;
         end
+	`endif
 `endif
     end
 // spyglass enable_block W430 SYNTH_5143
@@ -502,8 +517,13 @@ module top;
     wire mem1_wr_cnt_decr;
     wire mem1_rd_cnt_decr;
 
-    assign {carry_out0,slv0_txn_outstanding} = slv0_rd_outstanding + slv0_wr_outstanding;
-    assign {carry_out1,slv1_txn_outstanding} = slv1_rd_outstanding + slv1_wr_outstanding;
+    //xalogic_linus : vivado does not allow assign to reg 
+    //assign {carry_out0,slv0_txn_outstanding} = slv0_rd_outstanding + slv0_wr_outstanding;
+    //assign {carry_out1,slv1_txn_outstanding} = slv1_rd_outstanding + slv1_wr_outstanding;
+    always @(*) begin   
+      {carry_out0,slv0_txn_outstanding} = slv0_rd_outstanding + slv0_wr_outstanding;
+      {carry_out1,slv1_txn_outstanding} = slv1_rd_outstanding + slv1_wr_outstanding;
+    end
        
  
     always @ (negedge mem_clk or negedge reset) begin
@@ -689,7 +709,12 @@ end
     reg [63:0]        dump_start_time;      // starting time of dump (0 == off)
     reg [63:0]        dump_stop_time;       // stopping time of dump (<= start is off)
     reg [(256*8)-1:0] vpd_dump_name;            // file name of dump
+
+    //xalogic_linus : Vivado does not support string type
+    `ifndef VIVADO
     string            input_dir, full_saif_filename ;
+    `endif
+
     reg [31:0]        saif_start_trans;     // starting transaction of saif (0 == off)
     reg [31:0]        saif_end_trans;       // ending transaction of saif (0 == off)
 
@@ -704,14 +729,28 @@ end
 
 
 
-       if(!$value$plusargs("vpd_dump_name=%s", vpd_dump_name))  vpd_dump_name = "vpdplus.vpd";
-       if(!$value$plusargs("dump_start_time=%d", dump_start_time))  dump_start_time = 0;
+       `ifdef VIVADO
+	 vpd_dump_name = $value$plusargs("vpd_dump_name=%s");
+         if(!vpd_dump_name)  vpd_dump_name = "vpdplus.vpd";
+
+         dump_start_time = $value$plusargs("dump_start_time=%d");
+         if(!dump_start_time)  dump_start_time = 0;
+       `else
+         if(!$value$plusargs("vpd_dump_name=%s", vpd_dump_name))  vpd_dump_name = "vpdplus.vpd";
+         if(!$value$plusargs("dump_start_time=%d", dump_start_time))  dump_start_time = 0;
+       `endif
+
        if ( dump_start_time != 0 ) begin
            #(dump_start_time);
        end //
        if ($test$plusargs("dump_vpd") || $test$plusargs("dump_vcd")) begin
-          $vcdplusfile (vpd_dump_name);
-          $vcdpluson;
+	  //xalogic_linus : use `ifndef VIVADO to mask this off to be backward
+	  //compatible. Ideally, this should be enabled using `ifdef VCS to
+	  //support other simulators
+	  `ifndef VIVADO
+            $vcdplusfile (vpd_dump_name);
+            $vcdpluson;
+          `endif
         `ifdef WAVES      
           $dumpvars;
         `endif
@@ -722,14 +761,29 @@ end
     initial begin
        if ($test$plusargs("dump_saif")) begin
 
-         if(!$value$plusargs("saif_name=%s", saif_name))  saif_name = "out.saif";
-         if(!$value$plusargs("saif_start_trans=%d", saif_start_trans))  saif_start_trans = 0;
-         if(!$value$plusargs("saif_end_trans=%d", saif_end_trans))  saif_end_trans = 9999999;
+         `ifdef VIVADO
+           saif_name = $value$plusargs("saif_name=%s");
+           if(!saif_name)  saif_name = "out.saif";
+
+           saif_start_trans = $value$plusargs("saif_start_trans=%d");
+           if(!saif_start_trans)  saif_start_trans = 0;
+
+           saif_end_trans = $value$plusargs("saif_end_trans=%d");
+           if(!saif_end_trans)  saif_end_trans = 9999999;
+	 `else
+           if(!$value$plusargs("saif_name=%s", saif_name))  saif_name = "out.saif";
+           if(!$value$plusargs("saif_start_trans=%d", saif_start_trans))  saif_start_trans = 0;
+           if(!$value$plusargs("saif_end_trans=%d", saif_end_trans))  saif_end_trans = 9999999;
+	 `endif
 
          $display( "(%0d) NVDLA_IP_INFO : monitoring with rtl_on for saif", $stime );
-         $set_gate_level_monitoring("rtl_on");
+	 `ifndef VIVADO
+           $set_gate_level_monitoring("rtl_on");
+         `endif
          $display( "(%0d) NVDLA_IP_INFO : setting toggle region for saif", $stime );
-         $set_toggle_region("nvdla_top");
+	 `ifndef VIVADO
+           $set_toggle_region("nvdla_top");
+         `endif
          // $set_toggle_region("nvdla_top.nvdla_core_wrap.nvdla_core.fgsx0_0.GMF0TPC0.tpc0.smmmio");
 
          if ( saif_start_trans != 0 ) begin
@@ -740,7 +794,9 @@ end
            $display( "(%0d) NVDLA_IP_INFO : starting saif, trans_count == %d", $stime, trans_count );
          end //
 
-         #10 $toggle_start;
+	 `ifndef VIVADO
+           #10 $toggle_start;
+	 `endif
          $display( "(%0d) NVDLA_IP_INFO : toggle start for saif", $stime );
 
          if ( saif_end_trans != 0 ) begin
@@ -750,9 +806,15 @@ end
            wait (trans_count >= saif_end_trans);
            $display( "(%0d) NVDLA_IP_INFO : ending saif, trans_count == %d", $stime, trans_count );
 
-           $toggle_stop;
+	   `ifndef VIVADO
+             $toggle_stop;
+	   `endif
            #10;
 
+
+//xalogic_linus : Vivado does not support string type, we ignore this section
+//for now.
+`ifndef VIVADO
            if($value$plusargs("input_dir=%s", input_dir)) begin
             if ($test$plusargs("dump_smm_saif")) begin
              full_saif_filename = $psprintf("%0s/smm0.snps.saif",input_dir);
@@ -765,6 +827,7 @@ end
 //             $toggle_report(full_saif_filename, 1.0e-9, "nvdla_top");
             end
            end
+`endif
          end //
 
        end
@@ -798,8 +861,10 @@ end
              `ifdef VERILINT
              `else
              `endif
-              $fsdbAutoSwitchDumpfile( 1000, dump_name, 20 );
-              $fsdbDumpvars("level=",0,top);
+	      `ifndef VIVADO
+                $fsdbAutoSwitchDumpfile( 1000, dump_name, 20 );
+                $fsdbDumpvars("level=",0,top);
+	      `endif
               // $fsdbAutoSwitchDumpfile(100, "verilog.fsdb", 20);
               // $fsdbDumpfile( dump_name );
               // $fsdbDumpvars( 0, top );
@@ -899,10 +964,20 @@ assign holdoff = 1'b0;
   reg disable_throttle = 0;
 
   initial begin
-    if(!($value$plusargs("mem_bandwidth_pct=%d", max_pct))) begin
+    `ifdef VIVADO
+      max_pct = $value$plusargs("mem_bandwidth_pct=%d");
+      if(!max_pct) begin
+    `else
+      if(!($value$plusargs("mem_bandwidth_pct=%d", max_pct))) begin
+    `endif
         max_pct = 50;
     end
-    if(!($value$plusargs("mem_bandwidth_window=%d", window))) begin
+    `ifdef VIVADO
+      window = $value$plusargs("mem_bandwidth_window=%d");
+      if(!window) begin
+    `else
+      if(!($value$plusargs("mem_bandwidth_window=%d", window))) begin
+    `endif
         window = 100;
     end
     `ifndef VERDI_VIEWING
