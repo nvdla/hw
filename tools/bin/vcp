@@ -1,0 +1,75 @@
+#!/usr/bin/env perl
+
+##
+## vcp - v-h preprocessor
+##
+use Getopt::Long;
+
+usage() if ($#ARGV < 0) ;
+
+my $file_in;
+my $file_out;
+my $verbose;
+my $imacros;
+my $cpp = "cpp";
+GetOptions (
+             "help|h" => sub {usage(); exit 0},
+             "imacros=s"  => \$imacros,
+             "o=s"  => \$file_out,
+             "i=s"  => \$file_in,
+             "cpp=s"  => \$cpp,
+           ) or die "Unrecognized options @ARGV";
+
+print STDERR "Processing $file_in into $file_out\n" if ($verbose) ;
+my $file_in_st = "${file_in}.st";
+my $file_out_st = "${file_out}.st";
+
+open my $ifile_fh,"<",$file_in;
+open my $ifile_st_fh,">",$file_in_st;
+
+while (my $line = <$ifile_fh>) {
+    $line =~ s/'/_&qt&_/g;
+    $line =~ s/^\s*##/_&pdpd&_/g;
+    $line =~ s/^\s*\/\//_&slsl&_/g;
+    if ($line =~ /^\s*#\s*(define|undef|if|ifdef|ifndef|elif|else|endif|error|pragma)/) {
+        # keep there
+    } else {
+        $line =~ s/#/_&pd&_/g;
+    }
+    print $ifile_st_fh $line;
+}
+close $ifile_fh;
+close $ifile_st_fh;
+
+print "$cpp -undef -nostdinc -P -C -imacros $imacros -o $file_out_st $file_in_st \n" if ($verbose);
+system ("$cpp -undef -nostdinc -P -C -imacros $imacros -o $file_out_st $file_in_st");
+
+open my $ofile_st_fh,"<",$file_out_st;
+open my $ofile_fh,">",$file_out;
+while (my $line = <$ofile_st_fh>) {
+    $line =~ s/_&qt&_/'/g;
+    $line =~ s/_&pdpd&_/##/g;
+    $line =~ s/_&pd&_/#/g;
+    $line =~ s(_&slsl&_)(//)g;
+    print $ofile_fh $line;
+}
+close $ofile_st_fh;
+close $ofile_fh;
+
+unlink $file_in_st;
+unlink $file_out_st;
+
+print STDERR "$file_out successfully written\n" if ($verbose) ;
+
+##
+## usage - show usage
+##
+
+sub usage()
+{
+    print
+    	"Usage: vcp [-o <file_out>] [-imacros <macros>] <file.v-h>\n",
+    	"-v = verbose\n",
+    	"-imacros <macros> = force #include of <macros> before all else\n",
+    	"default output file is <file>.v\n";
+}

@@ -130,7 +130,7 @@ output [12:0] cube_out_channel;
 output [12:0] cube_out_height;
 output [12:0] cube_out_width;
 output [1:0]  input_data;
-output [7:0]  dst_base_addr_high;
+output [31:0] dst_base_addr_high;
 output [26:0] dst_base_addr_low;
 output [26:0] dst_line_stride;
 output        dst_ram_type;
@@ -164,7 +164,7 @@ output [18:0] pad_value_6x;
 output [18:0] pad_value_7x;
 output [16:0] recip_kernel_height;
 output [16:0] recip_kernel_width;
-output [7:0]  src_base_addr_high;
+output [31:0] src_base_addr_high;
 output [26:0] src_base_addr_low;
 output [26:0] src_line_stride;
 output [26:0] src_surface_stride;
@@ -193,7 +193,7 @@ reg    [12:0] cube_out_height;
 reg    [12:0] cube_out_width;
 reg    [31:0] cya;
 reg           dma_en;
-reg     [7:0] dst_base_addr_high;
+reg    [31:0] dst_base_addr_high;
 reg    [26:0] dst_base_addr_low;
 reg    [26:0] dst_line_stride;
 reg           dst_ram_type;
@@ -227,7 +227,7 @@ reg    [16:0] recip_kernel_height;
 reg    [16:0] recip_kernel_width;
 reg    [31:0] reg_rd_data;
 reg     [7:0] split_num;
-reg     [7:0] src_base_addr_high;
+reg    [31:0] src_base_addr_high;
 reg    [26:0] src_base_addr_low;
 reg    [26:0] src_line_stride;
 reg    [26:0] src_surface_stride;
@@ -283,7 +283,7 @@ assign nvdla_pdp_d_data_cube_out_channel_0_out[31:0] = { 19'b0, cube_out_channel
 assign nvdla_pdp_d_data_cube_out_height_0_out[31:0] = { 19'b0, cube_out_height };
 assign nvdla_pdp_d_data_cube_out_width_0_out[31:0] = { 19'b0, cube_out_width };
 assign nvdla_pdp_d_data_format_0_out[31:0] = { 30'b0, input_data };
-assign nvdla_pdp_d_dst_base_addr_high_0_out[31:0] = { 24'b0, dst_base_addr_high };
+assign nvdla_pdp_d_dst_base_addr_high_0_out[31:0] = { dst_base_addr_high };
 assign nvdla_pdp_d_dst_base_addr_low_0_out[31:0] = { dst_base_addr_low, 5'b0 };
 assign nvdla_pdp_d_dst_line_stride_0_out[31:0] = { dst_line_stride, 5'b0 };
 assign nvdla_pdp_d_dst_ram_cfg_0_out[31:0] = { 31'b0, dst_ram_type };
@@ -309,7 +309,7 @@ assign nvdla_pdp_d_pooling_padding_value_6_cfg_0_out[31:0] = { 13'b0, pad_value_
 assign nvdla_pdp_d_pooling_padding_value_7_cfg_0_out[31:0] = { 13'b0, pad_value_7x };
 assign nvdla_pdp_d_recip_kernel_height_0_out[31:0] = { 15'b0, recip_kernel_height };
 assign nvdla_pdp_d_recip_kernel_width_0_out[31:0] = { 15'b0, recip_kernel_width };
-assign nvdla_pdp_d_src_base_addr_high_0_out[31:0] = { 24'b0, src_base_addr_high };
+assign nvdla_pdp_d_src_base_addr_high_0_out[31:0] = { src_base_addr_high };
 assign nvdla_pdp_d_src_base_addr_low_0_out[31:0] = { src_base_addr_low, 5'b0 };
 assign nvdla_pdp_d_src_line_stride_0_out[31:0] = { src_line_stride, 5'b0 };
 assign nvdla_pdp_d_src_surface_stride_0_out[31:0] = { src_surface_stride, 5'b0 };
@@ -494,7 +494,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     cube_out_height[12:0] <= 13'b0000000000000;
     cube_out_width[12:0] <= 13'b0000000000000;
     input_data[1:0] <= 2'b00;
-    dst_base_addr_high[7:0] <= 8'b00000000;
+    dst_base_addr_high[31:0] <= 32'b00000000000000000000000000000000;
     dst_base_addr_low[26:0] <= 27'b000000000000000000000000000;
     dst_line_stride[26:0] <= 27'b000000000000000000000000000;
     dst_ram_type <= 1'b0;
@@ -527,7 +527,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     pad_value_7x[18:0] <= 19'b0000000000000000000;
     recip_kernel_height[16:0] <= 17'b00000000000000000;
     recip_kernel_width[16:0] <= 17'b00000000000000000;
-    src_base_addr_high[7:0] <= 8'b00000000;
+    src_base_addr_high[31:0] <= 32'b00000000000000000000000000000000;
     src_base_addr_low[26:0] <= 27'b000000000000000000000000000;
     src_line_stride[26:0] <= 27'b000000000000000000000000000;
     src_surface_stride[26:0] <= 27'b000000000000000000000000000;
@@ -574,7 +574,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 
   // Register: NVDLA_PDP_D_DST_BASE_ADDR_HIGH_0    Field: dst_base_addr_high
   if (nvdla_pdp_d_dst_base_addr_high_0_wren) begin
-    dst_base_addr_high[7:0] <= reg_wr_data[7:0];
+    dst_base_addr_high[31:0] <= reg_wr_data[31:0];
   end
 
   // Register: NVDLA_PDP_D_DST_BASE_ADDR_LOW_0    Field: dst_base_addr_low
@@ -749,7 +749,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 
   // Register: NVDLA_PDP_D_SRC_BASE_ADDR_HIGH_0    Field: src_base_addr_high
   if (nvdla_pdp_d_src_base_addr_high_0_wren) begin
-    src_base_addr_high[7:0] <= reg_wr_data[7:0];
+    src_base_addr_high[31:0] <= reg_wr_data[31:0];
   end
 
   // Register: NVDLA_PDP_D_SRC_BASE_ADDR_LOW_0    Field: src_base_addr_low

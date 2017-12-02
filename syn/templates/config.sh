@@ -14,12 +14,12 @@
 
 export TOP_NAMES="NV_NVDLA_partition_a NV_NVDLA_partition_c NV_NVDLA_partition_o NV_NVDLA_partition_m NV_NVDLA_partition_p"
 
-export NVDLA_ROOT="/home/scratch.jwise_t19x/nvdla_git/hw-co/"
+export NVDLA_ROOT=$(pwd) # or: "<path_to_release>/hw"
 
 # Where do I find the RTL source verilog/system verilog files?
 export RTL_SEARCH_PATH=" \
     $(ls -d ${NVDLA_ROOT}/vmod/nvdla/*) \
-    ${NVDLA_ROOT}/vmod/rams \
+    ${NVDLA_ROOT}/vmod/rams/synth \
     ${NVDLA_ROOT}/vmod/vlibs \
 "
 
@@ -56,6 +56,7 @@ export DC_PATH="/home/tools/synopsys/syn_2016.12-SP5-1/bin"
 # ===========================
 
 export RELEASE_DIR="/home/libs/t194_syn/11399272_08212017"
+export RAM_LIB_DIR="."
 export TARGET_LIB="${RELEASE_DIR}/std_cell/nvstd/syn.A01/nvstd_stdcell_tsmc16ff_t9_po4svt_std_ssg_0c_0p72v.db"
 export LINK_LIB="\
     ${RELEASE_DIR}/std_cell/nvstd/syn.A01/nvstd_stdcell_tsmc16ff_t9_po4svt_std_ssg_0c_0p72v.db \
@@ -64,11 +65,12 @@ export LINK_LIB="\
     ${RELEASE_DIR}/std_cell/nvidia/syn.A01/nvidia_stdcell_tsmc16ff_t9_sup_std_ssg_0c_0p72v.db \
     ${RELEASE_DIR}/std_cell/nvidia/syn.A01/nvidia_stdcell_tsmc16ff_t9_po4svt_std_ssg_0c_0p72v.db \
     ${RELEASE_DIR}/std_cell/nvidia/syn.A01/nvidia_stdcell_tsmc16ff_t9_svt_std_ssg_0c_0p72v.db \
-    ${RELEASE_DIR}/rams/nvgen/syn.A01/nvgen_rams_tsmc16ff_cust_mixvt_std_ssg_0c_0p72v0p72v.db \
+    ${RAM_LIB_DIR}/nvgen_rams_tsmc16ff_cust_mixvt_std_ssg_0c_0p72v0p72v.db \
     ${DC_PATH}/../libraries/syn/dw_foundation.sldb \
     ${DC_PATH}/../libraries/syn/gtech.db \
     ${DC_PATH}/../libraries/syn/standard.sldb \
 "
+
 export MW_LIB="\
     ${RELEASE_DIR}/std_cell/nvstd/apollo.A01/nvstd_stdcell_tsmc16ff_t9_po4svt_std \
     ${RELEASE_DIR}/std_cell/nvstd/apollo.A01/nvstd_stdcell_tsmc16ff_t9_hvt_std \

@@ -89,7 +89,7 @@ CHDIR	:= cd
 # example: LSF_COMMAND       := qsub -P maxwell -q o_vcs_16G -m rel4or5 -I 
 # -K = block
 
-LSF_COMMAND       := 
+LSF_COMMAND       ?= 
 
 # ----------------------------------------------------------------------------
 # MAKE CMDLINE OVERRIDES
@@ -109,7 +109,7 @@ VPD_DUMP_NAME    ?= vcdplus.vpd
 VERDI_DUMP_NAME  ?= debussy.fsdb
 SILOTI_DUMP_NAME ?= siloti
 # Set to 1 if you do not have access to Synopsys Designware modules
-DESIGNWARE_NOEXIST ?= 0
+DESIGNWARE_NOEXIST ?= 1
 
 XPROP	    ?= 0
 SAIF	    ?= 0
@@ -121,10 +121,10 @@ TOPDIR       := ${dir ${shell ${PWD}}}
 DUTDIR       := ${TOPDIR}dut
 SIMDIR       := ${TOPDIR}sim
 SYNTHTBDIR   := ${TOPDIR}synth_tb
-VLIBDIR      := ${TOPDIR}../vmod/vlibs
-VMODINCDIR   := ${TOPDIR}../vmod/include
+VLIBDIR      := ${TOPDIR}../outdir/nv_large/vmod/vlibs
+VMODINCDIR   := ${TOPDIR}../outdir/nv_large/vmod/include
 ifeq (${DESIGNWARE_NOEXIST},1)
-DWDIR        := ${TOPDIR}../vmod/vlibs
+DWDIR        := ${TOPDIR}../outdir/nv_large/vmod/vlibs
 DWFILES      := ${DWDIR}/NV_DW02_tree.v \
                     ${DWDIR}/NV_DW_lsd.v \
                     ${DWDIR}/NV_DW_minmax.v
@@ -276,7 +276,8 @@ LNMSG  := Using cleartext directories
 else # TARGET != cleartext
 endif # if TARGET == cleartext
 
-
+# default:
+default:    all
 
 # ----------------------------------------------------------------------------
 # REGRESSION SUITE
@@ -287,9 +288,13 @@ REGRESSTYPE  :? ALL
 #Dont use trailing backslash for last test, messes with regress target
 ifeq ($(MINIREGRESS),1)
 FUNC_REGRESS_LIST := ../traces/traceplayer/sanity0 \
-		     ../traces/traceplayer/sanity1 \
-		     ../traces/traceplayer/sanity2 \
-		     ../traces/traceplayer/sanity3
+	 		../traces/traceplayer/sanity1 \
+			../traces/traceplayer/sanity2 \
+			../traces/traceplayer/sanity3 \
+			../traces/traceplayer/sanity3_cvsram \
+			../traces/traceplayer/conv_8x8_fc_int16 \
+			../traces/traceplayer/pdp_max_pooling_int16 \
+		 	../traces/traceplayer/sdp_relu_int16
 
 PERF_REGRESS_LIST :=
 APP_REGRESS_LIST  := 
@@ -298,7 +303,10 @@ FUNC_REGRESS_LIST := ../traces/traceplayer/sanity0 \
 			../traces/traceplayer/sanity1 \
 			../traces/traceplayer/sanity2 \
 			../traces/traceplayer/sanity3 \
-			../traces/first_release/conv_8x8_fc_int16
+			../traces/traceplayer/sanity3_cvsram \
+			../traces/traceplayer/conv_8x8_fc_int16 \
+			../traces/traceplayer/pdp_max_pooling_int16 \
+			../traces/traceplayer/sdp_relu_int16
 
 APP_REGRESS_LIST  := 
 PERF_REGRESS_LIST := 
@@ -358,7 +366,8 @@ DUT_DEFINES    :=
 # ----------------------------------------------------------------------------
 # RUNTIME
 
-DEFAULT_PLUSARGS ?= +continue_on_fail +read_reg_poll_retries=100 +read_reg_poll_interval_clocks=100 +read_reg_timeout_clocks=100000 
+DEFAULT_PLUSARGS ?= +continue_on_fail 
+#+read_reg_poll_retries=100 +read_reg_poll_interval_clocks=55 +read_reg_timeout_clocks=10000 
 
 ifdef CUSTOM_PLUSARGS
 DEFAULT_PLUSARGS += $(CUSTOM_PLUSARGS)

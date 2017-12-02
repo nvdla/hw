@@ -1,0 +1,83 @@
+#!/usr/bin/env perl
+##
+## depth - print the depth to top of tree by checking for the file TOT
+##
+
+use Getopt::Long;
+use Data::Dumper;
+use Carp qw(croak);
+use Cwd qw(cwd abs_path);
+use File::Basename qw(basename dirname);
+
+use FindBin qw($Bin);
+
+#=============================
+## Options
+#=============================
+my $from_tot;
+my $abs_tot;
+GetOptions (
+             "help|h"   => sub {Usage(); exit 0},
+             "from_tot" => \$from_tot,
+             "abs_tot" => \$abs_tot,
+           ) or die "Unrecognized options @ARGV";
+
+
+#=============================
+## Variables
+#=============================
+
+#=============================
+## MAIN
+#=============================
+
+my $depth = ($from_tot) ? get_path_from_tot(".",".") : get_tot(".");
+print $depth;
+
+sub get_path_from_tot {
+    my $depth = shift;
+    my $path = shift;
+    
+    my $LICENSE = "$depth/LICENSE";
+
+    if (-f $LICENSE) {
+        return dirname($path);
+    } else {
+        
+        my $abs_path = abs_path($depth);
+        my $dir_name = basename($abs_path);
+
+        get_path_from_tot("$depth/..","$dir_name/$path");
+    }
+}
+
+sub get_tot {
+    my $depth = shift;
+    
+    my $LICENSE = "$depth/LICENSE";
+
+    if (-f $LICENSE) {
+        if ($abs_tot) {
+            my $abs_file = abs_path($LICENSE);
+            my $dir_abs_path = dirname($abs_file);
+
+            return $dir_abs_path;
+        } else {
+            return $depth;
+        }
+    } else {
+        get_tot("$depth/..");
+    }
+}
+
+sub Usage { print << "END"
+
+  Return the relative path from your working directory to TOT
+
+usage: $Program [-from_tot | -abs_tot]
+  -u        : print usage statement
+  -from_tot : relative path from TOT to your working directory
+  -abs_tot  : absolute path of TOT
+
+END
+}

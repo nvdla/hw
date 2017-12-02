@@ -88,7 +88,7 @@ output        dma_en;
 output [3:0]  kernel_stride_width;
 output [3:0]  kernel_width;
 output [3:0]  pad_width;
-output [7:0]  src_base_addr_high;
+output [31:0] src_base_addr_high;
 output [26:0] src_base_addr_low;
 output [26:0] src_line_stride;
 output        src_ram_type;
@@ -122,7 +122,7 @@ reg     [9:0] partial_width_in_last;
 reg     [9:0] partial_width_in_mid;
 reg    [31:0] reg_rd_data;
 reg     [7:0] split_num;
-reg     [7:0] src_base_addr_high;
+reg    [31:0] src_base_addr_high;
 reg    [26:0] src_base_addr_low;
 reg    [26:0] src_line_stride;
 reg           src_ram_type;
@@ -164,7 +164,7 @@ assign nvdla_pdp_rdma_d_perf_enable_0_out[31:0] = { 31'b0, dma_en };
 assign nvdla_pdp_rdma_d_perf_read_stall_0_out[31:0] = { perf_read_stall };
 assign nvdla_pdp_rdma_d_pooling_kernel_cfg_0_out[31:0] = { 24'b0, kernel_stride_width, kernel_width };
 assign nvdla_pdp_rdma_d_pooling_padding_cfg_0_out[31:0] = { 28'b0, pad_width };
-assign nvdla_pdp_rdma_d_src_base_addr_high_0_out[31:0] = { 24'b0, src_base_addr_high };
+assign nvdla_pdp_rdma_d_src_base_addr_high_0_out[31:0] = { src_base_addr_high };
 assign nvdla_pdp_rdma_d_src_base_addr_low_0_out[31:0] = { src_base_addr_low, 5'b0 };
 assign nvdla_pdp_rdma_d_src_line_stride_0_out[31:0] = { src_line_stride, 5'b0 };
 assign nvdla_pdp_rdma_d_src_ram_cfg_0_out[31:0] = { 31'b0, src_ram_type };
@@ -276,7 +276,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     kernel_stride_width[3:0] <= 4'b0000;
     kernel_width[3:0] <= 4'b0000;
     pad_width[3:0] <= 4'b0000;
-    src_base_addr_high[7:0] <= 8'b00000000;
+    src_base_addr_high[31:0] <= 32'b00000000000000000000000000000000;
     src_base_addr_low[26:0] <= 27'b000000000000000000000000000;
     src_line_stride[26:0] <= 27'b000000000000000000000000000;
     src_ram_type <= 1'b0;
@@ -358,7 +358,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 
   // Register: NVDLA_PDP_RDMA_D_SRC_BASE_ADDR_HIGH_0    Field: src_base_addr_high
   if (nvdla_pdp_rdma_d_src_base_addr_high_0_wren) begin
-    src_base_addr_high[7:0] <= reg_wr_data[7:0];
+    src_base_addr_high[31:0] <= reg_wr_data[31:0];
   end
 
   // Register: NVDLA_PDP_RDMA_D_SRC_BASE_ADDR_LOW_0    Field: src_base_addr_low

@@ -13,7 +13,6 @@ module syn_slave_mem_wrap (
     saxi2nvdla_axi_slave0_rdata                  ,
     saxi2nvdla_axi_slave0_rid                    ,
     saxi2nvdla_axi_slave0_rlast                  ,
-    saxi2nvdla_axi_slave0_rresp                  ,
     saxi2nvdla_axi_slave0_rvalid                 ,
     saxi2nvdla_axi_slave0_wready                 ,
 
@@ -25,7 +24,6 @@ module syn_slave_mem_wrap (
     saxi2nvdla_axi_slave1_rdata                  ,
     saxi2nvdla_axi_slave1_rid                    ,
     saxi2nvdla_axi_slave1_rlast                  ,
-    saxi2nvdla_axi_slave1_rresp                  ,
     saxi2nvdla_axi_slave1_rvalid                 ,
     saxi2nvdla_axi_slave1_wready                 ,
 
@@ -50,7 +48,6 @@ module syn_slave_mem_wrap (
     nvdla2saxi_axi_slave0_bready                 ,
     nvdla2saxi_axi_slave0_rready                 ,
     nvdla2saxi_axi_slave0_wdata                  ,
-    nvdla2saxi_axi_slave0_wid                    ,
     nvdla2saxi_axi_slave0_wlast                  ,
     nvdla2saxi_axi_slave0_wstrb                  ,
     nvdla2saxi_axi_slave0_wvalid                 ,
@@ -76,7 +73,6 @@ module syn_slave_mem_wrap (
     nvdla2saxi_axi_slave1_bready                 ,
     nvdla2saxi_axi_slave1_rready                 ,
     nvdla2saxi_axi_slave1_wdata                  ,
-    nvdla2saxi_axi_slave1_wid                    ,
     nvdla2saxi_axi_slave1_wlast                  ,
     nvdla2saxi_axi_slave1_wstrb                  ,
     nvdla2saxi_axi_slave1_wvalid
@@ -86,29 +82,27 @@ input   clk;
 input   fast_clk;
 input   reset;
 
-output reg                            saxi2nvdla_axi_slave0_arready         ;
-output reg                            saxi2nvdla_axi_slave0_awready         ;
-output reg [`AXI_SLAVE_BID_WIDTH-1:0] saxi2nvdla_axi_slave0_bid             ;
-output reg                      [1:0] saxi2nvdla_axi_slave0_bresp           ;
-output reg                            saxi2nvdla_axi_slave0_bvalid          ;
-output reg                    [`DATABUS2MEM_WIDTH-1:0] saxi2nvdla_axi_slave0_rdata           ;
-output reg [`AXI_SLAVE_RID_WIDTH-1:0] saxi2nvdla_axi_slave0_rid             ;
-output reg                            saxi2nvdla_axi_slave0_rlast           ;
-output reg                      [1:0] saxi2nvdla_axi_slave0_rresp           ;
-output reg                            saxi2nvdla_axi_slave0_rvalid          ;
-output reg                            saxi2nvdla_axi_slave0_wready          ;
+output                                saxi2nvdla_axi_slave0_arready         ;
+output                                saxi2nvdla_axi_slave0_awready         ;
+output     [`AXI_SLAVE_BID_WIDTH-1:0] saxi2nvdla_axi_slave0_bid             ;
+output                          [1:0] saxi2nvdla_axi_slave0_bresp           ;
+output                                saxi2nvdla_axi_slave0_bvalid          ;
+output                        [`DATABUS2MEM_WIDTH-1:0] saxi2nvdla_axi_slave0_rdata           ;
+output     [`AXI_SLAVE_RID_WIDTH-1:0] saxi2nvdla_axi_slave0_rid             ;
+output                                saxi2nvdla_axi_slave0_rlast           ;
+output                                saxi2nvdla_axi_slave0_rvalid          ;
+output                                saxi2nvdla_axi_slave0_wready          ;
 
-output reg                            saxi2nvdla_axi_slave1_arready         ;
-output reg                            saxi2nvdla_axi_slave1_awready         ;
-output reg [`AXI_SLAVE_BID_WIDTH-1:0] saxi2nvdla_axi_slave1_bid             ;
-output reg                      [1:0] saxi2nvdla_axi_slave1_bresp           ;
-output reg                            saxi2nvdla_axi_slave1_bvalid          ;
-output reg                    [`DATABUS2MEM_WIDTH-1:0] saxi2nvdla_axi_slave1_rdata           ;
-output reg [`AXI_SLAVE_RID_WIDTH-1:0] saxi2nvdla_axi_slave1_rid             ;
-output reg                            saxi2nvdla_axi_slave1_rlast           ;
-output reg                      [1:0] saxi2nvdla_axi_slave1_rresp           ;
-output reg                            saxi2nvdla_axi_slave1_rvalid          ;
-output reg                            saxi2nvdla_axi_slave1_wready          ;
+output                                saxi2nvdla_axi_slave1_arready         ;
+output                                saxi2nvdla_axi_slave1_awready         ;
+output     [`AXI_SLAVE_BID_WIDTH-1:0] saxi2nvdla_axi_slave1_bid             ;
+output                          [1:0] saxi2nvdla_axi_slave1_bresp           ;
+output                                saxi2nvdla_axi_slave1_bvalid          ;
+output                        [`DATABUS2MEM_WIDTH-1:0] saxi2nvdla_axi_slave1_rdata           ;
+output     [`AXI_SLAVE_RID_WIDTH-1:0] saxi2nvdla_axi_slave1_rid             ;
+output                                saxi2nvdla_axi_slave1_rlast           ;
+output                                saxi2nvdla_axi_slave1_rvalid          ;
+output                                saxi2nvdla_axi_slave1_wready          ;
 
 input           [`AXI_ADDR_WIDTH-1:0] nvdla2saxi_axi_slave0_araddr          ;
 input                           [1:0] nvdla2saxi_axi_slave0_arburst         ;
@@ -131,7 +125,6 @@ input                                 nvdla2saxi_axi_slave0_awvalid         ;
 input                                 nvdla2saxi_axi_slave0_bready          ;
 input                                 nvdla2saxi_axi_slave0_rready          ;
 input                         [`DATABUS2MEM_WIDTH-1:0] nvdla2saxi_axi_slave0_wdata           ;
-input      [`AXI_SLAVE_WID_WIDTH-1:0] nvdla2saxi_axi_slave0_wid             ;
 input                                 nvdla2saxi_axi_slave0_wlast           ;
 input                          [(`DATABUS2MEM_WIDTH/8)-1:0] nvdla2saxi_axi_slave0_wstrb           ;
 input                                 nvdla2saxi_axi_slave0_wvalid          ;
@@ -157,7 +150,6 @@ input                                 nvdla2saxi_axi_slave1_awvalid         ;
 input                                 nvdla2saxi_axi_slave1_bready          ;
 input                                 nvdla2saxi_axi_slave1_rready          ;
 input                         [`DATABUS2MEM_WIDTH-1:0] nvdla2saxi_axi_slave1_wdata           ;
-input      [`AXI_SLAVE_WID_WIDTH-1:0] nvdla2saxi_axi_slave1_wid             ;
 input                                 nvdla2saxi_axi_slave1_wlast           ;
 input                          [(`DATABUS2MEM_WIDTH/8)-1:0] nvdla2saxi_axi_slave1_wstrb           ;
 input                                 nvdla2saxi_axi_slave1_wvalid          ;
@@ -207,7 +199,6 @@ wire            axi_clk                ;
     ,.saxi2nvdla_axi_slave_rdata      (saxi2nvdla_axi_slave0_rdata  )
     ,.saxi2nvdla_axi_slave_rid        (saxi2nvdla_axi_slave0_rid    )
     ,.saxi2nvdla_axi_slave_rlast      (saxi2nvdla_axi_slave0_rlast  )
-    ,.saxi2nvdla_axi_slave_rresp      (saxi2nvdla_axi_slave0_rresp  )
     ,.saxi2nvdla_axi_slave_rvalid     (saxi2nvdla_axi_slave0_rvalid )
     ,.saxi2nvdla_axi_slave_wready     (saxi2nvdla_axi_slave0_wready )
 
@@ -232,7 +223,6 @@ wire            axi_clk                ;
     ,.nvdla2saxi_axi_slave_bready     (nvdla2saxi_axi_slave0_bready )
     ,.nvdla2saxi_axi_slave_rready     (nvdla2saxi_axi_slave0_rready )
     ,.nvdla2saxi_axi_slave_wdata      (nvdla2saxi_axi_slave0_wdata  )
-    ,.nvdla2saxi_axi_slave_wid        (nvdla2saxi_axi_slave0_wid    )
     ,.nvdla2saxi_axi_slave_wlast      (nvdla2saxi_axi_slave0_wlast  )
     ,.nvdla2saxi_axi_slave_wstrb      (nvdla2saxi_axi_slave0_wstrb  )
     ,.nvdla2saxi_axi_slave_wvalid     (nvdla2saxi_axi_slave0_wvalid )
@@ -266,7 +256,6 @@ wire            axi_clk                ;
     ,.saxi2nvdla_axi_slave_rdata      (saxi2nvdla_axi_slave1_rdata  )
     ,.saxi2nvdla_axi_slave_rid        (saxi2nvdla_axi_slave1_rid    )
     ,.saxi2nvdla_axi_slave_rlast      (saxi2nvdla_axi_slave1_rlast  )
-    ,.saxi2nvdla_axi_slave_rresp      (saxi2nvdla_axi_slave1_rresp  )
     ,.saxi2nvdla_axi_slave_rvalid     (saxi2nvdla_axi_slave1_rvalid )
     ,.saxi2nvdla_axi_slave_wready     (saxi2nvdla_axi_slave1_wready )
 
@@ -291,7 +280,6 @@ wire            axi_clk                ;
     ,.nvdla2saxi_axi_slave_bready     (nvdla2saxi_axi_slave1_bready )
     ,.nvdla2saxi_axi_slave_rready     (nvdla2saxi_axi_slave1_rready )
     ,.nvdla2saxi_axi_slave_wdata      (nvdla2saxi_axi_slave1_wdata  )
-    ,.nvdla2saxi_axi_slave_wid        (nvdla2saxi_axi_slave1_wid    )
     ,.nvdla2saxi_axi_slave_wlast      (nvdla2saxi_axi_slave1_wlast  )
     ,.nvdla2saxi_axi_slave_wstrb      (nvdla2saxi_axi_slave1_wstrb  )
     ,.nvdla2saxi_axi_slave_wvalid     (nvdla2saxi_axi_slave1_wvalid )
@@ -313,54 +301,48 @@ wire            axi_clk                ;
     ,.mem2saxi_wr_ready             (mem2saxi1_wr_ready)
   );
 
-  slave_mem syn_mem (
+  slave_mem #(`DBB_ADDR_START, `DBB_MEM_SIZE) dbb_mem (
     .clk                    (fast_clk)
    ,.slow_clk               (clk)
    ,.reset                  (reset)
 
-   ,.slave2mem_cmd_wr       ({saxi12mem_cmd_wr, saxi02mem_cmd_wr})
-   ,.slave2mem_cmd_rd       ({saxi12mem_cmd_rd, saxi02mem_cmd_rd})
-   ,.slave2mem_addr_wr      ({saxi12mem_addr_wr, saxi02mem_addr_wr})
-   ,.slave2mem_addr_rd      ({saxi12mem_addr_rd, saxi02mem_addr_rd})
-   ,.slave2mem_data         ({saxi12mem_data, saxi02mem_data})
-   ,.slave2mem_wr_mask      ({saxi12mem_wstrb, saxi02mem_wstrb})
-   ,.slave2mem_len_rd       ({saxi12mem_len_rd, saxi02mem_len_rd})
-   ,.slave2mem_len_wr       ({saxi12mem_len_wr, saxi02mem_len_wr})
-   ,.slave2mem_size_rd      ({saxi12mem_size_rd, saxi02mem_size_rd})
-   ,.slave2mem_size_wr      ({saxi12mem_size_wr, saxi02mem_size_wr})
-   ,.mem2slave_rd_ready     ({mem2saxi1_rd_ready, mem2saxi0_rd_ready})
-   ,.mem2slave_wr_ready     ({mem2saxi1_wr_ready, mem2saxi0_wr_ready})
-   ,.mem2slave_rdresp_vld   ({mem2saxi1_rdresp, mem2saxi0_rdresp})
-   ,.mem2slave_rdresp_data  ({mem2saxi1_rddata, mem2saxi0_rddata})
-   ,.mem2slave_wrresp_vld   ({mem2saxi1_wrresp, mem2saxi0_wrresp})
+   ,.slave2mem_cmd_wr       (saxi02mem_cmd_wr)
+   ,.slave2mem_cmd_rd       (saxi02mem_cmd_rd)
+   ,.slave2mem_addr_wr      (saxi02mem_addr_wr)
+   ,.slave2mem_addr_rd      (saxi02mem_addr_rd)
+   ,.slave2mem_data         (saxi02mem_data)
+   ,.slave2mem_wr_mask      (saxi02mem_wstrb)
+   ,.slave2mem_len_rd       (saxi02mem_len_rd)
+   ,.slave2mem_len_wr       (saxi02mem_len_wr)
+   ,.slave2mem_size_rd      (saxi02mem_size_rd)
+   ,.slave2mem_size_wr      (saxi02mem_size_wr)
+   ,.mem2slave_rd_ready     (mem2saxi0_rd_ready)
+   ,.mem2slave_wr_ready     (mem2saxi0_wr_ready)
+   ,.mem2slave_rdresp_vld   (mem2saxi0_rdresp)
+   ,.mem2slave_rdresp_data  (mem2saxi0_rddata)
+   ,.mem2slave_wrresp_vld   (mem2saxi0_wrresp)
+  );
 
-/*   ,.slave02mem_cmd_wr      (saxi02mem_cmd_wr   )
-   ,.slave02mem_cmd_rd      (saxi02mem_cmd_rd   )
-   ,.slave02mem_addr_wr     (saxi02mem_addr_wr  )
-   ,.slave02mem_addr_rd     (saxi02mem_addr_rd  )
-   ,.slave02mem_data        (saxi02mem_data     )
-   ,.slave02mem_wr_mask     (saxi02mem_wstrb    )
-   ,.slave02mem_len         (saxi02mem_len      )
-   ,.slave02mem_size        (saxi02mem_size     )
-   ,.mem2slave0_rd_ready    (mem2saxi0_rd_ready )
-   ,.mem2slave0_wr_ready    (mem2saxi0_wr_ready )
-   ,.mem2slave0_rdresp_vld  (mem2saxi0_rdresp   )
-   ,.mem2slave0_rdresp_data (mem2saxi0_rddata   )
-   ,.mem2slave0_wrresp_vld  (mem2saxi0_wrresp   )
-
-   ,.slave12mem_cmd_wr      (saxi12mem_cmd_wr   )
-   ,.slave12mem_cmd_rd      (saxi12mem_cmd_rd   )
-   ,.slave12mem_addr_wr     (saxi12mem_addr_wr  )
-   ,.slave12mem_addr_rd     (saxi12mem_addr_rd  )
-   ,.slave12mem_data        (saxi12mem_data     )
-   ,.slave12mem_wr_mask     (saxi12mem_wstrb    )
-   ,.slave12mem_len         (saxi12mem_len      )
-   ,.slave12mem_size        (saxi12mem_size     )
-   ,.mem2slave1_rd_ready    (mem2saxi1_rd_ready )
-   ,.mem2slave1_wr_ready    (mem2saxi1_wr_ready )
-   ,.mem2slave1_rdresp_vld  (mem2saxi1_rdresp   )
-   ,.mem2slave1_rdresp_data (mem2saxi1_rddata   )
-   ,.mem2slave1_wrresp_vld  (mem2saxi1_wrresp   )*/
+slave_mem #(`CVSRAM_ADDR_START, `CVSRAM_MEM_SIZE) cvsram_mem (
+    .clk                    (fast_clk)
+   ,.slow_clk               (clk)
+   ,.reset                  (reset)
+ 
+   ,.slave2mem_cmd_wr       (saxi12mem_cmd_wr)
+   ,.slave2mem_cmd_rd       (saxi12mem_cmd_rd)
+   ,.slave2mem_addr_wr      (saxi12mem_addr_wr)
+   ,.slave2mem_addr_rd      (saxi12mem_addr_rd)
+   ,.slave2mem_data         (saxi12mem_data)
+   ,.slave2mem_wr_mask      (saxi12mem_wstrb)
+   ,.slave2mem_len_rd       (saxi12mem_len_rd)
+   ,.slave2mem_len_wr       (saxi12mem_len_wr)
+   ,.slave2mem_size_rd      (saxi12mem_size_rd)
+   ,.slave2mem_size_wr      (saxi12mem_size_wr)
+   ,.mem2slave_rd_ready     (mem2saxi1_rd_ready)
+   ,.mem2slave_wr_ready     (mem2saxi1_wr_ready)
+   ,.mem2slave_rdresp_vld   (mem2saxi1_rdresp)
+   ,.mem2slave_rdresp_data  (mem2saxi1_rddata)
+   ,.mem2slave_wrresp_vld   (mem2saxi1_wrresp)
   );
 
 

@@ -27,10 +27,10 @@ input         nvdla_core_clk;
 input         nvdla_core_rstn;
 output        idata_prdy;
 input         idata_pvld;
-input  [48:0] idata_pd;
+input  [72:0] idata_pd;
 input         odata_prdy;
 output        odata_pvld;
-output [48:0] odata_pd;
+output [72:0] odata_pd;
 input  [31:0] pwrbus_ram_pd;
 
 // Master Clock Gating (SLCG)
@@ -152,7 +152,7 @@ wire rd_popping;
 reg [1:0] odata_adr;          // read address this cycle
 wire ram_we = wr_pushing && (idata_count > 3'd0 || !rd_popping);   // note: write occurs next cycle
 wire ram_iwe = !wr_busy_in && idata_pvld;  
-wire [48:0] odata_pd_p;                    // read data out of ram
+wire [72:0] odata_pd_p;                    // read data out of ram
 
 wire [31 : 0] pwrbus_ram_pd;
 
@@ -160,7 +160,7 @@ wire [31 : 0] pwrbus_ram_pd;
 // Fifogen handles this by ignoring the data on the ram data out for that cycle.
 
 
-NV_NVDLA_RUBIK_wrdma_cmd_flopram_rwsa_4x49 ram (
+NV_NVDLA_RUBIK_wrdma_cmd_flopram_rwsa_4x73 ram (
       .clk( nvdla_core_clk )
     , .clk_mgated( nvdla_core_clk_mgated )
     , .pwrbus_ram_pd ( pwrbus_ram_pd )
@@ -236,7 +236,7 @@ always @( posedge nvdla_core_clk_mgated or negedge nvdla_core_rstn ) begin
 
     end
 end
-reg [48:0]  odata_pd;         // output data register
+reg [72:0]  odata_pd;         // output data register
 wire        rd_req_next = (odata_pvld_p || (odata_pvld_int && !odata_prdy)) ;
 
 always @( posedge nvdla_core_clk_mgated or negedge nvdla_core_rstn ) begin
@@ -253,7 +253,7 @@ always @( posedge nvdla_core_clk_mgated ) begin
     //synopsys translate_off
         else if ( !((rd_popping)) ) begin
     end else begin
-        odata_pd <=  {49{`x_or_0}};
+        odata_pd <=  {73{`x_or_0}};
     end
     //synopsys translate_on
 
@@ -448,7 +448,7 @@ endmodule // NV_NVDLA_RUBIK_wrdma_cmd
 // 
 // Flop-Based RAM (with internal wr_reg)
 //
-module NV_NVDLA_RUBIK_wrdma_cmd_flopram_rwsa_4x49 (
+module NV_NVDLA_RUBIK_wrdma_cmd_flopram_rwsa_4x73 (
       clk
     , clk_mgated
     , pwrbus_ram_pd
@@ -463,12 +463,12 @@ module NV_NVDLA_RUBIK_wrdma_cmd_flopram_rwsa_4x49 (
 input  clk;  // write clock
 input  clk_mgated;  // write clock mgated
 input [31 : 0] pwrbus_ram_pd;
-input  [48:0] di;
+input  [72:0] di;
 input  iwe;
 input  we;
 input  [1:0] wa;
 input  [2:0] ra;
-output [48:0] dout;
+output [72:0] dout;
 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_0 (.A(pwrbus_ram_pd[0]));
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_1 (.A(pwrbus_ram_pd[1]));
@@ -503,7 +503,7 @@ NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_29 (.A(pwrbus_ram_pd[29]));
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_30 (.A(pwrbus_ram_pd[30]));
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_31 (.A(pwrbus_ram_pd[31]));
 
-reg [48:0] di_d;  // -wr_reg
+reg [72:0] di_d;  // -wr_reg
 
 always @( posedge clk ) begin
     if ( iwe ) begin
@@ -514,14 +514,14 @@ end
 `ifdef EMU
 
 
-wire [48:0] dout_p;
+wire [72:0] dout_p;
 
 // we use an emulation ram here to save flops on the emulation board
 // so that the monstrous chip can fit :-)
 //
 reg [1:0] Wa0_vmw;
 reg we0_vmw;
-reg [48:0] Di0_vmw;
+reg [72:0] Di0_vmw;
 
 always @( posedge clk ) begin
     Wa0_vmw <=  wa;
@@ -529,7 +529,7 @@ always @( posedge clk ) begin
     Di0_vmw <=  di_d;
 end
 
-vmw_NV_NVDLA_RUBIK_wrdma_cmd_flopram_rwsa_4x49 emu_ram (
+vmw_NV_NVDLA_RUBIK_wrdma_cmd_flopram_rwsa_4x73 emu_ram (
      .Wa0( Wa0_vmw ) 
    , .we0( we0_vmw ) 
    , .Di0( Di0_vmw )
@@ -541,10 +541,10 @@ assign dout = (ra == 4) ? di_d : dout_p;
 
 `else
 
-reg [48:0] ram_ff0;
-reg [48:0] ram_ff1;
-reg [48:0] ram_ff2;
-reg [48:0] ram_ff3;
+reg [72:0] ram_ff0;
+reg [72:0] ram_ff1;
+reg [72:0] ram_ff2;
+reg [72:0] ram_ff3;
 
 always @( posedge clk_mgated ) begin
     if ( we && wa == 2'd0 ) begin
@@ -561,7 +561,7 @@ always @( posedge clk_mgated ) begin
     end
 end
 
-reg [48:0] dout;
+reg [72:0] dout;
 
 always @(*) begin
     case( ra ) 
@@ -571,35 +571,35 @@ always @(*) begin
     3'd3:       dout = ram_ff3;
     3'd4:       dout = di_d;
     //VCS coverage off
-    default:    dout = {49{`x_or_0}};
+    default:    dout = {73{`x_or_0}};
     //VCS coverage on
     endcase
 end
 
 `endif // EMU
 
-endmodule // NV_NVDLA_RUBIK_wrdma_cmd_flopram_rwsa_4x49
+endmodule // NV_NVDLA_RUBIK_wrdma_cmd_flopram_rwsa_4x73
 
 // emulation model of flopram guts
 //
 `ifdef EMU
 
 
-module vmw_NV_NVDLA_RUBIK_wrdma_cmd_flopram_rwsa_4x49 (
+module vmw_NV_NVDLA_RUBIK_wrdma_cmd_flopram_rwsa_4x73 (
    Wa0, we0, Di0,
    Ra0, Do0
    );
 
 input  [1:0] Wa0;
 input            we0;
-input  [48:0] Di0;
+input  [72:0] Di0;
 input  [1:0] Ra0;
-output [48:0] Do0;
+output [72:0] Do0;
 
 // Only visible during Spyglass to avoid blackboxes.
 `ifdef SPYGLASS_FLOPRAM
 
-assign Do0 = 49'd0;
+assign Do0 = 73'd0;
 wire dummy = 1'b0 | (|Wa0) | (|we0) | (|Di0) | (|Ra0);
 
 `endif
@@ -607,14 +607,14 @@ wire dummy = 1'b0 | (|Wa0) | (|we0) | (|Di0) | (|Ra0);
 // synopsys translate_off
 `ifndef SYNTH_LEVEL1_COMPILE
 `ifndef SYNTHESIS
-reg [48:0] mem[3:0];
+reg [72:0] mem[3:0];
 
 // expand mem for debug ease
 `ifdef EMU_EXPAND_FLOPRAM_MEM
-wire [48:0] Q0 = mem[0];
-wire [48:0] Q1 = mem[1];
-wire [48:0] Q2 = mem[2];
-wire [48:0] Q3 = mem[3];
+wire [72:0] Q0 = mem[0];
+wire [72:0] Q1 = mem[1];
+wire [72:0] Q2 = mem[2];
+wire [72:0] Q3 = mem[3];
 `endif
 
 // asynchronous ram writes
@@ -633,24 +633,24 @@ assign Do0 = mem[Ra0];
 // synopsys dc_script_begin
 // synopsys dc_script_end
 
-// g2c if { [find / -null_ok -subdesign vmw_NV_NVDLA_RUBIK_wrdma_cmd_flopram_rwsa_4x49] != {} } { set_attr preserve 1 [find / -subdesign vmw_NV_NVDLA_RUBIK_wrdma_cmd_flopram_rwsa_4x49] }
-endmodule // vmw_NV_NVDLA_RUBIK_wrdma_cmd_flopram_rwsa_4x49
+// g2c if { [find / -null_ok -subdesign vmw_NV_NVDLA_RUBIK_wrdma_cmd_flopram_rwsa_4x73] != {} } { set_attr preserve 1 [find / -subdesign vmw_NV_NVDLA_RUBIK_wrdma_cmd_flopram_rwsa_4x73] }
+endmodule // vmw_NV_NVDLA_RUBIK_wrdma_cmd_flopram_rwsa_4x73
 
-//vmw: Memory vmw_NV_NVDLA_RUBIK_wrdma_cmd_flopram_rwsa_4x49
+//vmw: Memory vmw_NV_NVDLA_RUBIK_wrdma_cmd_flopram_rwsa_4x73
 //vmw: Address-size 2
-//vmw: Data-size 49
+//vmw: Data-size 73
 //vmw: Sensitivity level 1
 //vmw: Ports W R
 
 //vmw: terminal we0 WriteEnable0
 //vmw: terminal Wa0 address0
-//vmw: terminal Di0[48:0] data0[48:0]
+//vmw: terminal Di0[72:0] data0[72:0]
 //vmw: 
 //vmw: terminal Ra0 address1
-//vmw: terminal Do0[48:0] data1[48:0]
+//vmw: terminal Do0[72:0] data1[72:0]
 //vmw: 
 
-//qt: CELL vmw_NV_NVDLA_RUBIK_wrdma_cmd_flopram_rwsa_4x49
+//qt: CELL vmw_NV_NVDLA_RUBIK_wrdma_cmd_flopram_rwsa_4x73
 //qt: TERMINAL we0 TYPE=WE POLARITY=H PORT=1
 //qt: TERMINAL Wa0[%d] TYPE=ADDRESS DIR=W BIT=%1 PORT=1
 //qt: TERMINAL Di0[%d] TYPE=DATA DIR=I BIT=%1 PORT=1

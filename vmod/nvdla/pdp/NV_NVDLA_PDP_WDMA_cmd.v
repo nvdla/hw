@@ -34,7 +34,7 @@ module NV_NVDLA_PDP_WDMA_cmd (
 input  [12:0] reg2dp_cube_out_channel;
 input  [12:0] reg2dp_cube_out_height;
 input  [12:0] reg2dp_cube_out_width;
-input   [7:0] reg2dp_dst_base_addr_high;
+input  [31:0] reg2dp_dst_base_addr_high;
 input  [26:0] reg2dp_dst_base_addr_low;
 input  [26:0] reg2dp_dst_line_stride;
 input  [26:0] reg2dp_dst_surface_stride;
@@ -44,15 +44,15 @@ input   [9:0] reg2dp_partial_width_out_last;
 input   [9:0] reg2dp_partial_width_out_mid;
 input   [7:0] reg2dp_split_num;
 input         cmd_fifo_rd_prdy;
-output [55:0] cmd_fifo_rd_pd;
+output [79:0] cmd_fifo_rd_pd;
 output        cmd_fifo_rd_pvld;
 input         nvdla_core_clk;
 input         nvdla_core_rstn;
 input  [31:0] pwrbus_ram_pd;
 input op_load;
-reg    [39:0] base_addr_line;
-reg    [39:0] base_addr_split;
-reg    [39:0] base_addr_surf;
+reg    [63:0] base_addr_line;
+reg    [63:0] base_addr_split;
+reg    [63:0] base_addr_surf;
 reg           cfg_do_int16;
 reg           cfg_do_int8;
 reg    [12:0] count_h;
@@ -63,10 +63,10 @@ reg           mon_base_addr_split_c;
 reg           mon_base_addr_surf_c;
 reg           op_prcess;
 reg    [14:0] size_of_byte_in_c;
-wire   [39:0] cfg_base_addr;
+wire   [63:0] cfg_base_addr;
 wire          cfg_mode_split;
 wire          cmd_fifo_wr_accpet;
-wire   [55:0] cmd_fifo_wr_pd;
+wire   [79:0] cmd_fifo_wr_pd;
 wire          cmd_fifo_wr_prdy;
 wire          cmd_fifo_wr_pvld;
 wire   [13:0] cube_out_channel_use;
@@ -89,7 +89,7 @@ wire   [10:0] size_of_surf_use;
 wire   [12:0] size_of_width;
 wire    [9:0] split_size_of_width;
 wire   [18:0] splitw_stride;
-wire   [39:0] spt_cmd_addr;
+wire   [63:0] spt_cmd_addr;
 wire          spt_cmd_cube_end;
 wire    [1:0] spt_cmd_lenb;
 wire   [12:0] spt_cmd_size;
@@ -263,8 +263,8 @@ assign is_last_h = (count_h==reg2dp_cube_out_height);
 // LINE
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
-    base_addr_line <= {40{1'b0}};
-    {mon_base_addr_line_c,base_addr_line} <= {41{1'b0}};
+    base_addr_line <= {64{1'b0}};
+    {mon_base_addr_line_c,base_addr_line} <= {65{1'b0}};
   end else begin
     if (op_load) begin
         base_addr_line <= cfg_base_addr;
@@ -328,8 +328,8 @@ end
 // SURF
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
-    base_addr_surf <= {40{1'b0}};
-    {mon_base_addr_surf_c,base_addr_surf} <= {41{1'b0}};
+    base_addr_surf <= {64{1'b0}};
+    {mon_base_addr_surf_c,base_addr_surf} <= {65{1'b0}};
   end else begin
     if (op_load) begin
         base_addr_surf <= cfg_base_addr;
@@ -391,8 +391,8 @@ end
 // SPLIT
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
-    base_addr_split <= {40{1'b0}};
-    {mon_base_addr_split_c,base_addr_split} <= {41{1'b0}};
+    base_addr_split <= {64{1'b0}};
+    {mon_base_addr_split_c,base_addr_split} <= {65{1'b0}};
   end else begin
     if (op_load) begin
         base_addr_split <= cfg_base_addr;
@@ -457,10 +457,10 @@ NV_NVDLA_PDP_WDMA_CMD_fifo u_fifo (
   ,.nvdla_core_rstn  (nvdla_core_rstn)      //|< i
   ,.cmd_fifo_wr_prdy (cmd_fifo_wr_prdy)     //|> w
   ,.cmd_fifo_wr_pvld (cmd_fifo_wr_pvld)     //|< w
-  ,.cmd_fifo_wr_pd   (cmd_fifo_wr_pd[55:0]) //|< w
+  ,.cmd_fifo_wr_pd   (cmd_fifo_wr_pd[79:0]) //|< w
   ,.cmd_fifo_rd_prdy (cmd_fifo_rd_prdy)     //|< i
   ,.cmd_fifo_rd_pvld (cmd_fifo_rd_pvld)     //|> o
-  ,.cmd_fifo_rd_pd   (cmd_fifo_rd_pd[55:0]) //|> o
+  ,.cmd_fifo_rd_pd   (cmd_fifo_rd_pd[79:0]) //|> o
   ,.pwrbus_ram_pd    (pwrbus_ram_pd[31:0])  //|< i
   );
 //==============
@@ -472,10 +472,10 @@ assign spt_cmd_lenb = size_of_b;
 assign spt_cmd_cube_end = is_cube_end;
 
 // PKT_PACK_WIRE( pdp_wdma_cmd , spt_cmd_ , cmd_fifo_wr_pd )
-assign      cmd_fifo_wr_pd[39:0] =    spt_cmd_addr[39:0];
-assign      cmd_fifo_wr_pd[52:40] =    spt_cmd_size[12:0];
-assign      cmd_fifo_wr_pd[54:53] =    spt_cmd_lenb[1:0];
-assign      cmd_fifo_wr_pd[55] =    spt_cmd_cube_end ;
+assign      cmd_fifo_wr_pd[63:0] =    spt_cmd_addr[63:0];
+assign      cmd_fifo_wr_pd[76:64] =    spt_cmd_size[12:0];
+assign      cmd_fifo_wr_pd[78:77] =    spt_cmd_lenb[1:0];
+assign      cmd_fifo_wr_pd[79] =    spt_cmd_cube_end ;
 
 endmodule // NV_NVDLA_PDP_WDMA_cmd
 
@@ -483,7 +483,7 @@ endmodule // NV_NVDLA_PDP_WDMA_cmd
 // AUTOMATICALLY GENERATED -- DO NOT EDIT OR CHECK IN
 //
 // /home/nvtools/engr/2017/03/11_05_00_06/nvtools/scripts/fifogen
-// fifogen -input_config_yaml ../../../../../../../socd/ip_chip_tools/1.0/defs/public/fifogen/golden/tlit5/fifogen.yml -no_make_ram -no_make_ram -stdout -m NV_NVDLA_PDP_WDMA_CMD_fifo -clk_name nvdla_core_clk -reset_name nvdla_core_rstn -wr_pipebus cmd_fifo_wr -rd_pipebus cmd_fifo_rd -d 1 -wr_reg -ram_bypass -w 56 -ram ff -ram ff [Chosen ram type: ff - fifogen_flops (user specified, thus no other ram type is allowed)]
+// fifogen -input_config_yaml ../../../../../../../socd/ip_chip_tools/1.0/defs/public/fifogen/golden/tlit5/fifogen.yml -no_make_ram -no_make_ram -stdout -m NV_NVDLA_PDP_WDMA_CMD_fifo -clk_name nvdla_core_clk -reset_name nvdla_core_rstn -wr_pipebus cmd_fifo_wr -rd_pipebus cmd_fifo_rd -d 1 -wr_reg -ram_bypass -w 80 -ram ff -ram ff [Chosen ram type: ff - fifogen_flops (user specified, thus no other ram type is allowed)]
 // chip config vars: assertion_module_prefix=nv_  strict_synchronizers=1  strict_synchronizers_use_lib_cells=1  strict_synchronizers_use_tm_lib_cells=1  strict_sync_randomizer=1  assertion_message_prefix=FIFOGEN_ASSERTION  allow_async_fifola=0  ignore_ramgen_fifola_variant=1  uses_p_SSYNC=0  uses_prand=1  uses_rammake_inc=1  use_x_or_0=1  force_wr_reg_gated=1  no_force_reset=1  no_timescale=1  no_pli_ifdef=1  requires_full_throughput=1  ram_auto_ff_bits_cutoff=16  ram_auto_ff_width_cutoff=2  ram_auto_ff_width_cutoff_max_depth=32  ram_auto_ff_depth_cutoff=-1  ram_auto_ff_no_la2_depth_cutoff=5  ram_auto_la2_width_cutoff=8  ram_auto_la2_width_cutoff_max_depth=56  ram_auto_la2_depth_cutoff=16  flopram_emu_model=1  dslp_single_clamp_port=1  dslp_clamp_port=1  slp_single_clamp_port=1  slp_clamp_port=1  master_clk_gated=1  clk_gate_module=NV_CLK_gate_power  redundant_timing_flops=0  hot_reset_async_force_ports_and_loopback=1  ram_sleep_en_width=1  async_cdc_reg_id=NV_AFIFO_  rd_reg_default_for_async=1  async_ram_instance_prefix=NV_ASYNC_RAM_  allow_rd_busy_reg_warning=0  do_dft_xelim_gating=1  add_dft_xelim_wr_clkgate=1  add_dft_xelim_rd_clkgate=1 
 //
 // leda B_3208_NV OFF -- Unequal length LHS and RHS in assignment
@@ -515,10 +515,10 @@ input         cmd_fifo_wr_pvld;
 `ifdef FV_RAND_WR_PAUSE
 input         cmd_fifo_wr_pause;
 `endif
-input  [55:0] cmd_fifo_wr_pd;
+input  [79:0] cmd_fifo_wr_pd;
 input         cmd_fifo_rd_prdy;
 output        cmd_fifo_rd_pvld;
-output [55:0] cmd_fifo_rd_pd;
+output [79:0] cmd_fifo_rd_pd;
 input  [31:0] pwrbus_ram_pd;
 
 // Master Clock Gating (SLCG)
@@ -643,7 +643,7 @@ wire rd_popping;
 
 wire ram_we = wr_pushing && (cmd_fifo_wr_count > 1'd0 || !rd_popping);   // note: write occurs next cycle
 wire ram_iwe = !wr_busy_in && cmd_fifo_wr_pvld;  
-wire [55:0] cmd_fifo_rd_pd;                    // read data out of ram
+wire [79:0] cmd_fifo_rd_pd;                    // read data out of ram
 
 wire [31 : 0] pwrbus_ram_pd;
 
@@ -651,7 +651,7 @@ wire [31 : 0] pwrbus_ram_pd;
 // Fifogen handles this by ignoring the data on the ram data out for that cycle.
 
 
-NV_NVDLA_PDP_WDMA_CMD_fifo_flopram_rwsa_1x56 ram (
+NV_NVDLA_PDP_WDMA_CMD_fifo_flopram_rwsa_1x80 ram (
       .clk( nvdla_core_clk )
     , .clk_mgated( nvdla_core_clk_mgated )
     , .pwrbus_ram_pd ( pwrbus_ram_pd )
@@ -1134,7 +1134,7 @@ endmodule // NV_NVDLA_PDP_WDMA_CMD_fifo
 // 
 // Flop-Based RAM (with internal wr_reg)
 //
-module NV_NVDLA_PDP_WDMA_CMD_fifo_flopram_rwsa_1x56 (
+module NV_NVDLA_PDP_WDMA_CMD_fifo_flopram_rwsa_1x80 (
       clk
     , clk_mgated
     , pwrbus_ram_pd
@@ -1148,11 +1148,11 @@ module NV_NVDLA_PDP_WDMA_CMD_fifo_flopram_rwsa_1x56 (
 input  clk;  // write clock
 input  clk_mgated;  // write clock mgated
 input [31 : 0] pwrbus_ram_pd;
-input  [55:0] di;
+input  [79:0] di;
 input  iwe;
 input  we;
 input  [0:0] ra;
-output [55:0] dout;
+output [79:0] dout;
 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_0 (.A(pwrbus_ram_pd[0]));
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_1 (.A(pwrbus_ram_pd[1]));
@@ -1187,14 +1187,14 @@ NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_29 (.A(pwrbus_ram_pd[29]));
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_30 (.A(pwrbus_ram_pd[30]));
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_31 (.A(pwrbus_ram_pd[31]));
 
-reg [55:0] di_d;  // -wr_reg
+reg [79:0] di_d;  // -wr_reg
 
 always @( posedge clk ) begin
     if ( iwe ) begin
         di_d <=  di; // -wr_reg
     end
 end
-reg [55:0] ram_ff0;
+reg [79:0] ram_ff0;
 
 always @( posedge clk_mgated ) begin
     if ( we ) begin
@@ -1202,17 +1202,17 @@ always @( posedge clk_mgated ) begin
     end
 end
 
-reg [55:0] dout;
+reg [79:0] dout;
 
 always @(*) begin
     case( ra ) 
     1'd0:       dout = ram_ff0;
     1'd1:       dout = di_d;
     //VCS coverage off
-    default:    dout = {56{`x_or_0}};
+    default:    dout = {80{`x_or_0}};
     //VCS coverage on
     endcase
 end
 
-endmodule // NV_NVDLA_PDP_WDMA_CMD_fifo_flopram_rwsa_1x56
+endmodule // NV_NVDLA_PDP_WDMA_CMD_fifo_flopram_rwsa_1x80
 

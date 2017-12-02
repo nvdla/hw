@@ -1,0 +1,273 @@
+#!/usr/bin/env perl
+################################################################
+#
+#  eperl - embedded perl utility.
+#
+################################################################
+# program
+################################################################
+
+package eperl_main;
+use strict;
+use File::Basename;
+my ($Progdir) = dirname ($0);
+my ($Program) = basename ($0);
+
+use FindBin qw($Bin);
+#use lib "$Bin/../vmod/plugins";
+#use eplugin;
+
+################################################################
+# usage
+################################################################
+
+sub Usage { print << "END"
+
+usage: $Program [-u | -h] [-q] [-v] [-c | -t | -d | -r | -m | -o <ofile>] <ifile(s)>
+  -u: print usage statement.
+  -h: print help statement.;
+  -m: modify mode, input file is output file.
+  -o <file>: output file, default is stdout.
+  <file>: input file
+
+  This tool is NOT intended to be used within a build flow. This
+  tool should be viewed as a fancy editor keystroke that generates
+  WISIWIG generated results within the user maintained source file.
+
+END
+}
+
+################################################################
+# help
+################################################################
+
+sub Help { print << 'END'
+
+This script is an embedded perl script execution tool. Embedded perl 
+scripts found within comments of the input files are executed and 
+captured into the output file. 
+
+The default output file is standard output. Alternatively, the user may 
+specify an output file or self modification.
+
+The embedded scripts within the input file are recognized on lines with 
+comment strings followed by a colon. The comment string can be "#" or "//".
+
+//: <perl> or #: <perl>
+
+The embedded scripts within the input file execute inserting their output 
+between the following generated statements.
+
+//| eperl: generated_beg (DO NOT EDIT BELOW)
+...
+//| eperl: generated_end (DO NOT EDIT ABOVE)
+
+Adjacent embedded script lines define multi-line perl scripts and 
+non-adjacent embedded script lines define multiple perl scripts.
+
+//: <perl script 1 - line 1>
+//: <perl script 1 - line 2>
+
+vs
+
+//: <perlscript 1 - line 1>
+
+//: <perlscript 2 - line 1>
+
+Standard single line and multi line perl printing produces the following result.
+
+Example:
+
+  //: print "1 A\n";
+  //: print "1 B\n";
+  //| eperl: generated_beg (DO NOT EDIT BELOW)
+1 A
+1 B
+  //| eperl: generated_end (DO NOT EDIT ABOVE)
+
+Eperl Plugin:
+Some build-in plugin will generate verilog logic, and you can invoke them as:
+
+//: &eperl::<plugin>("<options>");
+
+Please find all supported plugin under hw/vmod/plugins/eperl.pm
+
+Examplel
+//: &eperl::flop("-wid 10 -en enable");
+//| eperl: generated_beg (DO NOT EDIT BELOW)
+  reg [9:0] q;
+  always (posedge clk or negedge rst) begin
+     if (!rst) begin
+         q[9:0] <= 10'h0;
+     end else begin
+         if (enable == 1'b1) begin
+             q[9:0] <= d[9:0];
+         // VCS coverage off
+         end else if (enable == 1'b0) begin
+         end else begin
+             q[9:0] <= {10{1'bx}};
+         // VCS coverage on
+         end
+     end
+  end
+//| eperl: generated_end (DO NOT EDIT ABOVE)
+
+END
+
+}
+
+################################################################
+# input
+################################################################
+
+my $opts = join (" ", @ARGV);
+
+use Getopt::Long;
+my ($opt_u);
+my ($opt_h);
+my ($opt_m);
+my ($opt_q);
+my ($opt_o);
+GetOptions (
+  'u'   => \$opt_u, 
+  'h'   => \$opt_h,
+  'm'   => \$opt_m,
+  'q'   => \$opt_q,
+  'o=s' => \$opt_o,
+  ) or &Error ("unknown option: $opts");
+
+&Usage and exit 0 if ($opt_u); 
+&Usage and &Help and exit 0 if ($opt_h);
+&Usage and exit 1 if (!@ARGV);
+
+my (@InFiles) = @ARGV;
+my ($OutFile) = $opt_o;
+
+################################################################
+# main
+################################################################
+
+our $DIFF;
+our $DIFFS;
+our $INDENT;
+our $COMMENT;
+
+my ($InFile,$TmpFile);
+foreach $InFile (@InFiles) {
+  $TmpFile = "${InFile}.eperl";
+  &ProcessInput ($InFile, $TmpFile);
+  &CreateOutput ($InFile, $TmpFile, $OutFile);
+}
+&Error ("differences detected -- please eliminate the $Program differences reported above!", 1) if ($DIFFS);
+
+################################################################
+# subroutines
+################################################################
+sub ProcessInput {
+  use strict;
+  my ($InFile)  = shift;
+  my ($TmpFile) = shift;
+  my ($GenHit);
+  my ($SysCmd,$InCmd,$OutCmd);
+  my ($Line,$Script);
+  $OutCmd = $TmpFile;
+  open(OUT, "> $OutCmd") || &Error ("$OutCmd open error: $!\n");
+  select(OUT);
+  $InCmd  = $InFile;
+  open(IN1, "$InCmd") || &Error ("file not found: $InFile");
+  while (<IN1>) {
+    $GenHit = 1 if (/^\s*(#|\/\/)\|\s*$Program:\s+generated_beg/);
+    if (!$GenHit) {
+      if (/^(\s*)(#|\/\/):(.*\n)/) {
+        $INDENT = $1;
+        $COMMENT = $2;
+        $Line = $3;
+        $Line =~ s/^ //;
+        $Script .= $Line;
+      }
+      elsif ($Script) {
+        &EvalScript ($Script);
+        $Script = "";
+      }
+      print;
+    }
+    $GenHit = 0 if (/^\s*(#|\/\/)\|\s*$Program:\s+generated_end/);
+  }
+  if ($Script) {
+    &EvalScript ($Script);
+    $Script = "";
+  }
+  close(OUT);
+  close(IN);
+}
+
+sub EvalScript {
+  use strict;
+  my ($Script) = shift;
+  my ($Sts);
+  print "${INDENT}${COMMENT}| $Program: generated_beg (DO NOT EDIT BELOW)\n";
+  $Sts = EVAL ("$Script");
+  &Error ("eval:\n$Script\nerror:\n$@") if ($Sts);
+  print "\n${INDENT}${COMMENT}| $Program: generated_end (DO NOT EDIT ABOVE)\n";
+}
+
+sub CreateOutput {
+  use strict;
+  my ($InFile, $TmpFile, $OutFile) = @_;
+  my ($SysCmd, $CmpDiffs);
+  &System ("chmod --reference=$InFile $TmpFile");
+  if ($opt_m) {
+    $CmpDiffs = &System ("cmp -s $TmpFile $InFile", 1);
+    if ($CmpDiffs) {
+      &System ("mv $TmpFile $InFile");
+      print STDERR "$Program: $InFile modified.\n" unless ($opt_q);
+    } else {
+      &System ("/bin/rm -f $TmpFile");
+      print STDERR "$Program: $InFile unchanged.\n" unless ($opt_q);
+    }
+  } elsif ($opt_o) {
+    $CmpDiffs = &System ("cmp -s $TmpFile $OutFile", 1);
+
+    if ($CmpDiffs) {
+      &System ("mv $TmpFile $OutFile");
+      print STDERR "$Program: $OutFile modified.\n" unless ($opt_q);
+    }
+    else {
+      &System ("mv $TmpFile $OutFile");
+      print STDERR "$Program: $OutFile unchanged.\n" unless ($opt_q);
+    }
+  } else {
+    &System ("cat $TmpFile");
+    &System ("/bin/rm -f $TmpFile");
+  }
+}
+
+sub System {
+  my $SysCmd = shift;
+  my $NoErr = shift;
+  system ($SysCmd);
+  &Error ("system: $SysCmd") if ($? && !$NoErr);
+  return $?;
+}
+
+sub Warning {
+  use strict;
+  my $Msg = shift;
+  print STDERR "WARNING: $Program: $Msg\n";
+}
+
+sub Error {
+  my $Msg = shift;
+  my $Noc = shift;
+  use strict;
+  use Carp qw(croak);
+  print STDERR "ERROR: $Program: $Msg\n";
+  croak unless $Noc;
+  exit 1;
+}
+
+sub EVAL {
+  my ($Script) = shift;
+  eval ($Script);
+  return ($@);
+}

@@ -1,0 +1,159 @@
+#!/usr/bin/env perl
+
+##
+## build tree
+##
+use Getopt::Long;
+use Data::Dumper;
+use YAML qw(LoadFile);
+use IO::Tee;
+use Carp qw(croak);
+
+my $MAKE = "make";
+
+#=============================
+## Options
+#=============================
+my @build;
+my $only;
+my $opt_m=""; # optins passed to make
+my $log = "build.log";
+my $outdir = "outdir";
+my $run = 1;
+my $debug = 0;
+my $project;
+my $clobber;
+GetOptions (
+             "help|h" => sub {usage(); exit 0},
+             "build|b=s" => \@build,
+             "only=s" => \$only,
+             "opt_m=s"   => \$opt_m,
+             "log=s"     => \$log,
+             "outdir=s"     => \$outdir,
+             "project=s" => \$project,
+             "run!"      => \$run,
+             "debug"     => \$debug,
+             "clober|clean"      => \$clobber,
+           ) or die "Unrecognized options @ARGV";
+
+push @build, "verif" unless defined @build;
+#=============================
+## Global Variables
+#=============================
+my $cfg = "tools/etc/build.config";
+my $outdir_log = "$outdir/$log";
+#
+#=============================
+## MAIN
+#=============================
+build();
+
+#=============================
+## SUB
+#=============================
+sub build {
+    my $outdir_log_tmp = "$outdir/$log".".tmp";
+    
+    #system ("rm -rf $outdir_log");
+    unlink $outdir_log;
+    system ("mkdir -p $outdir");
+    system ("touch  $outdir_log");
+    
+    my @projects = $project ? ($project) : get_projects("tree.make");
+    foreach my $project (@projects) {
+        my $tree = LoadFile($cfg);
+        my $done;
+        #print Dumper($tree);
+        #
+        if ($only) {
+            croak "[ERROR]: build target $only does not exist in $cfg" unless $tree->{$only};
+                
+            foreach my $sandbox (@{$tree->{$only}{sandbox}}) {
+                system("$MAKE -C $sandbox PROJECT=$project $opt_m | tee $outdir_log_tmp")==0 or die "$sandbox build fail: $?" if $run;
+                system ("cat $outdir_log_tmp >> $outdir_log") if $run;
+            }
+            
+        } else {
+            while (%$tree) {
+                my @keys = keys %$tree;
+                
+                my $key="unknown";
+                foreach my $i (0..$#keys) {
+                    #print "key$i=$keys[$i]\n";
+                    if (grep {$keys[$i] =~ /^$_/} @build) {
+                        $key = $keys[$i];
+                        #print "find:key=$key\n";
+                        last;
+                    }
+                }
+                # all -build target is built;
+                print "key=$key\n" if $debug;
+                last if ($key eq "unknown");
+    
+                #print Dumper($tree);
+                
+                my $leaf = find_any_leaf($tree,$key,$done);
+            
+                print "leaf=$leaf\n" if $debug;
+            
+                foreach my $sandbox (@{$tree->{$leaf}{sandbox}}) {
+                    system("$MAKE -C $sandbox PROJECT=$project $opt_m | tee $outdir_log_tmp")==0 or die "$sandbox build fail: $?" if $run;
+                    system ("cat $outdir_log_tmp >> $outdir_log") if $run;
+                }
+                
+                $done->{$leaf} = 1;
+                delete $tree->{$leaf};
+            }
+        }
+    }
+    #system ("rm -rf $outdir_log_tmp");
+    unlink $outdir_log_tmp;
+    
+    print "logfile: $outdir_log\n";
+    my $tee = IO::Tee->new(\*STDOUT, $outdir_log);
+    print $tee "="x46,"\n";
+    print $tee "="x18,"BUILD PASS","="x18,"\n";
+    print $tee "="x46,"\n";
+}
+
+sub find_any_leaf {
+    my $tree = shift;
+    my $key = shift;
+    my $done = shift;
+    
+    croak "[ERROR]: dependency $key does not exist in $cfg" unless $tree->{$key};
+
+    my $leaf;
+    if (exists $tree->{$key}{dependencies}) {
+        #print "find_any_leaf:key=$key\n";
+        foreach my $dep (@{$tree->{$key}{dependencies}}) {
+            #print "find_any_leaf:dep=$dep\n";
+            next if exists $done->{$dep};
+            return find_any_leaf($tree,$dep,$done);
+        }
+    }
+    return $key;
+}
+
+sub get_projects {
+    my $file = shift;
+
+    my @projects;
+    open my $fh,"<",$file or die;
+    while (my $line = <$fh>) {
+        chomp $line;
+        next unless $line =~ /^\s*PROJECTS/;
+        my $str = $1 if $line =~ /=(.*)/;
+        @projects = split(' ',$str);
+    }
+    close $fh;
+
+    #print Dumper(\@projects);
+    return @projects;
+}
+
+sub usage()
+{
+    print
+    	"Usage: tmake\n",
+}

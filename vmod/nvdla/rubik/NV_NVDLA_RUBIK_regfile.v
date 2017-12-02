@@ -66,12 +66,12 @@ output [33:0] rbk2csb_resp_pd;
 output        rbk2csb_resp_valid;
 output [26:0] reg2dp_contract_stride_0;
 output [26:0] reg2dp_contract_stride_1;
-output  [7:0] reg2dp_dain_addr_high;
+output [31:0] reg2dp_dain_addr_high;
 output [26:0] reg2dp_dain_addr_low;
 output [26:0] reg2dp_dain_line_stride;
 output [26:0] reg2dp_dain_planar_stride;
 output [26:0] reg2dp_dain_surf_stride;
-output  [7:0] reg2dp_daout_addr_high;
+output [31:0] reg2dp_daout_addr_high;
 output [26:0] reg2dp_daout_addr_low;
 output [26:0] reg2dp_daout_line_stride;
 output [26:0] reg2dp_daout_planar_stride;
@@ -106,12 +106,12 @@ wire          d1_reg_wr_en;
 wire          dp2reg_consumer_w;
 wire   [26:0] reg2dp_d0_contract_stride_0;
 wire   [26:0] reg2dp_d0_contract_stride_1;
-wire    [7:0] reg2dp_d0_dain_addr_high;
+wire   [31:0] reg2dp_d0_dain_addr_high;
 wire   [26:0] reg2dp_d0_dain_addr_low;
 wire   [26:0] reg2dp_d0_dain_line_stride;
 wire   [26:0] reg2dp_d0_dain_planar_stride;
 wire   [26:0] reg2dp_d0_dain_surf_stride;
-wire    [7:0] reg2dp_d0_daout_addr_high;
+wire   [31:0] reg2dp_d0_daout_addr_high;
 wire   [26:0] reg2dp_d0_daout_addr_low;
 wire   [26:0] reg2dp_d0_daout_line_stride;
 wire   [26:0] reg2dp_d0_daout_planar_stride;
@@ -130,12 +130,12 @@ wire          reg2dp_d0_perf_en;
 wire    [1:0] reg2dp_d0_rubik_mode;
 wire   [26:0] reg2dp_d1_contract_stride_0;
 wire   [26:0] reg2dp_d1_contract_stride_1;
-wire    [7:0] reg2dp_d1_dain_addr_high;
+wire   [31:0] reg2dp_d1_dain_addr_high;
 wire   [26:0] reg2dp_d1_dain_addr_low;
 wire   [26:0] reg2dp_d1_dain_line_stride;
 wire   [26:0] reg2dp_d1_dain_planar_stride;
 wire   [26:0] reg2dp_d1_dain_surf_stride;
-wire    [7:0] reg2dp_d1_daout_addr_high;
+wire   [31:0] reg2dp_d1_daout_addr_high;
 wire   [26:0] reg2dp_d1_daout_addr_low;
 wire   [26:0] reg2dp_d1_daout_line_stride;
 wire   [26:0] reg2dp_d1_daout_planar_stride;
@@ -185,12 +185,12 @@ reg           reg2dp_d0_op_en;
 reg           reg2dp_d0_op_en_w;
 reg           reg2dp_d1_op_en;
 reg           reg2dp_d1_op_en_w;
-reg     [7:0] reg2dp_dain_addr_high;
+reg    [31:0] reg2dp_dain_addr_high;
 reg    [26:0] reg2dp_dain_addr_low;
 reg    [26:0] reg2dp_dain_line_stride;
 reg    [26:0] reg2dp_dain_planar_stride;
 reg    [26:0] reg2dp_dain_surf_stride;
-reg     [7:0] reg2dp_daout_addr_high;
+reg    [31:0] reg2dp_daout_addr_high;
 reg    [26:0] reg2dp_daout_addr_low;
 reg    [26:0] reg2dp_daout_line_stride;
 reg    [26:0] reg2dp_daout_planar_stride;
@@ -240,13 +240,13 @@ NV_NVDLA_RUBIK_dual_reg u_dual_reg_d0 (
   ,.nvdla_core_rstn     (nvdla_core_rstn)                     //|< i
   ,.contract_stride_0   (reg2dp_d0_contract_stride_0[26:0])   //|> w
   ,.contract_stride_1   (reg2dp_d0_contract_stride_1[26:0])   //|> w
-  ,.dain_addr_high      (reg2dp_d0_dain_addr_high[7:0])       //|> w
+  ,.dain_addr_high      (reg2dp_d0_dain_addr_high[31:0])      //|> w
   ,.dain_addr_low       (reg2dp_d0_dain_addr_low[26:0])       //|> w
   ,.dain_line_stride    (reg2dp_d0_dain_line_stride[26:0])    //|> w
   ,.dain_planar_stride  (reg2dp_d0_dain_planar_stride[26:0])  //|> w
   ,.datain_ram_type     (reg2dp_d0_datain_ram_type)           //|> w
   ,.dain_surf_stride    (reg2dp_d0_dain_surf_stride[26:0])    //|> w
-  ,.daout_addr_high     (reg2dp_d0_daout_addr_high[7:0])      //|> w
+  ,.daout_addr_high     (reg2dp_d0_daout_addr_high[31:0])     //|> w
   ,.daout_addr_low      (reg2dp_d0_daout_addr_low[26:0])      //|> w
   ,.daout_line_stride   (reg2dp_d0_daout_line_stride[26:0])   //|> w
   ,.daout_planar_stride (reg2dp_d0_daout_planar_stride[26:0]) //|> w
@@ -276,13 +276,13 @@ NV_NVDLA_RUBIK_dual_reg u_dual_reg_d1 (
   ,.nvdla_core_rstn     (nvdla_core_rstn)                     //|< i
   ,.contract_stride_0   (reg2dp_d1_contract_stride_0[26:0])   //|> w
   ,.contract_stride_1   (reg2dp_d1_contract_stride_1[26:0])   //|> w
-  ,.dain_addr_high      (reg2dp_d1_dain_addr_high[7:0])       //|> w
+  ,.dain_addr_high      (reg2dp_d1_dain_addr_high[31:0])      //|> w
   ,.dain_addr_low       (reg2dp_d1_dain_addr_low[26:0])       //|> w
   ,.dain_line_stride    (reg2dp_d1_dain_line_stride[26:0])    //|> w
   ,.dain_planar_stride  (reg2dp_d1_dain_planar_stride[26:0])  //|> w
   ,.datain_ram_type     (reg2dp_d1_datain_ram_type)           //|> w
   ,.dain_surf_stride    (reg2dp_d1_dain_surf_stride[26:0])    //|> w
-  ,.daout_addr_high     (reg2dp_d1_daout_addr_high[7:0])      //|> w
+  ,.daout_addr_high     (reg2dp_d1_daout_addr_high[31:0])     //|> w
   ,.daout_addr_low      (reg2dp_d1_daout_addr_low[26:0])      //|> w
   ,.daout_line_stride   (reg2dp_d1_daout_line_stride[26:0])   //|> w
   ,.daout_planar_stride (reg2dp_d1_daout_planar_stride[26:0]) //|> w

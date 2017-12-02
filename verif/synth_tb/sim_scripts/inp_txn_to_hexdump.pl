@@ -1,4 +1,4 @@
-#!/home/utils/perl-5.8.8/bin/perl
+#!/usr/bin/env perl
 
 use strict;
 my $memW="$ARGV[0]";
@@ -270,7 +270,7 @@ while(<$inf>)
       #Write the command with the modified filename (1.raw2, 1.chiplib_replay.raw2, etc.) to the output file.
       #$addr =~ m/0x(.*)/;
       my $hex_addr = hex($addr);
-      $hex_addr = sprintf("%010x",$hex_addr);
+      $hex_addr = sprintf("%016x",$hex_addr);
       #$offset =~ m/0x(.*)/;
       my $hex_offset = hex($offset);
       $hex_offset = sprintf("%08x",$hex_offset);
@@ -278,7 +278,7 @@ while(<$inf>)
       $hex_string = $raw_file . "_" .$hex_string . "_" . $hex_addr . "_" . $hex_offset;
 
       # Pad extra 0's to maintain cmd length of 120 bits
-      $hex_string = $hex_string."_0000_0000_0000";
+      $hex_string = $hex_string."_00_0000";
     }
     print $ouf "$hex_string\n";
 #print " HexString: $hex_string" . "\n";

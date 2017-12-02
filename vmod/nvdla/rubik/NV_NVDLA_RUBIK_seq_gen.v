@@ -67,7 +67,7 @@ input  reg2dp_op_en;
 input  reg2dp_datain_ram_type;
 input  [1:0]            reg2dp_rubik_mode;
 input  [1:0]          reg2dp_in_precision;
-input  [7:0]                 reg2dp_dain_addr_high;
+input  [31:0]                 reg2dp_dain_addr_high;
 input  [26:0]                  reg2dp_dain_addr_low;
 input  [12:0]   reg2dp_datain_channel;
 input  [12:0]    reg2dp_datain_height;
@@ -81,7 +81,7 @@ input  [26:0]              reg2dp_contract_stride_0;
 input  [26:0]              reg2dp_contract_stride_1;
 
 //data out register
-input  [7:0]                reg2dp_daout_addr_high;
+input  [31:0]                reg2dp_daout_addr_high;
 input  [26:0]                 reg2dp_daout_addr_low;
 input  [26:0]              reg2dp_daout_line_stride;
 input  [26:0]            reg2dp_daout_planar_stride;
@@ -94,7 +94,7 @@ input   dp2reg_done;
 output  rd_req_type;
 output  rd_req_vld;
 input   rd_req_rdy;
-output  [54:0]    rd_req_pd;
+output  [78:0]    rd_req_pd;
 
 output            rf_wr_cmd_vld;
 input             rf_wr_cmd_rdy;
@@ -105,7 +105,7 @@ output  [11:0]    rf_rd_cmd_pd;
 
 output            dma_wr_cmd_vld;
 input             dma_wr_cmd_rdy;
-output  [53:0]    dma_wr_cmd_pd;
+output  [77:0]    dma_wr_cmd_pd;
 
 output            contract_lit_dx;
 output  [13:0]    inwidth;
@@ -136,18 +136,18 @@ reg           mon_wr_xbase_c;
 reg    [31:0] out_chn_stride;
 reg    [26:0] out_intern_stride;
 reg     [7:0] out_width_stridem;
-reg    [34:0] rd_addr;
-reg    [34:0] rd_chn_base;
+reg    [58:0] rd_addr;
+reg    [58:0] rd_chn_base;
 reg     [8:0] rd_chn_cnt;
 reg     [4:0] rd_dx_cnt;
-reg    [34:0] rd_dy_base;
+reg    [58:0] rd_dy_base;
 reg     [4:0] rd_dy_cnt;
-reg    [34:0] rd_line_base;
+reg    [58:0] rd_line_base;
 reg    [12:0] rd_line_cnt;
 reg           rd_req_done_hold;
 reg           rd_req_tmp;
 reg    [31:0] rd_stall_cnt;
-reg    [34:0] rd_width_base;
+reg    [58:0] rd_width_base;
 reg     [9:0] rd_width_cnt;
 reg     [1:0] reg2dp_in_precision_drv0;
 reg     [1:0] reg2dp_rubik_mode_drv0;
@@ -162,22 +162,22 @@ reg    [33:0] stl_cnt_mod;
 reg    [33:0] stl_cnt_new;
 reg    [33:0] stl_cnt_nxt;
 reg     [2:0] width_stridem;
-reg    [34:0] wr_addr;
-reg    [34:0] wr_chn_base;
+reg    [58:0] wr_addr;
+reg    [58:0] wr_chn_base;
 reg     [8:0] wr_chn_cnt;
-reg    [34:0] wr_dx_base;
+reg    [58:0] wr_dx_base;
 reg     [1:0] wr_dx_cnt;
-reg    [34:0] wr_line_base;
+reg    [58:0] wr_line_base;
 reg    [17:0] wr_line_cnt;
 reg     [4:0] wr_plar_cnt;
 reg           wr_req_done_hold;
-reg    [34:0] wr_width_base;
+reg    [58:0] wr_width_base;
 reg     [9:0] wr_width_cnt;
 wire   [12:0] contract_rd_size;
 wire   [14:0] contract_rd_size_ext;
 wire   [12:0] contract_wr_size;
 wire   [26:0] cube_stride;
-wire   [34:0] dest_base;
+wire   [58:0] dest_base;
 wire    [2:0] dx_stride_num;
 wire   [13:0] inchannel;
 wire   [12:0] inchannel_raw;
@@ -244,7 +244,7 @@ wire   [12:0] remain_wr_width;
 wire   [12:0] split_rd_size;
 wire   [14:0] split_rd_size_ext;
 wire   [12:0] split_wr_size;
-wire   [34:0] src_base;
+wire   [58:0] src_base;
 wire   [26:0] surf_stride;
 wire   [26:0] width_stride;
 wire          wr_channel_end;
@@ -313,8 +313,8 @@ assign  m_split     = reg2dp_rubik_mode_drv0[1:0] == 2'h1 ;
 assign  m_merge     = reg2dp_rubik_mode_drv0[1:0] == 2'h2 ;
 assign  m_byte_data = reg2dp_in_precision_drv0[1:0] == 2'h0 ;
 
-assign  src_base[34:0]  = {reg2dp_dain_addr_high[7:0],reg2dp_dain_addr_low[26:0]};
-assign  dest_base[34:0] = {reg2dp_daout_addr_high[7:0],reg2dp_daout_addr_low[26:0]};
+assign  src_base  = {reg2dp_dain_addr_high,reg2dp_dain_addr_low};
+assign  dest_base = {reg2dp_daout_addr_high,reg2dp_daout_addr_low};
 
 assign  inwidth_raw[12:0]    = reg2dp_datain_width[12:0]   ;  
 assign  inheight_raw[12:0]   = reg2dp_datain_height[12:0]  ;
@@ -551,12 +551,12 @@ end
 assign  rd_req_done = rd_channel_end;
 assign  rd_req_type = reg2dp_datain_ram_type;
 assign  rd_req_vld  = rd_req_tmp & rf_wr_cmd_rdy;        
-assign  rd_req_pd[39:0] = {rd_addr,5'h0}; 
+assign  rd_req_pd[63:0] = {rd_addr,5'h0}; 
 
 assign  contract_rd_size_ext = {{2{1'b0}}, contract_rd_size};
 assign  split_rd_size_ext = {{2{1'b0}}, split_rd_size};
 assign  merge_rd_size_ext = {{2{1'b0}}, merge_rd_size};
-assign  rd_req_pd[54:40] =  m_contract ? contract_rd_size_ext : m_split ? split_rd_size_ext : merge_rd_size_ext ; //rd size 32bytes units and decrease 1
+assign  rd_req_pd[78:64] =  m_contract ? contract_rd_size_ext : m_split ? split_rd_size_ext : merge_rd_size_ext ; //rd size 32bytes units and decrease 1
 assign  rd_req_accept = rd_req_vld & rd_req_rdy;
 
 //request burst size
@@ -593,8 +593,8 @@ assign  rf_wr_cmd_pd  = {wr_total_row,wr_total_col};
 ///////generate read sequence address/////////
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
-    rd_addr <= {35{1'b0}};
-    {mon_rd_addr_c,rd_addr} <= {36{1'b0}};
+    rd_addr <= {59{1'b0}};
+    {mon_rd_addr_c,rd_addr} <= {60{1'b0}};
   end else begin
     if(init_set)
        rd_addr <= src_base;
@@ -614,8 +614,8 @@ end
 //record the pointer base address
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
-    rd_width_base <= {35{1'b0}};
-    {mon_rd_wbase_c,rd_width_base} <= {36{1'b0}};
+    rd_width_base <= {59{1'b0}};
+    {mon_rd_wbase_c,rd_width_base} <= {60{1'b0}};
   end else begin
     if(init_set)
        rd_width_base <= src_base;
@@ -632,8 +632,8 @@ end
 
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
-    rd_dy_base <= {35{1'b0}};
-    {mon_rd_ybase_c,rd_dy_base} <= {36{1'b0}};
+    rd_dy_base <= {59{1'b0}};
+    {mon_rd_ybase_c,rd_dy_base} <= {60{1'b0}};
   end else begin
     if(init_set)
        rd_dy_base <= src_base;
@@ -648,8 +648,8 @@ end
 
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
-    rd_line_base <= {35{1'b0}};
-    {mon_rd_lbase_c,rd_line_base} <= {36{1'b0}};
+    rd_line_base <= {59{1'b0}};
+    {mon_rd_lbase_c,rd_line_base} <= {60{1'b0}};
   end else begin
     if(init_set)
        rd_line_base <= src_base;
@@ -662,8 +662,8 @@ end
 
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
-    rd_chn_base <= {35{1'b0}};
-    {mon_rd_cbase_c,rd_chn_base} <= {36{1'b0}};
+    rd_chn_base <= {59{1'b0}};
+    {mon_rd_cbase_c,rd_chn_base} <= {60{1'b0}};
   end else begin
     if(init_set)
        rd_chn_base <= src_base;
@@ -790,9 +790,9 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 end
 
 assign  wr_req_done = wr_channel_end;
-assign  dma_wr_cmd_pd[53:53] = wr_req_done;
-assign  dma_wr_cmd_pd[52:40]        = m_contract ? contract_wr_size : m_merge ? merge_wr_size : split_wr_size;
-assign  dma_wr_cmd_pd[39:0]        = {wr_addr,5'b0};
+assign  dma_wr_cmd_pd[77:77] = wr_req_done;
+assign  dma_wr_cmd_pd[76:64]        = m_contract ? contract_wr_size : m_merge ? merge_wr_size : split_wr_size;
+assign  dma_wr_cmd_pd[63:0]        = {wr_addr,5'b0};
 assign  wr_req_accept = dma_wr_cmd_vld & dma_wr_cmd_rdy;
 
 //request burst size
@@ -831,8 +831,8 @@ assign  rf_rd_cmd_pd  = {rd_total_row,rd_total_col};
 ///////generate write sequence address/////////
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
-    wr_addr <= {35{1'b0}};
-    {mon_wr_addr_c,wr_addr} <= {36{1'b0}};
+    wr_addr <= {59{1'b0}};
+    {mon_wr_addr_c,wr_addr} <= {60{1'b0}};
   end else begin
     if(init_set)
        wr_addr <= dest_base;
@@ -852,8 +852,8 @@ end
 //record the pointer base address
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
-    wr_dx_base <= {35{1'b0}};
-    {mon_wr_xbase_c,wr_dx_base} <= {36{1'b0}};
+    wr_dx_base <= {59{1'b0}};
+    {mon_wr_xbase_c,wr_dx_base} <= {60{1'b0}};
   end else begin
     if(init_set)
        wr_dx_base <= dest_base;
@@ -870,8 +870,8 @@ end
 
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
-    wr_width_base <= {35{1'b0}};
-    {mon_wr_wbase_c,wr_width_base} <= {36{1'b0}};
+    wr_width_base <= {59{1'b0}};
+    {mon_wr_wbase_c,wr_width_base} <= {60{1'b0}};
   end else begin
     if(init_set)
        wr_width_base <= dest_base;
@@ -886,8 +886,8 @@ end
 
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
-    wr_line_base <= {35{1'b0}};
-    {mon_wr_lbase_c,wr_line_base} <= {36{1'b0}};
+    wr_line_base <= {59{1'b0}};
+    {mon_wr_lbase_c,wr_line_base} <= {60{1'b0}};
   end else begin
     if(init_set)
        wr_line_base <= dest_base;
@@ -900,8 +900,8 @@ end
 
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
-    wr_chn_base <= {35{1'b0}};
-    {mon_wr_cbase_c,wr_chn_base} <= {36{1'b0}};
+    wr_chn_base <= {59{1'b0}};
+    {mon_wr_cbase_c,wr_chn_base} <= {60{1'b0}};
   end else begin
     if(init_set)
        wr_chn_base <= dest_base;

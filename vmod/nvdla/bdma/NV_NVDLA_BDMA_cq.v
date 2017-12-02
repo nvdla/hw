@@ -29,10 +29,10 @@ input         nvdla_core_rstn;
 output        ld2st_wr_prdy;
 output        ld2st_wr_idle;
 input         ld2st_wr_pvld;
-input  [136:0] ld2st_wr_pd;
+input  [160:0] ld2st_wr_pd;
 input         ld2st_rd_prdy;
 output        ld2st_rd_pvld;
-output [136:0] ld2st_rd_pd;
+output [160:0] ld2st_rd_pd;
 input  [31:0] pwrbus_ram_pd;
 
 // Master Clock Gating (SLCG)
@@ -154,7 +154,7 @@ wire rd_popping;
 reg [4:0] ld2st_rd_adr;          // read address this cycle
 wire ram_we = wr_pushing && (ld2st_wr_count > 5'd0 || !rd_popping);   // note: write occurs next cycle
 wire ram_iwe = !wr_busy_in && ld2st_wr_pvld;  
-wire [136:0] ld2st_rd_pd_p;                    // read data out of ram
+wire [160:0] ld2st_rd_pd_p;                    // read data out of ram
 
 wire [31 : 0] pwrbus_ram_pd;
 
@@ -162,7 +162,7 @@ wire [31 : 0] pwrbus_ram_pd;
 // Fifogen handles this by ignoring the data on the ram data out for that cycle.
 
 
-NV_NVDLA_BDMA_cq_flopram_rwsa_20x137 ram (
+NV_NVDLA_BDMA_cq_flopram_rwsa_20x161 ram (
       .clk( nvdla_core_clk )
     , .clk_mgated( nvdla_core_clk_mgated )
     , .pwrbus_ram_pd ( pwrbus_ram_pd )
@@ -238,7 +238,7 @@ always @( posedge nvdla_core_clk_mgated or negedge nvdla_core_rstn ) begin
 
     end
 end
-reg [136:0]  ld2st_rd_pd;         // output data register
+reg [160:0]  ld2st_rd_pd;         // output data register
 wire        rd_req_next = (ld2st_rd_pvld_p || (ld2st_rd_pvld_int && !ld2st_rd_prdy)) ;
 
 always @( posedge nvdla_core_clk_mgated or negedge nvdla_core_rstn ) begin
@@ -255,7 +255,7 @@ always @( posedge nvdla_core_clk_mgated ) begin
     //synopsys translate_off
         else if ( !((rd_popping)) ) begin
     end else begin
-        ld2st_rd_pd <=  {137{`x_or_0}};
+        ld2st_rd_pd <=  {161{`x_or_0}};
     end
     //synopsys translate_on
 
@@ -462,7 +462,7 @@ endmodule // NV_NVDLA_BDMA_cq
 // 
 // Flop-Based RAM (with internal wr_reg)
 //
-module NV_NVDLA_BDMA_cq_flopram_rwsa_20x137 (
+module NV_NVDLA_BDMA_cq_flopram_rwsa_20x161 (
       clk
     , clk_mgated
     , pwrbus_ram_pd
@@ -477,12 +477,12 @@ module NV_NVDLA_BDMA_cq_flopram_rwsa_20x137 (
 input  clk;  // write clock
 input  clk_mgated;  // write clock mgated
 input [31 : 0] pwrbus_ram_pd;
-input  [136:0] di;
+input  [160:0] di;
 input  iwe;
 input  we;
 input  [4:0] wa;
 input  [4:0] ra;
-output [136:0] dout;
+output [160:0] dout;
 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_0 (.A(pwrbus_ram_pd[0]));
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_1 (.A(pwrbus_ram_pd[1]));
@@ -517,7 +517,7 @@ NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_29 (.A(pwrbus_ram_pd[29]));
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_30 (.A(pwrbus_ram_pd[30]));
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_31 (.A(pwrbus_ram_pd[31]));
 
-reg [136:0] di_d;  // -wr_reg
+reg [160:0] di_d;  // -wr_reg
 
 always @( posedge clk ) begin
     if ( iwe ) begin
@@ -528,14 +528,14 @@ end
 `ifdef EMU
 
 
-wire [136:0] dout_p;
+wire [160:0] dout_p;
 
 // we use an emulation ram here to save flops on the emulation board
 // so that the monstrous chip can fit :-)
 //
 reg [4:0] Wa0_vmw;
 reg we0_vmw;
-reg [136:0] Di0_vmw;
+reg [160:0] Di0_vmw;
 
 always @( posedge clk ) begin
     Wa0_vmw <=  wa;
@@ -543,7 +543,7 @@ always @( posedge clk ) begin
     Di0_vmw <=  di_d;
 end
 
-vmw_NV_NVDLA_BDMA_cq_flopram_rwsa_20x137 emu_ram (
+vmw_NV_NVDLA_BDMA_cq_flopram_rwsa_20x161 emu_ram (
      .Wa0( Wa0_vmw ) 
    , .we0( we0_vmw ) 
    , .Di0( Di0_vmw )
@@ -555,26 +555,26 @@ assign dout = (ra == 20) ? di_d : dout_p;
 
 `else
 
-reg [136:0] ram_ff0;
-reg [136:0] ram_ff1;
-reg [136:0] ram_ff2;
-reg [136:0] ram_ff3;
-reg [136:0] ram_ff4;
-reg [136:0] ram_ff5;
-reg [136:0] ram_ff6;
-reg [136:0] ram_ff7;
-reg [136:0] ram_ff8;
-reg [136:0] ram_ff9;
-reg [136:0] ram_ff10;
-reg [136:0] ram_ff11;
-reg [136:0] ram_ff12;
-reg [136:0] ram_ff13;
-reg [136:0] ram_ff14;
-reg [136:0] ram_ff15;
-reg [136:0] ram_ff16;
-reg [136:0] ram_ff17;
-reg [136:0] ram_ff18;
-reg [136:0] ram_ff19;
+reg [160:0] ram_ff0;
+reg [160:0] ram_ff1;
+reg [160:0] ram_ff2;
+reg [160:0] ram_ff3;
+reg [160:0] ram_ff4;
+reg [160:0] ram_ff5;
+reg [160:0] ram_ff6;
+reg [160:0] ram_ff7;
+reg [160:0] ram_ff8;
+reg [160:0] ram_ff9;
+reg [160:0] ram_ff10;
+reg [160:0] ram_ff11;
+reg [160:0] ram_ff12;
+reg [160:0] ram_ff13;
+reg [160:0] ram_ff14;
+reg [160:0] ram_ff15;
+reg [160:0] ram_ff16;
+reg [160:0] ram_ff17;
+reg [160:0] ram_ff18;
+reg [160:0] ram_ff19;
 
 always @( posedge clk_mgated ) begin
     if ( we && wa == 5'd0 ) begin
@@ -639,7 +639,7 @@ always @( posedge clk_mgated ) begin
     end
 end
 
-reg [136:0] dout;
+reg [160:0] dout;
 
 always @(*) begin
     case( ra ) 
@@ -665,35 +665,35 @@ always @(*) begin
     5'd19:       dout = ram_ff19;
     5'd20:       dout = di_d;
     //VCS coverage off
-    default:    dout = {137{`x_or_0}};
+    default:    dout = {161{`x_or_0}};
     //VCS coverage on
     endcase
 end
 
 `endif // EMU
 
-endmodule // NV_NVDLA_BDMA_cq_flopram_rwsa_20x137
+endmodule // NV_NVDLA_BDMA_cq_flopram_rwsa_20x161
 
 // emulation model of flopram guts
 //
 `ifdef EMU
 
 
-module vmw_NV_NVDLA_BDMA_cq_flopram_rwsa_20x137 (
+module vmw_NV_NVDLA_BDMA_cq_flopram_rwsa_20x161 (
    Wa0, we0, Di0,
    Ra0, Do0
    );
 
 input  [4:0] Wa0;
 input            we0;
-input  [136:0] Di0;
+input  [160:0] Di0;
 input  [4:0] Ra0;
-output [136:0] Do0;
+output [160:0] Do0;
 
 // Only visible during Spyglass to avoid blackboxes.
 `ifdef SPYGLASS_FLOPRAM
 
-assign Do0 = 137'd0;
+assign Do0 = 161'd0;
 wire dummy = 1'b0 | (|Wa0) | (|we0) | (|Di0) | (|Ra0);
 
 `endif
@@ -701,30 +701,30 @@ wire dummy = 1'b0 | (|Wa0) | (|we0) | (|Di0) | (|Ra0);
 // synopsys translate_off
 `ifndef SYNTH_LEVEL1_COMPILE
 `ifndef SYNTHESIS
-reg [136:0] mem[19:0];
+reg [160:0] mem[19:0];
 
 // expand mem for debug ease
 `ifdef EMU_EXPAND_FLOPRAM_MEM
-wire [136:0] Q0 = mem[0];
-wire [136:0] Q1 = mem[1];
-wire [136:0] Q2 = mem[2];
-wire [136:0] Q3 = mem[3];
-wire [136:0] Q4 = mem[4];
-wire [136:0] Q5 = mem[5];
-wire [136:0] Q6 = mem[6];
-wire [136:0] Q7 = mem[7];
-wire [136:0] Q8 = mem[8];
-wire [136:0] Q9 = mem[9];
-wire [136:0] Q10 = mem[10];
-wire [136:0] Q11 = mem[11];
-wire [136:0] Q12 = mem[12];
-wire [136:0] Q13 = mem[13];
-wire [136:0] Q14 = mem[14];
-wire [136:0] Q15 = mem[15];
-wire [136:0] Q16 = mem[16];
-wire [136:0] Q17 = mem[17];
-wire [136:0] Q18 = mem[18];
-wire [136:0] Q19 = mem[19];
+wire [160:0] Q0 = mem[0];
+wire [160:0] Q1 = mem[1];
+wire [160:0] Q2 = mem[2];
+wire [160:0] Q3 = mem[3];
+wire [160:0] Q4 = mem[4];
+wire [160:0] Q5 = mem[5];
+wire [160:0] Q6 = mem[6];
+wire [160:0] Q7 = mem[7];
+wire [160:0] Q8 = mem[8];
+wire [160:0] Q9 = mem[9];
+wire [160:0] Q10 = mem[10];
+wire [160:0] Q11 = mem[11];
+wire [160:0] Q12 = mem[12];
+wire [160:0] Q13 = mem[13];
+wire [160:0] Q14 = mem[14];
+wire [160:0] Q15 = mem[15];
+wire [160:0] Q16 = mem[16];
+wire [160:0] Q17 = mem[17];
+wire [160:0] Q18 = mem[18];
+wire [160:0] Q19 = mem[19];
 `endif
 
 // asynchronous ram writes
@@ -743,24 +743,24 @@ assign Do0 = mem[Ra0];
 // synopsys dc_script_begin
 // synopsys dc_script_end
 
-// g2c if { [find / -null_ok -subdesign vmw_NV_NVDLA_BDMA_cq_flopram_rwsa_20x137] != {} } { set_attr preserve 1 [find / -subdesign vmw_NV_NVDLA_BDMA_cq_flopram_rwsa_20x137] }
-endmodule // vmw_NV_NVDLA_BDMA_cq_flopram_rwsa_20x137
+// g2c if { [find / -null_ok -subdesign vmw_NV_NVDLA_BDMA_cq_flopram_rwsa_20x161] != {} } { set_attr preserve 1 [find / -subdesign vmw_NV_NVDLA_BDMA_cq_flopram_rwsa_20x161] }
+endmodule // vmw_NV_NVDLA_BDMA_cq_flopram_rwsa_20x161
 
-//vmw: Memory vmw_NV_NVDLA_BDMA_cq_flopram_rwsa_20x137
+//vmw: Memory vmw_NV_NVDLA_BDMA_cq_flopram_rwsa_20x161
 //vmw: Address-size 5
-//vmw: Data-size 137
+//vmw: Data-size 161
 //vmw: Sensitivity level 1
 //vmw: Ports W R
 
 //vmw: terminal we0 WriteEnable0
 //vmw: terminal Wa0 address0
-//vmw: terminal Di0[136:0] data0[136:0]
+//vmw: terminal Di0[160:0] data0[160:0]
 //vmw: 
 //vmw: terminal Ra0 address1
-//vmw: terminal Do0[136:0] data1[136:0]
+//vmw: terminal Do0[160:0] data1[160:0]
 //vmw: 
 
-//qt: CELL vmw_NV_NVDLA_BDMA_cq_flopram_rwsa_20x137
+//qt: CELL vmw_NV_NVDLA_BDMA_cq_flopram_rwsa_20x161
 //qt: TERMINAL we0 TYPE=WE POLARITY=H PORT=1
 //qt: TERMINAL Wa0[%d] TYPE=ADDRESS DIR=W BIT=%1 PORT=1
 //qt: TERMINAL Di0[%d] TYPE=DATA DIR=I BIT=%1 PORT=1

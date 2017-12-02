@@ -95,7 +95,7 @@ output [12:0] reg2dp_cube_out_height;
 output [12:0] reg2dp_cube_out_width;
 output [31:0] reg2dp_cya;
 output        reg2dp_dma_en;
-output  [7:0] reg2dp_dst_base_addr_high;
+output [31:0] reg2dp_dst_base_addr_high;
 output [26:0] reg2dp_dst_base_addr_low;
 output [26:0] reg2dp_dst_line_stride;
 output        reg2dp_dst_ram_type;
@@ -130,7 +130,7 @@ output  [1:0] reg2dp_pooling_method;
 output [16:0] reg2dp_recip_kernel_height;
 output [16:0] reg2dp_recip_kernel_width;
 output  [7:0] reg2dp_split_num;
-output  [7:0] reg2dp_src_base_addr_high;
+output [31:0] reg2dp_src_base_addr_high;
 output [26:0] reg2dp_src_base_addr_low;
 output [26:0] reg2dp_src_line_stride;
 output [26:0] reg2dp_src_surface_stride;
@@ -158,7 +158,7 @@ wire   [12:0] reg2dp_d0_cube_out_height;
 wire   [12:0] reg2dp_d0_cube_out_width;
 wire   [31:0] reg2dp_d0_cya;
 wire          reg2dp_d0_dma_en;
-wire    [7:0] reg2dp_d0_dst_base_addr_high;
+wire   [31:0] reg2dp_d0_dst_base_addr_high;
 wire   [26:0] reg2dp_d0_dst_base_addr_low;
 wire   [26:0] reg2dp_d0_dst_line_stride;
 wire          reg2dp_d0_dst_ram_type;
@@ -192,7 +192,7 @@ wire    [1:0] reg2dp_d0_pooling_method;
 wire   [16:0] reg2dp_d0_recip_kernel_height;
 wire   [16:0] reg2dp_d0_recip_kernel_width;
 wire    [7:0] reg2dp_d0_split_num;
-wire    [7:0] reg2dp_d0_src_base_addr_high;
+wire   [31:0] reg2dp_d0_src_base_addr_high;
 wire   [26:0] reg2dp_d0_src_base_addr_low;
 wire   [26:0] reg2dp_d0_src_line_stride;
 wire   [26:0] reg2dp_d0_src_surface_stride;
@@ -204,7 +204,7 @@ wire   [12:0] reg2dp_d1_cube_out_height;
 wire   [12:0] reg2dp_d1_cube_out_width;
 wire   [31:0] reg2dp_d1_cya;
 wire          reg2dp_d1_dma_en;
-wire    [7:0] reg2dp_d1_dst_base_addr_high;
+wire   [31:0] reg2dp_d1_dst_base_addr_high;
 wire   [26:0] reg2dp_d1_dst_base_addr_low;
 wire   [26:0] reg2dp_d1_dst_line_stride;
 wire          reg2dp_d1_dst_ram_type;
@@ -238,7 +238,7 @@ wire    [1:0] reg2dp_d1_pooling_method;
 wire   [16:0] reg2dp_d1_recip_kernel_height;
 wire   [16:0] reg2dp_d1_recip_kernel_width;
 wire    [7:0] reg2dp_d1_split_num;
-wire    [7:0] reg2dp_d1_src_base_addr_high;
+wire   [31:0] reg2dp_d1_src_base_addr_high;
 wire   [26:0] reg2dp_d1_src_base_addr_low;
 wire   [26:0] reg2dp_d1_src_line_stride;
 wire   [26:0] reg2dp_d1_src_surface_stride;
@@ -299,7 +299,7 @@ reg           reg2dp_d0_op_en_w;
 reg           reg2dp_d1_op_en;
 reg           reg2dp_d1_op_en_w;
 reg           reg2dp_dma_en;
-reg     [7:0] reg2dp_dst_base_addr_high;
+reg    [31:0] reg2dp_dst_base_addr_high;
 reg    [26:0] reg2dp_dst_base_addr_low;
 reg    [26:0] reg2dp_dst_line_stride;
 reg           reg2dp_dst_ram_type;
@@ -334,7 +334,7 @@ reg     [1:0] reg2dp_pooling_method;
 reg    [16:0] reg2dp_recip_kernel_height;
 reg    [16:0] reg2dp_recip_kernel_width;
 reg     [7:0] reg2dp_split_num;
-reg     [7:0] reg2dp_src_base_addr_high;
+reg    [31:0] reg2dp_src_base_addr_high;
 reg    [26:0] reg2dp_src_base_addr_low;
 reg    [26:0] reg2dp_src_line_stride;
 reg    [26:0] reg2dp_src_surface_stride;
@@ -376,7 +376,7 @@ NV_NVDLA_PDP_REG_dual u_dual_reg_d0 (
   ,.cube_out_height         (reg2dp_d0_cube_out_height[12:0])        //|> w
   ,.cube_out_width          (reg2dp_d0_cube_out_width[12:0])         //|> w
   ,.input_data              (reg2dp_d0_input_data[1:0])              //|> w
-  ,.dst_base_addr_high      (reg2dp_d0_dst_base_addr_high[7:0])      //|> w
+  ,.dst_base_addr_high      (reg2dp_d0_dst_base_addr_high[31:0])     //|> w
   ,.dst_base_addr_low       (reg2dp_d0_dst_base_addr_low[26:0])      //|> w
   ,.dst_line_stride         (reg2dp_d0_dst_line_stride[26:0])        //|> w
   ,.dst_ram_type            (reg2dp_d0_dst_ram_type)                 //|> w
@@ -410,7 +410,7 @@ NV_NVDLA_PDP_REG_dual u_dual_reg_d0 (
   ,.pad_value_7x            (reg2dp_d0_pad_value_7x[18:0])           //|> w
   ,.recip_kernel_height     (reg2dp_d0_recip_kernel_height[16:0])    //|> w
   ,.recip_kernel_width      (reg2dp_d0_recip_kernel_width[16:0])     //|> w
-  ,.src_base_addr_high      (reg2dp_d0_src_base_addr_high[7:0])      //|> w
+  ,.src_base_addr_high      (reg2dp_d0_src_base_addr_high[31:0])     //|> w
   ,.src_base_addr_low       (reg2dp_d0_src_base_addr_low[26:0])      //|> w
   ,.src_line_stride         (reg2dp_d0_src_line_stride[26:0])        //|> w
   ,.src_surface_stride      (reg2dp_d0_src_surface_stride[26:0])     //|> w
@@ -436,7 +436,7 @@ NV_NVDLA_PDP_REG_dual u_dual_reg_d1 (
   ,.cube_out_height         (reg2dp_d1_cube_out_height[12:0])        //|> w
   ,.cube_out_width          (reg2dp_d1_cube_out_width[12:0])         //|> w
   ,.input_data              (reg2dp_d1_input_data[1:0])              //|> w
-  ,.dst_base_addr_high      (reg2dp_d1_dst_base_addr_high[7:0])      //|> w
+  ,.dst_base_addr_high      (reg2dp_d1_dst_base_addr_high[31:0])     //|> w
   ,.dst_base_addr_low       (reg2dp_d1_dst_base_addr_low[26:0])      //|> w
   ,.dst_line_stride         (reg2dp_d1_dst_line_stride[26:0])        //|> w
   ,.dst_ram_type            (reg2dp_d1_dst_ram_type)                 //|> w
@@ -470,7 +470,7 @@ NV_NVDLA_PDP_REG_dual u_dual_reg_d1 (
   ,.pad_value_7x            (reg2dp_d1_pad_value_7x[18:0])           //|> w
   ,.recip_kernel_height     (reg2dp_d1_recip_kernel_height[16:0])    //|> w
   ,.recip_kernel_width      (reg2dp_d1_recip_kernel_width[16:0])     //|> w
-  ,.src_base_addr_high      (reg2dp_d1_src_base_addr_high[7:0])      //|> w
+  ,.src_base_addr_high      (reg2dp_d1_src_base_addr_high[31:0])     //|> w
   ,.src_base_addr_low       (reg2dp_d1_src_base_addr_low[26:0])      //|> w
   ,.src_line_stride         (reg2dp_d1_src_line_stride[26:0])        //|> w
   ,.src_surface_stride      (reg2dp_d1_src_surface_stride[26:0])     //|> w

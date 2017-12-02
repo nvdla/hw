@@ -1,0 +1,114 @@
+#!/usr/bin/env perl
+################################################################
+#
+#  defgen - define generator
+#
+################################################################
+# program
+################################################################
+
+use strict;
+use File::Basename;
+my ($Progdir) = dirname ($0);
+my ($Program) = basename ($0);
+
+################################################################
+# usage
+################################################################
+
+sub Usage { print << "END"
+
+usage: $Program [-o <ofile>] <ifile(s)>
+  -u: print usage statement.
+  -h: print help statement.;
+  -o <file>: output file, default is stdout.
+  <file>: input file
+
+END
+}
+
+################################################################
+# help
+################################################################
+
+sub Help { print << 'END'
+
+END
+}
+
+################################################################
+# input
+################################################################
+
+use Getopt::Long;
+my ($opt_u);
+my ($opt_h);
+my ($opt_i);
+my ($opt_o);
+my ($opt_b);
+my ($opt_norm);
+GetOptions (
+  'u'   => \$opt_u, 
+  'h'   => \$opt_h,
+  'o=s' => \$opt_o,
+  'i=s' => \$opt_i,
+  'b=s' => \$opt_b,
+  ) or &Error ("unknown option: @ARGV");
+
+&Usage and exit 0 if ($opt_u); 
+&Usage and &Help and exit 0 if ($opt_h);
+
+my ($InFile)  = $opt_i;
+my ($OutFile) = $opt_o;
+my ($BackEnd) = $opt_b;
+
+################################################################
+# main
+################################################################
+
+&gen_define ($InFile, $OutFile, $BackEnd);
+
+################################################################
+# routines
+################################################################
+sub gen_define {
+    my $ifile = shift;
+    my $ofile = shift;
+    my $backend = shift;
+    open my $i_fh, "<", $ifile or &Error ("file not found: $ifile");
+    open my $o_fh, ">", $ofile or &Error ("file not found: $ofile");
+    while (my $line = <$i_fh>) {
+        if ($line =~ /^\s*%define\s*(\w+)\s*(\d+)?/) {
+            my $def = "";
+            if ($backend eq "c") {
+                $def = "#define ";
+            } elsif ($backend eq "v") {
+                $def = "`define ";
+            } elsif ($backend eq "pl") {
+                $def = '$';
+            } elsif ($backend eq "py") {
+                $def = "";
+            } else {
+                &Error ("no $backend backend is supported yet!")
+            }
+            my $key = $1;
+            my $val = $2 ? " $2" : "";
+
+            my $new_line = $def.$key.$val;
+            print $o_fh $new_line,"\n";
+        }
+        print;
+    }
+    close($o_fh);
+    close($i_fh);
+}
+
+sub Error {
+  my $Msg = shift;
+  my $Noc = shift;
+  use strict;
+  use Carp qw(croak);
+  print STDERR "ERROR: $Program: $Msg\n";
+  croak unless $Noc;
+  exit 1;
+}

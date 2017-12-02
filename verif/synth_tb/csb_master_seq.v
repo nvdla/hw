@@ -21,10 +21,10 @@ input reset;
 output reg        mseq_pending_req;
 input             mcsb2mseq_consumed_req;
 output reg [62:0] mseq2mcsb_pd;
-input reg [31:0] mcsb2mseq_rdata;
-input mcsb2mseq_rvalid;
+input      [31:0] mcsb2mseq_rdata;
+input             mcsb2mseq_rvalid;
 
-input reg dut2mseq_intr0;
+input             dut2mseq_intr0;
 output reg        mseq2tb_test_done;
 
 
@@ -55,7 +55,7 @@ parameter GE = 8'h2;
 
 reg [`MSEQ_CMD_SIZE-1:0] cmd_memory[`MSEQ_NUM_CMDS-1:0];
 reg [`MSEQ_CMD_SIZE-1:0] curr_cmd;
-reg [15:0]               config_mem[`NUM_CONFIGS-1:0];
+reg [`MSEQ_CONFIG_SIZE-1:0]               config_mem[`NUM_CONFIGS-1:0];
 
 wire [`MSEQ_OP_BITS]       curr_cmd_op;
 wire [`MSEQ_DATA_BITS]     curr_cmd_data;
@@ -72,10 +72,10 @@ assign curr_cmd_data    = curr_cmd[`MSEQ_DATA_BITS];
 reg [31:0] line;
 reg [31:0] line_next;
 reg  [7:0] cs, ns;
-reg [31:0] timer;
-reg [31:0] timer_next;
-reg [31:0] count;
-reg [31:0] count_next;
+reg [`MSEQ_CONFIG_SIZE-1:0] timer;
+reg [`MSEQ_CONFIG_SIZE-1:0] timer_next;
+reg [`MSEQ_CONFIG_SIZE-1:0] count;
+reg [`MSEQ_CONFIG_SIZE-1:0] count_next;
 reg [31:0] response;
 
 reg [`MSEQ_MEM_ADDR_BITS] memory_start_address;
@@ -84,9 +84,10 @@ reg dump_main_memory;
 reg load_main_memory;
 
 // FIXME: Knobs?
-reg [31:0] read_reg_poll_interval;
-reg [31:0] read_timeout;
-reg [31:0] write_timeout;
+reg [`MSEQ_CONFIG_SIZE-1:0] read_reg_poll_interval;
+reg [`MSEQ_CONFIG_SIZE-1:0] read_timeout;
+reg [`MSEQ_CONFIG_SIZE-1:0] write_timeout;
+reg [`MSEQ_CONFIG_SIZE-1:0] wait_timeout;
 reg        continue_on_fail;
 
 wire [31:0] boot_timer;
@@ -94,6 +95,7 @@ assign boot_timer = 10; //may not be needed
 
 // No x's
 integer i;
+//Change data size to a define
 reg [31:0] rdata_no_x;
 always @* begin
    for( i = 0; i < 32; i=i+1 ) begin
@@ -114,11 +116,12 @@ always @(posedge clk or negedge reset) begin
    if(!reset) begin
       cs <= MSEQ_BOOT_1;
       line <= 0;
-      read_reg_poll_interval <= {config_mem[`MSEQ_POLL_INTERVAL_HI], config_mem[`MSEQ_POLL_INTERVAL_LO]};
-      read_timeout <= {config_mem[`MSEQ_RD_TIMEOUT_HI], config_mem[`MSEQ_RD_TIMEOUT_LO]};
-      write_timeout <= {config_mem[`MSEQ_WR_TIMEOUT_HI], config_mem[`MSEQ_WR_TIMEOUT_LO]};
+      read_reg_poll_interval <= config_mem[`MSEQ_POLL_INTERVAL];
+      read_timeout <= config_mem[`MSEQ_RD_TIMEOUT];
+      write_timeout <= config_mem[`MSEQ_WR_TIMEOUT];
+      write_timeout <= config_mem[`MSEQ_INTR_TIMEOUT];
       continue_on_fail <= config_mem[`MSEQ_CONT_ON_FAIL][0];
-      curr_cmd_polls <= {config_mem[`MSEQ_RD_POLLS_HI], config_mem[`MSEQ_RD_POLLS_LO]};
+      curr_cmd_polls <= config_mem[`MSEQ_RD_POLLS];
       cs <= MSEQ_BOOT_1;
       line <= 0;
       count <= 0;
@@ -152,7 +155,7 @@ always @* begin
          if(dut2mseq_intr0 == 1)
             ns = MSEQ_IDLE;
          else begin
-            if ( timer > read_timeout ) begin
+            if ( timer > wait_timeout ) begin
               ns = MSEQ_WAIT_TIMEOUT;
             end else begin
               ns = MSEQ_WAIT;
@@ -387,36 +390,67 @@ always @(posedge clk) begin
    `elsif CADENCE
             //Loai: this command for 256bit memory as it needs -retainValue -retainValueOffset
             `ifdef MEM_WIDTH_32B
-               $qel("memory -load %%readmemh slave_mem_wrap.syn_mem.memory -file %s -start %d -end %d -retainValue -retainValueOffset",curr_cmd[`MSEQ_FILENAME_BITS], curr_cmd[`MSEQ_MEM_ADDR_BITS]/(`MEM_BYTES) - (`DLA_ADDR_START >> `LOG2_MEM), (curr_cmd[`MSEQ_MEM_ADDR_BITS] + curr_cmd[`MSEQ_MEM_SIZE_BITS] - 1)/(`MEM_BYTES) - (`DLA_ADDR_START >> `LOG2_MEM));
+               if ((curr_cmd[`MSEQ_MEM_ADDR_BITS] & `DLA_ADDR_MASK) == `DBB_ADDR_START) begin
+                 $qel("memory -load %%readmemh slave_mem_wrap.dbb_mem.memory -file %s -start %d -end %d -retainValue -retainValueOffset",curr_cmd[`MSEQ_FILENAME_BITS], curr_cmd[`MSEQ_MEM_ADDR_BITS]/(`MEM_BYTES) - (`DBB_ADDR_START >> `LOG2_MEM), (curr_cmd[`MSEQ_MEM_ADDR_BITS] + curr_cmd[`MSEQ_MEM_SIZE_BITS] - 1)/(`MEM_BYTES) - (`DBB_ADDR_START >> `LOG2_MEM));
+               end else if((curr_cmd[`MSEQ_MEM_ADDR_BITS] & `DLA_ADDR_MASK) == `CVSRAM_ADDR_START) begin
+                 $qel("memory -load %%readmemh slave_mem_wrap.cvsram_mem.memory -file %s -start %d -end %d -retainValue -retainValueOffset",curr_cmd[`MSEQ_FILENAME_BITS], curr_cmd[`MSEQ_MEM_ADDR_BITS]/(`MEM_BYTES) - (`CVSRAM_ADDR_START >> `LOG2_MEM), (curr_cmd[`MSEQ_MEM_ADDR_BITS] + curr_cmd[`MSEQ_MEM_SIZE_BITS] - 1)/(`MEM_BYTES) - (`CVSRAM_ADDR_START >> `LOG2_MEM));
+              end
             `else
-               $readmemh(curr_cmd[`MSEQ_FILENAME_BITS], top.slave_mem_wrap.syn_mem.memory, curr_cmd[`MSEQ_MEM_ADDR_BITS]/(`MEM_BYTES) - (`DLA_ADDR_START >> `LOG2_MEM), (curr_cmd[`MSEQ_MEM_ADDR_BITS] + curr_cmd[`MSEQ_MEM_SIZE_BITS] - 1)/(`MEM_BYTES) - (`DLA_ADDR_START >> `LOG2_MEM));
+               if ((curr_cmd[`MSEQ_MEM_ADDR_BITS] & `DLA_ADDR_MASK) == `DBB_ADDR_START) begin
+                 $readmemh(curr_cmd[`MSEQ_FILENAME_BITS], top.slave_mem_wrap.dbb_mem.memory, curr_cmd[`MSEQ_MEM_ADDR_BITS]/(`MEM_BYTES) - (`DBB_ADDR_START >> `LOG2_MEM), (curr_cmd[`MSEQ_MEM_ADDR_BITS] + curr_cmd[`MSEQ_MEM_SIZE_BITS] - 1)/(`MEM_BYTES) - (`DBB_ADDR_START >> `LOG2_MEM));
+               end else if((curr_cmd[`MSEQ_MEM_ADDR_BITS] & `DLA_ADDR_MASK) == `CVSRAM_ADDR_START) begin
+                 $readmemh(curr_cmd[`MSEQ_FILENAME_BITS], top.slave_mem_wrap.cvsram_mem.memory, curr_cmd[`MSEQ_MEM_ADDR_BITS]/(`MEM_BYTES) - (`CVSRAM_ADDR_START >> `LOG2_MEM), (curr_cmd[`MSEQ_MEM_ADDR_BITS] + curr_cmd[`MSEQ_MEM_SIZE_BITS] - 1)/(`MEM_BYTES) - (`CVSRAM_ADDR_START >> `LOG2_MEM));
+               end else
+                 $display("Error: Address in input.txn for loading file to memory is outside defined regions, DBB_ADDR_START or CSVRAM_ADDR_START");
+                 $finish;
+               end
              `endif
    `else
               `ifndef SPYGLASS
             //e.g load_mem 0x80000000 0x400 sample_surf.dat
             // if sample_surf.dat is first file loaded it turns into 0.raw2
             // 0.raw2 is read through curr_cmd[`MSEQ_FILENAME_BITS]
-            // putting it into top.slave_mem_wrap.syn_mem.memory
+            // putting it into top.slave_mem_wrap.dbb_mem.memory
             // curr_cmd[MSEQ_MEM_ADDR_BITS=80000000] MEM_BYTES=MEM_WIDTH/8=32/8=4
-            // DLA_ADDR_START=0x80000000 LOG2_MEM=log2(MEM_WIDTH)-3=5-3=2
+            // DBB_ADDR_START=0x80000000 LOG2_MEM=log2(MEM_WIDTH)-3=5-3=2
             // 3rd arguments = 80000000/4 - (0x80000000 >> 2) = 0
             // size (4th arg) = 3rd arg + 0x400/4 - 1 = 0xff
-            $readmemh(curr_cmd[`MSEQ_FILENAME_BITS], top.slave_mem_wrap.syn_mem.memory, curr_cmd[`MSEQ_MEM_ADDR_BITS]/(`MEM_BYTES) - (`DLA_ADDR_START >> `LOG2_MEM), (curr_cmd[`MSEQ_MEM_ADDR_BITS] + curr_cmd[`MSEQ_MEM_SIZE_BITS] - 1)/(`MEM_BYTES) - (`DLA_ADDR_START >> `LOG2_MEM));
+            if ((curr_cmd[`MSEQ_MEM_ADDR_BITS] & `DLA_ADDR_MASK) == `DBB_ADDR_START) begin
+              $readmemh(curr_cmd[`MSEQ_FILENAME_BITS], top.slave_mem_wrap.dbb_mem.memory, curr_cmd[`MSEQ_MEM_ADDR_BITS]/(`MEM_BYTES) - (`DBB_ADDR_START >> `LOG2_MEM), (curr_cmd[`MSEQ_MEM_ADDR_BITS] + curr_cmd[`MSEQ_MEM_SIZE_BITS] - 1)/(`MEM_BYTES) - (`DBB_ADDR_START >> `LOG2_MEM));
+            end else if((curr_cmd[`MSEQ_MEM_ADDR_BITS] & `DLA_ADDR_MASK) == `CVSRAM_ADDR_START) begin
+              $readmemh(curr_cmd[`MSEQ_FILENAME_BITS], top.slave_mem_wrap.cvsram_mem.memory, curr_cmd[`MSEQ_MEM_ADDR_BITS]/(`MEM_BYTES) - (`CVSRAM_ADDR_START >> `LOG2_MEM), (curr_cmd[`MSEQ_MEM_ADDR_BITS] + curr_cmd[`MSEQ_MEM_SIZE_BITS] - 1)/(`MEM_BYTES) - (`CVSRAM_ADDR_START >> `LOG2_MEM));
+            end
               `endif
    `endif
-            memory_start_address <= curr_cmd[`MSEQ_MEM_ADDR_BITS]/(`MEM_BYTES) - (`DLA_ADDR_START >> `LOG2_MEM);
-            memory_end_address <= (curr_cmd[`MSEQ_MEM_ADDR_BITS] + curr_cmd[`MSEQ_MEM_SIZE_BITS])/(`MEM_BYTES) - (`DLA_ADDR_START >> `LOG2_MEM) - 1;
-            load_main_memory <= 1;
+            if ((curr_cmd[`MSEQ_MEM_ADDR_BITS] & `DLA_ADDR_MASK) == `DBB_ADDR_START) begin
+              memory_start_address <= curr_cmd[`MSEQ_MEM_ADDR_BITS]/(`MEM_BYTES) - (`DBB_ADDR_START >> `LOG2_MEM);
+              memory_end_address <= (curr_cmd[`MSEQ_MEM_ADDR_BITS] + curr_cmd[`MSEQ_MEM_SIZE_BITS])/(`MEM_BYTES) - (`DBB_ADDR_START >> `LOG2_MEM) - 1;
+              load_main_memory <= 1;
+            end else if((curr_cmd[`MSEQ_MEM_ADDR_BITS] & `DLA_ADDR_MASK) == `CVSRAM_ADDR_START) begin
+              memory_start_address <= curr_cmd[`MSEQ_MEM_ADDR_BITS]/(`MEM_BYTES) - (`CVSRAM_ADDR_START >> `LOG2_MEM);
+              memory_end_address <= (curr_cmd[`MSEQ_MEM_ADDR_BITS] + curr_cmd[`MSEQ_MEM_SIZE_BITS])/(`MEM_BYTES) - (`CVSRAM_ADDR_START >> `LOG2_MEM) - 1;
+              load_main_memory <= 1;
+            end
          end
          MSEQ_MEM_DMP : begin
    `ifdef EMU_TB
             // This will be handled by zemi3 xtor
    `else
-            $writememh(curr_cmd[`MSEQ_FILENAME_BITS], top.slave_mem_wrap.syn_mem.memory, curr_cmd[`MSEQ_MEM_ADDR_BITS]/(`MEM_BYTES) - (`DLA_ADDR_START >> `LOG2_MEM), (curr_cmd[`MSEQ_MEM_ADDR_BITS] + curr_cmd[`MSEQ_MEM_SIZE_BITS] - 1)/(`MEM_BYTES) - (`DLA_ADDR_START >> `LOG2_MEM));
+            if ((curr_cmd[`MSEQ_MEM_ADDR_BITS] & `DLA_ADDR_MASK) == `DBB_ADDR_START) begin
+                $writememh(curr_cmd[`MSEQ_FILENAME_BITS], top.slave_mem_wrap.dbb_mem.memory, curr_cmd[`MSEQ_MEM_ADDR_BITS]/(`MEM_BYTES) - (`DBB_ADDR_START >> `LOG2_MEM), (curr_cmd[`MSEQ_MEM_ADDR_BITS] + curr_cmd[`MSEQ_MEM_SIZE_BITS] - 1)/(`MEM_BYTES) - (`DBB_ADDR_START >> `LOG2_MEM));
+            end else if((curr_cmd[`MSEQ_MEM_ADDR_BITS] & `DLA_ADDR_MASK) == `CVSRAM_ADDR_START) begin
+                $writememh(curr_cmd[`MSEQ_FILENAME_BITS], top.slave_mem_wrap.cvsram_mem.memory, curr_cmd[`MSEQ_MEM_ADDR_BITS]/(`MEM_BYTES) - (`CVSRAM_ADDR_START >> `LOG2_MEM), (curr_cmd[`MSEQ_MEM_ADDR_BITS] + curr_cmd[`MSEQ_MEM_SIZE_BITS] - 1)/(`MEM_BYTES) - (`CVSRAM_ADDR_START >> `LOG2_MEM));
+            end
    `endif
-            memory_start_address <= curr_cmd[`MSEQ_MEM_ADDR_BITS]/(`MEM_BYTES) - (`DLA_ADDR_START >> `LOG2_MEM);
-            memory_end_address <= (curr_cmd[`MSEQ_MEM_ADDR_BITS] + curr_cmd[`MSEQ_MEM_SIZE_BITS])/(`MEM_BYTES) - (`DLA_ADDR_START >> `LOG2_MEM) - 1;
-            dump_main_memory <= 1;
+            if ((curr_cmd[`MSEQ_MEM_ADDR_BITS] & `DLA_ADDR_MASK) == `DBB_ADDR_START) begin
+                memory_start_address <= curr_cmd[`MSEQ_MEM_ADDR_BITS]/(`MEM_BYTES) - (`DBB_ADDR_START >> `LOG2_MEM);
+                memory_end_address <= (curr_cmd[`MSEQ_MEM_ADDR_BITS] + curr_cmd[`MSEQ_MEM_SIZE_BITS])/(`MEM_BYTES) - (`DBB_ADDR_START >> `LOG2_MEM) - 1;
+                dump_main_memory <= 1;
+            end else if((curr_cmd[`MSEQ_MEM_ADDR_BITS] & `DLA_ADDR_MASK) == `CVSRAM_ADDR_START) begin
+                memory_start_address <= curr_cmd[`MSEQ_MEM_ADDR_BITS]/(`MEM_BYTES) - (`CVSRAM_ADDR_START >> `LOG2_MEM);
+                memory_end_address <= (curr_cmd[`MSEQ_MEM_ADDR_BITS] + curr_cmd[`MSEQ_MEM_SIZE_BITS])/(`MEM_BYTES) - (`CVSRAM_ADDR_START >> `LOG2_MEM) - 1;
+                dump_main_memory <= 1;
+            end
          end
          
          MSEQ_DONE: begin
@@ -436,9 +470,18 @@ always @(posedge clk) begin
    if (cs == MSEQ_MEM_DMP) begin
       //Loai: this command for 256bit memory as it needs -retainValue -retainValueOffset for memory load
       `ifdef MEM_WIDTH_32B
-         $qel("memory -dump %%readmemh slave_mem_wrap.syn_mem.memory -file %s -start %d -end %d", curr_cmd[`MSEQ_FILENAME_BITS], curr_cmd[`MSEQ_MEM_ADDR_BITS]/(`MEM_BYTES) - (`DLA_ADDR_START >> `LOG2_MEM), (curr_cmd[`MSEQ_MEM_ADDR_BITS] + curr_cmd[`MSEQ_MEM_SIZE_BITS] - 1)/(`MEM_BYTES) - (`DLA_ADDR_START >> `LOG2_MEM));
+          if ((curr_cmd[`MSEQ_MEM_ADDR_BITS] & `DLA_ADDR_MASK) == `DBB_ADDR_START) begin
+             $qel("memory -dump %%readmemh slave_mem_wrap.dbb_mem.memory -file %s -start %d -end %d", curr_cmd[`MSEQ_FILENAME_BITS], curr_cmd[`MSEQ_MEM_ADDR_BITS]/(`MEM_BYTES) - (`DBB_ADDR_START >> `LOG2_MEM), (curr_cmd[`MSEQ_MEM_ADDR_BITS] + curr_cmd[`MSEQ_MEM_SIZE_BITS] - 1)/(`MEM_BYTES) - (`DBB_ADDR_START >> `LOG2_MEM));
+          end else if((curr_cmd[`MSEQ_MEM_ADDR_BITS] & `DLA_ADDR_MASK) == `CVSRAM_ADDR_START) begin
+             $qel("memory -dump %%readmemh slave_mem_wrap.cvsram_mem.memory -file %s -start %d -end %d", curr_cmd[`MSEQ_FILENAME_BITS], curr_cmd[`MSEQ_MEM_ADDR_BITS]/(`MEM_BYTES) - (`CVSRAM_ADDR_START >> `LOG2_MEM), (curr_cmd[`MSEQ_MEM_ADDR_BITS] + curr_cmd[`MSEQ_MEM_SIZE_BITS] - 1)/(`MEM_BYTES) - (`CVSRAM_ADDR_START >> `LOG2_MEM));
+         end
       `else
-         $writememh(curr_cmd[`MSEQ_FILENAME_BITS], top.slave_mem_wrap.syn_mem.memory, curr_cmd[`MSEQ_MEM_ADDR_BITS]/(`MEM_BYTES) - (`DLA_ADDR_START >> `LOG2_MEM), (curr_cmd[`MSEQ_MEM_ADDR_BITS] + curr_cmd[`MSEQ_MEM_SIZE_BITS])/(`MEM_BYTES) - (`DLA_ADDR_START >> `LOG2_MEM) - 1);
+         //Everything up to the least significant 1 of ADDR_START should be 0 in the mask
+         if ((curr_cmd[`MSEQ_MEM_ADDR_BITS] & `DLA_ADDR_MASK) == `DBB_ADDR_START) begin
+             $writememh(curr_cmd[`MSEQ_FILENAME_BITS], top.slave_mem_wrap.dbb_mem.memory, curr_cmd[`MSEQ_MEM_ADDR_BITS]/(`MEM_BYTES) - (`DBB_ADDR_START >> `LOG2_MEM), (curr_cmd[`MSEQ_MEM_ADDR_BITS] + curr_cmd[`MSEQ_MEM_SIZE_BITS])/(`MEM_BYTES) - (`DBB_ADDR_START >> `LOG2_MEM) - 1);
+         end else if((curr_cmd[`MSEQ_MEM_ADDR_BITS] & `DLA_ADDR_MASK) == `CVSRAM_ADDR_START) begin
+             $writememh(curr_cmd[`MSEQ_FILENAME_BITS], top.slave_mem_wrap.cvsram_mem.memory, curr_cmd[`MSEQ_MEM_ADDR_BITS]/(`MEM_BYTES) - (`CVSRAM_ADDR_START >> `LOG2_MEM), (curr_cmd[`MSEQ_MEM_ADDR_BITS] + curr_cmd[`MSEQ_MEM_SIZE_BITS])/(`MEM_BYTES) - (`CVSRAM_ADDR_START >> `LOG2_MEM) - 1);
+         end
          //dump_main_memory <= 1;
       `endif
    end

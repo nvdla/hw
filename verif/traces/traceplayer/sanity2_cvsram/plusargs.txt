@@ -1,0 +1,1 @@
++read_reg_poll_retries=100000 +continue_on_fail

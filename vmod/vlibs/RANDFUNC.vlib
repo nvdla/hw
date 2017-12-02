@@ -50,7 +50,7 @@ begin
 	// Convert current module hierarchical name to a reg.
 	// Note $sformatf() converts strings right to left.  i.e.
 	// Return value contains data from right most data of the string.
-	modName = int'($sformatf ("%m"));
+	modName = $sformatf ("%m");
 
 	// Create hash from module name.
 	for (i = 0; i < (`RANDFUNC_MODNAME_LEN/4); i = i + 1) begin
@@ -136,7 +136,7 @@ begin
 	// Convert current module hierarchical name to a reg.
 	// Note $sformatf() converts strings right to left.  i.e.
 	// Return value contains data from right most data of the string.
-	modName = int'($sformatf ("%m"));
+	modName = $sformatf ("%m");
 
 	// Create hash from module name.
 	for (i = 0; i < (`RANDFUNC_MODNAME_LEN/4); i = i + 1) begin

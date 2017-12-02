@@ -147,8 +147,8 @@ output  [5:0] reg2dp_cvt_truncate;
 output [31:0] reg2dp_cya;
 output  [3:0] reg2dp_data_bank;
 output        reg2dp_data_reuse;
-output  [7:0] reg2dp_datain_addr_high_0;
-output  [7:0] reg2dp_datain_addr_high_1;
+output [31:0] reg2dp_datain_addr_high_0;
+output [31:0] reg2dp_datain_addr_high_1;
 output [26:0] reg2dp_datain_addr_low_0;
 output [26:0] reg2dp_datain_addr_low_1;
 output [12:0] reg2dp_datain_channel;
@@ -191,7 +191,7 @@ output        reg2dp_skip_weight_rls;
 output        reg2dp_surf_packed;
 output [26:0] reg2dp_surf_stride;
 output [26:0] reg2dp_uv_line_stride;
-output  [7:0] reg2dp_weight_addr_high;
+output [31:0] reg2dp_weight_addr_high;
 output [26:0] reg2dp_weight_addr_low;
 output  [3:0] reg2dp_weight_bank;
 output [24:0] reg2dp_weight_bytes;
@@ -199,9 +199,9 @@ output        reg2dp_weight_format;
 output [12:0] reg2dp_weight_kernel;
 output        reg2dp_weight_ram_type;
 output        reg2dp_weight_reuse;
-output  [7:0] reg2dp_wgs_addr_high;
+output [31:0] reg2dp_wgs_addr_high;
 output [26:0] reg2dp_wgs_addr_low;
-output  [7:0] reg2dp_wmb_addr_high;
+output [31:0] reg2dp_wmb_addr_high;
 output [26:0] reg2dp_wmb_addr_low;
 output [20:0] reg2dp_wmb_bytes;
 output  [7:0] slcg_op_en;
@@ -233,8 +233,8 @@ wire    [5:0] reg2dp_d0_cvt_truncate;
 wire   [31:0] reg2dp_d0_cya;
 wire    [3:0] reg2dp_d0_data_bank;
 wire          reg2dp_d0_data_reuse;
-wire    [7:0] reg2dp_d0_datain_addr_high_0;
-wire    [7:0] reg2dp_d0_datain_addr_high_1;
+wire   [31:0] reg2dp_d0_datain_addr_high_0;
+wire   [31:0] reg2dp_d0_datain_addr_high_1;
 wire   [26:0] reg2dp_d0_datain_addr_low_0;
 wire   [26:0] reg2dp_d0_datain_addr_low_1;
 wire   [12:0] reg2dp_d0_datain_channel;
@@ -277,7 +277,7 @@ wire          reg2dp_d0_skip_weight_rls;
 wire          reg2dp_d0_surf_packed;
 wire   [26:0] reg2dp_d0_surf_stride;
 wire   [26:0] reg2dp_d0_uv_line_stride;
-wire    [7:0] reg2dp_d0_weight_addr_high;
+wire   [31:0] reg2dp_d0_weight_addr_high;
 wire   [26:0] reg2dp_d0_weight_addr_low;
 wire    [3:0] reg2dp_d0_weight_bank;
 wire   [24:0] reg2dp_d0_weight_bytes;
@@ -285,9 +285,9 @@ wire          reg2dp_d0_weight_format;
 wire   [12:0] reg2dp_d0_weight_kernel;
 wire          reg2dp_d0_weight_ram_type;
 wire          reg2dp_d0_weight_reuse;
-wire    [7:0] reg2dp_d0_wgs_addr_high;
+wire   [31:0] reg2dp_d0_wgs_addr_high;
 wire   [26:0] reg2dp_d0_wgs_addr_low;
-wire    [7:0] reg2dp_d0_wmb_addr_high;
+wire   [31:0] reg2dp_d0_wmb_addr_high;
 wire   [26:0] reg2dp_d0_wmb_addr_low;
 wire   [20:0] reg2dp_d0_wmb_bytes;
 wire   [26:0] reg2dp_d1_batch_stride;
@@ -303,8 +303,8 @@ wire    [5:0] reg2dp_d1_cvt_truncate;
 wire   [31:0] reg2dp_d1_cya;
 wire    [3:0] reg2dp_d1_data_bank;
 wire          reg2dp_d1_data_reuse;
-wire    [7:0] reg2dp_d1_datain_addr_high_0;
-wire    [7:0] reg2dp_d1_datain_addr_high_1;
+wire   [31:0] reg2dp_d1_datain_addr_high_0;
+wire   [31:0] reg2dp_d1_datain_addr_high_1;
 wire   [26:0] reg2dp_d1_datain_addr_low_0;
 wire   [26:0] reg2dp_d1_datain_addr_low_1;
 wire   [12:0] reg2dp_d1_datain_channel;
@@ -347,7 +347,7 @@ wire          reg2dp_d1_skip_weight_rls;
 wire          reg2dp_d1_surf_packed;
 wire   [26:0] reg2dp_d1_surf_stride;
 wire   [26:0] reg2dp_d1_uv_line_stride;
-wire    [7:0] reg2dp_d1_weight_addr_high;
+wire   [31:0] reg2dp_d1_weight_addr_high;
 wire   [26:0] reg2dp_d1_weight_addr_low;
 wire    [3:0] reg2dp_d1_weight_bank;
 wire   [24:0] reg2dp_d1_weight_bytes;
@@ -355,9 +355,9 @@ wire          reg2dp_d1_weight_format;
 wire   [12:0] reg2dp_d1_weight_kernel;
 wire          reg2dp_d1_weight_ram_type;
 wire          reg2dp_d1_weight_reuse;
-wire    [7:0] reg2dp_d1_wgs_addr_high;
+wire   [31:0] reg2dp_d1_wgs_addr_high;
 wire   [26:0] reg2dp_d1_wgs_addr_low;
-wire    [7:0] reg2dp_d1_wmb_addr_high;
+wire   [31:0] reg2dp_d1_wmb_addr_high;
 wire   [26:0] reg2dp_d1_wmb_addr_low;
 wire   [20:0] reg2dp_d1_wmb_bytes;
 wire    [2:0] reg2dp_op_en_reg_w;
@@ -443,8 +443,8 @@ reg           reg2dp_d1_op_en;
 reg           reg2dp_d1_op_en_w;
 reg     [3:0] reg2dp_data_bank;
 reg           reg2dp_data_reuse;
-reg     [7:0] reg2dp_datain_addr_high_0;
-reg     [7:0] reg2dp_datain_addr_high_1;
+reg    [31:0] reg2dp_datain_addr_high_0;
+reg    [31:0] reg2dp_datain_addr_high_1;
 reg    [26:0] reg2dp_datain_addr_low_0;
 reg    [26:0] reg2dp_datain_addr_low_1;
 reg    [12:0] reg2dp_datain_channel;
@@ -488,7 +488,7 @@ reg           reg2dp_skip_weight_rls;
 reg           reg2dp_surf_packed;
 reg    [26:0] reg2dp_surf_stride;
 reg    [26:0] reg2dp_uv_line_stride;
-reg     [7:0] reg2dp_weight_addr_high;
+reg    [31:0] reg2dp_weight_addr_high;
 reg    [26:0] reg2dp_weight_addr_low;
 reg     [3:0] reg2dp_weight_bank;
 reg    [24:0] reg2dp_weight_bytes;
@@ -496,9 +496,9 @@ reg           reg2dp_weight_format;
 reg    [12:0] reg2dp_weight_kernel;
 reg           reg2dp_weight_ram_type;
 reg           reg2dp_weight_reuse;
-reg     [7:0] reg2dp_wgs_addr_high;
+reg    [31:0] reg2dp_wgs_addr_high;
 reg    [26:0] reg2dp_wgs_addr_low;
-reg     [7:0] reg2dp_wmb_addr_high;
+reg    [31:0] reg2dp_wmb_addr_high;
 reg    [26:0] reg2dp_wmb_addr_low;
 reg    [20:0] reg2dp_wmb_bytes;
 reg    [62:0] req_pd;
@@ -510,197 +510,197 @@ reg     [7:0] slcg_op_en_d3;
 
 //Instance single register group
 NV_NVDLA_CDMA_single_reg u_single_reg (
-   .reg_rd_data         (s_reg_rd_data[31:0])               //|> w
-  ,.reg_offset          (s_reg_offset[11:0])                //|< w
-  ,.reg_wr_data         (s_reg_wr_data[31:0])               //|< w
-  ,.reg_wr_en           (s_reg_wr_en)                       //|< w
-  ,.nvdla_core_clk      (nvdla_core_clk)                    //|< i
-  ,.nvdla_core_rstn     (nvdla_core_rstn)                   //|< i
-  ,.arb_weight          (reg2dp_arb_weight[3:0])            //|> o
-  ,.arb_wmb             (reg2dp_arb_wmb[3:0])               //|> o
-  ,.producer            (reg2dp_producer)                   //|> w
-  ,.flush_done          (dp2reg_flush_done)                 //|< r
-  ,.consumer            (dp2reg_consumer)                   //|< o
-  ,.status_0            (dp2reg_status_0[1:0])              //|< r
-  ,.status_1            (dp2reg_status_1[1:0])              //|< r
+   .reg_rd_data         (s_reg_rd_data[31:0])                //|> w
+  ,.reg_offset          (s_reg_offset[11:0])                 //|< w
+  ,.reg_wr_data         (s_reg_wr_data[31:0])                //|< w
+  ,.reg_wr_en           (s_reg_wr_en)                        //|< w
+  ,.nvdla_core_clk      (nvdla_core_clk)                     //|< i
+  ,.nvdla_core_rstn     (nvdla_core_rstn)                    //|< i
+  ,.arb_weight          (reg2dp_arb_weight[3:0])             //|> o
+  ,.arb_wmb             (reg2dp_arb_wmb[3:0])                //|> o
+  ,.producer            (reg2dp_producer)                    //|> w
+  ,.flush_done          (dp2reg_flush_done)                  //|< r
+  ,.consumer            (dp2reg_consumer)                    //|< o
+  ,.status_0            (dp2reg_status_0[1:0])               //|< r
+  ,.status_1            (dp2reg_status_1[1:0])               //|< r
   );
 
 //Instance two duplicated register groups
 
 NV_NVDLA_CDMA_dual_reg u_dual_reg_d0 (
-   .reg_rd_data         (d0_reg_rd_data[31:0])              //|> w
-  ,.reg_offset          (d0_reg_offset[11:0])               //|< w
-  ,.reg_wr_data         (d0_reg_wr_data[31:0])              //|< w
-  ,.reg_wr_en           (d0_reg_wr_en)                      //|< w
-  ,.nvdla_core_clk      (nvdla_core_clk)                    //|< i
-  ,.nvdla_core_rstn     (nvdla_core_rstn)                   //|< i
-  ,.data_bank           (reg2dp_d0_data_bank[3:0])          //|> w
-  ,.weight_bank         (reg2dp_d0_weight_bank[3:0])        //|> w
-  ,.batches             (reg2dp_d0_batches[4:0])            //|> w
-  ,.batch_stride        (reg2dp_d0_batch_stride[26:0])      //|> w
-  ,.conv_x_stride       (reg2dp_d0_conv_x_stride[2:0])      //|> w
-  ,.conv_y_stride       (reg2dp_d0_conv_y_stride[2:0])      //|> w
-  ,.cvt_en              (reg2dp_d0_cvt_en)                  //|> w
-  ,.cvt_truncate        (reg2dp_d0_cvt_truncate[5:0])       //|> w
-  ,.cvt_offset          (reg2dp_d0_cvt_offset[15:0])        //|> w
-  ,.cvt_scale           (reg2dp_d0_cvt_scale[15:0])         //|> w
-  ,.cya                 (reg2dp_d0_cya[31:0])               //|> w
-  ,.datain_addr_high_0  (reg2dp_d0_datain_addr_high_0[7:0]) //|> w
-  ,.datain_addr_high_1  (reg2dp_d0_datain_addr_high_1[7:0]) //|> w
-  ,.datain_addr_low_0   (reg2dp_d0_datain_addr_low_0[26:0]) //|> w
-  ,.datain_addr_low_1   (reg2dp_d0_datain_addr_low_1[26:0]) //|> w
-  ,.line_packed         (reg2dp_d0_line_packed)             //|> w
-  ,.surf_packed         (reg2dp_d0_surf_packed)             //|> w
-  ,.datain_ram_type     (reg2dp_d0_datain_ram_type)         //|> w
-  ,.datain_format       (reg2dp_d0_datain_format)           //|> w
-  ,.pixel_format        (reg2dp_d0_pixel_format[5:0])       //|> w
-  ,.pixel_mapping       (reg2dp_d0_pixel_mapping)           //|> w
-  ,.pixel_sign_override (reg2dp_d0_pixel_sign_override)     //|> w
-  ,.datain_height       (reg2dp_d0_datain_height[12:0])     //|> w
-  ,.datain_width        (reg2dp_d0_datain_width[12:0])      //|> w
-  ,.datain_channel      (reg2dp_d0_datain_channel[12:0])    //|> w
-  ,.datain_height_ext   (reg2dp_d0_datain_height_ext[12:0]) //|> w
-  ,.datain_width_ext    (reg2dp_d0_datain_width_ext[12:0])  //|> w
-  ,.entries             (reg2dp_d0_entries[11:0])           //|> w
-  ,.grains              (reg2dp_d0_grains[11:0])            //|> w
-  ,.line_stride         (reg2dp_d0_line_stride[26:0])       //|> w
-  ,.uv_line_stride      (reg2dp_d0_uv_line_stride[26:0])    //|> w
-  ,.mean_format         (reg2dp_d0_mean_format)             //|> w
-  ,.mean_gu             (reg2dp_d0_mean_gu[15:0])           //|> w
-  ,.mean_ry             (reg2dp_d0_mean_ry[15:0])           //|> w
-  ,.mean_ax             (reg2dp_d0_mean_ax[15:0])           //|> w
-  ,.mean_bv             (reg2dp_d0_mean_bv[15:0])           //|> w
-  ,.conv_mode           (reg2dp_d0_conv_mode)               //|> w
-  ,.data_reuse          (reg2dp_d0_data_reuse)              //|> w
-  ,.in_precision        (reg2dp_d0_in_precision[1:0])       //|> w
-  ,.proc_precision      (reg2dp_d0_proc_precision[1:0])     //|> w
-  ,.skip_data_rls       (reg2dp_d0_skip_data_rls)           //|> w
-  ,.skip_weight_rls     (reg2dp_d0_skip_weight_rls)         //|> w
-  ,.weight_reuse        (reg2dp_d0_weight_reuse)            //|> w
-  ,.nan_to_zero         (reg2dp_d0_nan_to_zero)             //|> w
-  ,.op_en_trigger       (reg2dp_d0_op_en_trigger)           //|> w
-  ,.dma_en              (reg2dp_d0_dma_en)                  //|> w
-  ,.pixel_x_offset      (reg2dp_d0_pixel_x_offset[4:0])     //|> w
-  ,.pixel_y_offset      (reg2dp_d0_pixel_y_offset[2:0])     //|> w
-  ,.rsv_per_line        (reg2dp_d0_rsv_per_line[9:0])       //|> w
-  ,.rsv_per_uv_line     (reg2dp_d0_rsv_per_uv_line[9:0])    //|> w
-  ,.rsv_height          (reg2dp_d0_rsv_height[2:0])         //|> w
-  ,.rsv_y_index         (reg2dp_d0_rsv_y_index[4:0])        //|> w
-  ,.surf_stride         (reg2dp_d0_surf_stride[26:0])       //|> w
-  ,.weight_addr_high    (reg2dp_d0_weight_addr_high[7:0])   //|> w
-  ,.weight_addr_low     (reg2dp_d0_weight_addr_low[26:0])   //|> w
-  ,.weight_bytes        (reg2dp_d0_weight_bytes[24:0])      //|> w
-  ,.weight_format       (reg2dp_d0_weight_format)           //|> w
-  ,.weight_ram_type     (reg2dp_d0_weight_ram_type)         //|> w
-  ,.byte_per_kernel     (reg2dp_d0_byte_per_kernel[17:0])   //|> w
-  ,.weight_kernel       (reg2dp_d0_weight_kernel[12:0])     //|> w
-  ,.wgs_addr_high       (reg2dp_d0_wgs_addr_high[7:0])      //|> w
-  ,.wgs_addr_low        (reg2dp_d0_wgs_addr_low[26:0])      //|> w
-  ,.wmb_addr_high       (reg2dp_d0_wmb_addr_high[7:0])      //|> w
-  ,.wmb_addr_low        (reg2dp_d0_wmb_addr_low[26:0])      //|> w
-  ,.wmb_bytes           (reg2dp_d0_wmb_bytes[20:0])         //|> w
-  ,.pad_bottom          (reg2dp_d0_pad_bottom[5:0])         //|> w
-  ,.pad_left            (reg2dp_d0_pad_left[4:0])           //|> w
-  ,.pad_right           (reg2dp_d0_pad_right[5:0])          //|> w
-  ,.pad_top             (reg2dp_d0_pad_top[4:0])            //|> w
-  ,.pad_value           (reg2dp_d0_pad_value[15:0])         //|> w
-  ,.inf_data_num        (dp2reg_d0_inf_data_num[31:0])      //|< r
-  ,.inf_weight_num      (dp2reg_d0_inf_weight_num[31:0])    //|< r
-  ,.nan_data_num        (dp2reg_d0_nan_data_num[31:0])      //|< r
-  ,.nan_weight_num      (dp2reg_d0_nan_weight_num[31:0])    //|< r
-  ,.op_en               (reg2dp_d0_op_en)                   //|< r
-  ,.dat_rd_latency      (dp2reg_d0_dat_rd_latency[31:0])    //|< r
-  ,.dat_rd_stall        (dp2reg_d0_dat_rd_stall[31:0])      //|< r
-  ,.wt_rd_latency       (dp2reg_d0_wt_rd_latency[31:0])     //|< r
-  ,.wt_rd_stall         (dp2reg_d0_wt_rd_stall[31:0])       //|< r
+   .reg_rd_data         (d0_reg_rd_data[31:0])               //|> w
+  ,.reg_offset          (d0_reg_offset[11:0])                //|< w
+  ,.reg_wr_data         (d0_reg_wr_data[31:0])               //|< w
+  ,.reg_wr_en           (d0_reg_wr_en)                       //|< w
+  ,.nvdla_core_clk      (nvdla_core_clk)                     //|< i
+  ,.nvdla_core_rstn     (nvdla_core_rstn)                    //|< i
+  ,.data_bank           (reg2dp_d0_data_bank[3:0])           //|> w
+  ,.weight_bank         (reg2dp_d0_weight_bank[3:0])         //|> w
+  ,.batches             (reg2dp_d0_batches[4:0])             //|> w
+  ,.batch_stride        (reg2dp_d0_batch_stride[26:0])       //|> w
+  ,.conv_x_stride       (reg2dp_d0_conv_x_stride[2:0])       //|> w
+  ,.conv_y_stride       (reg2dp_d0_conv_y_stride[2:0])       //|> w
+  ,.cvt_en              (reg2dp_d0_cvt_en)                   //|> w
+  ,.cvt_truncate        (reg2dp_d0_cvt_truncate[5:0])        //|> w
+  ,.cvt_offset          (reg2dp_d0_cvt_offset[15:0])         //|> w
+  ,.cvt_scale           (reg2dp_d0_cvt_scale[15:0])          //|> w
+  ,.cya                 (reg2dp_d0_cya[31:0])                //|> w
+  ,.datain_addr_high_0  (reg2dp_d0_datain_addr_high_0[31:0]) //|> w
+  ,.datain_addr_high_1  (reg2dp_d0_datain_addr_high_1[31:0]) //|> w
+  ,.datain_addr_low_0   (reg2dp_d0_datain_addr_low_0[26:0])  //|> w
+  ,.datain_addr_low_1   (reg2dp_d0_datain_addr_low_1[26:0])  //|> w
+  ,.line_packed         (reg2dp_d0_line_packed)              //|> w
+  ,.surf_packed         (reg2dp_d0_surf_packed)              //|> w
+  ,.datain_ram_type     (reg2dp_d0_datain_ram_type)          //|> w
+  ,.datain_format       (reg2dp_d0_datain_format)            //|> w
+  ,.pixel_format        (reg2dp_d0_pixel_format[5:0])        //|> w
+  ,.pixel_mapping       (reg2dp_d0_pixel_mapping)            //|> w
+  ,.pixel_sign_override (reg2dp_d0_pixel_sign_override)      //|> w
+  ,.datain_height       (reg2dp_d0_datain_height[12:0])      //|> w
+  ,.datain_width        (reg2dp_d0_datain_width[12:0])       //|> w
+  ,.datain_channel      (reg2dp_d0_datain_channel[12:0])     //|> w
+  ,.datain_height_ext   (reg2dp_d0_datain_height_ext[12:0])  //|> w
+  ,.datain_width_ext    (reg2dp_d0_datain_width_ext[12:0])   //|> w
+  ,.entries             (reg2dp_d0_entries[11:0])            //|> w
+  ,.grains              (reg2dp_d0_grains[11:0])             //|> w
+  ,.line_stride         (reg2dp_d0_line_stride[26:0])        //|> w
+  ,.uv_line_stride      (reg2dp_d0_uv_line_stride[26:0])     //|> w
+  ,.mean_format         (reg2dp_d0_mean_format)              //|> w
+  ,.mean_gu             (reg2dp_d0_mean_gu[15:0])            //|> w
+  ,.mean_ry             (reg2dp_d0_mean_ry[15:0])            //|> w
+  ,.mean_ax             (reg2dp_d0_mean_ax[15:0])            //|> w
+  ,.mean_bv             (reg2dp_d0_mean_bv[15:0])            //|> w
+  ,.conv_mode           (reg2dp_d0_conv_mode)                //|> w
+  ,.data_reuse          (reg2dp_d0_data_reuse)               //|> w
+  ,.in_precision        (reg2dp_d0_in_precision[1:0])        //|> w
+  ,.proc_precision      (reg2dp_d0_proc_precision[1:0])      //|> w
+  ,.skip_data_rls       (reg2dp_d0_skip_data_rls)            //|> w
+  ,.skip_weight_rls     (reg2dp_d0_skip_weight_rls)          //|> w
+  ,.weight_reuse        (reg2dp_d0_weight_reuse)             //|> w
+  ,.nan_to_zero         (reg2dp_d0_nan_to_zero)              //|> w
+  ,.op_en_trigger       (reg2dp_d0_op_en_trigger)            //|> w
+  ,.dma_en              (reg2dp_d0_dma_en)                   //|> w
+  ,.pixel_x_offset      (reg2dp_d0_pixel_x_offset[4:0])      //|> w
+  ,.pixel_y_offset      (reg2dp_d0_pixel_y_offset[2:0])      //|> w
+  ,.rsv_per_line        (reg2dp_d0_rsv_per_line[9:0])        //|> w
+  ,.rsv_per_uv_line     (reg2dp_d0_rsv_per_uv_line[9:0])     //|> w
+  ,.rsv_height          (reg2dp_d0_rsv_height[2:0])          //|> w
+  ,.rsv_y_index         (reg2dp_d0_rsv_y_index[4:0])         //|> w
+  ,.surf_stride         (reg2dp_d0_surf_stride[26:0])        //|> w
+  ,.weight_addr_high    (reg2dp_d0_weight_addr_high[31:0])   //|> w
+  ,.weight_addr_low     (reg2dp_d0_weight_addr_low[26:0])    //|> w
+  ,.weight_bytes        (reg2dp_d0_weight_bytes[24:0])       //|> w
+  ,.weight_format       (reg2dp_d0_weight_format)            //|> w
+  ,.weight_ram_type     (reg2dp_d0_weight_ram_type)          //|> w
+  ,.byte_per_kernel     (reg2dp_d0_byte_per_kernel[17:0])    //|> w
+  ,.weight_kernel       (reg2dp_d0_weight_kernel[12:0])      //|> w
+  ,.wgs_addr_high       (reg2dp_d0_wgs_addr_high[31:0])      //|> w
+  ,.wgs_addr_low        (reg2dp_d0_wgs_addr_low[26:0])       //|> w
+  ,.wmb_addr_high       (reg2dp_d0_wmb_addr_high[31:0])      //|> w
+  ,.wmb_addr_low        (reg2dp_d0_wmb_addr_low[26:0])       //|> w
+  ,.wmb_bytes           (reg2dp_d0_wmb_bytes[20:0])          //|> w
+  ,.pad_bottom          (reg2dp_d0_pad_bottom[5:0])          //|> w
+  ,.pad_left            (reg2dp_d0_pad_left[4:0])            //|> w
+  ,.pad_right           (reg2dp_d0_pad_right[5:0])           //|> w
+  ,.pad_top             (reg2dp_d0_pad_top[4:0])             //|> w
+  ,.pad_value           (reg2dp_d0_pad_value[15:0])          //|> w
+  ,.inf_data_num        (dp2reg_d0_inf_data_num[31:0])       //|< r
+  ,.inf_weight_num      (dp2reg_d0_inf_weight_num[31:0])     //|< r
+  ,.nan_data_num        (dp2reg_d0_nan_data_num[31:0])       //|< r
+  ,.nan_weight_num      (dp2reg_d0_nan_weight_num[31:0])     //|< r
+  ,.op_en               (reg2dp_d0_op_en)                    //|< r
+  ,.dat_rd_latency      (dp2reg_d0_dat_rd_latency[31:0])     //|< r
+  ,.dat_rd_stall        (dp2reg_d0_dat_rd_stall[31:0])       //|< r
+  ,.wt_rd_latency       (dp2reg_d0_wt_rd_latency[31:0])      //|< r
+  ,.wt_rd_stall         (dp2reg_d0_wt_rd_stall[31:0])        //|< r
   );
         
 NV_NVDLA_CDMA_dual_reg u_dual_reg_d1 (
-   .reg_rd_data         (d1_reg_rd_data[31:0])              //|> w
-  ,.reg_offset          (d1_reg_offset[11:0])               //|< w
-  ,.reg_wr_data         (d1_reg_wr_data[31:0])              //|< w
-  ,.reg_wr_en           (d1_reg_wr_en)                      //|< w
-  ,.nvdla_core_clk      (nvdla_core_clk)                    //|< i
-  ,.nvdla_core_rstn     (nvdla_core_rstn)                   //|< i
-  ,.data_bank           (reg2dp_d1_data_bank[3:0])          //|> w
-  ,.weight_bank         (reg2dp_d1_weight_bank[3:0])        //|> w
-  ,.batches             (reg2dp_d1_batches[4:0])            //|> w
-  ,.batch_stride        (reg2dp_d1_batch_stride[26:0])      //|> w
-  ,.conv_x_stride       (reg2dp_d1_conv_x_stride[2:0])      //|> w
-  ,.conv_y_stride       (reg2dp_d1_conv_y_stride[2:0])      //|> w
-  ,.cvt_en              (reg2dp_d1_cvt_en)                  //|> w
-  ,.cvt_truncate        (reg2dp_d1_cvt_truncate[5:0])       //|> w
-  ,.cvt_offset          (reg2dp_d1_cvt_offset[15:0])        //|> w
-  ,.cvt_scale           (reg2dp_d1_cvt_scale[15:0])         //|> w
-  ,.cya                 (reg2dp_d1_cya[31:0])               //|> w
-  ,.datain_addr_high_0  (reg2dp_d1_datain_addr_high_0[7:0]) //|> w
-  ,.datain_addr_high_1  (reg2dp_d1_datain_addr_high_1[7:0]) //|> w
-  ,.datain_addr_low_0   (reg2dp_d1_datain_addr_low_0[26:0]) //|> w
-  ,.datain_addr_low_1   (reg2dp_d1_datain_addr_low_1[26:0]) //|> w
-  ,.line_packed         (reg2dp_d1_line_packed)             //|> w
-  ,.surf_packed         (reg2dp_d1_surf_packed)             //|> w
-  ,.datain_ram_type     (reg2dp_d1_datain_ram_type)         //|> w
-  ,.datain_format       (reg2dp_d1_datain_format)           //|> w
-  ,.pixel_format        (reg2dp_d1_pixel_format[5:0])       //|> w
-  ,.pixel_mapping       (reg2dp_d1_pixel_mapping)           //|> w
-  ,.pixel_sign_override (reg2dp_d1_pixel_sign_override)     //|> w
-  ,.datain_height       (reg2dp_d1_datain_height[12:0])     //|> w
-  ,.datain_width        (reg2dp_d1_datain_width[12:0])      //|> w
-  ,.datain_channel      (reg2dp_d1_datain_channel[12:0])    //|> w
-  ,.datain_height_ext   (reg2dp_d1_datain_height_ext[12:0]) //|> w
-  ,.datain_width_ext    (reg2dp_d1_datain_width_ext[12:0])  //|> w
-  ,.entries             (reg2dp_d1_entries[11:0])           //|> w
-  ,.grains              (reg2dp_d1_grains[11:0])            //|> w
-  ,.line_stride         (reg2dp_d1_line_stride[26:0])       //|> w
-  ,.uv_line_stride      (reg2dp_d1_uv_line_stride[26:0])    //|> w
-  ,.mean_format         (reg2dp_d1_mean_format)             //|> w
-  ,.mean_gu             (reg2dp_d1_mean_gu[15:0])           //|> w
-  ,.mean_ry             (reg2dp_d1_mean_ry[15:0])           //|> w
-  ,.mean_ax             (reg2dp_d1_mean_ax[15:0])           //|> w
-  ,.mean_bv             (reg2dp_d1_mean_bv[15:0])           //|> w
-  ,.conv_mode           (reg2dp_d1_conv_mode)               //|> w
-  ,.data_reuse          (reg2dp_d1_data_reuse)              //|> w
-  ,.in_precision        (reg2dp_d1_in_precision[1:0])       //|> w
-  ,.proc_precision      (reg2dp_d1_proc_precision[1:0])     //|> w
-  ,.skip_data_rls       (reg2dp_d1_skip_data_rls)           //|> w
-  ,.skip_weight_rls     (reg2dp_d1_skip_weight_rls)         //|> w
-  ,.weight_reuse        (reg2dp_d1_weight_reuse)            //|> w
-  ,.nan_to_zero         (reg2dp_d1_nan_to_zero)             //|> w
-  ,.op_en_trigger       (reg2dp_d1_op_en_trigger)           //|> w
-  ,.dma_en              (reg2dp_d1_dma_en)                  //|> w
-  ,.pixel_x_offset      (reg2dp_d1_pixel_x_offset[4:0])     //|> w
-  ,.pixel_y_offset      (reg2dp_d1_pixel_y_offset[2:0])     //|> w
-  ,.rsv_per_line        (reg2dp_d1_rsv_per_line[9:0])       //|> w
-  ,.rsv_per_uv_line     (reg2dp_d1_rsv_per_uv_line[9:0])    //|> w
-  ,.rsv_height          (reg2dp_d1_rsv_height[2:0])         //|> w
-  ,.rsv_y_index         (reg2dp_d1_rsv_y_index[4:0])        //|> w
-  ,.surf_stride         (reg2dp_d1_surf_stride[26:0])       //|> w
-  ,.weight_addr_high    (reg2dp_d1_weight_addr_high[7:0])   //|> w
-  ,.weight_addr_low     (reg2dp_d1_weight_addr_low[26:0])   //|> w
-  ,.weight_bytes        (reg2dp_d1_weight_bytes[24:0])      //|> w
-  ,.weight_format       (reg2dp_d1_weight_format)           //|> w
-  ,.weight_ram_type     (reg2dp_d1_weight_ram_type)         //|> w
-  ,.byte_per_kernel     (reg2dp_d1_byte_per_kernel[17:0])   //|> w
-  ,.weight_kernel       (reg2dp_d1_weight_kernel[12:0])     //|> w
-  ,.wgs_addr_high       (reg2dp_d1_wgs_addr_high[7:0])      //|> w
-  ,.wgs_addr_low        (reg2dp_d1_wgs_addr_low[26:0])      //|> w
-  ,.wmb_addr_high       (reg2dp_d1_wmb_addr_high[7:0])      //|> w
-  ,.wmb_addr_low        (reg2dp_d1_wmb_addr_low[26:0])      //|> w
-  ,.wmb_bytes           (reg2dp_d1_wmb_bytes[20:0])         //|> w
-  ,.pad_bottom          (reg2dp_d1_pad_bottom[5:0])         //|> w
-  ,.pad_left            (reg2dp_d1_pad_left[4:0])           //|> w
-  ,.pad_right           (reg2dp_d1_pad_right[5:0])          //|> w
-  ,.pad_top             (reg2dp_d1_pad_top[4:0])            //|> w
-  ,.pad_value           (reg2dp_d1_pad_value[15:0])         //|> w
-  ,.inf_data_num        (dp2reg_d1_inf_data_num[31:0])      //|< r
-  ,.inf_weight_num      (dp2reg_d1_inf_weight_num[31:0])    //|< r
-  ,.nan_data_num        (dp2reg_d1_nan_data_num[31:0])      //|< r
-  ,.nan_weight_num      (dp2reg_d1_nan_weight_num[31:0])    //|< r
-  ,.op_en               (reg2dp_d1_op_en)                   //|< r
-  ,.dat_rd_latency      (dp2reg_d1_dat_rd_latency[31:0])    //|< r
-  ,.dat_rd_stall        (dp2reg_d1_dat_rd_stall[31:0])      //|< r
-  ,.wt_rd_latency       (dp2reg_d1_wt_rd_latency[31:0])     //|< r
-  ,.wt_rd_stall         (dp2reg_d1_wt_rd_stall[31:0])       //|< r
+   .reg_rd_data         (d1_reg_rd_data[31:0])               //|> w
+  ,.reg_offset          (d1_reg_offset[11:0])                //|< w
+  ,.reg_wr_data         (d1_reg_wr_data[31:0])               //|< w
+  ,.reg_wr_en           (d1_reg_wr_en)                       //|< w
+  ,.nvdla_core_clk      (nvdla_core_clk)                     //|< i
+  ,.nvdla_core_rstn     (nvdla_core_rstn)                    //|< i
+  ,.data_bank           (reg2dp_d1_data_bank[3:0])           //|> w
+  ,.weight_bank         (reg2dp_d1_weight_bank[3:0])         //|> w
+  ,.batches             (reg2dp_d1_batches[4:0])             //|> w
+  ,.batch_stride        (reg2dp_d1_batch_stride[26:0])       //|> w
+  ,.conv_x_stride       (reg2dp_d1_conv_x_stride[2:0])       //|> w
+  ,.conv_y_stride       (reg2dp_d1_conv_y_stride[2:0])       //|> w
+  ,.cvt_en              (reg2dp_d1_cvt_en)                   //|> w
+  ,.cvt_truncate        (reg2dp_d1_cvt_truncate[5:0])        //|> w
+  ,.cvt_offset          (reg2dp_d1_cvt_offset[15:0])         //|> w
+  ,.cvt_scale           (reg2dp_d1_cvt_scale[15:0])          //|> w
+  ,.cya                 (reg2dp_d1_cya[31:0])                //|> w
+  ,.datain_addr_high_0  (reg2dp_d1_datain_addr_high_0[31:0]) //|> w
+  ,.datain_addr_high_1  (reg2dp_d1_datain_addr_high_1[31:0]) //|> w
+  ,.datain_addr_low_0   (reg2dp_d1_datain_addr_low_0[26:0])  //|> w
+  ,.datain_addr_low_1   (reg2dp_d1_datain_addr_low_1[26:0])  //|> w
+  ,.line_packed         (reg2dp_d1_line_packed)              //|> w
+  ,.surf_packed         (reg2dp_d1_surf_packed)              //|> w
+  ,.datain_ram_type     (reg2dp_d1_datain_ram_type)          //|> w
+  ,.datain_format       (reg2dp_d1_datain_format)            //|> w
+  ,.pixel_format        (reg2dp_d1_pixel_format[5:0])        //|> w
+  ,.pixel_mapping       (reg2dp_d1_pixel_mapping)            //|> w
+  ,.pixel_sign_override (reg2dp_d1_pixel_sign_override)      //|> w
+  ,.datain_height       (reg2dp_d1_datain_height[12:0])      //|> w
+  ,.datain_width        (reg2dp_d1_datain_width[12:0])       //|> w
+  ,.datain_channel      (reg2dp_d1_datain_channel[12:0])     //|> w
+  ,.datain_height_ext   (reg2dp_d1_datain_height_ext[12:0])  //|> w
+  ,.datain_width_ext    (reg2dp_d1_datain_width_ext[12:0])   //|> w
+  ,.entries             (reg2dp_d1_entries[11:0])            //|> w
+  ,.grains              (reg2dp_d1_grains[11:0])             //|> w
+  ,.line_stride         (reg2dp_d1_line_stride[26:0])        //|> w
+  ,.uv_line_stride      (reg2dp_d1_uv_line_stride[26:0])     //|> w
+  ,.mean_format         (reg2dp_d1_mean_format)              //|> w
+  ,.mean_gu             (reg2dp_d1_mean_gu[15:0])            //|> w
+  ,.mean_ry             (reg2dp_d1_mean_ry[15:0])            //|> w
+  ,.mean_ax             (reg2dp_d1_mean_ax[15:0])            //|> w
+  ,.mean_bv             (reg2dp_d1_mean_bv[15:0])            //|> w
+  ,.conv_mode           (reg2dp_d1_conv_mode)                //|> w
+  ,.data_reuse          (reg2dp_d1_data_reuse)               //|> w
+  ,.in_precision        (reg2dp_d1_in_precision[1:0])        //|> w
+  ,.proc_precision      (reg2dp_d1_proc_precision[1:0])      //|> w
+  ,.skip_data_rls       (reg2dp_d1_skip_data_rls)            //|> w
+  ,.skip_weight_rls     (reg2dp_d1_skip_weight_rls)          //|> w
+  ,.weight_reuse        (reg2dp_d1_weight_reuse)             //|> w
+  ,.nan_to_zero         (reg2dp_d1_nan_to_zero)              //|> w
+  ,.op_en_trigger       (reg2dp_d1_op_en_trigger)            //|> w
+  ,.dma_en              (reg2dp_d1_dma_en)                   //|> w
+  ,.pixel_x_offset      (reg2dp_d1_pixel_x_offset[4:0])      //|> w
+  ,.pixel_y_offset      (reg2dp_d1_pixel_y_offset[2:0])      //|> w
+  ,.rsv_per_line        (reg2dp_d1_rsv_per_line[9:0])        //|> w
+  ,.rsv_per_uv_line     (reg2dp_d1_rsv_per_uv_line[9:0])     //|> w
+  ,.rsv_height          (reg2dp_d1_rsv_height[2:0])          //|> w
+  ,.rsv_y_index         (reg2dp_d1_rsv_y_index[4:0])         //|> w
+  ,.surf_stride         (reg2dp_d1_surf_stride[26:0])        //|> w
+  ,.weight_addr_high    (reg2dp_d1_weight_addr_high[31:0])   //|> w
+  ,.weight_addr_low     (reg2dp_d1_weight_addr_low[26:0])    //|> w
+  ,.weight_bytes        (reg2dp_d1_weight_bytes[24:0])       //|> w
+  ,.weight_format       (reg2dp_d1_weight_format)            //|> w
+  ,.weight_ram_type     (reg2dp_d1_weight_ram_type)          //|> w
+  ,.byte_per_kernel     (reg2dp_d1_byte_per_kernel[17:0])    //|> w
+  ,.weight_kernel       (reg2dp_d1_weight_kernel[12:0])      //|> w
+  ,.wgs_addr_high       (reg2dp_d1_wgs_addr_high[31:0])      //|> w
+  ,.wgs_addr_low        (reg2dp_d1_wgs_addr_low[26:0])       //|> w
+  ,.wmb_addr_high       (reg2dp_d1_wmb_addr_high[31:0])      //|> w
+  ,.wmb_addr_low        (reg2dp_d1_wmb_addr_low[26:0])       //|> w
+  ,.wmb_bytes           (reg2dp_d1_wmb_bytes[20:0])          //|> w
+  ,.pad_bottom          (reg2dp_d1_pad_bottom[5:0])          //|> w
+  ,.pad_left            (reg2dp_d1_pad_left[4:0])            //|> w
+  ,.pad_right           (reg2dp_d1_pad_right[5:0])           //|> w
+  ,.pad_top             (reg2dp_d1_pad_top[4:0])             //|> w
+  ,.pad_value           (reg2dp_d1_pad_value[15:0])          //|> w
+  ,.inf_data_num        (dp2reg_d1_inf_data_num[31:0])       //|< r
+  ,.inf_weight_num      (dp2reg_d1_inf_weight_num[31:0])     //|< r
+  ,.nan_data_num        (dp2reg_d1_nan_data_num[31:0])       //|< r
+  ,.nan_weight_num      (dp2reg_d1_nan_weight_num[31:0])     //|< r
+  ,.op_en               (reg2dp_d1_op_en)                    //|< r
+  ,.dat_rd_latency      (dp2reg_d1_dat_rd_latency[31:0])     //|< r
+  ,.dat_rd_stall        (dp2reg_d1_dat_rd_stall[31:0])       //|< r
+  ,.wt_rd_latency       (dp2reg_d1_wt_rd_latency[31:0])      //|< r
+  ,.wt_rd_stall         (dp2reg_d1_wt_rd_stall[31:0])        //|< r
   );
         
 ////////////////////////////////////////////////////////////////////////

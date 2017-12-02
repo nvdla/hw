@@ -84,7 +84,7 @@ input         nvdla_core_rstn;
 // Writable register flop/trigger outputs
 output        nvdla_bdma_cfg_cmd_0_dst_ram_type;
 output        nvdla_bdma_cfg_cmd_0_src_ram_type;
-output [7:0]  nvdla_bdma_cfg_dst_addr_high_0_v8;
+output [31:0] nvdla_bdma_cfg_dst_addr_high_0_v8;
 output [26:0] nvdla_bdma_cfg_dst_addr_low_0_v32;
 output [26:0] nvdla_bdma_cfg_dst_line_0_stride;
 output [26:0] nvdla_bdma_cfg_dst_surf_0_stride;
@@ -96,7 +96,7 @@ output [12:0] nvdla_bdma_cfg_line_0_size;
 output [23:0] nvdla_bdma_cfg_line_repeat_0_number;
 output        nvdla_bdma_cfg_op_0_en;
 output        nvdla_bdma_cfg_op_0_en_trigger;
-output [7:0]  nvdla_bdma_cfg_src_addr_high_0_v8;
+output [31:0] nvdla_bdma_cfg_src_addr_high_0_v8;
 output [26:0] nvdla_bdma_cfg_src_addr_low_0_v32;
 output [26:0] nvdla_bdma_cfg_src_line_0_stride;
 output [26:0] nvdla_bdma_cfg_src_surf_0_stride;
@@ -124,7 +124,7 @@ reg           arreggen_dump;
 // leda FM_2_23 on
 reg           nvdla_bdma_cfg_cmd_0_dst_ram_type;
 reg           nvdla_bdma_cfg_cmd_0_src_ram_type;
-reg     [7:0] nvdla_bdma_cfg_dst_addr_high_0_v8;
+reg    [31:0] nvdla_bdma_cfg_dst_addr_high_0_v8;
 reg    [26:0] nvdla_bdma_cfg_dst_addr_low_0_v32;
 reg    [26:0] nvdla_bdma_cfg_dst_line_0_stride;
 reg    [26:0] nvdla_bdma_cfg_dst_surf_0_stride;
@@ -133,7 +133,7 @@ reg           nvdla_bdma_cfg_launch1_0_grp1_launch;
 reg    [12:0] nvdla_bdma_cfg_line_0_size;
 reg    [23:0] nvdla_bdma_cfg_line_repeat_0_number;
 reg           nvdla_bdma_cfg_op_0_en;
-reg     [7:0] nvdla_bdma_cfg_src_addr_high_0_v8;
+reg    [31:0] nvdla_bdma_cfg_src_addr_high_0_v8;
 reg    [26:0] nvdla_bdma_cfg_src_addr_low_0_v32;
 reg    [26:0] nvdla_bdma_cfg_src_line_0_stride;
 reg    [26:0] nvdla_bdma_cfg_src_surf_0_stride;
@@ -168,7 +168,7 @@ wire nvdla_bdma_status_grp1_read_stall_0_wren = (reg_offset_wr == (32'h404c  & 3
 wire nvdla_bdma_status_grp1_write_stall_0_wren = (reg_offset_wr == (32'h4050  & 32'h00000fff)) & reg_wr_en ;  //spyglass disable UnloadedNet-ML //(W528)
 
 assign nvdla_bdma_cfg_cmd_0_out[31:0] = { 30'b0, nvdla_bdma_cfg_cmd_0_dst_ram_type, nvdla_bdma_cfg_cmd_0_src_ram_type };
-assign nvdla_bdma_cfg_dst_addr_high_0_out[31:0] = { 24'b0, nvdla_bdma_cfg_dst_addr_high_0_v8 };
+assign nvdla_bdma_cfg_dst_addr_high_0_out[31:0] = { nvdla_bdma_cfg_dst_addr_high_0_v8 };
 assign nvdla_bdma_cfg_dst_addr_low_0_out[31:0] = { nvdla_bdma_cfg_dst_addr_low_0_v32, 5'b0 };
 assign nvdla_bdma_cfg_dst_line_0_out[31:0] = { nvdla_bdma_cfg_dst_line_0_stride, 5'b0 };
 assign nvdla_bdma_cfg_dst_surf_0_out[31:0] = { nvdla_bdma_cfg_dst_surf_0_stride, 5'b0 };
@@ -177,7 +177,7 @@ assign nvdla_bdma_cfg_launch1_0_out[31:0] = { 31'b0, nvdla_bdma_cfg_launch1_0_gr
 assign nvdla_bdma_cfg_line_0_out[31:0] = { 19'b0, nvdla_bdma_cfg_line_0_size };
 assign nvdla_bdma_cfg_line_repeat_0_out[31:0] = { 8'b0, nvdla_bdma_cfg_line_repeat_0_number };
 assign nvdla_bdma_cfg_op_0_out[31:0] = { 31'b0, nvdla_bdma_cfg_op_0_en };
-assign nvdla_bdma_cfg_src_addr_high_0_out[31:0] = { 24'b0, nvdla_bdma_cfg_src_addr_high_0_v8 };
+assign nvdla_bdma_cfg_src_addr_high_0_out[31:0] = { nvdla_bdma_cfg_src_addr_high_0_v8 };
 assign nvdla_bdma_cfg_src_addr_low_0_out[31:0] = { nvdla_bdma_cfg_src_addr_low_0_v32, 5'b0 };
 assign nvdla_bdma_cfg_src_line_0_out[31:0] = { nvdla_bdma_cfg_src_line_0_stride, 5'b0 };
 assign nvdla_bdma_cfg_src_surf_0_out[31:0] = { nvdla_bdma_cfg_src_surf_0_stride, 5'b0 };
@@ -297,7 +297,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
     nvdla_bdma_cfg_cmd_0_dst_ram_type <= 1'b0;
     nvdla_bdma_cfg_cmd_0_src_ram_type <= 1'b0;
-    nvdla_bdma_cfg_dst_addr_high_0_v8[7:0] <= 8'b00000000;
+    nvdla_bdma_cfg_dst_addr_high_0_v8[31:0] <= 32'b00000000000000000000000000000000;
     nvdla_bdma_cfg_dst_addr_low_0_v32[26:0] <= 27'b000000000000000000000000000;
     nvdla_bdma_cfg_dst_line_0_stride[26:0] <= 27'b000000000000000000000000000;
     nvdla_bdma_cfg_dst_surf_0_stride[26:0] <= 27'b000000000000000000000000000;
@@ -306,7 +306,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     nvdla_bdma_cfg_line_0_size[12:0] <= 13'b0000000000000;
     nvdla_bdma_cfg_line_repeat_0_number[23:0] <= 24'b000000000000000000000000;
     nvdla_bdma_cfg_op_0_en <= 1'b0;
-    nvdla_bdma_cfg_src_addr_high_0_v8[7:0] <= 8'b00000000;
+    nvdla_bdma_cfg_src_addr_high_0_v8[31:0] <= 32'b00000000000000000000000000000000;
     nvdla_bdma_cfg_src_addr_low_0_v32[26:0] <= 27'b000000000000000000000000000;
     nvdla_bdma_cfg_src_line_0_stride[26:0] <= 27'b000000000000000000000000000;
     nvdla_bdma_cfg_src_surf_0_stride[26:0] <= 27'b000000000000000000000000000;
@@ -325,7 +325,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 
   // Register: NVDLA_BDMA_CFG_DST_ADDR_HIGH_0    Field: v8
   if (nvdla_bdma_cfg_dst_addr_high_0_wren) begin
-    nvdla_bdma_cfg_dst_addr_high_0_v8[7:0] <= reg_wr_data[7:0];
+    nvdla_bdma_cfg_dst_addr_high_0_v8[31:0] <= reg_wr_data[31:0];
   end
 
   // Register: NVDLA_BDMA_CFG_DST_ADDR_LOW_0    Field: v32
@@ -370,7 +370,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 
   // Register: NVDLA_BDMA_CFG_SRC_ADDR_HIGH_0    Field: v8
   if (nvdla_bdma_cfg_src_addr_high_0_wren) begin
-    nvdla_bdma_cfg_src_addr_high_0_v8[7:0] <= reg_wr_data[7:0];
+    nvdla_bdma_cfg_src_addr_high_0_v8[31:0] <= reg_wr_data[31:0];
   end
 
   // Register: NVDLA_BDMA_CFG_SRC_ADDR_LOW_0    Field: v32

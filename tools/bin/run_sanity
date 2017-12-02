@@ -1,0 +1,44 @@
+#!/usr/bin/env perl
+
+use strict;
+use Getopt::Long;
+use Data::Dumper;
+use YAML qw(LoadFile);
+use IO::Tee;
+use Carp qw(croak);
+
+my $run = 1;
+my $debug = 1;
+
+my $tot = `tools/bin/depth -abs_tot`;
+
+my $tree_make_vm = "$tot/tools/make/tree.make.vm";
+croak "$tree_make_vm does not exists" unless -e $tree_make_vm;
+
+system ("chmod +w $tot/tree.make") if $run;
+system ("cp $tree_make_vm $tot/tree.make") if $run;
+system ("$tot/tools/bin/tmake -project nv_large") if $run;
+
+my $log = "$tot/outdir/build.log";
+open(L, "<${log}") or die("ERROR: Can't read log file $log\n");
+
+my $fail = 0;
+while (my $line = <L>) {
+    chomp $line;
+    next unless $line =~ m/^checktest/;
+    print "line=$line\n" if $debug;
+    $line =~ s/\s//g;
+    my (undef,$result,$testname,$desc) = split(':',$line);
+    print "result=$result\n" if $debug;
+    $fail ||= ($result ne "PASSED") ? 1 : 0;
+    print "fail=$fail\n" if $debug;
+}
+close(L);
+
+if ($fail) {
+    print "ERROR: simulation failed -> $log\n";
+}
+
+print "final=$fail\n" if $debug;
+
+exit ($fail);

@@ -212,7 +212,7 @@ output [15:0] ew_mul_cvt_scale;
 output [5:0]  ew_mul_cvt_truncate;
 output [31:0] ew_mul_operand;
 output [9:0]  ew_truncate;
-output [7:0]  dst_base_addr_high;
+output [31:0] dst_base_addr_high;
 output [26:0] dst_base_addr_low;
 output [26:0] dst_batch_stride;
 output        dst_ram_type;
@@ -281,7 +281,7 @@ reg    [12:0] channel;
 reg    [31:0] cvt_offset;
 reg    [15:0] cvt_scale;
 reg     [5:0] cvt_shift;
-reg     [7:0] dst_base_addr_high;
+reg    [31:0] dst_base_addr_high;
 reg    [26:0] dst_base_addr_low;
 reg    [26:0] dst_batch_stride;
 reg    [26:0] dst_line_stride;
@@ -403,7 +403,7 @@ assign nvdla_sdp_d_dp_ew_mul_cvt_scale_value_0_out[31:0] = { 16'b0, ew_mul_cvt_s
 assign nvdla_sdp_d_dp_ew_mul_cvt_truncate_value_0_out[31:0] = { 26'b0, ew_mul_cvt_truncate };
 assign nvdla_sdp_d_dp_ew_mul_src_value_0_out[31:0] = { ew_mul_operand };
 assign nvdla_sdp_d_dp_ew_truncate_value_0_out[31:0] = { 22'b0, ew_truncate };
-assign nvdla_sdp_d_dst_base_addr_high_0_out[31:0] = { 24'b0, dst_base_addr_high };
+assign nvdla_sdp_d_dst_base_addr_high_0_out[31:0] = { dst_base_addr_high };
 assign nvdla_sdp_d_dst_base_addr_low_0_out[31:0] = { dst_base_addr_low, 5'b0 };
 assign nvdla_sdp_d_dst_batch_stride_0_out[31:0] = { dst_batch_stride, 5'b0 };
 assign nvdla_sdp_d_dst_dma_cfg_0_out[31:0] = { 31'b0, dst_ram_type };
@@ -691,7 +691,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     ew_mul_cvt_truncate[5:0] <= 6'b000000;
     ew_mul_operand[31:0] <= 32'b00000000000000000000000000000000;
     ew_truncate[9:0] <= 10'b0000000000;
-    dst_base_addr_high[7:0] <= 8'b00000000;
+    dst_base_addr_high[31:0] <= 32'b00000000000000000000000000000000;
     dst_base_addr_low[26:0] <= 27'b000000000000000000000000000;
     dst_batch_stride[26:0] <= 27'b000000000000000000000000000;
     dst_ram_type <= 1'b0;
@@ -964,7 +964,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 
   // Register: NVDLA_SDP_D_DST_BASE_ADDR_HIGH_0    Field: dst_base_addr_high
   if (nvdla_sdp_d_dst_base_addr_high_0_wren) begin
-    dst_base_addr_high[7:0] <= reg_wr_data[7:0];
+    dst_base_addr_high[31:0] <= reg_wr_data[31:0];
   end
 
   // Register: NVDLA_SDP_D_DST_BASE_ADDR_LOW_0    Field: dst_base_addr_low

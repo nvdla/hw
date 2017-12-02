@@ -71,7 +71,7 @@ output [12:0] width;
 output [1:0]  input_data;
 output        op_en_trigger;
 output        dma_en;
-output [7:0]  src_base_addr_high;
+output [31:0] src_base_addr_high;
 output [26:0] src_base_addr_low;
 output        src_ram_type;
 output [26:0] src_line_stride;
@@ -96,7 +96,7 @@ reg           dma_en;
 reg    [12:0] height;
 reg     [1:0] input_data;
 reg    [31:0] reg_rd_data;
-reg     [7:0] src_base_addr_high;
+reg    [31:0] src_base_addr_high;
 reg    [26:0] src_base_addr_low;
 reg    [26:0] src_line_stride;
 reg           src_ram_type;
@@ -134,7 +134,7 @@ assign nvdla_cdp_rdma_d_operation_mode_0_out[31:0] = { 30'b0, operation_mode };
 assign nvdla_cdp_rdma_d_op_enable_0_out[31:0] = { 31'b0, op_en };
 assign nvdla_cdp_rdma_d_perf_enable_0_out[31:0] = { 31'b0, dma_en };
 assign nvdla_cdp_rdma_d_perf_read_stall_0_out[31:0] = { perf_read_stall };
-assign nvdla_cdp_rdma_d_src_base_addr_high_0_out[31:0] = { 24'b0, src_base_addr_high };
+assign nvdla_cdp_rdma_d_src_base_addr_high_0_out[31:0] = { src_base_addr_high };
 assign nvdla_cdp_rdma_d_src_base_addr_low_0_out[31:0] = { src_base_addr_low, 5'b0 };
 assign nvdla_cdp_rdma_d_src_compression_en_0_out[31:0] = { 31'b0, src_compression_en };
 assign nvdla_cdp_rdma_d_src_dma_cfg_0_out[31:0] = { 31'b0, src_ram_type };
@@ -227,7 +227,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     width[12:0] <= 13'b0000000000000;
     input_data[1:0] <= 2'b00;
     dma_en <= 1'b0;
-    src_base_addr_high[7:0] <= 8'b00000000;
+    src_base_addr_high[31:0] <= 32'b00000000000000000000000000000000;
     src_base_addr_low[26:0] <= 27'b000000000000000000000000000;
     src_ram_type <= 1'b0;
     src_line_stride[26:0] <= 27'b000000000000000000000000000;
@@ -271,7 +271,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 
   // Register: NVDLA_CDP_RDMA_D_SRC_BASE_ADDR_HIGH_0    Field: src_base_addr_high
   if (nvdla_cdp_rdma_d_src_base_addr_high_0_wren) begin
-    src_base_addr_high[7:0] <= reg_wr_data[7:0];
+    src_base_addr_high[31:0] <= reg_wr_data[31:0];
   end
 
   // Register: NVDLA_CDP_RDMA_D_SRC_BASE_ADDR_LOW_0    Field: src_base_addr_low
