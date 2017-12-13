@@ -20,14 +20,24 @@ module NV_DW_lsd (a, dec, enc);
 function [enc_width-1:0] DWF_lsd_enc (input  [a_width-1:0] A);
   reg [enc_width-1:0] temp_enc;
   reg [enc_width-1:0] i;
+  reg done;
+  begin 
+  done =0;
   temp_enc = a_width-1; 
-  for (i=b_width; i >0; i=i-1) begin
-    if (A[i-1] != A[i]) begin
-      temp_enc = b_width - i;
+  for (i=a_width-2; done==0; i=i-1) begin
+    if (A[i+1] != A[i]) begin
+      temp_enc = a_width - i -2;
+      done =1;
+    end
+    else if(i==0) begin
+        temp_enc = a_width-1;
+        done =1;
     end
   end
   DWF_lsd_enc = temp_enc;
+  end
 endfunction
+
 
 //get the sign bit position of input.
 function [a_width-1:0] DWF_lsd (input  [a_width-1:0] A);
