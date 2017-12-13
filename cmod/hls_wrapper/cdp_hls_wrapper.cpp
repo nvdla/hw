@@ -248,7 +248,7 @@ void HLS_CDP_lookup_lut (
 
     cslDebug((70, "lut_start=0x%x, lut_sub_result=0x%x\n", (uint32_t)lut_start_fp32, (uint32_t)lut_sub_result_fp32));
 
-    if(lut_sub_result_float <= 0 || isnan(lut_sub_result_float))
+    if(lut_sub_result_float <= 0 || std::isnan(lut_sub_result_float))
     {
         underflow = true;
     }
@@ -657,7 +657,7 @@ void HLS_CDP_lookup_fp16 (
         if(mul_bypass)
         {
             float icvt_data_out_float = *(float *)&icvt_data_out_fp32[i+4];
-            if(isnan(icvt_data_out_float))
+            if(std::isnan(icvt_data_out_float))
             {
                 chn_result_to_ocvt_fp17.write(icvt_data_out[i+4]);
             }
