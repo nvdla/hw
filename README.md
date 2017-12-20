@@ -25,7 +25,7 @@ from `master` will not appear on `nvdlav1`.
 
 NVDLA documentation is located [here](http://nvdla.org/contents.html).  Hardware specific 
 documentation is located at the following pages.
-* [Hardware Architecture](http://http://nvdla.org/hwarch.html).
+* [Hardware Architecture](http://nvdla.org/hwarch.html).
 * [Integrator's Manual](http://nvdla.org/integration_guide.html).
 
 This README file contains only basic information.
