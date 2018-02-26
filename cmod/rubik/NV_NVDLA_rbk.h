@@ -60,7 +60,7 @@ class RubikConfig {
         uint32_t  rbk_dain_planar_stride_;
         uint8_t   rbk_dataout_ram_type_;
         uint16_t  rbk_dataout_channel_;
-        uint8_t   rbk_daout_addr_high_;
+        uint32_t  rbk_daout_addr_high_;
         uint32_t  rbk_daout_addr_low_;
         uint32_t  rbk_daout_line_stride_;
         uint32_t  rbk_contract_stride_0_;
