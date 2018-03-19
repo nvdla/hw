@@ -8,6 +8,8 @@
 
 // File Name: NV_NVDLA_pdp.v
 
+#include "NV_NVDLA_PDP_define.h"
+
 module NV_NVDLA_pdp (
    dla_clk_ovr_on_sync           //|< i
   ,global_clk_ovr_on_sync        //|< i
@@ -20,16 +22,11 @@ module NV_NVDLA_pdp (
   ,csb2pdp_req_pvld              //|< i
   ,csb2pdp_req_prdy              //|> o
   ,csb2pdp_req_pd                //|< i
+#ifdef NVDLA_SECONDARY_MEMIF_ENABLE
   ,cvif2pdp_rd_rsp_valid         //|< i
   ,cvif2pdp_rd_rsp_ready         //|> o
   ,cvif2pdp_rd_rsp_pd            //|< i
   ,cvif2pdp_wr_rsp_complete      //|< i
-  ,mcif2pdp_rd_rsp_valid         //|< i
-  ,mcif2pdp_rd_rsp_ready         //|> o
-  ,mcif2pdp_rd_rsp_pd            //|< i
-  ,mcif2pdp_wr_rsp_complete      //|< i
-  ,pdp2csb_resp_valid            //|> o
-  ,pdp2csb_resp_pd               //|> o
   ,pdp2cvif_rd_cdt_lat_fifo_pop  //|> o
   ,pdp2cvif_rd_req_valid         //|> o
   ,pdp2cvif_rd_req_ready         //|< i
@@ -37,6 +34,13 @@ module NV_NVDLA_pdp (
   ,pdp2cvif_wr_req_valid         //|> o
   ,pdp2cvif_wr_req_ready         //|< i
   ,pdp2cvif_wr_req_pd            //|> o
+#endif
+  ,mcif2pdp_rd_rsp_valid         //|< i
+  ,mcif2pdp_rd_rsp_ready         //|> o
+  ,mcif2pdp_rd_rsp_pd            //|< i
+  ,mcif2pdp_wr_rsp_complete      //|< i
+  ,pdp2csb_resp_valid            //|> o
+  ,pdp2csb_resp_pd               //|> o
   ,pdp2glb_done_intr_pd          //|> o
   ,pdp2mcif_rd_cdt_lat_fifo_pop  //|> o
   ,pdp2mcif_rd_req_valid         //|> o
@@ -52,90 +56,83 @@ module NV_NVDLA_pdp (
   ,sdp2pdp_ready                 //|> o
   ,sdp2pdp_pd                    //|< i
   );
+///////////////////////////////////////////////////////////////////////
 input   dla_clk_ovr_on_sync;
 input   global_clk_ovr_on_sync;
 input   tmc2slcg_disable_clock_gating;
 
- //
- // NV_NVDLA_pdp_ports.v
- //
- input  nvdla_core_clk;   /* csb2pdp_rdma_req, csb2pdp_req, cvif2pdp_rd_rsp, cvif2pdp_wr_rsp, mcif2pdp_rd_rsp, mcif2pdp_wr_rsp, pdp2csb_resp, pdp2cvif_rd_cdt, pdp2cvif_rd_req, pdp2cvif_wr_req, pdp2glb_done_intr, pdp2mcif_rd_cdt, pdp2mcif_rd_req, pdp2mcif_wr_req, pdp_rdma2csb_resp, sdp2pdp */
- input  nvdla_core_rstn;  /* csb2pdp_rdma_req, csb2pdp_req, cvif2pdp_rd_rsp, cvif2pdp_wr_rsp, mcif2pdp_rd_rsp, mcif2pdp_wr_rsp, pdp2csb_resp, pdp2cvif_rd_cdt, pdp2cvif_rd_req, pdp2cvif_wr_req, pdp2glb_done_intr, pdp2mcif_rd_cdt, pdp2mcif_rd_req, pdp2mcif_wr_req, pdp_rdma2csb_resp, sdp2pdp */
+ input  nvdla_core_clk;   
+ input  nvdla_core_rstn; 
 
- input         csb2pdp_rdma_req_pvld;  /* data valid */
- output        csb2pdp_rdma_req_prdy;  /* data return handshake */
+ input         csb2pdp_rdma_req_pvld;
+ output        csb2pdp_rdma_req_prdy;
  input  [62:0] csb2pdp_rdma_req_pd;
 
- input         csb2pdp_req_pvld;  /* data valid */
- output        csb2pdp_req_prdy;  /* data return handshake */
+ input         csb2pdp_req_pvld;
+ output        csb2pdp_req_prdy;
  input  [62:0] csb2pdp_req_pd;
 
- input          cvif2pdp_rd_rsp_valid;  /* data valid */
- output         cvif2pdp_rd_rsp_ready;  /* data return handshake */
- input  [513:0] cvif2pdp_rd_rsp_pd;
-
+#ifdef NVDLA_SECONDARY_MEMIF_ENABLE
+ input          cvif2pdp_rd_rsp_valid; 
+ output         cvif2pdp_rd_rsp_ready; 
+ input [NVDLA_PDP_MEM_RD_RSP-1:0] cvif2pdp_rd_rsp_pd;
  input  cvif2pdp_wr_rsp_complete;
-
- input          mcif2pdp_rd_rsp_valid;  /* data valid */
- output         mcif2pdp_rd_rsp_ready;  /* data return handshake */
- input  [513:0] mcif2pdp_rd_rsp_pd;
-
- input  mcif2pdp_wr_rsp_complete;
-
- output        pdp2csb_resp_valid;  /* data valid */
- output [33:0] pdp2csb_resp_pd;     /* pkt_id_width=1 pkt_widths=33,33  */
-
  output  pdp2cvif_rd_cdt_lat_fifo_pop;
 
- output        pdp2cvif_rd_req_valid;  /* data valid */
- input         pdp2cvif_rd_req_ready;  /* data return handshake */
- output [78:0] pdp2cvif_rd_req_pd;
+ output        pdp2cvif_rd_req_valid;
+ input         pdp2cvif_rd_req_ready;
+ output [NVDLA_MEM_ADDRESS_WIDTH+14:0] pdp2cvif_rd_req_pd;
 
- output         pdp2cvif_wr_req_valid;  /* data valid */
- input          pdp2cvif_wr_req_ready;  /* data return handshake */
- output [514:0] pdp2cvif_wr_req_pd;     /* pkt_id_width=1 pkt_widths=78,514  */
+ output         pdp2cvif_wr_req_valid;
+ input          pdp2cvif_wr_req_ready;
+ output [NVDLA_PDP_MEM_WR_REQ-1:0] pdp2cvif_wr_req_pd;
+#endif
+
+ input          mcif2pdp_rd_rsp_valid;
+ output         mcif2pdp_rd_rsp_ready;
+ input [NVDLA_PDP_MEM_RD_RSP-1:0] mcif2pdp_rd_rsp_pd;
+ input  mcif2pdp_wr_rsp_complete;
+
+ output        pdp2csb_resp_valid;
+ output [33:0] pdp2csb_resp_pd;   
+
 
  output [1:0] pdp2glb_done_intr_pd;
 
  output  pdp2mcif_rd_cdt_lat_fifo_pop;
+ output        pdp2mcif_rd_req_valid;
+ input         pdp2mcif_rd_req_ready;
+ output [NVDLA_MEM_ADDRESS_WIDTH+14:0] pdp2mcif_rd_req_pd;
 
- output        pdp2mcif_rd_req_valid;  /* data valid */
- input         pdp2mcif_rd_req_ready;  /* data return handshake */
- output [78:0] pdp2mcif_rd_req_pd;
+ output         pdp2mcif_wr_req_valid;
+ input          pdp2mcif_wr_req_ready;
+ output [NVDLA_PDP_MEM_WR_REQ-1:0] pdp2mcif_wr_req_pd;
 
- output         pdp2mcif_wr_req_valid;  /* data valid */
- input          pdp2mcif_wr_req_ready;  /* data return handshake */
- output [514:0] pdp2mcif_wr_req_pd;     /* pkt_id_width=1 pkt_widths=78,514  */
-
- output        pdp_rdma2csb_resp_valid;  /* data valid */
- output [33:0] pdp_rdma2csb_resp_pd;     /* pkt_id_width=1 pkt_widths=33,33  */
+ output        pdp_rdma2csb_resp_valid;
+ output [33:0] pdp_rdma2csb_resp_pd;   
 
  input [31:0] pwrbus_ram_pd;
 
- input          sdp2pdp_valid;  /* data valid */
- output         sdp2pdp_ready;  /* data return handshake */
- input  [255:0] sdp2pdp_pd;
+ input          sdp2pdp_valid; 
+ output         sdp2pdp_ready; 
+ input  [NVDLA_PDP_ONFLY_INPUT_BW-1:0] sdp2pdp_pd;
+///////////////////////////////////////////////////////////////////////
 
  wire        aver_pooling_en;
  wire [31:0] dp2reg_d0_perf_write_stall;
  wire [31:0] dp2reg_d1_perf_write_stall;
  wire        dp2reg_done;
- wire [31:0] dp2reg_inf_input_num;
- wire [31:0] dp2reg_nan_input_num;
- wire [31:0] dp2reg_nan_output_num;
- wire        fp16_en;
  wire        mon_op_en_neg;
  wire        mon_op_en_pos;
- wire [75:0] nan_preproc_pd;
+ wire [NVDLA_PDP_BWPE*NVDLA_PDP_THROUGHPUT+11:0] nan_preproc_pd;
  wire        nan_preproc_prdy;
  wire        nan_preproc_pvld;
  wire        nvdla_op_gated_clk_core;
- wire        nvdla_op_gated_clk_fp16;
  wire        nvdla_op_gated_clk_wdma;
- wire [63:0] pdp_dp2wdma_pd;
+ wire [NVDLA_PDP_BWPE*NVDLA_PDP_THROUGHPUT-1:0] pdp_dp2wdma_pd;
  wire        pdp_dp2wdma_ready;
  wire        pdp_dp2wdma_valid;
- wire [75:0] pdp_rdma2dp_pd;
+ wire [NVDLA_PDP_BWPE*NVDLA_PDP_THROUGHPUT+11:0] pdp_rdma2dp_pd;
  wire        pdp_rdma2dp_ready;
  wire        pdp_rdma2dp_valid;
  wire        rdma2wdma_done;
@@ -148,12 +145,12 @@ input   tmc2slcg_disable_clock_gating;
  wire [31:0] reg2dp_cya;
  wire        reg2dp_dma_en;
  wire [31:0] reg2dp_dst_base_addr_high;
- wire [26:0] reg2dp_dst_base_addr_low;
- wire [26:0] reg2dp_dst_line_stride;
+ wire [31:0] reg2dp_dst_base_addr_low;
+ wire [31:0] reg2dp_dst_line_stride;
  wire        reg2dp_dst_ram_type;
- wire [26:0] reg2dp_dst_surface_stride;
+ wire [31:0] reg2dp_dst_surface_stride;
  wire        reg2dp_flying_mode;
- wire  [1:0] reg2dp_input_data;
+// wire  [1:0] reg2dp_input_data;
  wire        reg2dp_interrupt_ptr;
  wire  [3:0] reg2dp_kernel_height;
  wire  [3:0] reg2dp_kernel_stride_height;
@@ -183,9 +180,9 @@ input   tmc2slcg_disable_clock_gating;
  wire [16:0] reg2dp_recip_kernel_width;
  wire  [7:0] reg2dp_split_num;
  wire [31:0] reg2dp_src_base_addr_high;
- wire [26:0] reg2dp_src_base_addr_low;
- wire [26:0] reg2dp_src_line_stride;
- wire [26:0] reg2dp_src_surface_stride;
+ wire [31:0] reg2dp_src_base_addr_low;
+ wire [31:0] reg2dp_src_line_stride;
+ wire [31:0] reg2dp_src_surface_stride;
  wire  [2:0] slcg_op_en;
  reg  [31:0] mon_gap_between_layers;
  reg         mon_layer_end_flg;
@@ -197,7 +194,6 @@ input   tmc2slcg_disable_clock_gating;
  reg  [12:0] mon_reg2dp_cube_out_height;
  reg  [12:0] mon_reg2dp_cube_out_width;
  reg         mon_reg2dp_flying_mode;
- reg   [1:0] mon_reg2dp_input_data;
  reg   [3:0] mon_reg2dp_kernel_height;
  reg   [3:0] mon_reg2dp_kernel_stride_height;
  reg   [3:0] mon_reg2dp_kernel_stride_width;
@@ -215,287 +211,273 @@ input   tmc2slcg_disable_clock_gating;
  reg   [9:0] mon_reg2dp_partial_width_out_mid;
  reg   [1:0] mon_reg2dp_pooling_method;
  reg   [7:0] mon_reg2dp_split_num;
+///////////////////////////////////////////////////////////////////////
 
-// synoff nets
-
-// monitor nets
-
-// debug nets
-
-// tie high nets
-
-// tie low nets
-
-// no connect nets
-
-// not all bits used nets
-
-// todo nets
-
-    
  //=======================================
  //RDMA
  //---------------------------------------
  NV_NVDLA_PDP_rdma u_rdma (
-    .rdma2wdma_done                 (rdma2wdma_done)                            //|> w
-   ,.nvdla_core_clk                 (nvdla_core_clk)                            //|< i
-   ,.nvdla_core_rstn                (nvdla_core_rstn)                           //|< i
-   ,.csb2pdp_rdma_req_pvld          (csb2pdp_rdma_req_pvld)                     //|< i
-   ,.csb2pdp_rdma_req_prdy          (csb2pdp_rdma_req_prdy)                     //|> o
-   ,.csb2pdp_rdma_req_pd            (csb2pdp_rdma_req_pd[62:0])                 //|< i
-   ,.cvif2pdp_rd_rsp_valid          (cvif2pdp_rd_rsp_valid)                     //|< i
-   ,.cvif2pdp_rd_rsp_ready          (cvif2pdp_rd_rsp_ready)                     //|> o
-   ,.cvif2pdp_rd_rsp_pd             (cvif2pdp_rd_rsp_pd[513:0])                 //|< i
-   ,.mcif2pdp_rd_rsp_valid          (mcif2pdp_rd_rsp_valid)                     //|< i
-   ,.mcif2pdp_rd_rsp_ready          (mcif2pdp_rd_rsp_ready)                     //|> o
-   ,.mcif2pdp_rd_rsp_pd             (mcif2pdp_rd_rsp_pd[513:0])                 //|< i
-   ,.pdp2cvif_rd_cdt_lat_fifo_pop   (pdp2cvif_rd_cdt_lat_fifo_pop)              //|> o
-   ,.pdp2cvif_rd_req_valid          (pdp2cvif_rd_req_valid)                     //|> o
-   ,.pdp2cvif_rd_req_ready          (pdp2cvif_rd_req_ready)                     //|< i
-   ,.pdp2cvif_rd_req_pd             (pdp2cvif_rd_req_pd[78:0])                  //|> o
-   ,.pdp2mcif_rd_cdt_lat_fifo_pop   (pdp2mcif_rd_cdt_lat_fifo_pop)              //|> o
-   ,.pdp2mcif_rd_req_valid          (pdp2mcif_rd_req_valid)                     //|> o
-   ,.pdp2mcif_rd_req_ready          (pdp2mcif_rd_req_ready)                     //|< i
-   ,.pdp2mcif_rd_req_pd             (pdp2mcif_rd_req_pd[78:0])                  //|> o
-   ,.pdp_rdma2csb_resp_valid        (pdp_rdma2csb_resp_valid)                   //|> o
-   ,.pdp_rdma2csb_resp_pd           (pdp_rdma2csb_resp_pd[33:0])                //|> o
-   ,.pdp_rdma2dp_valid              (pdp_rdma2dp_valid)                         //|> w
-   ,.pdp_rdma2dp_ready              (pdp_rdma2dp_ready)                         //|< w
-   ,.pdp_rdma2dp_pd                 (pdp_rdma2dp_pd[75:0])                      //|> w
-   ,.pwrbus_ram_pd                  (pwrbus_ram_pd[31:0])                       //|< i
-   ,.dla_clk_ovr_on_sync            (dla_clk_ovr_on_sync)                       //|< i
-   ,.global_clk_ovr_on_sync         (global_clk_ovr_on_sync)                    //|< i
-   ,.tmc2slcg_disable_clock_gating  (tmc2slcg_disable_clock_gating)             //|< i
+    .rdma2wdma_done                 (rdma2wdma_done)               
+   ,.nvdla_core_clk                 (nvdla_core_clk)               
+   ,.nvdla_core_rstn                (nvdla_core_rstn)              
+   ,.csb2pdp_rdma_req_pvld          (csb2pdp_rdma_req_pvld)        
+   ,.csb2pdp_rdma_req_prdy          (csb2pdp_rdma_req_prdy)        
+   ,.csb2pdp_rdma_req_pd            (csb2pdp_rdma_req_pd[62:0])    
+#ifdef NVDLA_SECONDARY_MEMIF_ENABLE
+   ,.cvif2pdp_rd_rsp_valid          (cvif2pdp_rd_rsp_valid)        
+   ,.cvif2pdp_rd_rsp_ready          (cvif2pdp_rd_rsp_ready)        
+   ,.cvif2pdp_rd_rsp_pd             (cvif2pdp_rd_rsp_pd)           
+   ,.pdp2cvif_rd_cdt_lat_fifo_pop   (pdp2cvif_rd_cdt_lat_fifo_pop) 
+   ,.pdp2cvif_rd_req_valid          (pdp2cvif_rd_req_valid)        
+   ,.pdp2cvif_rd_req_ready          (pdp2cvif_rd_req_ready)        
+   ,.pdp2cvif_rd_req_pd             (pdp2cvif_rd_req_pd)     
+#endif
+   ,.mcif2pdp_rd_rsp_valid          (mcif2pdp_rd_rsp_valid)        
+   ,.mcif2pdp_rd_rsp_ready          (mcif2pdp_rd_rsp_ready)        
+   ,.mcif2pdp_rd_rsp_pd             (mcif2pdp_rd_rsp_pd)           
+   ,.pdp2mcif_rd_cdt_lat_fifo_pop   (pdp2mcif_rd_cdt_lat_fifo_pop) 
+   ,.pdp2mcif_rd_req_valid          (pdp2mcif_rd_req_valid)        
+   ,.pdp2mcif_rd_req_ready          (pdp2mcif_rd_req_ready)        
+   ,.pdp2mcif_rd_req_pd             (pdp2mcif_rd_req_pd)     
+   ,.pdp_rdma2csb_resp_valid        (pdp_rdma2csb_resp_valid)      
+   ,.pdp_rdma2csb_resp_pd           (pdp_rdma2csb_resp_pd[33:0])   
+   ,.pdp_rdma2dp_valid              (pdp_rdma2dp_valid)            
+   ,.pdp_rdma2dp_ready              (pdp_rdma2dp_ready)            
+   ,.pdp_rdma2dp_pd                 (pdp_rdma2dp_pd)               
+   ,.pwrbus_ram_pd                  (pwrbus_ram_pd[31:0])          
+   ,.dla_clk_ovr_on_sync            (dla_clk_ovr_on_sync)          
+   ,.global_clk_ovr_on_sync         (global_clk_ovr_on_sync)       
+   ,.tmc2slcg_disable_clock_gating  (tmc2slcg_disable_clock_gating)
    );
- //&Connect pdp_rdma2dp_ready     (pdp_rdma2dp_ready & reg2dp_op_en);
-
  //=======================================
  //        SLCG gen unit
  //---------------------------------------
- assign fp16_en = reg2dp_input_data== 2'h2 ;
+// assign fp16_en = reg2dp_input_data== 2'h2 ;
  assign aver_pooling_en = reg2dp_pooling_method== 2'h0 ;
 
  NV_NVDLA_PDP_slcg u_slcg_core (
-    .dla_clk_ovr_on_sync            (dla_clk_ovr_on_sync)                       //|< i
-   ,.global_clk_ovr_on_sync         (global_clk_ovr_on_sync)                    //|< i
-   ,.nvdla_core_clk                 (nvdla_core_clk)                            //|< i
-   ,.nvdla_core_rstn                (nvdla_core_rstn)                           //|< i
-   ,.slcg_en_src                    (slcg_op_en[0])                             //|< w
-   ,.tmc2slcg_disable_clock_gating  (tmc2slcg_disable_clock_gating)             //|< i
-   ,.nvdla_core_gated_clk           (nvdla_op_gated_clk_core)                   //|> w
+    .dla_clk_ovr_on_sync            (dla_clk_ovr_on_sync)          
+   ,.global_clk_ovr_on_sync         (global_clk_ovr_on_sync)       
+   ,.nvdla_core_clk                 (nvdla_core_clk)               
+   ,.nvdla_core_rstn                (nvdla_core_rstn)              
+   ,.slcg_en_src                    (slcg_op_en[0])                
+   ,.tmc2slcg_disable_clock_gating  (tmc2slcg_disable_clock_gating)
+   ,.nvdla_core_gated_clk           (nvdla_op_gated_clk_core)      
    );
  
  NV_NVDLA_PDP_slcg u_slcg_wdma (
-    .dla_clk_ovr_on_sync            (dla_clk_ovr_on_sync)                       //|< i
-   ,.global_clk_ovr_on_sync         (global_clk_ovr_on_sync)                    //|< i
-   ,.nvdla_core_clk                 (nvdla_core_clk)                            //|< i
-   ,.nvdla_core_rstn                (nvdla_core_rstn)                           //|< i
-   ,.slcg_en_src                    (slcg_op_en[1])                             //|< w
-   ,.tmc2slcg_disable_clock_gating  (tmc2slcg_disable_clock_gating)             //|< i
-   ,.nvdla_core_gated_clk           (nvdla_op_gated_clk_wdma)                   //|> w
+    .dla_clk_ovr_on_sync            (dla_clk_ovr_on_sync)          
+   ,.global_clk_ovr_on_sync         (global_clk_ovr_on_sync)       
+   ,.nvdla_core_clk                 (nvdla_core_clk)               
+   ,.nvdla_core_rstn                (nvdla_core_rstn)              
+   ,.slcg_en_src                    (slcg_op_en[1])                
+   ,.tmc2slcg_disable_clock_gating  (tmc2slcg_disable_clock_gating)
+   ,.nvdla_core_gated_clk           (nvdla_op_gated_clk_wdma)      
    );
 
- NV_NVDLA_PDP_slcg u_slcg_fp16 (
-    .dla_clk_ovr_on_sync            (dla_clk_ovr_on_sync)                       //|< i
-   ,.global_clk_ovr_on_sync         (global_clk_ovr_on_sync)                    //|< i
-   ,.nvdla_core_clk                 (nvdla_core_clk)                            //|< i
-   ,.nvdla_core_rstn                (nvdla_core_rstn)                           //|< i
-   ,.slcg_en_src                    (slcg_op_en[2] & fp16_en & aver_pooling_en) //|< ?
-   ,.tmc2slcg_disable_clock_gating  (tmc2slcg_disable_clock_gating)             //|< i
-   ,.nvdla_core_gated_clk           (nvdla_op_gated_clk_fp16)                   //|> w
-   );
+// NV_NVDLA_PDP_slcg u_slcg_fp16 (
+//    .dla_clk_ovr_on_sync            (dla_clk_ovr_on_sync)        
+//   ,.global_clk_ovr_on_sync         (global_clk_ovr_on_sync)     
+//   ,.nvdla_core_clk                 (nvdla_core_clk)             
+//   ,.nvdla_core_rstn                (nvdla_core_rstn)            
+//   ,.slcg_en_src                    (slcg_op_en[2] & fp16_en & aver_pooling_en)
+//   ,.tmc2slcg_disable_clock_gating  (tmc2slcg_disable_clock_gating)            
+//   ,.nvdla_core_gated_clk           (nvdla_op_gated_clk_fp16)                  
+//   );
  //=======================================
  //NaN control of RDMA output data
  //---------------------------------------
  NV_NVDLA_PDP_nan u_nan (
-    .nvdla_core_clk                 (nvdla_op_gated_clk_core)                   //|< w
-   ,.nvdla_core_rstn                (nvdla_core_rstn)                           //|< i
-   ,.dp2reg_done                    (dp2reg_done)                               //|< w
-   ,.nan_preproc_prdy               (nan_preproc_prdy)                          //|< w
-   ,.pdp_rdma2dp_pd                 (pdp_rdma2dp_pd[75:0])                      //|< w
-   ,.pdp_rdma2dp_valid              (pdp_rdma2dp_valid)                         //|< w
-   ,.reg2dp_flying_mode             (reg2dp_flying_mode)                        //|< w
-   ,.reg2dp_input_data              (reg2dp_input_data[1:0])                    //|< w
-   ,.reg2dp_nan_to_zero             (reg2dp_nan_to_zero)                        //|< w
-   ,.reg2dp_op_en                   (reg2dp_op_en)                              //|< w
-   ,.dp2reg_inf_input_num           (dp2reg_inf_input_num[31:0])                //|> w
-   ,.dp2reg_nan_input_num           (dp2reg_nan_input_num[31:0])                //|> w
-   ,.nan_preproc_pd                 (nan_preproc_pd[75:0])                      //|> w
-   ,.nan_preproc_pvld               (nan_preproc_pvld)                          //|> w
-   ,.pdp_rdma2dp_ready              (pdp_rdma2dp_ready)                         //|> w
+    .nvdla_core_clk                 (nvdla_op_gated_clk_core)    
+   ,.nvdla_core_rstn                (nvdla_core_rstn)            
+   ,.dp2reg_done                    (dp2reg_done)                
+   ,.nan_preproc_prdy               (nan_preproc_prdy)           
+   ,.pdp_rdma2dp_pd                 (pdp_rdma2dp_pd)       
+   ,.pdp_rdma2dp_valid              (pdp_rdma2dp_valid)          
+   ,.reg2dp_flying_mode             (reg2dp_flying_mode)         
+   ,.reg2dp_nan_to_zero             (reg2dp_nan_to_zero)         
+   ,.reg2dp_op_en                   (reg2dp_op_en)               
+   ,.dp2reg_inf_input_num           () //dp2reg_inf_input_num[31:0]) 
+   ,.dp2reg_nan_input_num           () //dp2reg_nan_input_num[31:0]) 
+   ,.nan_preproc_pd                 (nan_preproc_pd)       
+   ,.nan_preproc_pvld               (nan_preproc_pvld)           
+   ,.pdp_rdma2dp_ready              (pdp_rdma2dp_ready)          
    );
+//assign nan_preproc_pd = pdp_rdma2dp_pd;
+//assign nan_preproc_pvld = pdp_rdma2dp_valid;
+//assign pdp_rdma2dp_ready = nan_preproc_prdy;
+
+
  //=======================================
  //WDMA
  //---------------------------------------
  NV_NVDLA_PDP_wdma u_wdma (
-    .nvdla_core_clk                 (nvdla_op_gated_clk_wdma)                   //|< w
-   ,.nvdla_core_rstn                (nvdla_core_rstn)                           //|< i
-   ,.pdp2mcif_wr_req_valid          (pdp2mcif_wr_req_valid)                     //|> o
-   ,.pdp2mcif_wr_req_ready          (pdp2mcif_wr_req_ready)                     //|< i
-   ,.pdp2mcif_wr_req_pd             (pdp2mcif_wr_req_pd[514:0])                 //|> o
-   ,.mcif2pdp_wr_rsp_complete       (mcif2pdp_wr_rsp_complete)                  //|< i
-   ,.pdp2cvif_wr_req_valid          (pdp2cvif_wr_req_valid)                     //|> o
-   ,.pdp2cvif_wr_req_ready          (pdp2cvif_wr_req_ready)                     //|< i
-   ,.pdp2cvif_wr_req_pd             (pdp2cvif_wr_req_pd[514:0])                 //|> o
-   ,.cvif2pdp_wr_rsp_complete       (cvif2pdp_wr_rsp_complete)                  //|< i
-   ,.pdp_dp2wdma_valid              (pdp_dp2wdma_valid)                         //|< w
-   ,.pdp_dp2wdma_ready              (pdp_dp2wdma_ready)                         //|> w
-   ,.pdp_dp2wdma_pd                 (pdp_dp2wdma_pd[63:0])                      //|< w
-   ,.pwrbus_ram_pd                  (pwrbus_ram_pd[31:0])                       //|< i
-   ,.pdp2glb_done_intr_pd           (pdp2glb_done_intr_pd[1:0])                 //|> o
-   ,.rdma2wdma_done                 (rdma2wdma_done)                            //|< w
-   ,.reg2dp_cube_out_channel        (reg2dp_cube_out_channel[12:0])             //|< w
-   ,.reg2dp_cube_out_height         (reg2dp_cube_out_height[12:0])              //|< w
-   ,.reg2dp_cube_out_width          (reg2dp_cube_out_width[12:0])               //|< w
-   ,.reg2dp_dma_en                  (reg2dp_dma_en)                             //|< w
-   ,.reg2dp_dst_base_addr_high      (reg2dp_dst_base_addr_high[31:0])           //|< w
-   ,.reg2dp_dst_base_addr_low       (reg2dp_dst_base_addr_low[26:0])            //|< w
-   ,.reg2dp_dst_line_stride         (reg2dp_dst_line_stride[26:0])              //|< w
-   ,.reg2dp_dst_ram_type            (reg2dp_dst_ram_type)                       //|< w
-   ,.reg2dp_dst_surface_stride      (reg2dp_dst_surface_stride[26:0])           //|< w
-   ,.reg2dp_flying_mode             (reg2dp_flying_mode)                        //|< w
-   ,.reg2dp_input_data              (reg2dp_input_data[1:0])                    //|< w
-   ,.reg2dp_interrupt_ptr           (reg2dp_interrupt_ptr)                      //|< w
-   ,.reg2dp_op_en                   (reg2dp_op_en)                              //|< w
-   ,.reg2dp_partial_width_out_first (reg2dp_partial_width_out_first[9:0])       //|< w
-   ,.reg2dp_partial_width_out_last  (reg2dp_partial_width_out_last[9:0])        //|< w
-   ,.reg2dp_partial_width_out_mid   (reg2dp_partial_width_out_mid[9:0])         //|< w
-   ,.reg2dp_split_num               (reg2dp_split_num[7:0])                     //|< w
-   ,.dp2reg_d0_perf_write_stall     (dp2reg_d0_perf_write_stall[31:0])          //|> w
-   ,.dp2reg_d1_perf_write_stall     (dp2reg_d1_perf_write_stall[31:0])          //|> w
-   ,.dp2reg_done                    (dp2reg_done)                               //|> w
-   ,.dp2reg_nan_output_num          (dp2reg_nan_output_num[31:0])               //|> w
-   ,.nvdla_core_clk_orig            (nvdla_core_clk)                            //|< i
+    .nvdla_core_clk                 (nvdla_op_gated_clk_wdma)            
+   ,.nvdla_core_rstn                (nvdla_core_rstn)                    
+   ,.pdp2mcif_wr_req_valid          (pdp2mcif_wr_req_valid)              
+   ,.pdp2mcif_wr_req_ready          (pdp2mcif_wr_req_ready)              
+   ,.pdp2mcif_wr_req_pd             (pdp2mcif_wr_req_pd)                 
+   ,.mcif2pdp_wr_rsp_complete       (mcif2pdp_wr_rsp_complete)           
+#ifdef NVDLA_SECONDARY_MEMIF_ENABLE
+   ,.pdp2cvif_wr_req_valid          (pdp2cvif_wr_req_valid)              
+   ,.pdp2cvif_wr_req_ready          (pdp2cvif_wr_req_ready)              
+   ,.pdp2cvif_wr_req_pd             (pdp2cvif_wr_req_pd)          
+   ,.cvif2pdp_wr_rsp_complete       (cvif2pdp_wr_rsp_complete)           
+#endif
+   ,.pdp_dp2wdma_valid              (pdp_dp2wdma_valid)                  
+   ,.pdp_dp2wdma_ready              (pdp_dp2wdma_ready)                  
+   ,.pdp_dp2wdma_pd                 (pdp_dp2wdma_pd)               
+   ,.pwrbus_ram_pd                  (pwrbus_ram_pd[31:0])                
+   ,.pdp2glb_done_intr_pd           (pdp2glb_done_intr_pd[1:0])          
+   ,.rdma2wdma_done                 (rdma2wdma_done)                     
+   ,.reg2dp_cube_out_channel        (reg2dp_cube_out_channel[12:0])      
+   ,.reg2dp_cube_out_height         (reg2dp_cube_out_height[12:0])       
+   ,.reg2dp_cube_out_width          (reg2dp_cube_out_width[12:0])        
+   ,.reg2dp_dma_en                  (reg2dp_dma_en)                      
+   ,.reg2dp_dst_base_addr_high      (reg2dp_dst_base_addr_high[31:0])    
+   ,.reg2dp_dst_base_addr_low      ({reg2dp_dst_base_addr_low[31:0]})
+   ,.reg2dp_dst_line_stride        ({reg2dp_dst_line_stride[31:0]})
+   ,.reg2dp_dst_surface_stride     ({reg2dp_dst_surface_stride[31:0]})
+   ,.reg2dp_dst_ram_type            (reg2dp_dst_ram_type)                
+   ,.reg2dp_flying_mode             (reg2dp_flying_mode)                 
+   ,.reg2dp_interrupt_ptr           (reg2dp_interrupt_ptr)               
+   ,.reg2dp_op_en                   (reg2dp_op_en)                       
+   ,.reg2dp_partial_width_out_first (reg2dp_partial_width_out_first[9:0])
+   ,.reg2dp_partial_width_out_last  (reg2dp_partial_width_out_last[9:0]) 
+   ,.reg2dp_partial_width_out_mid   (reg2dp_partial_width_out_mid[9:0])  
+   ,.reg2dp_split_num               (reg2dp_split_num[7:0])              
+   ,.dp2reg_d0_perf_write_stall     (dp2reg_d0_perf_write_stall[31:0])   
+   ,.dp2reg_d1_perf_write_stall     (dp2reg_d1_perf_write_stall[31:0])   
+   ,.dp2reg_done                    (dp2reg_done)                        
+   ,.nvdla_core_clk_orig            (nvdla_core_clk)                     
    );
  //========================================
  //PDP core instance
  //----------------------------------------
  NV_NVDLA_PDP_core u_core (
-    .nvdla_core_clk                 (nvdla_op_gated_clk_core)                   //|< w
-   ,.nvdla_core_rstn                (nvdla_core_rstn)                           //|< i
-   ,.datin_src_cfg                  (reg2dp_flying_mode)                        //|< w
-   ,.dp2reg_done                    (dp2reg_done)                               //|< w
-   ,.nvdla_op_gated_clk_fp16        (nvdla_op_gated_clk_fp16)                   //|< w
-   ,.padding_h_cfg                  (reg2dp_pad_left[2:0])                      //|< w
-   ,.padding_v_cfg                  (reg2dp_pad_top[2:0])                       //|< w
-   ,.pdp_dp2wdma_ready              (pdp_dp2wdma_ready)                         //|< w
-   ,.pdp_rdma2dp_pd                 (nan_preproc_pd[75:0])                      //|< w
-   ,.pdp_rdma2dp_valid              (nan_preproc_pvld)                          //|< w
-   ,.pooling_channel_cfg            (reg2dp_cube_out_channel[12:0])             //|< w
-   ,.pooling_fwidth_cfg             (reg2dp_partial_width_in_first[9:0])        //|< w
-   ,.pooling_lwidth_cfg             (reg2dp_partial_width_in_last[9:0])         //|< w
-   ,.pooling_mwidth_cfg             (reg2dp_partial_width_in_mid[9:0])          //|< w
-   ,.pooling_out_fwidth_cfg         (reg2dp_partial_width_out_first[9:0])       //|< w
-   ,.pooling_out_lwidth_cfg         (reg2dp_partial_width_out_last[9:0])        //|< w
-   ,.pooling_out_mwidth_cfg         (reg2dp_partial_width_out_mid[9:0])         //|< w
-   ,.pooling_size_h_cfg             (reg2dp_kernel_width[2:0])                  //|< w
-   ,.pooling_size_v_cfg             (reg2dp_kernel_height[2:0])                 //|< w
-   ,.pooling_splitw_num_cfg         (reg2dp_split_num[7:0])                     //|< w
-   ,.pooling_stride_h_cfg           (reg2dp_kernel_stride_width[3:0])           //|< w
-   ,.pooling_stride_v_cfg           (reg2dp_kernel_stride_height[3:0])          //|< w
-   ,.pooling_type_cfg               (reg2dp_pooling_method[1:0])                //|< w
-   ,.pwrbus_ram_pd                  (pwrbus_ram_pd[31:0])                       //|< i
-   ,.reg2dp_cube_in_channel         (reg2dp_cube_in_channel[12:4])              //|< w
-   ,.reg2dp_cube_in_height          (reg2dp_cube_in_height[12:0])               //|< w
-   ,.reg2dp_cube_in_width           (reg2dp_cube_in_width[12:0])                //|< w
-   ,.reg2dp_cube_out_width          (reg2dp_cube_out_width[12:0])               //|< w
-   ,.reg2dp_flying_mode             (reg2dp_flying_mode)                        //|< w
-   ,.reg2dp_input_data              (reg2dp_input_data[1:0])                    //|< w
-   ,.reg2dp_kernel_height           (reg2dp_kernel_height[2:0])                 //|< w
-   ,.reg2dp_kernel_stride_width     (reg2dp_kernel_stride_width[3:0])           //|< w
-   ,.reg2dp_kernel_width            (reg2dp_kernel_width[2:0])                  //|< w
-   ,.reg2dp_op_en                   (reg2dp_op_en)                              //|< w
-   ,.reg2dp_pad_bottom_cfg          (reg2dp_pad_bottom[2:0])                    //|< w
-   ,.reg2dp_pad_left                (reg2dp_pad_left[2:0])                      //|< w
-   ,.reg2dp_pad_right               (reg2dp_pad_right[2:0])                     //|< w
-   ,.reg2dp_pad_right_cfg           (reg2dp_pad_right[2:0])                     //|< w
-   ,.reg2dp_pad_top                 (reg2dp_pad_top[2:0])                       //|< w
-   ,.reg2dp_pad_value_1x_cfg        (reg2dp_pad_value_1x[18:0])                 //|< w
-   ,.reg2dp_pad_value_2x_cfg        (reg2dp_pad_value_2x[18:0])                 //|< w
-   ,.reg2dp_pad_value_3x_cfg        (reg2dp_pad_value_3x[18:0])                 //|< w
-   ,.reg2dp_pad_value_4x_cfg        (reg2dp_pad_value_4x[18:0])                 //|< w
-   ,.reg2dp_pad_value_5x_cfg        (reg2dp_pad_value_5x[18:0])                 //|< w
-   ,.reg2dp_pad_value_6x_cfg        (reg2dp_pad_value_6x[18:0])                 //|< w
-   ,.reg2dp_pad_value_7x_cfg        (reg2dp_pad_value_7x[18:0])                 //|< w
-   ,.reg2dp_partial_width_out_first (reg2dp_partial_width_out_first[9:0])       //|< w
-   ,.reg2dp_partial_width_out_last  (reg2dp_partial_width_out_last[9:0])        //|< w
-   ,.reg2dp_partial_width_out_mid   (reg2dp_partial_width_out_mid[9:0])         //|< w
-   ,.reg2dp_recip_height_cfg        (reg2dp_recip_kernel_height[16:0])          //|< w
-   ,.reg2dp_recip_width_cfg         (reg2dp_recip_kernel_width[16:0])           //|< w
-   ,.sdp2pdp_pd                     (sdp2pdp_pd[255:0])                         //|< i
-   ,.sdp2pdp_valid                  (sdp2pdp_valid)                             //|< i
-   ,.pdp_dp2wdma_pd                 (pdp_dp2wdma_pd[63:0])                      //|> w
-   ,.pdp_dp2wdma_valid              (pdp_dp2wdma_valid)                         //|> w
-   ,.pdp_rdma2dp_ready              (nan_preproc_prdy)                          //|> w
-   ,.sdp2pdp_ready                  (sdp2pdp_ready)                             //|> o
+    .nvdla_core_clk                 (nvdla_op_gated_clk_core)             
+   ,.nvdla_core_rstn                (nvdla_core_rstn)                     
+   ,.datin_src_cfg                  (reg2dp_flying_mode)                  
+   ,.dp2reg_done                    (dp2reg_done)                         
+   ,.padding_h_cfg                  (reg2dp_pad_left[2:0])                
+   ,.padding_v_cfg                  (reg2dp_pad_top[2:0])                 
+   ,.pdp_dp2wdma_ready              (pdp_dp2wdma_ready)                   
+   ,.pdp_rdma2dp_pd                 (nan_preproc_pd)                
+   ,.pdp_rdma2dp_valid              (nan_preproc_pvld)                    
+   ,.pooling_channel_cfg            (reg2dp_cube_out_channel[12:0])       
+   ,.pooling_fwidth_cfg             (reg2dp_partial_width_in_first[9:0])  
+   ,.pooling_lwidth_cfg             (reg2dp_partial_width_in_last[9:0])   
+   ,.pooling_mwidth_cfg             (reg2dp_partial_width_in_mid[9:0])    
+   ,.pooling_out_fwidth_cfg         (reg2dp_partial_width_out_first[9:0]) 
+   ,.pooling_out_lwidth_cfg         (reg2dp_partial_width_out_last[9:0])  
+   ,.pooling_out_mwidth_cfg         (reg2dp_partial_width_out_mid[9:0])   
+   ,.pooling_size_h_cfg             (reg2dp_kernel_width[2:0])            
+   ,.pooling_size_v_cfg             (reg2dp_kernel_height[2:0])           
+   ,.pooling_splitw_num_cfg         (reg2dp_split_num[7:0])               
+   ,.pooling_stride_h_cfg           (reg2dp_kernel_stride_width[3:0])     
+   ,.pooling_stride_v_cfg           (reg2dp_kernel_stride_height[3:0])    
+   ,.pooling_type_cfg               (reg2dp_pooling_method[1:0])          
+   ,.pwrbus_ram_pd                  (pwrbus_ram_pd[31:0])                 
+   ,.reg2dp_cube_in_channel         (reg2dp_cube_in_channel[12:0])        
+   ,.reg2dp_cube_in_height          (reg2dp_cube_in_height[12:0])         
+   ,.reg2dp_cube_in_width           (reg2dp_cube_in_width[12:0])          
+   ,.reg2dp_cube_out_width          (reg2dp_cube_out_width[12:0])         
+   ,.reg2dp_flying_mode             (reg2dp_flying_mode)                  
+//   ,.reg2dp_input_data              (reg2dp_input_data[1:0])            
+   ,.reg2dp_kernel_height           (reg2dp_kernel_height[2:0])           
+   ,.reg2dp_kernel_stride_width     (reg2dp_kernel_stride_width[3:0])     
+   ,.reg2dp_kernel_width            (reg2dp_kernel_width[2:0])            
+   ,.reg2dp_op_en                   (reg2dp_op_en)                        
+   ,.reg2dp_pad_bottom_cfg          (reg2dp_pad_bottom[2:0])              
+   ,.reg2dp_pad_left                (reg2dp_pad_left[2:0])                
+   ,.reg2dp_pad_right               (reg2dp_pad_right[2:0])               
+   ,.reg2dp_pad_right_cfg           (reg2dp_pad_right[2:0])               
+   ,.reg2dp_pad_top                 (reg2dp_pad_top[2:0])                 
+   ,.reg2dp_pad_value_1x_cfg        (reg2dp_pad_value_1x[18:0])           
+   ,.reg2dp_pad_value_2x_cfg        (reg2dp_pad_value_2x[18:0])           
+   ,.reg2dp_pad_value_3x_cfg        (reg2dp_pad_value_3x[18:0])           
+   ,.reg2dp_pad_value_4x_cfg        (reg2dp_pad_value_4x[18:0])           
+   ,.reg2dp_pad_value_5x_cfg        (reg2dp_pad_value_5x[18:0])           
+   ,.reg2dp_pad_value_6x_cfg        (reg2dp_pad_value_6x[18:0])           
+   ,.reg2dp_pad_value_7x_cfg        (reg2dp_pad_value_7x[18:0])           
+   ,.reg2dp_partial_width_out_first (reg2dp_partial_width_out_first[9:0]) 
+   ,.reg2dp_partial_width_out_last  (reg2dp_partial_width_out_last[9:0])  
+   ,.reg2dp_partial_width_out_mid   (reg2dp_partial_width_out_mid[9:0]) 
+   ,.reg2dp_recip_height_cfg        (reg2dp_recip_kernel_height[16:0])  
+   ,.reg2dp_recip_width_cfg         (reg2dp_recip_kernel_width[16:0])   
+   ,.sdp2pdp_pd                     (sdp2pdp_pd)                        
+   ,.sdp2pdp_valid                  (sdp2pdp_valid)                     
+   ,.pdp_dp2wdma_pd                 (pdp_dp2wdma_pd)                    
+   ,.pdp_dp2wdma_valid              (pdp_dp2wdma_valid)                 
+   ,.pdp_rdma2dp_ready              (nan_preproc_prdy)                  
+   ,.sdp2pdp_ready                  (sdp2pdp_ready)                     
    );
- //&Connect pdp_rdma2dp_valid         (nan_preproc_pvld & reg2dp_op_en) ;
  //=======================================
  //CONFIG instance
  //rdma has seperate config register, while wdma share with core
  //---------------------------------------
  NV_NVDLA_PDP_reg u_reg (
-    .nvdla_core_clk                 (nvdla_core_clk)                            //|< i
-   ,.nvdla_core_rstn                (nvdla_core_rstn)                           //|< i
-   ,.csb2pdp_req_pd                 (csb2pdp_req_pd[62:0])                      //|< i
-   ,.csb2pdp_req_pvld               (csb2pdp_req_pvld)                          //|< i
-   ,.dp2reg_d0_perf_write_stall     (dp2reg_d0_perf_write_stall[31:0])          //|< w
-   ,.dp2reg_d1_perf_write_stall     (dp2reg_d1_perf_write_stall[31:0])          //|< w
-   ,.dp2reg_done                    (dp2reg_done)                               //|< w
-   ,.dp2reg_inf_input_num           (dp2reg_inf_input_num[31:0])                //|< w
-   ,.dp2reg_nan_input_num           (dp2reg_nan_input_num[31:0])                //|< w
-   ,.dp2reg_nan_output_num          (dp2reg_nan_output_num[31:0])               //|< w
-   ,.csb2pdp_req_prdy               (csb2pdp_req_prdy)                          //|> o
-   ,.pdp2csb_resp_pd                (pdp2csb_resp_pd[33:0])                     //|> o
-   ,.pdp2csb_resp_valid             (pdp2csb_resp_valid)                        //|> o
-   ,.reg2dp_cube_in_channel         (reg2dp_cube_in_channel[12:0])              //|> w
-   ,.reg2dp_cube_in_height          (reg2dp_cube_in_height[12:0])               //|> w
-   ,.reg2dp_cube_in_width           (reg2dp_cube_in_width[12:0])                //|> w
-   ,.reg2dp_cube_out_channel        (reg2dp_cube_out_channel[12:0])             //|> w
-   ,.reg2dp_cube_out_height         (reg2dp_cube_out_height[12:0])              //|> w
-   ,.reg2dp_cube_out_width          (reg2dp_cube_out_width[12:0])               //|> w
-   ,.reg2dp_cya                     (reg2dp_cya[31:0])                          //|> w *
-   ,.reg2dp_dma_en                  (reg2dp_dma_en)                             //|> w
-   ,.reg2dp_dst_base_addr_high      (reg2dp_dst_base_addr_high[31:0])           //|> w
-   ,.reg2dp_dst_base_addr_low       (reg2dp_dst_base_addr_low[26:0])            //|> w
-   ,.reg2dp_dst_line_stride         (reg2dp_dst_line_stride[26:0])              //|> w
-   ,.reg2dp_dst_ram_type            (reg2dp_dst_ram_type)                       //|> w
-   ,.reg2dp_dst_surface_stride      (reg2dp_dst_surface_stride[26:0])           //|> w
-   ,.reg2dp_flying_mode             (reg2dp_flying_mode)                        //|> w
-   ,.reg2dp_input_data              (reg2dp_input_data[1:0])                    //|> w
-   ,.reg2dp_interrupt_ptr           (reg2dp_interrupt_ptr)                      //|> w
-   ,.reg2dp_kernel_height           (reg2dp_kernel_height[3:0])                 //|> w
-   ,.reg2dp_kernel_stride_height    (reg2dp_kernel_stride_height[3:0])          //|> w
-   ,.reg2dp_kernel_stride_width     (reg2dp_kernel_stride_width[3:0])           //|> w
-   ,.reg2dp_kernel_width            (reg2dp_kernel_width[3:0])                  //|> w
-   ,.reg2dp_nan_to_zero             (reg2dp_nan_to_zero)                        //|> w
-   ,.reg2dp_op_en                   (reg2dp_op_en)                              //|> w
-   ,.reg2dp_pad_bottom              (reg2dp_pad_bottom[2:0])                    //|> w
-   ,.reg2dp_pad_left                (reg2dp_pad_left[2:0])                      //|> w
-   ,.reg2dp_pad_right               (reg2dp_pad_right[2:0])                     //|> w
-   ,.reg2dp_pad_top                 (reg2dp_pad_top[2:0])                       //|> w
-   ,.reg2dp_pad_value_1x            (reg2dp_pad_value_1x[18:0])                 //|> w
-   ,.reg2dp_pad_value_2x            (reg2dp_pad_value_2x[18:0])                 //|> w
-   ,.reg2dp_pad_value_3x            (reg2dp_pad_value_3x[18:0])                 //|> w
-   ,.reg2dp_pad_value_4x            (reg2dp_pad_value_4x[18:0])                 //|> w
-   ,.reg2dp_pad_value_5x            (reg2dp_pad_value_5x[18:0])                 //|> w
-   ,.reg2dp_pad_value_6x            (reg2dp_pad_value_6x[18:0])                 //|> w
-   ,.reg2dp_pad_value_7x            (reg2dp_pad_value_7x[18:0])                 //|> w
-   ,.reg2dp_partial_width_in_first  (reg2dp_partial_width_in_first[9:0])        //|> w
-   ,.reg2dp_partial_width_in_last   (reg2dp_partial_width_in_last[9:0])         //|> w
-   ,.reg2dp_partial_width_in_mid    (reg2dp_partial_width_in_mid[9:0])          //|> w
-   ,.reg2dp_partial_width_out_first (reg2dp_partial_width_out_first[9:0])       //|> w
-   ,.reg2dp_partial_width_out_last  (reg2dp_partial_width_out_last[9:0])        //|> w
-   ,.reg2dp_partial_width_out_mid   (reg2dp_partial_width_out_mid[9:0])         //|> w
-   ,.reg2dp_pooling_method          (reg2dp_pooling_method[1:0])                //|> w
-   ,.reg2dp_recip_kernel_height     (reg2dp_recip_kernel_height[16:0])          //|> w
-   ,.reg2dp_recip_kernel_width      (reg2dp_recip_kernel_width[16:0])           //|> w
-   ,.reg2dp_split_num               (reg2dp_split_num[7:0])                     //|> w
-   ,.reg2dp_src_base_addr_high      (reg2dp_src_base_addr_high[31:0])           //|> w *
-   ,.reg2dp_src_base_addr_low       (reg2dp_src_base_addr_low[26:0])            //|> w *
-   ,.reg2dp_src_line_stride         (reg2dp_src_line_stride[26:0])              //|> w *
-   ,.reg2dp_src_surface_stride      (reg2dp_src_surface_stride[26:0])           //|> w *
-   ,.slcg_op_en                     (slcg_op_en[2:0])                           //|> w
+    .nvdla_core_clk                 (nvdla_core_clk)                  
+   ,.nvdla_core_rstn                (nvdla_core_rstn)                 
+   ,.csb2pdp_req_pd                 (csb2pdp_req_pd[62:0])            
+   ,.csb2pdp_req_pvld               (csb2pdp_req_pvld)                
+   ,.dp2reg_d0_perf_write_stall     (dp2reg_d0_perf_write_stall[31:0])
+   ,.dp2reg_d1_perf_write_stall     (dp2reg_d1_perf_write_stall[31:0])
+   ,.dp2reg_done                    (dp2reg_done)                     
+   ,.dp2reg_inf_input_num           (32'd0)//dp2reg_inf_input_num[31:0])  
+   ,.dp2reg_nan_input_num           (32'd0)//dp2reg_nan_input_num[31:0])  
+   ,.dp2reg_nan_output_num          (32'd0)//dp2reg_nan_output_num[31:0]) 
+   ,.csb2pdp_req_prdy               (csb2pdp_req_prdy)                
+   ,.pdp2csb_resp_pd                (pdp2csb_resp_pd[33:0])           
+   ,.pdp2csb_resp_valid             (pdp2csb_resp_valid)              
+   ,.reg2dp_cube_in_channel         (reg2dp_cube_in_channel[12:0])    
+   ,.reg2dp_cube_in_height          (reg2dp_cube_in_height[12:0])     
+   ,.reg2dp_cube_in_width           (reg2dp_cube_in_width[12:0])      
+   ,.reg2dp_cube_out_channel        (reg2dp_cube_out_channel[12:0])   
+   ,.reg2dp_cube_out_height         (reg2dp_cube_out_height[12:0])    
+   ,.reg2dp_cube_out_width          (reg2dp_cube_out_width[12:0])     
+   ,.reg2dp_cya                     (reg2dp_cya[31:0])                
+   ,.reg2dp_dma_en                  (reg2dp_dma_en)                   
+   ,.reg2dp_dst_base_addr_high      (reg2dp_dst_base_addr_high[31:0]) 
+   ,.reg2dp_dst_base_addr_low       (reg2dp_dst_base_addr_low[31:0])  
+   ,.reg2dp_dst_line_stride         (reg2dp_dst_line_stride[31:0])    
+   ,.reg2dp_dst_ram_type            (reg2dp_dst_ram_type)             
+   ,.reg2dp_dst_surface_stride      (reg2dp_dst_surface_stride[31:0]) 
+   ,.reg2dp_flying_mode             (reg2dp_flying_mode)              
+   ,.reg2dp_input_data              ()                    //|> w
+   ,.reg2dp_interrupt_ptr           (reg2dp_interrupt_ptr)            
+   ,.reg2dp_kernel_height           (reg2dp_kernel_height[3:0])       
+   ,.reg2dp_kernel_stride_height    (reg2dp_kernel_stride_height[3:0])
+   ,.reg2dp_kernel_stride_width     (reg2dp_kernel_stride_width[3:0]) 
+   ,.reg2dp_kernel_width            (reg2dp_kernel_width[3:0])        
+   ,.reg2dp_nan_to_zero             (reg2dp_nan_to_zero)              
+   ,.reg2dp_op_en                   (reg2dp_op_en)                    
+   ,.reg2dp_pad_bottom              (reg2dp_pad_bottom[2:0])          
+   ,.reg2dp_pad_left                (reg2dp_pad_left[2:0])            
+   ,.reg2dp_pad_right               (reg2dp_pad_right[2:0])           
+   ,.reg2dp_pad_top                 (reg2dp_pad_top[2:0])             
+   ,.reg2dp_pad_value_1x            (reg2dp_pad_value_1x[18:0])       
+   ,.reg2dp_pad_value_2x            (reg2dp_pad_value_2x[18:0])       
+   ,.reg2dp_pad_value_3x            (reg2dp_pad_value_3x[18:0])       
+   ,.reg2dp_pad_value_4x            (reg2dp_pad_value_4x[18:0])       
+   ,.reg2dp_pad_value_5x            (reg2dp_pad_value_5x[18:0])       
+   ,.reg2dp_pad_value_6x            (reg2dp_pad_value_6x[18:0])       
+   ,.reg2dp_pad_value_7x            (reg2dp_pad_value_7x[18:0])       
+   ,.reg2dp_partial_width_in_first  (reg2dp_partial_width_in_first[9:0])  
+   ,.reg2dp_partial_width_in_last   (reg2dp_partial_width_in_last[9:0])   
+   ,.reg2dp_partial_width_in_mid    (reg2dp_partial_width_in_mid[9:0])    
+   ,.reg2dp_partial_width_out_first (reg2dp_partial_width_out_first[9:0]) 
+   ,.reg2dp_partial_width_out_last  (reg2dp_partial_width_out_last[9:0])  
+   ,.reg2dp_partial_width_out_mid   (reg2dp_partial_width_out_mid[9:0])   
+   ,.reg2dp_pooling_method          (reg2dp_pooling_method[1:0])          
+   ,.reg2dp_recip_kernel_height     (reg2dp_recip_kernel_height[16:0])    
+   ,.reg2dp_recip_kernel_width      (reg2dp_recip_kernel_width[16:0])     
+   ,.reg2dp_split_num               (reg2dp_split_num[7:0])               
+   ,.reg2dp_src_base_addr_high      (reg2dp_src_base_addr_high[31:0])     
+   ,.reg2dp_src_base_addr_low       (reg2dp_src_base_addr_low[31:0])      
+   ,.reg2dp_src_line_stride         (reg2dp_src_line_stride[31:0])        
+   ,.reg2dp_src_surface_stride      (reg2dp_src_surface_stride[31:0])     
+   ,.slcg_op_en                     (slcg_op_en[2:0])                     
    );
 
 // //==============
@@ -549,7 +531,7 @@ input   tmc2slcg_disable_clock_gating;
 `endif // SYNTHESIS
 `endif // FV_ASSERT_ON
   // VCS coverage off 
-  nv_assert_never #(0,0,"PDPCore pad_value setting issue: 2X != 1X * 2")      zzz_assert_never_1x (nvdla_core_clk, `ASSERT_RESET, (~fp16_en) & aver_pooling_en & reg2dp_op_en & (reg2dp_pad_value_2x != $signed(reg2dp_pad_value_1x) * $signed({1'b0,4'd2}))); // spyglass disable W504 SelfDeterminedExpr-ML 
+  nv_assert_never #(0,0,"PDPCore pad_value setting issue: 2X != 1X * 2")      zzz_assert_never_1x (nvdla_core_clk, `ASSERT_RESET, aver_pooling_en & reg2dp_op_en & (reg2dp_pad_value_2x != $signed(reg2dp_pad_value_1x) * $signed({1'b0,4'd2}))); // spyglass disable W504 SelfDeterminedExpr-ML 
   // VCS coverage on
 `undef ASSERT_RESET
 `endif // ASSERT_ON
@@ -594,7 +576,7 @@ input   tmc2slcg_disable_clock_gating;
 `endif // SYNTHESIS
 `endif // FV_ASSERT_ON
   // VCS coverage off 
-  nv_assert_never #(0,0,"PDPCore pad_value setting issue: 3X != 1X * 3")      zzz_assert_never_2x (nvdla_core_clk, `ASSERT_RESET, (~fp16_en) & aver_pooling_en & reg2dp_op_en & (reg2dp_pad_value_3x != $signed(reg2dp_pad_value_1x) * $signed({1'b0,4'd3}))); // spyglass disable W504 SelfDeterminedExpr-ML 
+  nv_assert_never #(0,0,"PDPCore pad_value setting issue: 3X != 1X * 3")      zzz_assert_never_2x (nvdla_core_clk, `ASSERT_RESET, aver_pooling_en & reg2dp_op_en & (reg2dp_pad_value_3x != $signed(reg2dp_pad_value_1x) * $signed({1'b0,4'd3}))); // spyglass disable W504 SelfDeterminedExpr-ML 
   // VCS coverage on
 `undef ASSERT_RESET
 `endif // ASSERT_ON
@@ -639,7 +621,7 @@ input   tmc2slcg_disable_clock_gating;
 `endif // SYNTHESIS
 `endif // FV_ASSERT_ON
   // VCS coverage off 
-  nv_assert_never #(0,0,"PDPCore pad_value setting issue: 4X != 1X * 4")      zzz_assert_never_3x (nvdla_core_clk, `ASSERT_RESET, (~fp16_en) & aver_pooling_en & reg2dp_op_en & (reg2dp_pad_value_4x != $signed(reg2dp_pad_value_1x) * $signed({1'b0,4'd4}))); // spyglass disable W504 SelfDeterminedExpr-ML 
+  nv_assert_never #(0,0,"PDPCore pad_value setting issue: 4X != 1X * 4")      zzz_assert_never_3x (nvdla_core_clk, `ASSERT_RESET, aver_pooling_en & reg2dp_op_en & (reg2dp_pad_value_4x != $signed(reg2dp_pad_value_1x) * $signed({1'b0,4'd4}))); // spyglass disable W504 SelfDeterminedExpr-ML 
   // VCS coverage on
 `undef ASSERT_RESET
 `endif // ASSERT_ON
@@ -684,7 +666,7 @@ input   tmc2slcg_disable_clock_gating;
 `endif // SYNTHESIS
 `endif // FV_ASSERT_ON
   // VCS coverage off 
-  nv_assert_never #(0,0,"PDPCore pad_value setting issue: 5X != 1X * 5")      zzz_assert_never_4x (nvdla_core_clk, `ASSERT_RESET, (~fp16_en) & aver_pooling_en & reg2dp_op_en & (reg2dp_pad_value_5x != $signed(reg2dp_pad_value_1x) * $signed({1'b0,4'd5}))); // spyglass disable W504 SelfDeterminedExpr-ML 
+  nv_assert_never #(0,0,"PDPCore pad_value setting issue: 5X != 1X * 5")      zzz_assert_never_4x (nvdla_core_clk, `ASSERT_RESET, aver_pooling_en & reg2dp_op_en & (reg2dp_pad_value_5x != $signed(reg2dp_pad_value_1x) * $signed({1'b0,4'd5}))); // spyglass disable W504 SelfDeterminedExpr-ML 
   // VCS coverage on
 `undef ASSERT_RESET
 `endif // ASSERT_ON
@@ -729,7 +711,7 @@ input   tmc2slcg_disable_clock_gating;
 `endif // SYNTHESIS
 `endif // FV_ASSERT_ON
   // VCS coverage off 
-  nv_assert_never #(0,0,"PDPCore pad_value setting issue: 6X != 1X * 6")      zzz_assert_never_5x (nvdla_core_clk, `ASSERT_RESET, (~fp16_en) & aver_pooling_en & reg2dp_op_en & (reg2dp_pad_value_6x != $signed(reg2dp_pad_value_1x) * $signed({1'b0,4'd6}))); // spyglass disable W504 SelfDeterminedExpr-ML 
+  nv_assert_never #(0,0,"PDPCore pad_value setting issue: 6X != 1X * 6")      zzz_assert_never_5x (nvdla_core_clk, `ASSERT_RESET, aver_pooling_en & reg2dp_op_en & (reg2dp_pad_value_6x != $signed(reg2dp_pad_value_1x) * $signed({1'b0,4'd6}))); // spyglass disable W504 SelfDeterminedExpr-ML 
   // VCS coverage on
 `undef ASSERT_RESET
 `endif // ASSERT_ON
@@ -774,322 +756,7 @@ input   tmc2slcg_disable_clock_gating;
 `endif // SYNTHESIS
 `endif // FV_ASSERT_ON
   // VCS coverage off 
-  nv_assert_never #(0,0,"PDPCore pad_value setting issue: 7X != 1X * 7")      zzz_assert_never_6x (nvdla_core_clk, `ASSERT_RESET, (~fp16_en) & aver_pooling_en & reg2dp_op_en & (reg2dp_pad_value_7x != $signed(reg2dp_pad_value_1x) * $signed({1'b0,4'd7}))); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-  // VCS coverage off 
-  nv_assert_never #(0,0,"PDPCore pad_value should set to +/-0 in fp16 average pooing mode")      zzz_assert_never_7x (nvdla_core_clk, `ASSERT_RESET, fp16_en & aver_pooling_en & reg2dp_op_en & (reg2dp_pad_value_1x != 19'd0) & (reg2dp_pad_value_1x != 19'h70000)); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-  // VCS coverage off 
-  nv_assert_never #(0,0,"PDPCore pad_value should set to +/-0 in fp16 average pooing mode")      zzz_assert_never_8x (nvdla_core_clk, `ASSERT_RESET, fp16_en & aver_pooling_en & reg2dp_op_en & (reg2dp_pad_value_2x != 19'd0) & (reg2dp_pad_value_2x != 19'h70000)); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-  // VCS coverage off 
-  nv_assert_never #(0,0,"PDPCore pad_value should set to +/-0 in fp16 average pooing mode")      zzz_assert_never_9x (nvdla_core_clk, `ASSERT_RESET, fp16_en & aver_pooling_en & reg2dp_op_en & (reg2dp_pad_value_3x != 19'd0) & (reg2dp_pad_value_3x != 19'h70000)); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-  // VCS coverage off 
-  nv_assert_never #(0,0,"PDPCore pad_value should set to +/-0 in fp16 average pooing mode")      zzz_assert_never_10x (nvdla_core_clk, `ASSERT_RESET, fp16_en & aver_pooling_en & reg2dp_op_en & (reg2dp_pad_value_4x != 19'd0) & (reg2dp_pad_value_4x != 19'h70000)); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-  // VCS coverage off 
-  nv_assert_never #(0,0,"PDPCore pad_value should set to +/-0 in fp16 average pooing mode")      zzz_assert_never_11x (nvdla_core_clk, `ASSERT_RESET, fp16_en & aver_pooling_en & reg2dp_op_en & (reg2dp_pad_value_5x != 19'd0) & (reg2dp_pad_value_5x != 19'h70000)); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-  // VCS coverage off 
-  nv_assert_never #(0,0,"PDPCore pad_value should set to +/-0 in fp16 average pooing mode")      zzz_assert_never_12x (nvdla_core_clk, `ASSERT_RESET, fp16_en & aver_pooling_en & reg2dp_op_en & (reg2dp_pad_value_6x != 19'd0) & (reg2dp_pad_value_6x != 19'h70000)); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-  // VCS coverage off 
-  nv_assert_never #(0,0,"PDPCore pad_value should set to +/-0 in fp16 average pooing mode")      zzz_assert_never_13x (nvdla_core_clk, `ASSERT_RESET, fp16_en & aver_pooling_en & reg2dp_op_en & (reg2dp_pad_value_7x != 19'd0) & (reg2dp_pad_value_7x != 19'h70000)); // spyglass disable W504 SelfDeterminedExpr-ML 
+  nv_assert_never #(0,0,"PDPCore pad_value setting issue: 7X != 1X * 7")      zzz_assert_never_6x (nvdla_core_clk, `ASSERT_RESET, aver_pooling_en & reg2dp_op_en & (reg2dp_pad_value_7x != $signed(reg2dp_pad_value_1x) * $signed({1'b0,4'd7}))); // spyglass disable W504 SelfDeterminedExpr-ML 
   // VCS coverage on
 `undef ASSERT_RESET
 `endif // ASSERT_ON
@@ -1133,46 +800,46 @@ input   tmc2slcg_disable_clock_gating;
 ///////////////
 //1*1*1 cube output for nonsplit mode
 
-//VCS coverage off
-`ifndef DISABLE_FUNCPOINT
-  `ifdef ENABLE_FUNCPOINT
+////VCS coverage off
+//`ifndef DISABLE_FUNCPOINT
+//  `ifdef ENABLE_FUNCPOINT
+//
+//    reg funcpoint_cover_off;
+//    initial begin
+//        if ( $test$plusargs( "cover_off" ) ) begin
+//            funcpoint_cover_off = 1'b1;
+//        end else begin
+//            funcpoint_cover_off = 1'b0;
+//        end
+//    end
+//
+//    property PDP_min_cube_out__1_1_1_cube_out_fp16_nonsplit_average_pooling__0_cov;
+//        disable iff((nvdla_core_rstn !== 1) || funcpoint_cover_off)
+//        @(posedge nvdla_core_clk)
+//        reg2dp_op_en & (reg2dp_split_num==8'd0) & (reg2dp_input_data== 2'h2 ) & (reg2dp_pooling_method== 2'h0 ) & (~(|reg2dp_cube_out_width)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel));
+//    endproperty
+//    // Cover 0 : "reg2dp_op_en & (reg2dp_split_num==8'd0) & (reg2dp_input_data== 2'h2 ) & (reg2dp_pooling_method== 2'h0 ) & (~(|reg2dp_cube_out_width)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel))"
+//    FUNCPOINT_PDP_min_cube_out__1_1_1_cube_out_fp16_nonsplit_average_pooling__0_COV : cover property (PDP_min_cube_out__1_1_1_cube_out_fp16_nonsplit_average_pooling__0_cov);
+//
+//  `endif
+//`endif
+////VCS coverage on
 
-    reg funcpoint_cover_off;
-    initial begin
-        if ( $test$plusargs( "cover_off" ) ) begin
-            funcpoint_cover_off = 1'b1;
-        end else begin
-            funcpoint_cover_off = 1'b0;
-        end
-    end
-
-    property PDP_min_cube_out__1_1_1_cube_out_fp16_nonsplit_average_pooling__0_cov;
-        disable iff((nvdla_core_rstn !== 1) || funcpoint_cover_off)
-        @(posedge nvdla_core_clk)
-        reg2dp_op_en & (reg2dp_split_num==8'd0) & (reg2dp_input_data== 2'h2 ) & (reg2dp_pooling_method== 2'h0 ) & (~(|reg2dp_cube_out_width)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel));
-    endproperty
-    // Cover 0 : "reg2dp_op_en & (reg2dp_split_num==8'd0) & (reg2dp_input_data== 2'h2 ) & (reg2dp_pooling_method== 2'h0 ) & (~(|reg2dp_cube_out_width)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel))"
-    FUNCPOINT_PDP_min_cube_out__1_1_1_cube_out_fp16_nonsplit_average_pooling__0_COV : cover property (PDP_min_cube_out__1_1_1_cube_out_fp16_nonsplit_average_pooling__0_cov);
-
-  `endif
-`endif
-//VCS coverage on
-
-//VCS coverage off
-`ifndef DISABLE_FUNCPOINT
-  `ifdef ENABLE_FUNCPOINT
-
-    property PDP_min_cube_out__1_1_1_cube_out_int16_nonsplit_average_pooling__1_cov;
-        disable iff((nvdla_core_rstn !== 1) || funcpoint_cover_off)
-        @(posedge nvdla_core_clk)
-        reg2dp_op_en & (reg2dp_split_num==8'd0) & (reg2dp_input_data== 2'h1 ) & (reg2dp_pooling_method== 2'h0 ) & (~(|reg2dp_cube_out_width)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel));
-    endproperty
-    // Cover 1 : "reg2dp_op_en & (reg2dp_split_num==8'd0) & (reg2dp_input_data== 2'h1 ) & (reg2dp_pooling_method== 2'h0 ) & (~(|reg2dp_cube_out_width)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel))"
-    FUNCPOINT_PDP_min_cube_out__1_1_1_cube_out_int16_nonsplit_average_pooling__1_COV : cover property (PDP_min_cube_out__1_1_1_cube_out_int16_nonsplit_average_pooling__1_cov);
-
-  `endif
-`endif
-//VCS coverage on
+////VCS coverage off
+//`ifndef DISABLE_FUNCPOINT
+//  `ifdef ENABLE_FUNCPOINT
+//
+//    property PDP_min_cube_out__1_1_1_cube_out_int16_nonsplit_average_pooling__1_cov;
+//        disable iff((nvdla_core_rstn !== 1) || funcpoint_cover_off)
+//        @(posedge nvdla_core_clk)
+//        reg2dp_op_en & (reg2dp_split_num==8'd0) & (reg2dp_input_data== 2'h1 ) & (reg2dp_pooling_method== 2'h0 ) & (~(|reg2dp_cube_out_width)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel));
+//    endproperty
+//    // Cover 1 : "reg2dp_op_en & (reg2dp_split_num==8'd0) & (reg2dp_input_data== 2'h1 ) & (reg2dp_pooling_method== 2'h0 ) & (~(|reg2dp_cube_out_width)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel))"
+//    FUNCPOINT_PDP_min_cube_out__1_1_1_cube_out_int16_nonsplit_average_pooling__1_COV : cover property (PDP_min_cube_out__1_1_1_cube_out_int16_nonsplit_average_pooling__1_cov);
+//
+//  `endif
+//`endif
+////VCS coverage on
 
 //VCS coverage off
 `ifndef DISABLE_FUNCPOINT
@@ -1181,46 +848,46 @@ input   tmc2slcg_disable_clock_gating;
     property PDP_min_cube_out__1_1_1_cube_out_int8_nonsplit_average_pooling__2_cov;
         disable iff((nvdla_core_rstn !== 1) || funcpoint_cover_off)
         @(posedge nvdla_core_clk)
-        reg2dp_op_en & (reg2dp_split_num==8'd0) & (reg2dp_input_data== 2'h0 ) & (reg2dp_pooling_method== 2'h0 ) & (~(|reg2dp_cube_out_width)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel));
+        reg2dp_op_en & (reg2dp_split_num==8'd0) &  (reg2dp_pooling_method== 2'h0 ) & (~(|reg2dp_cube_out_width)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel));
     endproperty
-    // Cover 2 : "reg2dp_op_en & (reg2dp_split_num==8'd0) & (reg2dp_input_data== 2'h0 ) & (reg2dp_pooling_method== 2'h0 ) & (~(|reg2dp_cube_out_width)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel))"
+    // Cover 2 : "reg2dp_op_en & (reg2dp_split_num==8'd0) & (reg2dp_pooling_method== 2'h0 ) & (~(|reg2dp_cube_out_width)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel))"
     FUNCPOINT_PDP_min_cube_out__1_1_1_cube_out_int8_nonsplit_average_pooling__2_COV : cover property (PDP_min_cube_out__1_1_1_cube_out_int8_nonsplit_average_pooling__2_cov);
 
   `endif
 `endif
 //VCS coverage on
 
-//VCS coverage off
-`ifndef DISABLE_FUNCPOINT
-  `ifdef ENABLE_FUNCPOINT
-
-    property PDP_min_cube_out__1_1_1_cube_out_fp16_nonsplit_max_pooling__3_cov;
-        disable iff((nvdla_core_rstn !== 1) || funcpoint_cover_off)
-        @(posedge nvdla_core_clk)
-        reg2dp_op_en & (reg2dp_split_num==8'd0) & (reg2dp_input_data== 2'h2 ) & (reg2dp_pooling_method== 2'h1 ) & (~(|reg2dp_cube_out_width)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel));
-    endproperty
-    // Cover 3 : "reg2dp_op_en & (reg2dp_split_num==8'd0) & (reg2dp_input_data== 2'h2 ) & (reg2dp_pooling_method== 2'h1 ) & (~(|reg2dp_cube_out_width)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel))"
-    FUNCPOINT_PDP_min_cube_out__1_1_1_cube_out_fp16_nonsplit_max_pooling__3_COV : cover property (PDP_min_cube_out__1_1_1_cube_out_fp16_nonsplit_max_pooling__3_cov);
-
-  `endif
-`endif
-//VCS coverage on
-
-//VCS coverage off
-`ifndef DISABLE_FUNCPOINT
-  `ifdef ENABLE_FUNCPOINT
-
-    property PDP_min_cube_out__1_1_1_cube_out_int16_nonsplit_max_pooling__4_cov;
-        disable iff((nvdla_core_rstn !== 1) || funcpoint_cover_off)
-        @(posedge nvdla_core_clk)
-        reg2dp_op_en & (reg2dp_split_num==8'd0) & (reg2dp_input_data== 2'h1 ) & (reg2dp_pooling_method== 2'h1 ) & (~(|reg2dp_cube_out_width)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel));
-    endproperty
-    // Cover 4 : "reg2dp_op_en & (reg2dp_split_num==8'd0) & (reg2dp_input_data== 2'h1 ) & (reg2dp_pooling_method== 2'h1 ) & (~(|reg2dp_cube_out_width)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel))"
-    FUNCPOINT_PDP_min_cube_out__1_1_1_cube_out_int16_nonsplit_max_pooling__4_COV : cover property (PDP_min_cube_out__1_1_1_cube_out_int16_nonsplit_max_pooling__4_cov);
-
-  `endif
-`endif
-//VCS coverage on
+////VCS coverage off
+//`ifndef DISABLE_FUNCPOINT
+//  `ifdef ENABLE_FUNCPOINT
+//
+//    property PDP_min_cube_out__1_1_1_cube_out_fp16_nonsplit_max_pooling__3_cov;
+//        disable iff((nvdla_core_rstn !== 1) || funcpoint_cover_off)
+//        @(posedge nvdla_core_clk)
+//        reg2dp_op_en & (reg2dp_split_num==8'd0) & (reg2dp_input_data== 2'h2 ) & (reg2dp_pooling_method== 2'h1 ) & (~(|reg2dp_cube_out_width)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel));
+//    endproperty
+//    // Cover 3 : "reg2dp_op_en & (reg2dp_split_num==8'd0) & (reg2dp_input_data== 2'h2 ) & (reg2dp_pooling_method== 2'h1 ) & (~(|reg2dp_cube_out_width)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel))"
+//    FUNCPOINT_PDP_min_cube_out__1_1_1_cube_out_fp16_nonsplit_max_pooling__3_COV : cover property (PDP_min_cube_out__1_1_1_cube_out_fp16_nonsplit_max_pooling__3_cov);
+//
+//  `endif
+//`endif
+////VCS coverage on
+//
+////VCS coverage off
+//`ifndef DISABLE_FUNCPOINT
+//  `ifdef ENABLE_FUNCPOINT
+//
+//    property PDP_min_cube_out__1_1_1_cube_out_int16_nonsplit_max_pooling__4_cov;
+//        disable iff((nvdla_core_rstn !== 1) || funcpoint_cover_off)
+//        @(posedge nvdla_core_clk)
+//        reg2dp_op_en & (reg2dp_split_num==8'd0) & (reg2dp_input_data== 2'h1 ) & (reg2dp_pooling_method== 2'h1 ) & (~(|reg2dp_cube_out_width)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel));
+//    endproperty
+//    // Cover 4 : "reg2dp_op_en & (reg2dp_split_num==8'd0) & (reg2dp_input_data== 2'h1 ) & (reg2dp_pooling_method== 2'h1 ) & (~(|reg2dp_cube_out_width)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel))"
+//    FUNCPOINT_PDP_min_cube_out__1_1_1_cube_out_int16_nonsplit_max_pooling__4_COV : cover property (PDP_min_cube_out__1_1_1_cube_out_int16_nonsplit_max_pooling__4_cov);
+//
+//  `endif
+//`endif
+////VCS coverage on
 
 //VCS coverage off
 `ifndef DISABLE_FUNCPOINT
@@ -1229,46 +896,46 @@ input   tmc2slcg_disable_clock_gating;
     property PDP_min_cube_out__1_1_1_cube_out_int8_nonsplit_max_pooling__5_cov;
         disable iff((nvdla_core_rstn !== 1) || funcpoint_cover_off)
         @(posedge nvdla_core_clk)
-        reg2dp_op_en & (reg2dp_split_num==8'd0) & (reg2dp_input_data== 2'h0 ) & (reg2dp_pooling_method== 2'h1 ) & (~(|reg2dp_cube_out_width)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel));
+        reg2dp_op_en & (reg2dp_split_num==8'd0) & (reg2dp_pooling_method== 2'h1 ) & (~(|reg2dp_cube_out_width)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel));
     endproperty
-    // Cover 5 : "reg2dp_op_en & (reg2dp_split_num==8'd0) & (reg2dp_input_data== 2'h0 ) & (reg2dp_pooling_method== 2'h1 ) & (~(|reg2dp_cube_out_width)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel))"
+    // Cover 5 : "reg2dp_op_en & (reg2dp_split_num==8'd0) & (reg2dp_pooling_method== 2'h1 ) & (~(|reg2dp_cube_out_width)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel))"
     FUNCPOINT_PDP_min_cube_out__1_1_1_cube_out_int8_nonsplit_max_pooling__5_COV : cover property (PDP_min_cube_out__1_1_1_cube_out_int8_nonsplit_max_pooling__5_cov);
 
   `endif
 `endif
 //VCS coverage on
 
-//VCS coverage off
-`ifndef DISABLE_FUNCPOINT
-  `ifdef ENABLE_FUNCPOINT
-
-    property PDP_min_cube_out__1_1_1_cube_out_fp16_nonsplit_min_pooling__6_cov;
-        disable iff((nvdla_core_rstn !== 1) || funcpoint_cover_off)
-        @(posedge nvdla_core_clk)
-        reg2dp_op_en & (reg2dp_split_num==8'd0) & (reg2dp_input_data== 2'h2 ) & (reg2dp_pooling_method== 2'h2 ) & (~(|reg2dp_cube_out_width)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel));
-    endproperty
-    // Cover 6 : "reg2dp_op_en & (reg2dp_split_num==8'd0) & (reg2dp_input_data== 2'h2 ) & (reg2dp_pooling_method== 2'h2 ) & (~(|reg2dp_cube_out_width)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel))"
-    FUNCPOINT_PDP_min_cube_out__1_1_1_cube_out_fp16_nonsplit_min_pooling__6_COV : cover property (PDP_min_cube_out__1_1_1_cube_out_fp16_nonsplit_min_pooling__6_cov);
-
-  `endif
-`endif
-//VCS coverage on
-
-//VCS coverage off
-`ifndef DISABLE_FUNCPOINT
-  `ifdef ENABLE_FUNCPOINT
-
-    property PDP_min_cube_out__1_1_1_cube_out_int16_nonsplit_min_pooling__7_cov;
-        disable iff((nvdla_core_rstn !== 1) || funcpoint_cover_off)
-        @(posedge nvdla_core_clk)
-        reg2dp_op_en & (reg2dp_split_num==8'd0) & (reg2dp_input_data== 2'h1 ) & (reg2dp_pooling_method== 2'h2 ) & (~(|reg2dp_cube_out_width)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel));
-    endproperty
-    // Cover 7 : "reg2dp_op_en & (reg2dp_split_num==8'd0) & (reg2dp_input_data== 2'h1 ) & (reg2dp_pooling_method== 2'h2 ) & (~(|reg2dp_cube_out_width)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel))"
-    FUNCPOINT_PDP_min_cube_out__1_1_1_cube_out_int16_nonsplit_min_pooling__7_COV : cover property (PDP_min_cube_out__1_1_1_cube_out_int16_nonsplit_min_pooling__7_cov);
-
-  `endif
-`endif
-//VCS coverage on
+////VCS coverage off
+//`ifndef DISABLE_FUNCPOINT
+//  `ifdef ENABLE_FUNCPOINT
+//
+//    property PDP_min_cube_out__1_1_1_cube_out_fp16_nonsplit_min_pooling__6_cov;
+//        disable iff((nvdla_core_rstn !== 1) || funcpoint_cover_off)
+//        @(posedge nvdla_core_clk)
+//        reg2dp_op_en & (reg2dp_split_num==8'd0) & (reg2dp_input_data== 2'h2 ) & (reg2dp_pooling_method== 2'h2 ) & (~(|reg2dp_cube_out_width)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel));
+//    endproperty
+//    // Cover 6 : "reg2dp_op_en & (reg2dp_split_num==8'd0) & (reg2dp_input_data== 2'h2 ) & (reg2dp_pooling_method== 2'h2 ) & (~(|reg2dp_cube_out_width)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel))"
+//    FUNCPOINT_PDP_min_cube_out__1_1_1_cube_out_fp16_nonsplit_min_pooling__6_COV : cover property (PDP_min_cube_out__1_1_1_cube_out_fp16_nonsplit_min_pooling__6_cov);
+//
+//  `endif
+//`endif
+////VCS coverage on
+//
+////VCS coverage off
+//`ifndef DISABLE_FUNCPOINT
+//  `ifdef ENABLE_FUNCPOINT
+//
+//    property PDP_min_cube_out__1_1_1_cube_out_int16_nonsplit_min_pooling__7_cov;
+//        disable iff((nvdla_core_rstn !== 1) || funcpoint_cover_off)
+//        @(posedge nvdla_core_clk)
+//        reg2dp_op_en & (reg2dp_split_num==8'd0) & (reg2dp_input_data== 2'h1 ) & (reg2dp_pooling_method== 2'h2 ) & (~(|reg2dp_cube_out_width)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel));
+//    endproperty
+//    // Cover 7 : "reg2dp_op_en & (reg2dp_split_num==8'd0) & (reg2dp_input_data== 2'h1 ) & (reg2dp_pooling_method== 2'h2 ) & (~(|reg2dp_cube_out_width)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel))"
+//    FUNCPOINT_PDP_min_cube_out__1_1_1_cube_out_int16_nonsplit_min_pooling__7_COV : cover property (PDP_min_cube_out__1_1_1_cube_out_int16_nonsplit_min_pooling__7_cov);
+//
+//  `endif
+//`endif
+////VCS coverage on
 
 //VCS coverage off
 `ifndef DISABLE_FUNCPOINT
@@ -1277,9 +944,9 @@ input   tmc2slcg_disable_clock_gating;
     property PDP_min_cube_out__1_1_1_cube_out_int8_nonsplit_min_pooling__8_cov;
         disable iff((nvdla_core_rstn !== 1) || funcpoint_cover_off)
         @(posedge nvdla_core_clk)
-        reg2dp_op_en & (reg2dp_split_num==8'd0) & (reg2dp_input_data== 2'h0 ) & (reg2dp_pooling_method== 2'h2 ) & (~(|reg2dp_cube_out_width)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel));
+        reg2dp_op_en & (reg2dp_split_num==8'd0) & (reg2dp_pooling_method== 2'h2 ) & (~(|reg2dp_cube_out_width)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel));
     endproperty
-    // Cover 8 : "reg2dp_op_en & (reg2dp_split_num==8'd0) & (reg2dp_input_data== 2'h0 ) & (reg2dp_pooling_method== 2'h2 ) & (~(|reg2dp_cube_out_width)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel))"
+    // Cover 8 : "reg2dp_op_en & (reg2dp_split_num==8'd0) & (reg2dp_pooling_method== 2'h2 ) & (~(|reg2dp_cube_out_width)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel))"
     FUNCPOINT_PDP_min_cube_out__1_1_1_cube_out_int8_nonsplit_min_pooling__8_COV : cover property (PDP_min_cube_out__1_1_1_cube_out_int8_nonsplit_min_pooling__8_cov);
 
   `endif
@@ -1287,38 +954,38 @@ input   tmc2slcg_disable_clock_gating;
 //VCS coverage on
 
 
-//1*1*1 cube output for split 2 mode
-//VCS coverage off
-`ifndef DISABLE_FUNCPOINT
-  `ifdef ENABLE_FUNCPOINT
-
-    property PDP_min_cube_out__1_1_1_cube_out_fp16_split2_average_pooling__9_cov;
-        disable iff((nvdla_core_rstn !== 1) || funcpoint_cover_off)
-        @(posedge nvdla_core_clk)
-        reg2dp_op_en & (reg2dp_split_num==8'd1) & (reg2dp_input_data== 2'h2 ) & (reg2dp_pooling_method== 2'h0 ) & (~(|reg2dp_partial_width_out_first)) & (~(|reg2dp_partial_width_out_last)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel));
-    endproperty
-    // Cover 9 : "reg2dp_op_en & (reg2dp_split_num==8'd1) & (reg2dp_input_data== 2'h2 ) & (reg2dp_pooling_method== 2'h0 ) & (~(|reg2dp_partial_width_out_first)) & (~(|reg2dp_partial_width_out_last)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel))"
-    FUNCPOINT_PDP_min_cube_out__1_1_1_cube_out_fp16_split2_average_pooling__9_COV : cover property (PDP_min_cube_out__1_1_1_cube_out_fp16_split2_average_pooling__9_cov);
-
-  `endif
-`endif
-//VCS coverage on
-
-//VCS coverage off
-`ifndef DISABLE_FUNCPOINT
-  `ifdef ENABLE_FUNCPOINT
-
-    property PDP_min_cube_out__1_1_1_cube_out_int16_split2_average_pooling__10_cov;
-        disable iff((nvdla_core_rstn !== 1) || funcpoint_cover_off)
-        @(posedge nvdla_core_clk)
-        reg2dp_op_en & (reg2dp_split_num==8'd1) & (reg2dp_input_data== 2'h1 ) & (reg2dp_pooling_method== 2'h0 ) & (~(|reg2dp_partial_width_out_first)) & (~(|reg2dp_partial_width_out_last)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel));
-    endproperty
-    // Cover 10 : "reg2dp_op_en & (reg2dp_split_num==8'd1) & (reg2dp_input_data== 2'h1 ) & (reg2dp_pooling_method== 2'h0 ) & (~(|reg2dp_partial_width_out_first)) & (~(|reg2dp_partial_width_out_last)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel))"
-    FUNCPOINT_PDP_min_cube_out__1_1_1_cube_out_int16_split2_average_pooling__10_COV : cover property (PDP_min_cube_out__1_1_1_cube_out_int16_split2_average_pooling__10_cov);
-
-  `endif
-`endif
-//VCS coverage on
+////1*1*1 cube output for split 2 mode
+////VCS coverage off
+//`ifndef DISABLE_FUNCPOINT
+//  `ifdef ENABLE_FUNCPOINT
+//
+//    property PDP_min_cube_out__1_1_1_cube_out_fp16_split2_average_pooling__9_cov;
+//        disable iff((nvdla_core_rstn !== 1) || funcpoint_cover_off)
+//        @(posedge nvdla_core_clk)
+//        reg2dp_op_en & (reg2dp_split_num==8'd1) & (reg2dp_input_data== 2'h2 ) & (reg2dp_pooling_method== 2'h0 ) & (~(|reg2dp_partial_width_out_first)) & (~(|reg2dp_partial_width_out_last)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel));
+//    endproperty
+//    // Cover 9 : "reg2dp_op_en & (reg2dp_split_num==8'd1) & (reg2dp_input_data== 2'h2 ) & (reg2dp_pooling_method== 2'h0 ) & (~(|reg2dp_partial_width_out_first)) & (~(|reg2dp_partial_width_out_last)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel))"
+//    FUNCPOINT_PDP_min_cube_out__1_1_1_cube_out_fp16_split2_average_pooling__9_COV : cover property (PDP_min_cube_out__1_1_1_cube_out_fp16_split2_average_pooling__9_cov);
+//
+//  `endif
+//`endif
+////VCS coverage on
+//
+////VCS coverage off
+//`ifndef DISABLE_FUNCPOINT
+//  `ifdef ENABLE_FUNCPOINT
+//
+//    property PDP_min_cube_out__1_1_1_cube_out_int16_split2_average_pooling__10_cov;
+//        disable iff((nvdla_core_rstn !== 1) || funcpoint_cover_off)
+//        @(posedge nvdla_core_clk)
+//        reg2dp_op_en & (reg2dp_split_num==8'd1) & (reg2dp_input_data== 2'h1 ) & (reg2dp_pooling_method== 2'h0 ) & (~(|reg2dp_partial_width_out_first)) & (~(|reg2dp_partial_width_out_last)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel));
+//    endproperty
+//    // Cover 10 : "reg2dp_op_en & (reg2dp_split_num==8'd1) & (reg2dp_input_data== 2'h1 ) & (reg2dp_pooling_method== 2'h0 ) & (~(|reg2dp_partial_width_out_first)) & (~(|reg2dp_partial_width_out_last)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel))"
+//    FUNCPOINT_PDP_min_cube_out__1_1_1_cube_out_int16_split2_average_pooling__10_COV : cover property (PDP_min_cube_out__1_1_1_cube_out_int16_split2_average_pooling__10_cov);
+//
+//  `endif
+//`endif
+////VCS coverage on
 
 //VCS coverage off
 `ifndef DISABLE_FUNCPOINT
@@ -1327,46 +994,46 @@ input   tmc2slcg_disable_clock_gating;
     property PDP_min_cube_out__1_1_1_cube_out_int8_split2_average_pooling__11_cov;
         disable iff((nvdla_core_rstn !== 1) || funcpoint_cover_off)
         @(posedge nvdla_core_clk)
-        reg2dp_op_en & (reg2dp_split_num==8'd1) & (reg2dp_input_data== 2'h0 ) & (reg2dp_pooling_method== 2'h0 ) & (~(|reg2dp_partial_width_out_first)) & (~(|reg2dp_partial_width_out_last)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel));
+        reg2dp_op_en & (reg2dp_split_num==8'd1) & (reg2dp_pooling_method== 2'h0 ) & (~(|reg2dp_partial_width_out_first)) & (~(|reg2dp_partial_width_out_last)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel));
     endproperty
-    // Cover 11 : "reg2dp_op_en & (reg2dp_split_num==8'd1) & (reg2dp_input_data== 2'h0 ) & (reg2dp_pooling_method== 2'h0 ) & (~(|reg2dp_partial_width_out_first)) & (~(|reg2dp_partial_width_out_last)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel))"
+    // Cover 11 : "reg2dp_op_en & (reg2dp_split_num==8'd1) & (reg2dp_pooling_method== 2'h0 ) & (~(|reg2dp_partial_width_out_first)) & (~(|reg2dp_partial_width_out_last)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel))"
     FUNCPOINT_PDP_min_cube_out__1_1_1_cube_out_int8_split2_average_pooling__11_COV : cover property (PDP_min_cube_out__1_1_1_cube_out_int8_split2_average_pooling__11_cov);
 
   `endif
 `endif
 //VCS coverage on
 
-//VCS coverage off
-`ifndef DISABLE_FUNCPOINT
-  `ifdef ENABLE_FUNCPOINT
-
-    property PDP_min_cube_out__1_1_1_cube_out_fp16_split2_max_pooling__12_cov;
-        disable iff((nvdla_core_rstn !== 1) || funcpoint_cover_off)
-        @(posedge nvdla_core_clk)
-        reg2dp_op_en & (reg2dp_split_num==8'd1) & (reg2dp_input_data== 2'h2 ) & (reg2dp_pooling_method== 2'h1 ) & (~(|reg2dp_partial_width_out_first)) & (~(|reg2dp_partial_width_out_last)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel));
-    endproperty
-    // Cover 12 : "reg2dp_op_en & (reg2dp_split_num==8'd1) & (reg2dp_input_data== 2'h2 ) & (reg2dp_pooling_method== 2'h1 ) & (~(|reg2dp_partial_width_out_first)) & (~(|reg2dp_partial_width_out_last)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel))"
-    FUNCPOINT_PDP_min_cube_out__1_1_1_cube_out_fp16_split2_max_pooling__12_COV : cover property (PDP_min_cube_out__1_1_1_cube_out_fp16_split2_max_pooling__12_cov);
-
-  `endif
-`endif
-//VCS coverage on
-
-//VCS coverage off
-`ifndef DISABLE_FUNCPOINT
-  `ifdef ENABLE_FUNCPOINT
-
-    property PDP_min_cube_out__1_1_1_cube_out_int16_split2_max_pooling__13_cov;
-        disable iff((nvdla_core_rstn !== 1) || funcpoint_cover_off)
-        @(posedge nvdla_core_clk)
-        reg2dp_op_en & (reg2dp_split_num==8'd1) & (reg2dp_input_data== 2'h1 ) & (reg2dp_pooling_method== 2'h1 ) & (~(|reg2dp_partial_width_out_first)) & (~(|reg2dp_partial_width_out_last)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel));
-    endproperty
-    // Cover 13 : "reg2dp_op_en & (reg2dp_split_num==8'd1) & (reg2dp_input_data== 2'h1 ) & (reg2dp_pooling_method== 2'h1 ) & (~(|reg2dp_partial_width_out_first)) & (~(|reg2dp_partial_width_out_last)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel))"
-    FUNCPOINT_PDP_min_cube_out__1_1_1_cube_out_int16_split2_max_pooling__13_COV : cover property (PDP_min_cube_out__1_1_1_cube_out_int16_split2_max_pooling__13_cov);
-
-  `endif
-`endif
-//VCS coverage on
+////VCS coverage off
+//`ifndef DISABLE_FUNCPOINT
+//  `ifdef ENABLE_FUNCPOINT
+//
+//    property PDP_min_cube_out__1_1_1_cube_out_fp16_split2_max_pooling__12_cov;
+//        disable iff((nvdla_core_rstn !== 1) || funcpoint_cover_off)
+//        @(posedge nvdla_core_clk)
+//        reg2dp_op_en & (reg2dp_split_num==8'd1) & (reg2dp_input_data== 2'h2 ) & (reg2dp_pooling_method== 2'h1 ) & (~(|reg2dp_partial_width_out_first)) & (~(|reg2dp_partial_width_out_last)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel));
+//    endproperty
+//    // Cover 12 : "reg2dp_op_en & (reg2dp_split_num==8'd1) & (reg2dp_input_data== 2'h2 ) & (reg2dp_pooling_method== 2'h1 ) & (~(|reg2dp_partial_width_out_first)) & (~(|reg2dp_partial_width_out_last)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel))"
+//    FUNCPOINT_PDP_min_cube_out__1_1_1_cube_out_fp16_split2_max_pooling__12_COV : cover property (PDP_min_cube_out__1_1_1_cube_out_fp16_split2_max_pooling__12_cov);
+//
+//  `endif
+//`endif
+////VCS coverage on
+//
+////VCS coverage off
+//`ifndef DISABLE_FUNCPOINT
+//  `ifdef ENABLE_FUNCPOINT
+//
+//    property PDP_min_cube_out__1_1_1_cube_out_int16_split2_max_pooling__13_cov;
+//        disable iff((nvdla_core_rstn !== 1) || funcpoint_cover_off)
+//        @(posedge nvdla_core_clk)
+//        reg2dp_op_en & (reg2dp_split_num==8'd1) & (reg2dp_input_data== 2'h1 ) & (reg2dp_pooling_method== 2'h1 ) & (~(|reg2dp_partial_width_out_first)) & (~(|reg2dp_partial_width_out_last)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel));
+//    endproperty
+//    // Cover 13 : "reg2dp_op_en & (reg2dp_split_num==8'd1) & (reg2dp_input_data== 2'h1 ) & (reg2dp_pooling_method== 2'h1 ) & (~(|reg2dp_partial_width_out_first)) & (~(|reg2dp_partial_width_out_last)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel))"
+//    FUNCPOINT_PDP_min_cube_out__1_1_1_cube_out_int16_split2_max_pooling__13_COV : cover property (PDP_min_cube_out__1_1_1_cube_out_int16_split2_max_pooling__13_cov);
+//
+//  `endif
+//`endif
+////VCS coverage on
 
 //VCS coverage off
 `ifndef DISABLE_FUNCPOINT
@@ -1375,46 +1042,46 @@ input   tmc2slcg_disable_clock_gating;
     property PDP_min_cube_out__1_1_1_cube_out_int8_split2_max_pooling__14_cov;
         disable iff((nvdla_core_rstn !== 1) || funcpoint_cover_off)
         @(posedge nvdla_core_clk)
-        reg2dp_op_en & (reg2dp_split_num==8'd1) & (reg2dp_input_data== 2'h0 ) & (reg2dp_pooling_method== 2'h1 ) & (~(|reg2dp_partial_width_out_first)) & (~(|reg2dp_partial_width_out_last)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel));
+        reg2dp_op_en & (reg2dp_split_num==8'd1) & (reg2dp_pooling_method== 2'h1 ) & (~(|reg2dp_partial_width_out_first)) & (~(|reg2dp_partial_width_out_last)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel));
     endproperty
-    // Cover 14 : "reg2dp_op_en & (reg2dp_split_num==8'd1) & (reg2dp_input_data== 2'h0 ) & (reg2dp_pooling_method== 2'h1 ) & (~(|reg2dp_partial_width_out_first)) & (~(|reg2dp_partial_width_out_last)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel))"
+    // Cover 14 : "reg2dp_op_en & (reg2dp_split_num==8'd1) & (reg2dp_pooling_method== 2'h1 ) & (~(|reg2dp_partial_width_out_first)) & (~(|reg2dp_partial_width_out_last)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel))"
     FUNCPOINT_PDP_min_cube_out__1_1_1_cube_out_int8_split2_max_pooling__14_COV : cover property (PDP_min_cube_out__1_1_1_cube_out_int8_split2_max_pooling__14_cov);
 
   `endif
 `endif
 //VCS coverage on
 
-//VCS coverage off
-`ifndef DISABLE_FUNCPOINT
-  `ifdef ENABLE_FUNCPOINT
-
-    property PDP_min_cube_out__1_1_1_cube_out_fp16_split2_min_pooling__15_cov;
-        disable iff((nvdla_core_rstn !== 1) || funcpoint_cover_off)
-        @(posedge nvdla_core_clk)
-        reg2dp_op_en & (reg2dp_split_num==8'd1) & (reg2dp_input_data== 2'h2 ) & (reg2dp_pooling_method== 2'h2 ) & (~(|reg2dp_partial_width_out_first)) & (~(|reg2dp_partial_width_out_last)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel));
-    endproperty
-    // Cover 15 : "reg2dp_op_en & (reg2dp_split_num==8'd1) & (reg2dp_input_data== 2'h2 ) & (reg2dp_pooling_method== 2'h2 ) & (~(|reg2dp_partial_width_out_first)) & (~(|reg2dp_partial_width_out_last)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel))"
-    FUNCPOINT_PDP_min_cube_out__1_1_1_cube_out_fp16_split2_min_pooling__15_COV : cover property (PDP_min_cube_out__1_1_1_cube_out_fp16_split2_min_pooling__15_cov);
-
-  `endif
-`endif
-//VCS coverage on
-
-//VCS coverage off
-`ifndef DISABLE_FUNCPOINT
-  `ifdef ENABLE_FUNCPOINT
-
-    property PDP_min_cube_out__1_1_1_cube_out_int16_split2_min_pooling__16_cov;
-        disable iff((nvdla_core_rstn !== 1) || funcpoint_cover_off)
-        @(posedge nvdla_core_clk)
-        reg2dp_op_en & (reg2dp_split_num==8'd1) & (reg2dp_input_data== 2'h1 ) & (reg2dp_pooling_method== 2'h2 ) & (~(|reg2dp_partial_width_out_first)) & (~(|reg2dp_partial_width_out_last)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel));
-    endproperty
-    // Cover 16 : "reg2dp_op_en & (reg2dp_split_num==8'd1) & (reg2dp_input_data== 2'h1 ) & (reg2dp_pooling_method== 2'h2 ) & (~(|reg2dp_partial_width_out_first)) & (~(|reg2dp_partial_width_out_last)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel))"
-    FUNCPOINT_PDP_min_cube_out__1_1_1_cube_out_int16_split2_min_pooling__16_COV : cover property (PDP_min_cube_out__1_1_1_cube_out_int16_split2_min_pooling__16_cov);
-
-  `endif
-`endif
-//VCS coverage on
+// //VCS coverage off
+// `ifndef DISABLE_FUNCPOINT
+//   `ifdef ENABLE_FUNCPOINT
+// 
+//     property PDP_min_cube_out__1_1_1_cube_out_fp16_split2_min_pooling__15_cov;
+//         disable iff((nvdla_core_rstn !== 1) || funcpoint_cover_off)
+//         @(posedge nvdla_core_clk)
+//         reg2dp_op_en & (reg2dp_split_num==8'd1) & (reg2dp_input_data== 2'h2 ) & (reg2dp_pooling_method== 2'h2 ) & (~(|reg2dp_partial_width_out_first)) & (~(|reg2dp_partial_width_out_last)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel));
+//     endproperty
+//     // Cover 15 : "reg2dp_op_en & (reg2dp_split_num==8'd1) & (reg2dp_input_data== 2'h2 ) & (reg2dp_pooling_method== 2'h2 ) & (~(|reg2dp_partial_width_out_first)) & (~(|reg2dp_partial_width_out_last)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel))"
+//     FUNCPOINT_PDP_min_cube_out__1_1_1_cube_out_fp16_split2_min_pooling__15_COV : cover property (PDP_min_cube_out__1_1_1_cube_out_fp16_split2_min_pooling__15_cov);
+// 
+//   `endif
+// `endif
+// //VCS coverage on
+// 
+// //VCS coverage off
+// `ifndef DISABLE_FUNCPOINT
+//   `ifdef ENABLE_FUNCPOINT
+// 
+//     property PDP_min_cube_out__1_1_1_cube_out_int16_split2_min_pooling__16_cov;
+//         disable iff((nvdla_core_rstn !== 1) || funcpoint_cover_off)
+//         @(posedge nvdla_core_clk)
+//         reg2dp_op_en & (reg2dp_split_num==8'd1) & (reg2dp_input_data== 2'h1 ) & (reg2dp_pooling_method== 2'h2 ) & (~(|reg2dp_partial_width_out_first)) & (~(|reg2dp_partial_width_out_last)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel));
+//     endproperty
+//     // Cover 16 : "reg2dp_op_en & (reg2dp_split_num==8'd1) & (reg2dp_input_data== 2'h1 ) & (reg2dp_pooling_method== 2'h2 ) & (~(|reg2dp_partial_width_out_first)) & (~(|reg2dp_partial_width_out_last)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel))"
+//     FUNCPOINT_PDP_min_cube_out__1_1_1_cube_out_int16_split2_min_pooling__16_COV : cover property (PDP_min_cube_out__1_1_1_cube_out_int16_split2_min_pooling__16_cov);
+// 
+//   `endif
+// `endif
+// //VCS coverage on
 
 //VCS coverage off
 `ifndef DISABLE_FUNCPOINT
@@ -1423,9 +1090,9 @@ input   tmc2slcg_disable_clock_gating;
     property PDP_min_cube_out__1_1_1_cube_out_int8_split2_min_pooling__17_cov;
         disable iff((nvdla_core_rstn !== 1) || funcpoint_cover_off)
         @(posedge nvdla_core_clk)
-        reg2dp_op_en & (reg2dp_split_num==8'd1) & (reg2dp_input_data== 2'h0 ) & (reg2dp_pooling_method== 2'h2 ) & (~(|reg2dp_partial_width_out_first)) & (~(|reg2dp_partial_width_out_last)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel));
+        reg2dp_op_en & (reg2dp_split_num==8'd1) & (reg2dp_pooling_method== 2'h2 ) & (~(|reg2dp_partial_width_out_first)) & (~(|reg2dp_partial_width_out_last)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel));
     endproperty
-    // Cover 17 : "reg2dp_op_en & (reg2dp_split_num==8'd1) & (reg2dp_input_data== 2'h0 ) & (reg2dp_pooling_method== 2'h2 ) & (~(|reg2dp_partial_width_out_first)) & (~(|reg2dp_partial_width_out_last)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel))"
+    // Cover 17 : "reg2dp_op_en & (reg2dp_split_num==8'd1) & (reg2dp_pooling_method== 2'h2 ) & (~(|reg2dp_partial_width_out_first)) & (~(|reg2dp_partial_width_out_last)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel))"
     FUNCPOINT_PDP_min_cube_out__1_1_1_cube_out_int8_split2_min_pooling__17_COV : cover property (PDP_min_cube_out__1_1_1_cube_out_int8_split2_min_pooling__17_cov);
 
   `endif
@@ -1434,37 +1101,37 @@ input   tmc2slcg_disable_clock_gating;
 
 
 //1*1*1 cube output for split >2 mode
-//VCS coverage off
-`ifndef DISABLE_FUNCPOINT
-  `ifdef ENABLE_FUNCPOINT
-
-    property PDP_min_cube_out__1_1_1_cube_out_fp16_split3_average_pooling__18_cov;
-        disable iff((nvdla_core_rstn !== 1) || funcpoint_cover_off)
-        @(posedge nvdla_core_clk)
-        reg2dp_op_en & (reg2dp_split_num>=8'd2) & (reg2dp_input_data== 2'h2 ) & (reg2dp_pooling_method== 2'h0 ) & (~(|reg2dp_partial_width_out_first)) & (~(|reg2dp_partial_width_out_last)) & (~(|reg2dp_partial_width_out_mid)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel));
-    endproperty
-    // Cover 18 : "reg2dp_op_en & (reg2dp_split_num>=8'd2) & (reg2dp_input_data== 2'h2 ) & (reg2dp_pooling_method== 2'h0 ) & (~(|reg2dp_partial_width_out_first)) & (~(|reg2dp_partial_width_out_last)) & (~(|reg2dp_partial_width_out_mid)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel))"
-    FUNCPOINT_PDP_min_cube_out__1_1_1_cube_out_fp16_split3_average_pooling__18_COV : cover property (PDP_min_cube_out__1_1_1_cube_out_fp16_split3_average_pooling__18_cov);
-
-  `endif
-`endif
-//VCS coverage on
-
-//VCS coverage off
-`ifndef DISABLE_FUNCPOINT
-  `ifdef ENABLE_FUNCPOINT
-
-    property PDP_min_cube_out__1_1_1_cube_out_int16_split3_average_pooling__19_cov;
-        disable iff((nvdla_core_rstn !== 1) || funcpoint_cover_off)
-        @(posedge nvdla_core_clk)
-        reg2dp_op_en & (reg2dp_split_num>=8'd2) & (reg2dp_input_data== 2'h1 ) & (reg2dp_pooling_method== 2'h0 ) & (~(|reg2dp_partial_width_out_first)) & (~(|reg2dp_partial_width_out_last)) & (~(|reg2dp_partial_width_out_mid)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel));
-    endproperty
-    // Cover 19 : "reg2dp_op_en & (reg2dp_split_num>=8'd2) & (reg2dp_input_data== 2'h1 ) & (reg2dp_pooling_method== 2'h0 ) & (~(|reg2dp_partial_width_out_first)) & (~(|reg2dp_partial_width_out_last)) & (~(|reg2dp_partial_width_out_mid)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel))"
-    FUNCPOINT_PDP_min_cube_out__1_1_1_cube_out_int16_split3_average_pooling__19_COV : cover property (PDP_min_cube_out__1_1_1_cube_out_int16_split3_average_pooling__19_cov);
-
-  `endif
-`endif
-//VCS coverage on
+// //VCS coverage off
+// `ifndef DISABLE_FUNCPOINT
+//   `ifdef ENABLE_FUNCPOINT
+// 
+//     property PDP_min_cube_out__1_1_1_cube_out_fp16_split3_average_pooling__18_cov;
+//         disable iff((nvdla_core_rstn !== 1) || funcpoint_cover_off)
+//         @(posedge nvdla_core_clk)
+//         reg2dp_op_en & (reg2dp_split_num>=8'd2) & (reg2dp_input_data== 2'h2 ) & (reg2dp_pooling_method== 2'h0 ) & (~(|reg2dp_partial_width_out_first)) & (~(|reg2dp_partial_width_out_last)) & (~(|reg2dp_partial_width_out_mid)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel));
+//     endproperty
+//     // Cover 18 : "reg2dp_op_en & (reg2dp_split_num>=8'd2) & (reg2dp_input_data== 2'h2 ) & (reg2dp_pooling_method== 2'h0 ) & (~(|reg2dp_partial_width_out_first)) & (~(|reg2dp_partial_width_out_last)) & (~(|reg2dp_partial_width_out_mid)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel))"
+//     FUNCPOINT_PDP_min_cube_out__1_1_1_cube_out_fp16_split3_average_pooling__18_COV : cover property (PDP_min_cube_out__1_1_1_cube_out_fp16_split3_average_pooling__18_cov);
+// 
+//   `endif
+// `endif
+// //VCS coverage on
+// 
+// //VCS coverage off
+// `ifndef DISABLE_FUNCPOINT
+//   `ifdef ENABLE_FUNCPOINT
+// 
+//     property PDP_min_cube_out__1_1_1_cube_out_int16_split3_average_pooling__19_cov;
+//         disable iff((nvdla_core_rstn !== 1) || funcpoint_cover_off)
+//         @(posedge nvdla_core_clk)
+//         reg2dp_op_en & (reg2dp_split_num>=8'd2) & (reg2dp_input_data== 2'h1 ) & (reg2dp_pooling_method== 2'h0 ) & (~(|reg2dp_partial_width_out_first)) & (~(|reg2dp_partial_width_out_last)) & (~(|reg2dp_partial_width_out_mid)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel));
+//     endproperty
+//     // Cover 19 : "reg2dp_op_en & (reg2dp_split_num>=8'd2) & (reg2dp_input_data== 2'h1 ) & (reg2dp_pooling_method== 2'h0 ) & (~(|reg2dp_partial_width_out_first)) & (~(|reg2dp_partial_width_out_last)) & (~(|reg2dp_partial_width_out_mid)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel))"
+//     FUNCPOINT_PDP_min_cube_out__1_1_1_cube_out_int16_split3_average_pooling__19_COV : cover property (PDP_min_cube_out__1_1_1_cube_out_int16_split3_average_pooling__19_cov);
+// 
+//   `endif
+// `endif
+// //VCS coverage on
 
 //VCS coverage off
 `ifndef DISABLE_FUNCPOINT
@@ -1473,46 +1140,46 @@ input   tmc2slcg_disable_clock_gating;
     property PDP_min_cube_out__1_1_1_cube_out_int8_split3_average_pooling__20_cov;
         disable iff((nvdla_core_rstn !== 1) || funcpoint_cover_off)
         @(posedge nvdla_core_clk)
-        reg2dp_op_en & (reg2dp_split_num>=8'd2) & (reg2dp_input_data== 2'h0 ) & (reg2dp_pooling_method== 2'h0 ) & (~(|reg2dp_partial_width_out_first)) & (~(|reg2dp_partial_width_out_last)) & (~(|reg2dp_partial_width_out_mid)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel));
+        reg2dp_op_en & (reg2dp_split_num>=8'd2) & (reg2dp_pooling_method== 2'h0 ) & (~(|reg2dp_partial_width_out_first)) & (~(|reg2dp_partial_width_out_last)) & (~(|reg2dp_partial_width_out_mid)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel));
     endproperty
-    // Cover 20 : "reg2dp_op_en & (reg2dp_split_num>=8'd2) & (reg2dp_input_data== 2'h0 ) & (reg2dp_pooling_method== 2'h0 ) & (~(|reg2dp_partial_width_out_first)) & (~(|reg2dp_partial_width_out_last)) & (~(|reg2dp_partial_width_out_mid)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel))"
+    // Cover 20 : "reg2dp_op_en & (reg2dp_split_num>=8'd2) & (reg2dp_pooling_method== 2'h0 ) & (~(|reg2dp_partial_width_out_first)) & (~(|reg2dp_partial_width_out_last)) & (~(|reg2dp_partial_width_out_mid)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel))"
     FUNCPOINT_PDP_min_cube_out__1_1_1_cube_out_int8_split3_average_pooling__20_COV : cover property (PDP_min_cube_out__1_1_1_cube_out_int8_split3_average_pooling__20_cov);
 
   `endif
 `endif
 //VCS coverage on
 
-//VCS coverage off
-`ifndef DISABLE_FUNCPOINT
-  `ifdef ENABLE_FUNCPOINT
-
-    property PDP_min_cube_out__1_1_1_cube_out_fp16_split3_max_pooling__21_cov;
-        disable iff((nvdla_core_rstn !== 1) || funcpoint_cover_off)
-        @(posedge nvdla_core_clk)
-        reg2dp_op_en & (reg2dp_split_num>=8'd2) & (reg2dp_input_data== 2'h2 ) & (reg2dp_pooling_method== 2'h1 ) & (~(|reg2dp_partial_width_out_first)) & (~(|reg2dp_partial_width_out_last)) & (~(|reg2dp_partial_width_out_mid)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel));
-    endproperty
-    // Cover 21 : "reg2dp_op_en & (reg2dp_split_num>=8'd2) & (reg2dp_input_data== 2'h2 ) & (reg2dp_pooling_method== 2'h1 ) & (~(|reg2dp_partial_width_out_first)) & (~(|reg2dp_partial_width_out_last)) & (~(|reg2dp_partial_width_out_mid)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel))"
-    FUNCPOINT_PDP_min_cube_out__1_1_1_cube_out_fp16_split3_max_pooling__21_COV : cover property (PDP_min_cube_out__1_1_1_cube_out_fp16_split3_max_pooling__21_cov);
-
-  `endif
-`endif
-//VCS coverage on
-
-//VCS coverage off
-`ifndef DISABLE_FUNCPOINT
-  `ifdef ENABLE_FUNCPOINT
-
-    property PDP_min_cube_out__1_1_1_cube_out_int16_split3_max_pooling__22_cov;
-        disable iff((nvdla_core_rstn !== 1) || funcpoint_cover_off)
-        @(posedge nvdla_core_clk)
-        reg2dp_op_en & (reg2dp_split_num>=8'd2) & (reg2dp_input_data== 2'h1 ) & (reg2dp_pooling_method== 2'h1 ) & (~(|reg2dp_partial_width_out_first)) & (~(|reg2dp_partial_width_out_last)) & (~(|reg2dp_partial_width_out_mid)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel));
-    endproperty
-    // Cover 22 : "reg2dp_op_en & (reg2dp_split_num>=8'd2) & (reg2dp_input_data== 2'h1 ) & (reg2dp_pooling_method== 2'h1 ) & (~(|reg2dp_partial_width_out_first)) & (~(|reg2dp_partial_width_out_last)) & (~(|reg2dp_partial_width_out_mid)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel))"
-    FUNCPOINT_PDP_min_cube_out__1_1_1_cube_out_int16_split3_max_pooling__22_COV : cover property (PDP_min_cube_out__1_1_1_cube_out_int16_split3_max_pooling__22_cov);
-
-  `endif
-`endif
-//VCS coverage on
+// //VCS coverage off
+// `ifndef DISABLE_FUNCPOINT
+//   `ifdef ENABLE_FUNCPOINT
+// 
+//     property PDP_min_cube_out__1_1_1_cube_out_fp16_split3_max_pooling__21_cov;
+//         disable iff((nvdla_core_rstn !== 1) || funcpoint_cover_off)
+//         @(posedge nvdla_core_clk)
+//         reg2dp_op_en & (reg2dp_split_num>=8'd2) & (reg2dp_input_data== 2'h2 ) & (reg2dp_pooling_method== 2'h1 ) & (~(|reg2dp_partial_width_out_first)) & (~(|reg2dp_partial_width_out_last)) & (~(|reg2dp_partial_width_out_mid)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel));
+//     endproperty
+//     // Cover 21 : "reg2dp_op_en & (reg2dp_split_num>=8'd2) & (reg2dp_input_data== 2'h2 ) & (reg2dp_pooling_method== 2'h1 ) & (~(|reg2dp_partial_width_out_first)) & (~(|reg2dp_partial_width_out_last)) & (~(|reg2dp_partial_width_out_mid)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel))"
+//     FUNCPOINT_PDP_min_cube_out__1_1_1_cube_out_fp16_split3_max_pooling__21_COV : cover property (PDP_min_cube_out__1_1_1_cube_out_fp16_split3_max_pooling__21_cov);
+// 
+//   `endif
+// `endif
+// //VCS coverage on
+// 
+// //VCS coverage off
+// `ifndef DISABLE_FUNCPOINT
+//   `ifdef ENABLE_FUNCPOINT
+// 
+//     property PDP_min_cube_out__1_1_1_cube_out_int16_split3_max_pooling__22_cov;
+//         disable iff((nvdla_core_rstn !== 1) || funcpoint_cover_off)
+//         @(posedge nvdla_core_clk)
+//         reg2dp_op_en & (reg2dp_split_num>=8'd2) & (reg2dp_input_data== 2'h1 ) & (reg2dp_pooling_method== 2'h1 ) & (~(|reg2dp_partial_width_out_first)) & (~(|reg2dp_partial_width_out_last)) & (~(|reg2dp_partial_width_out_mid)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel));
+//     endproperty
+//     // Cover 22 : "reg2dp_op_en & (reg2dp_split_num>=8'd2) & (reg2dp_input_data== 2'h1 ) & (reg2dp_pooling_method== 2'h1 ) & (~(|reg2dp_partial_width_out_first)) & (~(|reg2dp_partial_width_out_last)) & (~(|reg2dp_partial_width_out_mid)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel))"
+//     FUNCPOINT_PDP_min_cube_out__1_1_1_cube_out_int16_split3_max_pooling__22_COV : cover property (PDP_min_cube_out__1_1_1_cube_out_int16_split3_max_pooling__22_cov);
+// 
+//   `endif
+// `endif
+// //VCS coverage on
 
 //VCS coverage off
 `ifndef DISABLE_FUNCPOINT
@@ -1521,46 +1188,46 @@ input   tmc2slcg_disable_clock_gating;
     property PDP_min_cube_out__1_1_1_cube_out_int8_split3_max_pooling__23_cov;
         disable iff((nvdla_core_rstn !== 1) || funcpoint_cover_off)
         @(posedge nvdla_core_clk)
-        reg2dp_op_en & (reg2dp_split_num>=8'd2) & (reg2dp_input_data== 2'h0 ) & (reg2dp_pooling_method== 2'h1 ) & (~(|reg2dp_partial_width_out_first)) & (~(|reg2dp_partial_width_out_last)) & (~(|reg2dp_partial_width_out_mid)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel));
+        reg2dp_op_en & (reg2dp_split_num>=8'd2) & (reg2dp_pooling_method== 2'h1 ) & (~(|reg2dp_partial_width_out_first)) & (~(|reg2dp_partial_width_out_last)) & (~(|reg2dp_partial_width_out_mid)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel));
     endproperty
-    // Cover 23 : "reg2dp_op_en & (reg2dp_split_num>=8'd2) & (reg2dp_input_data== 2'h0 ) & (reg2dp_pooling_method== 2'h1 ) & (~(|reg2dp_partial_width_out_first)) & (~(|reg2dp_partial_width_out_last)) & (~(|reg2dp_partial_width_out_mid)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel))"
+    // Cover 23 : "reg2dp_op_en & (reg2dp_split_num>=8'd2) & (reg2dp_pooling_method== 2'h1 ) & (~(|reg2dp_partial_width_out_first)) & (~(|reg2dp_partial_width_out_last)) & (~(|reg2dp_partial_width_out_mid)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel))"
     FUNCPOINT_PDP_min_cube_out__1_1_1_cube_out_int8_split3_max_pooling__23_COV : cover property (PDP_min_cube_out__1_1_1_cube_out_int8_split3_max_pooling__23_cov);
 
   `endif
 `endif
 //VCS coverage on
 
-//VCS coverage off
-`ifndef DISABLE_FUNCPOINT
-  `ifdef ENABLE_FUNCPOINT
-
-    property PDP_min_cube_out__1_1_1_cube_out_fp16_split3_min_pooling__24_cov;
-        disable iff((nvdla_core_rstn !== 1) || funcpoint_cover_off)
-        @(posedge nvdla_core_clk)
-        reg2dp_op_en & (reg2dp_split_num>=8'd2) & (reg2dp_input_data== 2'h2 ) & (reg2dp_pooling_method== 2'h2 ) & (~(|reg2dp_partial_width_out_first)) & (~(|reg2dp_partial_width_out_last)) & (~(|reg2dp_partial_width_out_mid)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel));
-    endproperty
-    // Cover 24 : "reg2dp_op_en & (reg2dp_split_num>=8'd2) & (reg2dp_input_data== 2'h2 ) & (reg2dp_pooling_method== 2'h2 ) & (~(|reg2dp_partial_width_out_first)) & (~(|reg2dp_partial_width_out_last)) & (~(|reg2dp_partial_width_out_mid)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel))"
-    FUNCPOINT_PDP_min_cube_out__1_1_1_cube_out_fp16_split3_min_pooling__24_COV : cover property (PDP_min_cube_out__1_1_1_cube_out_fp16_split3_min_pooling__24_cov);
-
-  `endif
-`endif
-//VCS coverage on
-
-//VCS coverage off
-`ifndef DISABLE_FUNCPOINT
-  `ifdef ENABLE_FUNCPOINT
-
-    property PDP_min_cube_out__1_1_1_cube_out_int16_split3_min_pooling__25_cov;
-        disable iff((nvdla_core_rstn !== 1) || funcpoint_cover_off)
-        @(posedge nvdla_core_clk)
-        reg2dp_op_en & (reg2dp_split_num>=8'd2) & (reg2dp_input_data== 2'h1 ) & (reg2dp_pooling_method== 2'h2 ) & (~(|reg2dp_partial_width_out_first)) & (~(|reg2dp_partial_width_out_last)) & (~(|reg2dp_partial_width_out_mid)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel));
-    endproperty
-    // Cover 25 : "reg2dp_op_en & (reg2dp_split_num>=8'd2) & (reg2dp_input_data== 2'h1 ) & (reg2dp_pooling_method== 2'h2 ) & (~(|reg2dp_partial_width_out_first)) & (~(|reg2dp_partial_width_out_last)) & (~(|reg2dp_partial_width_out_mid)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel))"
-    FUNCPOINT_PDP_min_cube_out__1_1_1_cube_out_int16_split3_min_pooling__25_COV : cover property (PDP_min_cube_out__1_1_1_cube_out_int16_split3_min_pooling__25_cov);
-
-  `endif
-`endif
-//VCS coverage on
+// //VCS coverage off
+// `ifndef DISABLE_FUNCPOINT
+//   `ifdef ENABLE_FUNCPOINT
+// 
+//     property PDP_min_cube_out__1_1_1_cube_out_fp16_split3_min_pooling__24_cov;
+//         disable iff((nvdla_core_rstn !== 1) || funcpoint_cover_off)
+//         @(posedge nvdla_core_clk)
+//         reg2dp_op_en & (reg2dp_split_num>=8'd2) & (reg2dp_input_data== 2'h2 ) & (reg2dp_pooling_method== 2'h2 ) & (~(|reg2dp_partial_width_out_first)) & (~(|reg2dp_partial_width_out_last)) & (~(|reg2dp_partial_width_out_mid)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel));
+//     endproperty
+//     // Cover 24 : "reg2dp_op_en & (reg2dp_split_num>=8'd2) & (reg2dp_input_data== 2'h2 ) & (reg2dp_pooling_method== 2'h2 ) & (~(|reg2dp_partial_width_out_first)) & (~(|reg2dp_partial_width_out_last)) & (~(|reg2dp_partial_width_out_mid)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel))"
+//     FUNCPOINT_PDP_min_cube_out__1_1_1_cube_out_fp16_split3_min_pooling__24_COV : cover property (PDP_min_cube_out__1_1_1_cube_out_fp16_split3_min_pooling__24_cov);
+// 
+//   `endif
+// `endif
+// //VCS coverage on
+// 
+// //VCS coverage off
+// `ifndef DISABLE_FUNCPOINT
+//   `ifdef ENABLE_FUNCPOINT
+// 
+//     property PDP_min_cube_out__1_1_1_cube_out_int16_split3_min_pooling__25_cov;
+//         disable iff((nvdla_core_rstn !== 1) || funcpoint_cover_off)
+//         @(posedge nvdla_core_clk)
+//         reg2dp_op_en & (reg2dp_split_num>=8'd2) & (reg2dp_input_data== 2'h1 ) & (reg2dp_pooling_method== 2'h2 ) & (~(|reg2dp_partial_width_out_first)) & (~(|reg2dp_partial_width_out_last)) & (~(|reg2dp_partial_width_out_mid)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel));
+//     endproperty
+//     // Cover 25 : "reg2dp_op_en & (reg2dp_split_num>=8'd2) & (reg2dp_input_data== 2'h1 ) & (reg2dp_pooling_method== 2'h2 ) & (~(|reg2dp_partial_width_out_first)) & (~(|reg2dp_partial_width_out_last)) & (~(|reg2dp_partial_width_out_mid)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel))"
+//     FUNCPOINT_PDP_min_cube_out__1_1_1_cube_out_int16_split3_min_pooling__25_COV : cover property (PDP_min_cube_out__1_1_1_cube_out_int16_split3_min_pooling__25_cov);
+// 
+//   `endif
+// `endif
+// //VCS coverage on
 
 //VCS coverage off
 `ifndef DISABLE_FUNCPOINT
@@ -1569,9 +1236,9 @@ input   tmc2slcg_disable_clock_gating;
     property PDP_min_cube_out__1_1_1_cube_out_int8_split3_min_pooling__26_cov;
         disable iff((nvdla_core_rstn !== 1) || funcpoint_cover_off)
         @(posedge nvdla_core_clk)
-        reg2dp_op_en & (reg2dp_split_num>=8'd2) & (reg2dp_input_data== 2'h0 ) & (reg2dp_pooling_method== 2'h2 ) & (~(|reg2dp_partial_width_out_first)) & (~(|reg2dp_partial_width_out_last)) & (~(|reg2dp_partial_width_out_mid)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel));
+        reg2dp_op_en & (reg2dp_split_num>=8'd2) & (reg2dp_pooling_method== 2'h2 ) & (~(|reg2dp_partial_width_out_first)) & (~(|reg2dp_partial_width_out_last)) & (~(|reg2dp_partial_width_out_mid)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel));
     endproperty
-    // Cover 26 : "reg2dp_op_en & (reg2dp_split_num>=8'd2) & (reg2dp_input_data== 2'h0 ) & (reg2dp_pooling_method== 2'h2 ) & (~(|reg2dp_partial_width_out_first)) & (~(|reg2dp_partial_width_out_last)) & (~(|reg2dp_partial_width_out_mid)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel))"
+    // Cover 26 : "reg2dp_op_en & (reg2dp_split_num>=8'd2) & (reg2dp_pooling_method== 2'h2 ) & (~(|reg2dp_partial_width_out_first)) & (~(|reg2dp_partial_width_out_last)) & (~(|reg2dp_partial_width_out_mid)) & (~(|reg2dp_cube_out_height)) & (~(|reg2dp_cube_out_channel))"
     FUNCPOINT_PDP_min_cube_out__1_1_1_cube_out_int8_split3_min_pooling__26_COV : cover property (PDP_min_cube_out__1_1_1_cube_out_int8_split3_min_pooling__26_cov);
 
   `endif
@@ -2456,69 +2123,69 @@ end
 // spyglass enable_block WRN_58 
 // spyglass enable_block WRN_61 
 `endif // SPYGLASS_ASSERT_ON
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-  if (!nvdla_core_rstn) begin
-    // spyglass disable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-    mon_reg2dp_input_data <= {2{1'b0}};
-    // spyglass enable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-  end else begin
-  if ((mon_op_en_pos) == 1'b1) begin
-    mon_reg2dp_input_data <= reg2dp_input_data;
-  // VCS coverage off
-  end else if ((mon_op_en_pos) == 1'b0) begin
-  end else begin
-    mon_reg2dp_input_data <= 'bx;  // spyglass disable STARC-2.10.1.6 W443 NoWidthInBasedNum-ML -- (Constant containing x or z used, Based number `bx contains an X, Width specification missing for based number)
-  // VCS coverage on
-  end
-  end
-end
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-`ifndef SYNTHESIS
-  // VCS coverage off 
-  nv_assert_no_x #(0,1,0,"No X's allowed on control signals")      zzz_assert_no_x_27x (nvdla_core_clk, `ASSERT_RESET, 1'd1,  (^(mon_op_en_pos))); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`endif
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
+// always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
+//   if (!nvdla_core_rstn) begin
+//     // spyglass disable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
+//     mon_reg2dp_input_data <= {2{1'b0}};
+//     // spyglass enable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
+//   end else begin
+//   if ((mon_op_en_pos) == 1'b1) begin
+//     mon_reg2dp_input_data <= reg2dp_input_data;
+//   // VCS coverage off
+//   end else if ((mon_op_en_pos) == 1'b0) begin
+//   end else begin
+//     mon_reg2dp_input_data <= 'bx;  // spyglass disable STARC-2.10.1.6 W443 NoWidthInBasedNum-ML -- (Constant containing x or z used, Based number `bx contains an X, Width specification missing for based number)
+//   // VCS coverage on
+//   end
+//   end
+// end
+// `ifdef SPYGLASS_ASSERT_ON
+// `else
+// // spyglass disable_block NoWidthInBasedNum-ML 
+// // spyglass disable_block STARC-2.10.3.2a 
+// // spyglass disable_block STARC05-2.1.3.1 
+// // spyglass disable_block STARC-2.1.4.6 
+// // spyglass disable_block W116 
+// // spyglass disable_block W154 
+// // spyglass disable_block W239 
+// // spyglass disable_block W362 
+// // spyglass disable_block WRN_58 
+// // spyglass disable_block WRN_61 
+// `endif // SPYGLASS_ASSERT_ON
+// `ifdef ASSERT_ON
+// `ifdef FV_ASSERT_ON
+// `define ASSERT_RESET nvdla_core_rstn
+// `else
+// `ifdef SYNTHESIS
+// `define ASSERT_RESET nvdla_core_rstn
+// `else
+// `ifdef ASSERT_OFF_RESET_IS_X
+// `define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
+// `else
+// `define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
+// `endif // ASSERT_OFF_RESET_IS_X
+// `endif // SYNTHESIS
+// `endif // FV_ASSERT_ON
+// `ifndef SYNTHESIS
+//   // VCS coverage off 
+//   nv_assert_no_x #(0,1,0,"No X's allowed on control signals")      zzz_assert_no_x_27x (nvdla_core_clk, `ASSERT_RESET, 1'd1,  (^(mon_op_en_pos))); // spyglass disable W504 SelfDeterminedExpr-ML 
+//   // VCS coverage on
+// `endif
+// `undef ASSERT_RESET
+// `endif // ASSERT_ON
+// `ifdef SPYGLASS_ASSERT_ON
+// `else
+// // spyglass enable_block NoWidthInBasedNum-ML 
+// // spyglass enable_block STARC-2.10.3.2a 
+// // spyglass enable_block STARC05-2.1.3.1 
+// // spyglass enable_block STARC-2.1.4.6 
+// // spyglass enable_block W116 
+// // spyglass enable_block W154 
+// // spyglass enable_block W239 
+// // spyglass enable_block W362 
+// // spyglass enable_block WRN_58 
+// // spyglass enable_block WRN_61 
+// `endif // SPYGLASS_ASSERT_ON
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
     // spyglass disable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
@@ -3436,21 +3103,21 @@ end
 `endif
 //VCS coverage on
 
-//VCS coverage off
-`ifndef DISABLE_FUNCPOINT
-  `ifdef ENABLE_FUNCPOINT
-
-    property PDP_CORE_two_continuous_changed_layer__change_data_type__42_cov;
-        disable iff((nvdla_core_rstn !== 1) || funcpoint_cover_off)
-        @(posedge nvdla_core_clk)
-        ((mon_op_en_pos) && nvdla_core_rstn) |-> ((mon_reg2dp_input_data!=reg2dp_input_data));
-    endproperty
-    // Cover 42 : "(mon_reg2dp_input_data!=reg2dp_input_data)"
-    FUNCPOINT_PDP_CORE_two_continuous_changed_layer__change_data_type__42_COV : cover property (PDP_CORE_two_continuous_changed_layer__change_data_type__42_cov);
-
-  `endif
-`endif
-//VCS coverage on
+//  //VCS coverage off
+//  `ifndef DISABLE_FUNCPOINT
+//    `ifdef ENABLE_FUNCPOINT
+//  
+//      property PDP_CORE_two_continuous_changed_layer__change_data_type__42_cov;
+//          disable iff((nvdla_core_rstn !== 1) || funcpoint_cover_off)
+//          @(posedge nvdla_core_clk)
+//          ((mon_op_en_pos) && nvdla_core_rstn) |-> ((mon_reg2dp_input_data!=reg2dp_input_data));
+//      endproperty
+//      // Cover 42 : "(mon_reg2dp_input_data!=reg2dp_input_data)"
+//      FUNCPOINT_PDP_CORE_two_continuous_changed_layer__change_data_type__42_COV : cover property (PDP_CORE_two_continuous_changed_layer__change_data_type__42_cov);
+//  
+//    `endif
+//  `endif
+//  //VCS coverage on
 
 //VCS coverage off
 `ifndef DISABLE_FUNCPOINT

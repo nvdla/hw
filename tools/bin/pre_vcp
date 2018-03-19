@@ -1,0 +1,32 @@
+#!/usr/bin/env perl
+
+##
+## vcpp vcp pre
+##
+use strict;
+use warnings;
+use Getopt::Long;
+
+my $ifile;
+GetOptions (
+             "help|h"   => sub {usage(); exit 0},
+             "i=s"      => \$ifile,
+           ) or die "Unrecognized options @ARGV";
+
+open my $IFH,"<",$ifile or die "Can not open $ifile $!";
+
+while (my $line = <$IFH>) {
+    $line =~ s/'/_&qt&_/g;
+    $line =~ s/^\s*##/_&pdpd&_/g;
+    $line =~ s/^\s*\/\//_&slsl&_/g;
+    if ($line =~ /^\s*#\s*(define|undef|if|ifdef|ifndef|elif|else|endif|error|pragma|include)/) {
+        # keep there
+    } else {
+        $line =~ s/#/_&pd&_/g;
+    }
+    print $line;
+}
+
+close $IFH;
+
+1;

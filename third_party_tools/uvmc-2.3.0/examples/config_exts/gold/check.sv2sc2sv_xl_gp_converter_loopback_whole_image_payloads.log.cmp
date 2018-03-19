@@ -1,0 +1,30 @@
+# UVM_INFO common/producer_loopback.svh(429) @ 10000: prod [producer] [PRODUCER/CONFIG/QUERY] ADDR_WIDTH=64 DATA_WIDTH=128 LOCK_TYPE=0 CACHE_TYPE=0 PROT_TYPE=0
+# UVM_INFO common/producer_loopback.svh(429) @ 10000: prod [producer] [PRODUCER/CONFIG/QUERY] ADDR_WIDTH=64 DATA_WIDTH=128 LOCK_TYPE=2 CACHE_TYPE=14 PROT_TYPE=6
+# UVM_INFO common/producer_loopback.svh(227) @ 10000: prod [producer::run_phase()] [PRODUCER/GP/SEND] NUM_TRANSACTIONS=80 PAYLOAD_NUM_BYTES=2097152 ...
+# UVM_INFO common/producer_loopback.svh(257) @ 10800: prod [producer::run_phase()] ... done producing transactions, expectedChecksum=fb000ca8 == actualChecksum=fb000ca8 Test PASSED !
+# UVM_INFO uvm_tlm2_generic_payload.svh(892) @ 10800: reporter@@ [GP_EXT] Unable to find extension to clear
+# UVM_INFO common/producer_loopback.svh(268) @ 10800: prod [PRODUCER/END_TEST] Dropping objection to ending the test
+# UVM_INFO uvm_objection.svh(1268) @ 10800: reporter [TEST_DONE] 'run' phase is ready to proceed to the 'extract' phase
+# 
+# --- UVM Report catcher Summary ---
+# 
+# 
+# Number of demoted UVM_FATAL reports  :    0
+# Number of demoted UVM_ERROR reports  :    0
+# Number of demoted UVM_WARNING reports:    0
+# Number of caught UVM_FATAL reports   :    0
+# Number of caught UVM_ERROR reports   :    0
+# Number of caught UVM_WARNING reports :    0
+# 
+# --- UVM Report Summary ---
+# 
+# ** Report counts by severity
+# UVM_INFO :
+# UVM_WARNING :    0
+# UVM_ERROR :    0
+# UVM_FATAL :    0
+# ** Report counts by id
+# [GP_EXT]     1
+# [PRODUCER/END_TEST]     1
+# [RNTST]     1
+# [TEST_DONE]     1

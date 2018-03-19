@@ -167,10 +167,10 @@ input         nvdla_core_rstn;
 
 
 // Writable register flop/trigger outputs
-output [3:0]  data_bank;
-output [3:0]  weight_bank;
+output [4:0]  data_bank;
+output [4:0]  weight_bank;
 output [4:0]  batches;
-output [26:0] batch_stride;
+output [31:0] batch_stride;
 output [2:0]  conv_x_stride;
 output [2:0]  conv_y_stride;
 output        cvt_en;
@@ -180,8 +180,8 @@ output [15:0] cvt_scale;
 output [31:0] cya;
 output [31:0] datain_addr_high_0;
 output [31:0] datain_addr_high_1;
-output [26:0] datain_addr_low_0;
-output [26:0] datain_addr_low_1;
+output [31:0] datain_addr_low_0;
+output [31:0] datain_addr_low_1;
 output        line_packed;
 output        surf_packed;
 output        datain_ram_type;
@@ -194,10 +194,10 @@ output [12:0] datain_width;
 output [12:0] datain_channel;
 output [12:0] datain_height_ext;
 output [12:0] datain_width_ext;
-output [11:0] entries;
+output [13:0] entries;
 output [11:0] grains;
-output [26:0] line_stride;
-output [26:0] uv_line_stride;
+output [31:0] line_stride;
+output [31:0] uv_line_stride;
 output        mean_format;
 output [15:0] mean_gu;
 output [15:0] mean_ry;
@@ -219,19 +219,19 @@ output [9:0]  rsv_per_line;
 output [9:0]  rsv_per_uv_line;
 output [2:0]  rsv_height;
 output [4:0]  rsv_y_index;
-output [26:0] surf_stride;
+output [31:0] surf_stride;
 output [31:0] weight_addr_high;
-output [26:0] weight_addr_low;
-output [24:0] weight_bytes;
+output [31:0] weight_addr_low;
+output [31:0] weight_bytes;
 output        weight_format;
 output        weight_ram_type;
 output [17:0] byte_per_kernel;
 output [12:0] weight_kernel;
 output [31:0] wgs_addr_high;
-output [26:0] wgs_addr_low;
+output [31:0] wgs_addr_low;
 output [31:0] wmb_addr_high;
-output [26:0] wmb_addr_low;
-output [20:0] wmb_bytes;
+output [31:0] wmb_addr_low;
+output [27:0] wmb_bytes;
 output [5:0]  pad_bottom;
 output [4:0]  pad_left;
 output [5:0]  pad_right;
@@ -258,7 +258,7 @@ reg           arreggen_abort_on_invalid_wr;
 reg           arreggen_abort_on_rowr;
 reg           arreggen_dump;
 // leda FM_2_23 on
-reg    [26:0] batch_stride;
+reg    [31:0] batch_stride;
 reg     [4:0] batches;
 reg    [17:0] byte_per_kernel;
 reg           conv_mode;
@@ -269,12 +269,12 @@ reg    [15:0] cvt_offset;
 reg    [15:0] cvt_scale;
 reg     [5:0] cvt_truncate;
 reg    [31:0] cya;
-reg     [3:0] data_bank;
+reg     [4:0] data_bank;
 reg           data_reuse;
 reg    [31:0] datain_addr_high_0;
 reg    [31:0] datain_addr_high_1;
-reg    [26:0] datain_addr_low_0;
-reg    [26:0] datain_addr_low_1;
+reg    [31:0] datain_addr_low_0;
+reg    [31:0] datain_addr_low_1;
 reg    [12:0] datain_channel;
 reg           datain_format;
 reg    [12:0] datain_height;
@@ -283,11 +283,11 @@ reg           datain_ram_type;
 reg    [12:0] datain_width;
 reg    [12:0] datain_width_ext;
 reg           dma_en;
-reg    [11:0] entries;
+reg    [13:0] entries;
 reg    [11:0] grains;
 reg     [1:0] in_precision;
 reg           line_packed;
-reg    [26:0] line_stride;
+reg    [31:0] line_stride;
 reg    [15:0] mean_ax;
 reg    [15:0] mean_bv;
 reg           mean_format;
@@ -313,21 +313,21 @@ reg     [4:0] rsv_y_index;
 reg           skip_data_rls;
 reg           skip_weight_rls;
 reg           surf_packed;
-reg    [26:0] surf_stride;
-reg    [26:0] uv_line_stride;
+reg    [31:0] surf_stride;
+reg    [31:0] uv_line_stride;
 reg    [31:0] weight_addr_high;
-reg    [26:0] weight_addr_low;
-reg     [3:0] weight_bank;
-reg    [24:0] weight_bytes;
+reg    [31:0] weight_addr_low;
+reg     [4:0] weight_bank;
+reg    [31:0] weight_bytes;
 reg           weight_format;
 reg    [12:0] weight_kernel;
 reg           weight_ram_type;
 reg           weight_reuse;
 reg    [31:0] wgs_addr_high;
-reg    [26:0] wgs_addr_low;
+reg    [31:0] wgs_addr_low;
 reg    [31:0] wmb_addr_high;
-reg    [26:0] wmb_addr_low;
-reg    [20:0] wmb_bytes;
+reg    [31:0] wmb_addr_low;
+reg    [27:0] wmb_bytes;
 
 assign reg_offset_wr = {20'b0 , reg_offset};
 // SCR signals
@@ -389,9 +389,9 @@ wire nvdla_cdma_d_wmb_bytes_0_wren = (reg_offset_wr == (32'h5094  & 32'h00000fff
 wire nvdla_cdma_d_zero_padding_0_wren = (reg_offset_wr == (32'h50b4  & 32'h00000fff)) & reg_wr_en ;  //spyglass disable UnloadedNet-ML //(W528)
 wire nvdla_cdma_d_zero_padding_value_0_wren = (reg_offset_wr == (32'h50b8  & 32'h00000fff)) & reg_wr_en ;  //spyglass disable UnloadedNet-ML //(W528)
 
-assign nvdla_cdma_d_bank_0_out[31:0] = { 12'b0, weight_bank, 12'b0, data_bank };
+assign nvdla_cdma_d_bank_0_out[31:0] = { 11'b0, weight_bank, 11'b0, data_bank };
 assign nvdla_cdma_d_batch_number_0_out[31:0] = { 27'b0, batches };
-assign nvdla_cdma_d_batch_stride_0_out[31:0] = { batch_stride, 5'b0 };
+assign nvdla_cdma_d_batch_stride_0_out[31:0] = { batch_stride };
 assign nvdla_cdma_d_conv_stride_0_out[31:0] = { 13'b0, conv_y_stride, 13'b0, conv_x_stride };
 assign nvdla_cdma_d_cvt_cfg_0_out[31:0] = { 22'b0, cvt_truncate, 3'b0, cvt_en };
 assign nvdla_cdma_d_cvt_offset_0_out[31:0] = { 16'b0, cvt_offset };
@@ -399,20 +399,20 @@ assign nvdla_cdma_d_cvt_scale_0_out[31:0] = { 16'b0, cvt_scale };
 assign nvdla_cdma_d_cya_0_out[31:0] = { cya };
 assign nvdla_cdma_d_dain_addr_high_0_0_out[31:0] = { datain_addr_high_0 };
 assign nvdla_cdma_d_dain_addr_high_1_0_out[31:0] = { datain_addr_high_1 };
-assign nvdla_cdma_d_dain_addr_low_0_0_out[31:0] = { datain_addr_low_0, 5'b0 };
-assign nvdla_cdma_d_dain_addr_low_1_0_out[31:0] = { datain_addr_low_1, 5'b0 };
+assign nvdla_cdma_d_dain_addr_low_0_0_out[31:0] = { datain_addr_low_0 };
+assign nvdla_cdma_d_dain_addr_low_1_0_out[31:0] = { datain_addr_low_1 };
 assign nvdla_cdma_d_dain_map_0_out[31:0] = { 15'b0, surf_packed, 15'b0, line_packed };
 assign nvdla_cdma_d_dain_ram_type_0_out[31:0] = { 31'b0, datain_ram_type };
 assign nvdla_cdma_d_datain_format_0_out[31:0] = { 11'b0, pixel_sign_override, 3'b0, pixel_mapping, 2'b0, pixel_format, 7'b0, datain_format };
 assign nvdla_cdma_d_datain_size_0_0_out[31:0] = { 3'b0, datain_height, 3'b0, datain_width };
 assign nvdla_cdma_d_datain_size_1_0_out[31:0] = { 19'b0, datain_channel };
 assign nvdla_cdma_d_datain_size_ext_0_0_out[31:0] = { 3'b0, datain_height_ext, 3'b0, datain_width_ext };
-assign nvdla_cdma_d_entry_per_slice_0_out[31:0] = { 20'b0, entries };
+assign nvdla_cdma_d_entry_per_slice_0_out[31:0] = { 18'b0, entries };
 assign nvdla_cdma_d_fetch_grain_0_out[31:0] = { 20'b0, grains };
 assign nvdla_cdma_d_inf_input_data_num_0_out[31:0] = { inf_data_num };
 assign nvdla_cdma_d_inf_input_weight_num_0_out[31:0] = { inf_weight_num };
-assign nvdla_cdma_d_line_stride_0_out[31:0] = { line_stride, 5'b0 };
-assign nvdla_cdma_d_line_uv_stride_0_out[31:0] = { uv_line_stride, 5'b0 };
+assign nvdla_cdma_d_line_stride_0_out[31:0] = { line_stride };
+assign nvdla_cdma_d_line_uv_stride_0_out[31:0] = { uv_line_stride };
 assign nvdla_cdma_d_mean_format_0_out[31:0] = { 31'b0, mean_format };
 assign nvdla_cdma_d_mean_global_0_0_out[31:0] = { mean_gu, mean_ry };
 assign nvdla_cdma_d_mean_global_1_0_out[31:0] = { mean_ax, mean_bv };
@@ -429,19 +429,19 @@ assign nvdla_cdma_d_perf_wt_read_stall_0_out[31:0] = { wt_rd_stall };
 assign nvdla_cdma_d_pixel_offset_0_out[31:0] = { 13'b0, pixel_y_offset, 11'b0, pixel_x_offset };
 assign nvdla_cdma_d_reserved_x_cfg_0_out[31:0] = { 6'b0, rsv_per_uv_line, 6'b0, rsv_per_line };
 assign nvdla_cdma_d_reserved_y_cfg_0_out[31:0] = { 11'b0, rsv_y_index, 13'b0, rsv_height };
-assign nvdla_cdma_d_surf_stride_0_out[31:0] = { surf_stride, 5'b0 };
+assign nvdla_cdma_d_surf_stride_0_out[31:0] = { surf_stride };
 assign nvdla_cdma_d_weight_addr_high_0_out[31:0] = { weight_addr_high };
-assign nvdla_cdma_d_weight_addr_low_0_out[31:0] = { weight_addr_low, 5'b0 };
-assign nvdla_cdma_d_weight_bytes_0_out[31:0] = { weight_bytes, 7'b0 };
+assign nvdla_cdma_d_weight_addr_low_0_out[31:0] = { weight_addr_low };
+assign nvdla_cdma_d_weight_bytes_0_out[31:0] = { weight_bytes };
 assign nvdla_cdma_d_weight_format_0_out[31:0] = { 31'b0, weight_format };
 assign nvdla_cdma_d_weight_ram_type_0_out[31:0] = { 31'b0, weight_ram_type };
 assign nvdla_cdma_d_weight_size_0_0_out[31:0] = { 14'b0, byte_per_kernel };
 assign nvdla_cdma_d_weight_size_1_0_out[31:0] = { 19'b0, weight_kernel };
 assign nvdla_cdma_d_wgs_addr_high_0_out[31:0] = { wgs_addr_high };
-assign nvdla_cdma_d_wgs_addr_low_0_out[31:0] = { wgs_addr_low, 5'b0 };
+assign nvdla_cdma_d_wgs_addr_low_0_out[31:0] = { wgs_addr_low };
 assign nvdla_cdma_d_wmb_addr_high_0_out[31:0] = { wmb_addr_high };
-assign nvdla_cdma_d_wmb_addr_low_0_out[31:0] = { wmb_addr_low, 5'b0 };
-assign nvdla_cdma_d_wmb_bytes_0_out[31:0] = { 4'b0, wmb_bytes, 7'b0 };
+assign nvdla_cdma_d_wmb_addr_low_0_out[31:0] = { wmb_addr_low };
+assign nvdla_cdma_d_wmb_bytes_0_out[31:0] = { 4'b0, wmb_bytes };
 assign nvdla_cdma_d_zero_padding_0_out[31:0] = { 2'b0, pad_bottom, 3'b0, pad_top, 2'b0, pad_right, 3'b0, pad_left };
 assign nvdla_cdma_d_zero_padding_value_0_out[31:0] = { 16'b0, pad_value };
 
@@ -685,10 +685,10 @@ end
 // Register flop declarations
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
-    data_bank[3:0] <= 4'b0000;
-    weight_bank[3:0] <= 4'b0000;
+    data_bank[4:0] <= 5'b00000;
+    weight_bank[4:0] <= 5'b00000;
     batches[4:0] <= 5'b00000;
-    batch_stride[26:0] <= 27'b000000000000000000000000000;
+    batch_stride[31:0] <= 32'b00000000000000000000000000000000;
     conv_x_stride[2:0] <= 3'b000;
     conv_y_stride[2:0] <= 3'b000;
     cvt_en <= 1'b0;
@@ -698,8 +698,8 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     cya[31:0] <= 32'b00000000000000000000000000000000;
     datain_addr_high_0[31:0] <= 32'b00000000000000000000000000000000;
     datain_addr_high_1[31:0] <= 32'b00000000000000000000000000000000;
-    datain_addr_low_0[26:0] <= 27'b000000000000000000000000000;
-    datain_addr_low_1[26:0] <= 27'b000000000000000000000000000;
+    datain_addr_low_0[31:0] <= 32'b00000000000000000000000000000000;
+    datain_addr_low_1[31:0] <= 32'b00000000000000000000000000000000;
     line_packed <= 1'b0;
     surf_packed <= 1'b0;
     datain_ram_type <= 1'b0;
@@ -712,10 +712,10 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     datain_channel[12:0] <= 13'b0000000000000;
     datain_height_ext[12:0] <= 13'b0000000000000;
     datain_width_ext[12:0] <= 13'b0000000000000;
-    entries[11:0] <= 12'b000000000000;
+    entries[13:0] <= 14'b000000000000;
     grains[11:0] <= 12'b000000000000;
-    line_stride[26:0] <= 27'b000000000000000000000000000;
-    uv_line_stride[26:0] <= 27'b000000000000000000000000000;
+    line_stride[31:0] <= 32'b00000000000000000000000000000000;
+    uv_line_stride[31:0] <= 32'b00000000000000000000000000000000;
     mean_format <= 1'b0;
     mean_gu[15:0] <= 16'b0000000000000000;
     mean_ry[15:0] <= 16'b0000000000000000;
@@ -736,19 +736,19 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     rsv_per_uv_line[9:0] <= 10'b0000000000;
     rsv_height[2:0] <= 3'b000;
     rsv_y_index[4:0] <= 5'b00000;
-    surf_stride[26:0] <= 27'b000000000000000000000000000;
+    surf_stride[31:0] <= 32'b00000000000000000000000000000000;
     weight_addr_high[31:0] <= 32'b00000000000000000000000000000000;
-    weight_addr_low[26:0] <= 27'b000000000000000000000000000;
-    weight_bytes[24:0] <= 25'b0000000000000000000000000;
+    weight_addr_low[31:0] <= 32'b00000000000000000000000000000000;
+    weight_bytes[31:0] <= 32'b00000000000000000000000000000000;
     weight_format <= 1'b0;
     weight_ram_type <= 1'b0;
     byte_per_kernel[17:0] <= 18'b000000000000000000;
     weight_kernel[12:0] <= 13'b0000000000000;
     wgs_addr_high[31:0] <= 32'b00000000000000000000000000000000;
-    wgs_addr_low[26:0] <= 27'b000000000000000000000000000;
+    wgs_addr_low[31:0] <= 32'b00000000000000000000000000000000;
     wmb_addr_high[31:0] <= 32'b00000000000000000000000000000000;
-    wmb_addr_low[26:0] <= 27'b000000000000000000000000000;
-    wmb_bytes[20:0] <= 21'b000000000000000000000;
+    wmb_addr_low[31:0] <= 32'b00000000000000000000000000000000;
+    wmb_bytes[27:0] <= 28'b0000000000000000000000000000;
     pad_bottom[5:0] <= 6'b000000;
     pad_left[4:0] <= 5'b00000;
     pad_right[5:0] <= 6'b000000;
@@ -757,12 +757,12 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   end else begin
   // Register: NVDLA_CDMA_D_BANK_0    Field: data_bank
   if (nvdla_cdma_d_bank_0_wren) begin
-    data_bank[3:0] <= reg_wr_data[3:0];
+    data_bank[4:0] <= reg_wr_data[4:0];
   end
 
   // Register: NVDLA_CDMA_D_BANK_0    Field: weight_bank
   if (nvdla_cdma_d_bank_0_wren) begin
-    weight_bank[3:0] <= reg_wr_data[19:16];
+    weight_bank[4:0] <= reg_wr_data[20:16];
   end
 
   // Register: NVDLA_CDMA_D_BATCH_NUMBER_0    Field: batches
@@ -772,7 +772,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 
   // Register: NVDLA_CDMA_D_BATCH_STRIDE_0    Field: batch_stride
   if (nvdla_cdma_d_batch_stride_0_wren) begin
-    batch_stride[26:0] <= reg_wr_data[31:5];
+    batch_stride[31:0] <= reg_wr_data[31:0];
   end
 
   // Register: NVDLA_CDMA_D_CONV_STRIDE_0    Field: conv_x_stride
@@ -822,12 +822,12 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 
   // Register: NVDLA_CDMA_D_DAIN_ADDR_LOW_0_0    Field: datain_addr_low_0
   if (nvdla_cdma_d_dain_addr_low_0_0_wren) begin
-    datain_addr_low_0[26:0] <= reg_wr_data[31:5];
+    datain_addr_low_0[31:0] <= reg_wr_data[31:0];
   end
 
   // Register: NVDLA_CDMA_D_DAIN_ADDR_LOW_1_0    Field: datain_addr_low_1
   if (nvdla_cdma_d_dain_addr_low_1_0_wren) begin
-    datain_addr_low_1[26:0] <= reg_wr_data[31:5];
+    datain_addr_low_1[31:0] <= reg_wr_data[31:0];
   end
 
   // Register: NVDLA_CDMA_D_DAIN_MAP_0    Field: line_packed
@@ -892,7 +892,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 
   // Register: NVDLA_CDMA_D_ENTRY_PER_SLICE_0    Field: entries
   if (nvdla_cdma_d_entry_per_slice_0_wren) begin
-    entries[11:0] <= reg_wr_data[11:0];
+    entries[13:0] <= reg_wr_data[13:0];
   end
 
   // Register: NVDLA_CDMA_D_FETCH_GRAIN_0    Field: grains
@@ -906,12 +906,12 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 
   // Register: NVDLA_CDMA_D_LINE_STRIDE_0    Field: line_stride
   if (nvdla_cdma_d_line_stride_0_wren) begin
-    line_stride[26:0] <= reg_wr_data[31:5];
+    line_stride[31:0] <= reg_wr_data[31:0];
   end
 
   // Register: NVDLA_CDMA_D_LINE_UV_STRIDE_0    Field: uv_line_stride
   if (nvdla_cdma_d_line_uv_stride_0_wren) begin
-    uv_line_stride[26:0] <= reg_wr_data[31:5];
+    uv_line_stride[31:0] <= reg_wr_data[31:0];
   end
 
   // Register: NVDLA_CDMA_D_MEAN_FORMAT_0    Field: mean_format
@@ -1030,7 +1030,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 
   // Register: NVDLA_CDMA_D_SURF_STRIDE_0    Field: surf_stride
   if (nvdla_cdma_d_surf_stride_0_wren) begin
-    surf_stride[26:0] <= reg_wr_data[31:5];
+    surf_stride[31:0] <= reg_wr_data[31:0];
   end
 
   // Register: NVDLA_CDMA_D_WEIGHT_ADDR_HIGH_0    Field: weight_addr_high
@@ -1040,12 +1040,12 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 
   // Register: NVDLA_CDMA_D_WEIGHT_ADDR_LOW_0    Field: weight_addr_low
   if (nvdla_cdma_d_weight_addr_low_0_wren) begin
-    weight_addr_low[26:0] <= reg_wr_data[31:5];
+    weight_addr_low[31:0] <= reg_wr_data[31:0];
   end
 
   // Register: NVDLA_CDMA_D_WEIGHT_BYTES_0    Field: weight_bytes
   if (nvdla_cdma_d_weight_bytes_0_wren) begin
-    weight_bytes[24:0] <= reg_wr_data[31:7];
+    weight_bytes[31:0] <= reg_wr_data[31:0];
   end
 
   // Register: NVDLA_CDMA_D_WEIGHT_FORMAT_0    Field: weight_format
@@ -1075,7 +1075,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 
   // Register: NVDLA_CDMA_D_WGS_ADDR_LOW_0    Field: wgs_addr_low
   if (nvdla_cdma_d_wgs_addr_low_0_wren) begin
-    wgs_addr_low[26:0] <= reg_wr_data[31:5];
+    wgs_addr_low[31:0] <= reg_wr_data[31:0];
   end
 
   // Register: NVDLA_CDMA_D_WMB_ADDR_HIGH_0    Field: wmb_addr_high
@@ -1085,12 +1085,12 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 
   // Register: NVDLA_CDMA_D_WMB_ADDR_LOW_0    Field: wmb_addr_low
   if (nvdla_cdma_d_wmb_addr_low_0_wren) begin
-    wmb_addr_low[26:0] <= reg_wr_data[31:5];
+    wmb_addr_low[31:0] <= reg_wr_data[31:0];
   end
 
   // Register: NVDLA_CDMA_D_WMB_BYTES_0    Field: wmb_bytes
   if (nvdla_cdma_d_wmb_bytes_0_wren) begin
-    wmb_bytes[20:0] <= reg_wr_data[27:7];
+    wmb_bytes[27:0] <= reg_wr_data[27:0];
   end
 
   // Register: NVDLA_CDMA_D_ZERO_PADDING_0    Field: pad_bottom

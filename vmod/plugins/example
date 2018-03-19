@@ -1,0 +1,8 @@
+//===========================================
+// run below command and reopen this file
+// perl -Meperl -I ./ ../../tools/bin/eperl -m example
+//===========================================
+//: my $rval = "4'd3";
+//: &eperl::flop("-wid 3 -rval \"$rval\"");
+
+//: &eperl::pipe("-wid 3 -prefix eric -os");

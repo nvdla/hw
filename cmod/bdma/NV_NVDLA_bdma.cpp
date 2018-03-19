@@ -14,8 +14,8 @@
 #include "NV_NVDLA_bdma_bdma_gen.h"
 #include "BdmaCore.h"
 #include "bdmacoreconfigclass.h"
-#include "arnvdla.uh"
-#include "arnvdla.h"
+#include "opendla.uh"
+#include "opendla.h"
 #include "cmacros.uh"
 #include "math.h"
 #include "log.h"
@@ -63,7 +63,7 @@ NV_NVDLA_bdma::NV_NVDLA_bdma( sc_module_name module_name ):
     SC_METHOD(UpdateIdleStatus)
     sensitive << core_is_idle;
     SC_METHOD(UpdateFreeSlotNum)
-    sensitive << core_notify_get_config;
+    sensitive << bdma_core_config_fifo_->data_written_event() << bdma_core_config_fifo_->data_read_event();
     SC_METHOD(ClearInt0Flag)
     sensitive << bdma2glb_done_intr[0];
     SC_METHOD(ClearInt1Flag)
@@ -83,13 +83,13 @@ void NV_NVDLA_bdma::UpdateIdleStatus() {
 void NV_NVDLA_bdma::UpdateFreeSlotNum() {
     uint8_t free_slot_num;
     free_slot_num   = bdma_core_config_fifo_->num_free();
+    cslDebug((50,"Call bdma_reg_model::BdmaUpdateFreeConfigSlotNum free_slot_num=%d\n", free_slot_num));
     bdma_reg_model::BdmaUpdateFreeConfigSlotNum(free_slot_num);
 }
 
 #pragma CTC SKIP
 NV_NVDLA_bdma::~NV_NVDLA_bdma () {
     delete bdma_core_config_fifo_;
-    delete bdma_core_int_fifo_;
     delete bdma_core;
 }
 #pragma CTC ENDSKIP
@@ -156,6 +156,7 @@ void NV_NVDLA_bdma::OperationEnableTriggerThread() {
     BdmaCoreConfig bdma_config;
     while (true) {
         wait(operation_enable_event_);
+        cout << "after wait operation_enable_event_" << endl;
         // Copy data from bdma_config_class to bdma_config
         bdma_config.cfg_src_addr_low_v32_ = bdma_config_class->cfg_src_addr_low_v32_;
         bdma_config.cfg_src_addr_high_v8_ = bdma_config_class->cfg_src_addr_high_v8_;
@@ -173,11 +174,11 @@ void NV_NVDLA_bdma::OperationEnableTriggerThread() {
         bdma_config.cfg_launch0_grp0_launch_ = 0;
         bdma_config.cfg_launch1_grp1_launch_ = 0;
         bdma_core_config_fifo_->write(bdma_config);
-        //op_count++;
-        bdma_reg_model::BdmaClearOperationEnable();
-        operation_enable_clr_event_.notify();
+        cout << "after write to bdma_core_config_fifo_" << endl;
+        //bdma_reg_model::BdmaClearOperationEnable();
     }
 }
+
 #pragma CTC SKIP
 void NV_NVDLA_bdma::mcif2bdma_rd_rsp_b_transport(int ID, nvdla_dma_rd_rsp_t* payload, sc_core::sc_time& delay){
 }

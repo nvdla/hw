@@ -22,19 +22,26 @@
 #include "nvdla_dbb_extension.h"
 #include "dla_b_transport_payload.h"
 #include "systemc.h"
+#include "nvdla_config.h"
 
 #include "NV_NVDLA_cvif_base.h"
 
+#ifndef NVDLA_SECONDARY_MEMIF_MAX_BURST_LENGTH
+// fool the compiler to make it pass, if this macro is not defined, it means SECONDARY_MEMIF is not configured thus any value should be fine;
+#define NVDLA_SECONDARY_MEMIF_MAX_BURST_LENGTH  4
+#define NVDLA_SECONDARY_MEMIF_WIDTH             8
+#endif
 #undef CVIF_MAX_MEM_TRANSACTION_SIZE
-#define CVIF_MAX_MEM_TRANSACTION_SIZE       256
-#undef MCIF_MAX_MEM_TRANSACTION_SIZE
-#define MCIF_MAX_MEM_TRANSACTION_SIZE       64
-#undef  DMA_TRANSACTION_MAX_SIZE
-#define DMA_TRANSACTION_MAX_SIZE            64      //The bus width between BDMA and MCIF
-#define DMA_TRANSACTION_ATOM_SIZE           32      //The ATOM size between BDMA and MCIF
-#define AXI_TRANSACTION_ATOM_SIZE           64      //The bus width(ATOM size) on AXI bus
-#define DMA_TRANSACTION_ATOM_MAX_NUM        DMA_TRANSACTION_MAX_SIZE/DMA_TRANSACTION_ATOM_SIZE
-#define CVIF_ONGOING_WR_ACK        2
+#define CVIF_MAX_MEM_TRANSACTION_SIZE       (NVDLA_SECONDARY_MEMIF_MAX_BURST_LENGTH*NVDLA_SECONDARY_MEMIF_WIDTH/8)
+#undef  MEM_TRANSACTION_SIZE
+#define MEM_TRANSACTION_SIZE                (NVDLA_SECONDARY_MEMIF_WIDTH/8)
+#define DMA_TRANSACTION_SIZE                (DMAIF_WIDTH)
+
+// address alignment should be the same as bus width
+#define AXI_ALIGN_SIZE                      (NVDLA_SECONDARY_MEMIF_WIDTH/8)
+// NOTE: DMA_ATOMIC is different with DLA ATOMIC-M term: 1 DMA_ATOMIC means MIN_BUS_WIDTH bytes
+// while DLA ATOMI_M size equals to DLA_ATOM_SIZE bytes
+#define TRANSACTION_DMA_ATOMIC_NUM          (DMAIF_WIDTH/MIN_BUS_WIDTH)
 #define TAG_CMD                             0
 #define TAG_DATA                            1
 
@@ -230,8 +237,6 @@ class NV_NVDLA_cvif:
         int32_t                 credit_cvif2cdma_wt_rd_rsp_fifo_;
 
         // Write response ack control
-        uint32_t    bdma_wr_req_count_;
-        uint32_t    bdma_wr_rsp_count_;
         //uint32_t    bdma_wr_req_expected_ack_id_;
         uint32_t    bdma_wr_req_expected_ack;
         bool        bdma_wr_req_ack_is_got_;
@@ -249,8 +254,6 @@ class NV_NVDLA_cvif:
         // Client's write data to cvif (each entry is 32B)
         sc_core::sc_fifo <uint8_t*>  *bdma2cvif_wr_data_fifo_;
         // Write response ack control
-        uint32_t    sdp_wr_req_count_;
-        uint32_t    sdp_wr_rsp_count_;
         //uint32_t    sdp_wr_req_expected_ack_id_;
         uint32_t    sdp_wr_req_expected_ack;
         bool        sdp_wr_req_ack_is_got_;
@@ -268,8 +271,6 @@ class NV_NVDLA_cvif:
         // Client's write data to cvif (each entry is 32B)
         sc_core::sc_fifo <uint8_t*>  *sdp2cvif_wr_data_fifo_;
         // Write response ack control
-        uint32_t    pdp_wr_req_count_;
-        uint32_t    pdp_wr_rsp_count_;
         //uint32_t    pdp_wr_req_expected_ack_id_;
         uint32_t    pdp_wr_req_expected_ack;
         bool        pdp_wr_req_ack_is_got_;
@@ -287,8 +288,6 @@ class NV_NVDLA_cvif:
         // Client's write data to cvif (each entry is 32B)
         sc_core::sc_fifo <uint8_t*>  *pdp2cvif_wr_data_fifo_;
         // Write response ack control
-        uint32_t    cdp_wr_req_count_;
-        uint32_t    cdp_wr_rsp_count_;
         //uint32_t    cdp_wr_req_expected_ack_id_;
         uint32_t    cdp_wr_req_expected_ack;
         bool        cdp_wr_req_ack_is_got_;
@@ -306,8 +305,6 @@ class NV_NVDLA_cvif:
         // Client's write data to cvif (each entry is 32B)
         sc_core::sc_fifo <uint8_t*>  *cdp2cvif_wr_data_fifo_;
         // Write response ack control
-        uint32_t    rbk_wr_req_count_;
-        uint32_t    rbk_wr_rsp_count_;
         //uint32_t    rbk_wr_req_expected_ack_id_;
         uint32_t    rbk_wr_req_expected_ack;
         bool        rbk_wr_req_ack_is_got_;

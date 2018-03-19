@@ -22,16 +22,19 @@
 #include "nvdla_dbb_extension.h"
 #include "dla_b_transport_payload.h"
 #include "systemc.h"
+#include "nvdla_config.h"
 
 #include "NV_NVDLA_mcif_base.h"
 
-#define MCIF_MAX_MEM_TRANSACTION_SIZE       256
-#undef  DMA_TRANSACTION_MAX_SIZE 
-#define DMA_TRANSACTION_MAX_SIZE            64      //The bus width between BDMA and MCIF
-#define DMA_TRANSACTION_ATOM_SIZE           32      //The ATOM size between BDMA and MCIF
-#define AXI_TRANSACTION_ATOM_SIZE           64      //The bus width(ATOM size) on AXI bus
-#define DMA_TRANSACTION_ATOM_MAX_NUM        DMA_TRANSACTION_MAX_SIZE/DMA_TRANSACTION_ATOM_SIZE
-#define MCIF_ONGOING_WR_ACK        2
+#define MCIF_MAX_MEM_TRANSACTION_SIZE      (NVDLA_PRIMARY_MEMIF_WIDTH*NVDLA_PRIMARY_MEMIF_MAX_BURST_LENGTH/8)
+#undef  MEM_TRANSACTION_SIZE 
+#define MEM_TRANSACTION_SIZE                        (NVDLA_PRIMARY_MEMIF_WIDTH/8) 
+#define DMA_TRANSACTION_SIZE                        (DMAIF_WIDTH)
+
+#define AXI_ALIGN_SIZE                              (MEM_TRANSACTION_SIZE)
+// NOTE: DMA_ATOMIC is different with DLA ATOMIC-M term: 1 DMA_ATOMIC means MIN_BUS_WIDTH bytes
+// while DLA ATOMI_M size equals to DLA_ATOM_SIZE bytes
+#define TRANSACTION_DMA_ATOMIC_NUM                  (DMAIF_WIDTH/MIN_BUS_WIDTH)
 #define TAG_CMD                             0
 #define TAG_DATA                            1
 

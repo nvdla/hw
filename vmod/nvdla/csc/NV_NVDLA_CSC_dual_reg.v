@@ -97,8 +97,8 @@ input         nvdla_core_rstn;
 
 // Writable register flop/trigger outputs
 output [20:0] atomics;
-output [3:0]  data_bank;
-output [3:0]  weight_bank;
+output [4:0]  data_bank;
+output [4:0]  weight_bank;
 output [4:0]  batches;
 output [2:0]  conv_x_stride_ext;
 output [2:0]  conv_y_stride_ext;
@@ -112,7 +112,7 @@ output [12:0] dataout_width;
 output [12:0] dataout_channel;
 output [4:0]  x_dilation_ext;
 output [4:0]  y_dilation_ext;
-output [11:0] entries;
+output [13:0] entries;
 output        conv_mode;
 output        data_reuse;
 output [1:0]  in_precision;
@@ -153,7 +153,7 @@ reg           conv_mode;
 reg     [2:0] conv_x_stride_ext;
 reg     [2:0] conv_y_stride_ext;
 reg    [31:0] cya;
-reg     [3:0] data_bank;
+reg     [4:0] data_bank;
 reg           data_reuse;
 reg    [12:0] datain_channel_ext;
 reg           datain_format;
@@ -162,7 +162,7 @@ reg    [12:0] datain_width_ext;
 reg    [12:0] dataout_channel;
 reg    [12:0] dataout_height;
 reg    [12:0] dataout_width;
-reg    [11:0] entries;
+reg    [13:0] entries;
 reg     [1:0] in_precision;
 reg     [4:0] pad_left;
 reg     [4:0] pad_top;
@@ -173,7 +173,7 @@ reg    [31:0] reg_rd_data;
 reg    [11:0] rls_slices;
 reg           skip_data_rls;
 reg           skip_weight_rls;
-reg     [3:0] weight_bank;
+reg     [4:0] weight_bank;
 reg    [24:0] weight_bytes;
 reg    [12:0] weight_channel_ext;
 reg           weight_format;
@@ -216,7 +216,7 @@ wire nvdla_csc_d_zero_padding_0_wren = (reg_offset_wr == (32'h6054  & 32'h00000f
 wire nvdla_csc_d_zero_padding_value_0_wren = (reg_offset_wr == (32'h6058  & 32'h00000fff)) & reg_wr_en ;  //spyglass disable UnloadedNet-ML //(W528)
 
 assign nvdla_csc_d_atomics_0_out[31:0] = { 11'b0, atomics };
-assign nvdla_csc_d_bank_0_out[31:0] = { 12'b0, weight_bank, 12'b0, data_bank };
+assign nvdla_csc_d_bank_0_out[31:0] = { 11'b0, weight_bank, 11'b0, data_bank };
 assign nvdla_csc_d_batch_number_0_out[31:0] = { 27'b0, batches };
 assign nvdla_csc_d_conv_stride_ext_0_out[31:0] = { 13'b0, conv_y_stride_ext, 13'b0, conv_x_stride_ext };
 assign nvdla_csc_d_cya_0_out[31:0] = { cya };
@@ -226,7 +226,7 @@ assign nvdla_csc_d_datain_size_ext_1_0_out[31:0] = { 19'b0, datain_channel_ext }
 assign nvdla_csc_d_dataout_size_0_0_out[31:0] = { 3'b0, dataout_height, 3'b0, dataout_width };
 assign nvdla_csc_d_dataout_size_1_0_out[31:0] = { 19'b0, dataout_channel };
 assign nvdla_csc_d_dilation_ext_0_out[31:0] = { 11'b0, y_dilation_ext, 11'b0, x_dilation_ext };
-assign nvdla_csc_d_entry_per_slice_0_out[31:0] = { 20'b0, entries };
+assign nvdla_csc_d_entry_per_slice_0_out[31:0] = { 18'b0, entries };
 assign nvdla_csc_d_misc_cfg_0_out[31:0] = { 3'b0, skip_weight_rls, 3'b0, skip_data_rls, 3'b0, weight_reuse, 3'b0, data_reuse, 2'b0, proc_precision, 2'b0, in_precision, 7'b0, conv_mode };
 assign nvdla_csc_d_op_enable_0_out[31:0] = { 31'b0, op_en };
 assign nvdla_csc_d_post_y_extension_0_out[31:0] = { 30'b0, y_extension };
@@ -357,8 +357,8 @@ end
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
     atomics[20:0] <= 21'b000000000000000000001;
-    data_bank[3:0] <= 4'b0000;
-    weight_bank[3:0] <= 4'b0000;
+    data_bank[4:0] <= 5'b00000;
+    weight_bank[4:0] <= 5'b00000;
     batches[4:0] <= 5'b00000;
     conv_x_stride_ext[2:0] <= 3'b000;
     conv_y_stride_ext[2:0] <= 3'b000;
@@ -372,7 +372,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     dataout_channel[12:0] <= 13'b0000000000000;
     x_dilation_ext[4:0] <= 5'b00000;
     y_dilation_ext[4:0] <= 5'b00000;
-    entries[11:0] <= 12'b000000000000;
+    entries[13:0] <= 14'b00000000000000;
     conv_mode <= 1'b0;
     data_reuse <= 1'b0;
     in_precision[1:0] <= 2'b01;
@@ -401,12 +401,12 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 
   // Register: NVDLA_CSC_D_BANK_0    Field: data_bank
   if (nvdla_csc_d_bank_0_wren) begin
-    data_bank[3:0] <= reg_wr_data[3:0];
+    data_bank[4:0] <= reg_wr_data[4:0];
   end
 
   // Register: NVDLA_CSC_D_BANK_0    Field: weight_bank
   if (nvdla_csc_d_bank_0_wren) begin
-    weight_bank[3:0] <= reg_wr_data[19:16];
+    weight_bank[4:0] <= reg_wr_data[20:16];
   end
 
   // Register: NVDLA_CSC_D_BATCH_NUMBER_0    Field: batches
@@ -476,7 +476,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 
   // Register: NVDLA_CSC_D_ENTRY_PER_SLICE_0    Field: entries
   if (nvdla_csc_d_entry_per_slice_0_wren) begin
-    entries[11:0] <= reg_wr_data[11:0];
+    entries[13:0] <= reg_wr_data[13:0];
   end
 
   // Register: NVDLA_CSC_D_MISC_CFG_0    Field: conv_mode

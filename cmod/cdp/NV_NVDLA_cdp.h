@@ -26,44 +26,23 @@
 #include "cdp_rdma_reg_model.h"
 // #include "NvdlaLut.h"
 #include "systemc.h"
+#include "nvdla_config.h"
 
-#define MEM_BUSWIDTH_IN_BIT                 64
-#define PADDING_NONE                        0
-#define PADDING_ZERO                        1
-#define PADDING_MIRROR                      2
 #define CDP_RDMA_SIZE                       2048
-#define CDP_RDMA_BUFFER_CMOD_ENTRY_SIZE     1
-#define CDP_WDMA_SIZE                       256
-#define CDP_WDMA_BUFFER_CMOD_ENTRY_SIZE     1
-#undef  DMA_TRANSACTION_MAX_SIZE
-#define DMA_TRANSACTION_MAX_SIZE            256
-#define CDP_RDMA_TRANSACTION_SIZE_GRANULARITY 32
-#define CDP_WDMA_TRANSACTION_SIZE_GRANULARITY 32
-#define CDP_PRE_CALC_BUFFER_ATOM_NUM    8
-#define CDP_PRE_CALC_BUFFER_ATOM_SIZE   64
-#define CDP_POST_CALC_BUFFER_ATOM_NUM   8
-#define CDP_POST_CALC_BUFFER_ATOM_SIZE  64
+#define CDP_PRE_CALC_BUFFER_ATOM_NUM        8
 #define DATA_FORMAT_IS_INT8                 0
 #define DATA_FORMAT_IS_INT16                1
 #define DATA_FORMAT_IS_FP16                 2
-#define ELEMENT_SIZE_INT8                   1
-#define ELEMENT_SIZE_INT16                  2
-#define ELEMENT_SIZE_FP16                   2
-#define ELEMENT_PER_GROUP_INT8              32
-#define ELEMENT_PER_GROUP_INT16             16
-#define ELEMENT_PER_GROUP_FP16              16
-
-#define CDP_PADDING_ZERO    1
-#define CDP_PADDING_MIRROR  2
+#define ELEMENT_PER_GROUP_INT8              (DLA_ATOM_SIZE)
+#define ELEMENT_PER_GROUP_INT16             (DLA_ATOM_SIZE/2)
+#define ELEMENT_PER_GROUP_FP16              (DLA_ATOM_SIZE/2)
 
 #define TAG_CMD 0
 #define TAG_DATA 1
 
-#define ATOM_CUBE_SIZE   32
-#define MAX_MEM_TRANSACTION_SIZE    256
+#define ATOM_CUBE_SIZE                      DLA_ATOM_SIZE
 
-#define DATA_TYPE_IS_INT    0
-#define DATA_TYPE_IS_FLOAT  1
+#define LOW_ADDRESS_SHIFT               (NVDLA_CDP_RDMA_D_SRC_BASE_ADDR_LOW_0_SRC_BASE_ADDR_LOW_SHIFT)
 
 // using half_float::half;
 class NvdlaDataFormatConvertor;
@@ -138,7 +117,7 @@ class NV_NVDLA_cdp:
 
         // FIFOs
         // # Data path local buffer
-        int8_t                     *dp_calc_buffer;    // Datapath calc buffer
+        int8_t                     ***dp_calc_buffer;    // Datapath calc buffer
         int8_t                     *post_calc_buffer;
         sc_core::sc_fifo <int8_t *>      *rdma_fifo_;
         sc_core::sc_fifo <int16_t *>     *hls_out_fifo_;

@@ -115,294 +115,870 @@ AN2D4PO4 UJ_DFTQUALIFIER_mbist_Ra_r0_3 (.Z(mbist_Ra_r0[3]), .A1(pre_mbist_Ra_r0_
 wire pre_mbist_Ra_r0_4;
 NV_BLKBOX_SRC0_X testInst_mbist_Ra_r0_4 (.Y(pre_mbist_Ra_r0_4));
 AN2D4PO4 UJ_DFTQUALIFIER_mbist_Ra_r0_4 (.Z(mbist_Ra_r0[4]), .A1(pre_mbist_Ra_r0_4), .A2(DFT_clamp) );
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_0 (.A(mbist_Do_r0_int_net[0]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_1 (.A(mbist_Do_r0_int_net[1]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_2 (.A(mbist_Do_r0_int_net[2]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_3 (.A(mbist_Do_r0_int_net[3]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_4 (.A(mbist_Do_r0_int_net[4]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_5 (.A(mbist_Do_r0_int_net[5]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_6 (.A(mbist_Do_r0_int_net[6]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_7 (.A(mbist_Do_r0_int_net[7]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_8 (.A(mbist_Do_r0_int_net[8]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_9 (.A(mbist_Do_r0_int_net[9]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_10 (.A(mbist_Do_r0_int_net[10]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_11 (.A(mbist_Do_r0_int_net[11]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_12 (.A(mbist_Do_r0_int_net[12]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_13 (.A(mbist_Do_r0_int_net[13]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_14 (.A(mbist_Do_r0_int_net[14]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_15 (.A(mbist_Do_r0_int_net[15]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_16 (.A(mbist_Do_r0_int_net[16]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_17 (.A(mbist_Do_r0_int_net[17]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_18 (.A(mbist_Do_r0_int_net[18]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_19 (.A(mbist_Do_r0_int_net[19]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_20 (.A(mbist_Do_r0_int_net[20]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_21 (.A(mbist_Do_r0_int_net[21]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_22 (.A(mbist_Do_r0_int_net[22]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_23 (.A(mbist_Do_r0_int_net[23]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_24 (.A(mbist_Do_r0_int_net[24]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_25 (.A(mbist_Do_r0_int_net[25]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_26 (.A(mbist_Do_r0_int_net[26]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_27 (.A(mbist_Do_r0_int_net[27]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_28 (.A(mbist_Do_r0_int_net[28]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_29 (.A(mbist_Do_r0_int_net[29]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_30 (.A(mbist_Do_r0_int_net[30]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_31 (.A(mbist_Do_r0_int_net[31]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_32 (.A(mbist_Do_r0_int_net[32]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_33 (.A(mbist_Do_r0_int_net[33]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_34 (.A(mbist_Do_r0_int_net[34]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_35 (.A(mbist_Do_r0_int_net[35]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_36 (.A(mbist_Do_r0_int_net[36]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_37 (.A(mbist_Do_r0_int_net[37]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_38 (.A(mbist_Do_r0_int_net[38]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_39 (.A(mbist_Do_r0_int_net[39]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_40 (.A(mbist_Do_r0_int_net[40]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_41 (.A(mbist_Do_r0_int_net[41]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_42 (.A(mbist_Do_r0_int_net[42]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_43 (.A(mbist_Do_r0_int_net[43]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_44 (.A(mbist_Do_r0_int_net[44]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_45 (.A(mbist_Do_r0_int_net[45]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_46 (.A(mbist_Do_r0_int_net[46]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_47 (.A(mbist_Do_r0_int_net[47]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_48 (.A(mbist_Do_r0_int_net[48]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_49 (.A(mbist_Do_r0_int_net[49]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_50 (.A(mbist_Do_r0_int_net[50]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_51 (.A(mbist_Do_r0_int_net[51]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_52 (.A(mbist_Do_r0_int_net[52]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_53 (.A(mbist_Do_r0_int_net[53]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_54 (.A(mbist_Do_r0_int_net[54]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_55 (.A(mbist_Do_r0_int_net[55]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_56 (.A(mbist_Do_r0_int_net[56]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_57 (.A(mbist_Do_r0_int_net[57]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_58 (.A(mbist_Do_r0_int_net[58]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_59 (.A(mbist_Do_r0_int_net[59]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_60 (.A(mbist_Do_r0_int_net[60]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_61 (.A(mbist_Do_r0_int_net[61]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_62 (.A(mbist_Do_r0_int_net[62]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_63 (.A(mbist_Do_r0_int_net[63]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_64 (.A(mbist_Do_r0_int_net[64]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_65 (.A(mbist_Do_r0_int_net[65]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_66 (.A(mbist_Do_r0_int_net[66]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_67 (.A(mbist_Do_r0_int_net[67]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_68 (.A(mbist_Do_r0_int_net[68]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_69 (.A(mbist_Do_r0_int_net[69]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_70 (.A(mbist_Do_r0_int_net[70]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_71 (.A(mbist_Do_r0_int_net[71]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_72 (.A(mbist_Do_r0_int_net[72]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_73 (.A(mbist_Do_r0_int_net[73]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_74 (.A(mbist_Do_r0_int_net[74]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_75 (.A(mbist_Do_r0_int_net[75]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_76 (.A(mbist_Do_r0_int_net[76]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_77 (.A(mbist_Do_r0_int_net[77]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_78 (.A(mbist_Do_r0_int_net[78]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_79 (.A(mbist_Do_r0_int_net[79]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_80 (.A(mbist_Do_r0_int_net[80]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_81 (.A(mbist_Do_r0_int_net[81]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_82 (.A(mbist_Do_r0_int_net[82]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_83 (.A(mbist_Do_r0_int_net[83]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_84 (.A(mbist_Do_r0_int_net[84]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_85 (.A(mbist_Do_r0_int_net[85]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_86 (.A(mbist_Do_r0_int_net[86]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_87 (.A(mbist_Do_r0_int_net[87]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_88 (.A(mbist_Do_r0_int_net[88]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_89 (.A(mbist_Do_r0_int_net[89]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_90 (.A(mbist_Do_r0_int_net[90]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_91 (.A(mbist_Do_r0_int_net[91]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_92 (.A(mbist_Do_r0_int_net[92]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_93 (.A(mbist_Do_r0_int_net[93]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_94 (.A(mbist_Do_r0_int_net[94]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_95 (.A(mbist_Do_r0_int_net[95]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_96 (.A(mbist_Do_r0_int_net[96]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_97 (.A(mbist_Do_r0_int_net[97]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_98 (.A(mbist_Do_r0_int_net[98]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_99 (.A(mbist_Do_r0_int_net[99]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_100 (.A(mbist_Do_r0_int_net[100]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_101 (.A(mbist_Do_r0_int_net[101]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_102 (.A(mbist_Do_r0_int_net[102]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_103 (.A(mbist_Do_r0_int_net[103]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_104 (.A(mbist_Do_r0_int_net[104]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_105 (.A(mbist_Do_r0_int_net[105]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_106 (.A(mbist_Do_r0_int_net[106]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_107 (.A(mbist_Do_r0_int_net[107]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_108 (.A(mbist_Do_r0_int_net[108]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_109 (.A(mbist_Do_r0_int_net[109]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_110 (.A(mbist_Do_r0_int_net[110]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_111 (.A(mbist_Do_r0_int_net[111]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_112 (.A(mbist_Do_r0_int_net[112]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_113 (.A(mbist_Do_r0_int_net[113]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_114 (.A(mbist_Do_r0_int_net[114]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_115 (.A(mbist_Do_r0_int_net[115]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_116 (.A(mbist_Do_r0_int_net[116]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_117 (.A(mbist_Do_r0_int_net[117]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_118 (.A(mbist_Do_r0_int_net[118]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_119 (.A(mbist_Do_r0_int_net[119]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_120 (.A(mbist_Do_r0_int_net[120]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_121 (.A(mbist_Do_r0_int_net[121]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_122 (.A(mbist_Do_r0_int_net[122]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_123 (.A(mbist_Do_r0_int_net[123]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_124 (.A(mbist_Do_r0_int_net[124]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_125 (.A(mbist_Do_r0_int_net[125]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_126 (.A(mbist_Do_r0_int_net[126]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_127 (.A(mbist_Do_r0_int_net[127]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_128 (.A(mbist_Do_r0_int_net[128]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_129 (.A(mbist_Do_r0_int_net[129]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_130 (.A(mbist_Do_r0_int_net[130]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_131 (.A(mbist_Do_r0_int_net[131]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_132 (.A(mbist_Do_r0_int_net[132]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_133 (.A(mbist_Do_r0_int_net[133]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_134 (.A(mbist_Do_r0_int_net[134]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_135 (.A(mbist_Do_r0_int_net[135]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_136 (.A(mbist_Do_r0_int_net[136]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_137 (.A(mbist_Do_r0_int_net[137]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_138 (.A(mbist_Do_r0_int_net[138]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_139 (.A(mbist_Do_r0_int_net[139]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_140 (.A(mbist_Do_r0_int_net[140]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_141 (.A(mbist_Do_r0_int_net[141]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_142 (.A(mbist_Do_r0_int_net[142]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_143 (.A(mbist_Do_r0_int_net[143]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_144 (.A(mbist_Do_r0_int_net[144]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_145 (.A(mbist_Do_r0_int_net[145]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_146 (.A(mbist_Do_r0_int_net[146]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_147 (.A(mbist_Do_r0_int_net[147]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_148 (.A(mbist_Do_r0_int_net[148]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_149 (.A(mbist_Do_r0_int_net[149]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_150 (.A(mbist_Do_r0_int_net[150]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_151 (.A(mbist_Do_r0_int_net[151]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_152 (.A(mbist_Do_r0_int_net[152]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_153 (.A(mbist_Do_r0_int_net[153]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_154 (.A(mbist_Do_r0_int_net[154]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_155 (.A(mbist_Do_r0_int_net[155]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_156 (.A(mbist_Do_r0_int_net[156]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_157 (.A(mbist_Do_r0_int_net[157]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_158 (.A(mbist_Do_r0_int_net[158]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_159 (.A(mbist_Do_r0_int_net[159]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_160 (.A(mbist_Do_r0_int_net[160]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_161 (.A(mbist_Do_r0_int_net[161]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_162 (.A(mbist_Do_r0_int_net[162]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_163 (.A(mbist_Do_r0_int_net[163]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_164 (.A(mbist_Do_r0_int_net[164]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_165 (.A(mbist_Do_r0_int_net[165]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_166 (.A(mbist_Do_r0_int_net[166]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_167 (.A(mbist_Do_r0_int_net[167]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_168 (.A(mbist_Do_r0_int_net[168]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_169 (.A(mbist_Do_r0_int_net[169]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_170 (.A(mbist_Do_r0_int_net[170]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_171 (.A(mbist_Do_r0_int_net[171]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_172 (.A(mbist_Do_r0_int_net[172]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_173 (.A(mbist_Do_r0_int_net[173]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_174 (.A(mbist_Do_r0_int_net[174]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_175 (.A(mbist_Do_r0_int_net[175]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_176 (.A(mbist_Do_r0_int_net[176]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_177 (.A(mbist_Do_r0_int_net[177]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_178 (.A(mbist_Do_r0_int_net[178]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_179 (.A(mbist_Do_r0_int_net[179]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_180 (.A(mbist_Do_r0_int_net[180]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_181 (.A(mbist_Do_r0_int_net[181]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_182 (.A(mbist_Do_r0_int_net[182]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_183 (.A(mbist_Do_r0_int_net[183]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_184 (.A(mbist_Do_r0_int_net[184]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_185 (.A(mbist_Do_r0_int_net[185]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_186 (.A(mbist_Do_r0_int_net[186]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_187 (.A(mbist_Do_r0_int_net[187]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_188 (.A(mbist_Do_r0_int_net[188]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_189 (.A(mbist_Do_r0_int_net[189]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_190 (.A(mbist_Do_r0_int_net[190]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_191 (.A(mbist_Do_r0_int_net[191]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_192 (.A(mbist_Do_r0_int_net[192]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_193 (.A(mbist_Do_r0_int_net[193]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_194 (.A(mbist_Do_r0_int_net[194]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_195 (.A(mbist_Do_r0_int_net[195]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_196 (.A(mbist_Do_r0_int_net[196]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_197 (.A(mbist_Do_r0_int_net[197]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_198 (.A(mbist_Do_r0_int_net[198]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_199 (.A(mbist_Do_r0_int_net[199]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_200 (.A(mbist_Do_r0_int_net[200]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_201 (.A(mbist_Do_r0_int_net[201]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_202 (.A(mbist_Do_r0_int_net[202]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_203 (.A(mbist_Do_r0_int_net[203]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_204 (.A(mbist_Do_r0_int_net[204]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_205 (.A(mbist_Do_r0_int_net[205]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_206 (.A(mbist_Do_r0_int_net[206]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_207 (.A(mbist_Do_r0_int_net[207]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_208 (.A(mbist_Do_r0_int_net[208]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_209 (.A(mbist_Do_r0_int_net[209]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_210 (.A(mbist_Do_r0_int_net[210]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_211 (.A(mbist_Do_r0_int_net[211]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_212 (.A(mbist_Do_r0_int_net[212]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_213 (.A(mbist_Do_r0_int_net[213]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_214 (.A(mbist_Do_r0_int_net[214]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_215 (.A(mbist_Do_r0_int_net[215]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_216 (.A(mbist_Do_r0_int_net[216]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_217 (.A(mbist_Do_r0_int_net[217]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_218 (.A(mbist_Do_r0_int_net[218]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_219 (.A(mbist_Do_r0_int_net[219]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_220 (.A(mbist_Do_r0_int_net[220]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_221 (.A(mbist_Do_r0_int_net[221]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_222 (.A(mbist_Do_r0_int_net[222]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_223 (.A(mbist_Do_r0_int_net[223]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_224 (.A(mbist_Do_r0_int_net[224]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_225 (.A(mbist_Do_r0_int_net[225]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_226 (.A(mbist_Do_r0_int_net[226]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_227 (.A(mbist_Do_r0_int_net[227]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_228 (.A(mbist_Do_r0_int_net[228]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_229 (.A(mbist_Do_r0_int_net[229]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_230 (.A(mbist_Do_r0_int_net[230]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_231 (.A(mbist_Do_r0_int_net[231]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_232 (.A(mbist_Do_r0_int_net[232]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_233 (.A(mbist_Do_r0_int_net[233]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_234 (.A(mbist_Do_r0_int_net[234]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_235 (.A(mbist_Do_r0_int_net[235]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_236 (.A(mbist_Do_r0_int_net[236]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_237 (.A(mbist_Do_r0_int_net[237]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_238 (.A(mbist_Do_r0_int_net[238]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_239 (.A(mbist_Do_r0_int_net[239]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_240 (.A(mbist_Do_r0_int_net[240]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_241 (.A(mbist_Do_r0_int_net[241]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_242 (.A(mbist_Do_r0_int_net[242]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_243 (.A(mbist_Do_r0_int_net[243]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_244 (.A(mbist_Do_r0_int_net[244]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_245 (.A(mbist_Do_r0_int_net[245]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_246 (.A(mbist_Do_r0_int_net[246]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_247 (.A(mbist_Do_r0_int_net[247]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_248 (.A(mbist_Do_r0_int_net[248]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_249 (.A(mbist_Do_r0_int_net[249]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_250 (.A(mbist_Do_r0_int_net[250]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_251 (.A(mbist_Do_r0_int_net[251]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_252 (.A(mbist_Do_r0_int_net[252]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_253 (.A(mbist_Do_r0_int_net[253]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_254 (.A(mbist_Do_r0_int_net[254]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_255 (.A(mbist_Do_r0_int_net[255]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_256 (.A(mbist_Do_r0_int_net[256]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_257 (.A(mbist_Do_r0_int_net[257]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_258 (.A(mbist_Do_r0_int_net[258]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_259 (.A(mbist_Do_r0_int_net[259]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_260 (.A(mbist_Do_r0_int_net[260]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_261 (.A(mbist_Do_r0_int_net[261]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_262 (.A(mbist_Do_r0_int_net[262]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_263 (.A(mbist_Do_r0_int_net[263]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_264 (.A(mbist_Do_r0_int_net[264]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_265 (.A(mbist_Do_r0_int_net[265]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_266 (.A(mbist_Do_r0_int_net[266]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_267 (.A(mbist_Do_r0_int_net[267]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_268 (.A(mbist_Do_r0_int_net[268]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_269 (.A(mbist_Do_r0_int_net[269]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_270 (.A(mbist_Do_r0_int_net[270]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_271 (.A(mbist_Do_r0_int_net[271]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_272 (.A(mbist_Do_r0_int_net[272]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_273 (.A(mbist_Do_r0_int_net[273]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_274 (.A(mbist_Do_r0_int_net[274]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_275 (.A(mbist_Do_r0_int_net[275]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_276 (.A(mbist_Do_r0_int_net[276]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_277 (.A(mbist_Do_r0_int_net[277]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_278 (.A(mbist_Do_r0_int_net[278]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_279 (.A(mbist_Do_r0_int_net[279]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_280 (.A(mbist_Do_r0_int_net[280]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_281 (.A(mbist_Do_r0_int_net[281]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_282 (.A(mbist_Do_r0_int_net[282]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_283 (.A(mbist_Do_r0_int_net[283]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_284 (.A(mbist_Do_r0_int_net[284]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_285 (.A(mbist_Do_r0_int_net[285]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_286 (.A(mbist_Do_r0_int_net[286]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_mbist_Do_r0_287 (.A(mbist_Do_r0_int_net[287]));
+`endif 
 wire pre_mbist_ce_r0_0_0;
 NV_BLKBOX_SRC0_X testInst_mbist_ce_r0_0_0 (.Y(pre_mbist_ce_r0_0_0));
 AN2D4PO4 UJ_DFTQUALIFIER_mbist_ce_r0_0_0 (.Z(mbist_ce_r0_0_0), .A1(pre_mbist_ce_r0_0_0), .A2(DFT_clamp) );
@@ -412,7 +988,9 @@ AN2D4PO4 UJ_DFTQUALIFIER_mbist_en_sync (.Z(mbist_en_sync), .A1(pre_mbist_en_sync
 wire pre_SI;
 NV_BLKBOX_SRC0_X testInst_SI (.Y(pre_SI));
 AN2D4PO4 UJ_DFTQUALIFIER_SI (.Z(SI), .A1(pre_SI), .A2(DFT_clamp) );
+`ifndef FPGA 
 NV_BLKBOX_SINK testInst_SO (.A(SO_int_net));
+`endif 
 wire pre_shiftDR;
 NV_BLKBOX_SRC0_X testInst_shiftDR (.Y(pre_shiftDR));
 AN2D4PO4 UJ_DFTQUALIFIER_shiftDR (.Z(shiftDR), .A1(pre_shiftDR), .A2(DFT_clamp) );

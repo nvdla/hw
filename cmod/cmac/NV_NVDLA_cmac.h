@@ -23,7 +23,8 @@
 #include "nvdla_xx2csb_resp_iface.h"
 #include "NV_NVDLA_cmac_base.h"
 #include "cmac_a_reg_model.h"
-#include "arnvdla.h"
+#include "opendla.h"
+#include "nvdla_config.h"
 #include "log.h"
 #include "math.h"
 
@@ -33,22 +34,18 @@
 #define WEIGHT_OPERAND_BIT_WIDTH_INT16      16
 #define OUTPUT_BIT_WIDTH_INT8               22
 #define OUTPUT_BIT_WIDTH_INT16              44
-#define PARALLEL_CHANNEL_NUM                64
-#undef  PARALLEL_KERNEL_NUM_INT8
-#define PARALLEL_KERNEL_NUM_INT8            16
-#undef  PARALLEL_KERNEL_NUM_INT16
-#define PARALLEL_KERNEL_NUM_INT16           8
-#undef  MAC_CELL_NUM
-#define MAC_CELL_NUM                        8
-#define DATA_ELEMENT_NUM                    2*PARALLEL_CHANNEL_NUM
-#define WEIGHT_ELEMENT_NUM                  MAC_CELL_NUM*DATA_ELEMENT_NUM
-#define RESULT_NUM_PER_MACELL               8
+
+#define MAC_CELL_NUM                        (NVDLA_MAC_ATOMIC_K_SIZE / 2)
+#define DATA_ELEMENT_NUM                    NVDLA_MAC_ATOMIC_C_SIZE
+#define WEIGHT_ELEMENT_NUM                  (MAC_CELL_NUM * DATA_ELEMENT_NUM)
+#define RESULT_NUM_PER_MACELL               4
+
 #define FP16_SIGN_BIT_WIDTH                 1
 #define FP16_EXP_BIT_WIDTH                  5
 #define FP16_FRA_BIT_WIDTH                  10
 #define FP16_MUL_BIT_WIDTH                  38
 #define FP16_OEXP_BIT_WIDTH                 6
-#define TOTAL_ELEMENT_NUM                   PARALLEL_CHANNEL_NUM*2
+
 //#define DEBUG_ERROR_CHECK
 
 #define LOG_DETAIL                          0
@@ -56,7 +53,6 @@
 #ifdef DEBUG_ERROR_CHECK
 #include "half.hpp"
 #endif
-
 
 SCSIM_NAMESPACE_START(clib)
 // clib class forward declaration
@@ -81,7 +77,7 @@ public:
     bool winograd_op_;
 
     void calculation_int8(uint64_t* wt_mask, uint64_t* dat_mask, sc_int<DATA_OPERAND_BIT_WIDTH_INT8> *data_operand, sc_int<WEIGHT_OPERAND_BIT_WIDTH_INT8> *weight_operand, sc_int<OUTPUT_BIT_WIDTH_INT8> *result){
-        uint32_t    channel_iter, kernel_iter, result_iter;
+        uint32_t channel_iter, result_iter;
         sc_int<DATA_OPERAND_BIT_WIDTH_INT8>   data;
         sc_int<WEIGHT_OPERAND_BIT_WIDTH_INT8> weight;
         sc_int<OUTPUT_BIT_WIDTH_INT8> product;
@@ -129,71 +125,65 @@ public:
         cslDebug((50, "    dat_mask[1] : 0x%016lx\n", dat_mask[1]));
         if (true == mac_cell_enable_) {
             if (winograd_op_) {
-                for(kernel_iter=0; kernel_iter<2; kernel_iter++) {
-                    int i;
-                    // Phase1: Generate 16 partial sums
-                    for (i=0; i<16; i++) {
-                        accu_wino_phase1[i]   = 0;
-                        for (channel_iter=0; channel_iter<4; channel_iter++) {
-                            data   = data_operand[kernel_iter*64+i*4+channel_iter];
-                            weight = weight_operand[kernel_iter*64+i*4+channel_iter];
-                            accu_wino_phase1[i] = accu_wino_phase1[i] + data * weight;
-                        }
-                        cslDebug((70, "    calculation_int8 winograd kernel_iter=%d accu_wino_phase1[%d] = 0x%x\n", kernel_iter, i, (uint32_t)accu_wino_phase1[i].to_int()));
+                uint32_t i;
+                uint32_t channel_num = NVDLA_MAC_ATOMIC_C_SIZE / (4 * 4);
+                // Phase1: Generate 16 partial sums
+                for (i = 0; i < 16; i++) {
+                    accu_wino_phase1[i]   = 0;
+                    for (channel_iter = 0; channel_iter < channel_num; channel_iter++) {
+                        data = data_operand[i * channel_num + channel_iter];
+                        weight = weight_operand[i * channel_num + channel_iter];
+                        accu_wino_phase1[i] = accu_wino_phase1[i] + data * weight;
                     }
-                    // Phase2: multiply transposition of matrix A. Generate 8 parital sums.
-                    for (i=0; i<4; i++) {
-                        accu_wino_phase2[i+0] = accu_wino_phase1[i+0] + accu_wino_phase1[i+4] + accu_wino_phase1[i+8];
-                        accu_wino_phase2[i+4] = accu_wino_phase1[i+4] - accu_wino_phase1[i+8] - accu_wino_phase1[i+12];
-                    }
-                    // Phase3: multiply matrix A. Generate 4 parital sums.
-                    for(i = 0; i < 2; i++) {
-                        accu_wino_phase3[i*2+0] = accu_wino_phase2[i*4+0] + accu_wino_phase2[i*4+1] + accu_wino_phase2[i*4+2];
-                        accu_wino_phase3[i*2+1] = accu_wino_phase2[i*4+1] - accu_wino_phase2[i*4+2] - accu_wino_phase2[i*4+3];
-                    }
-                    result[kernel_iter+0] = accu_wino_phase3[0];
-                    result[kernel_iter+2] = accu_wino_phase3[1];
-                    result[kernel_iter+4] = accu_wino_phase3[2];
-                    result[kernel_iter+6] = accu_wino_phase3[3];
+                    cslDebug((70, "    calculation_int8 winograd accu_wino_phase1[%d] = 0x%x\n", i, (uint32_t)accu_wino_phase1[i].to_int()));
                 }
-                for(int i=0;i<8;i++)
+                // Phase2: multiply transposition of matrix A. Generate 8 parital sums.
+                for (i = 0; i < 4; i++) {
+                    accu_wino_phase2[i+0] = accu_wino_phase1[i+0] + accu_wino_phase1[i+4] + accu_wino_phase1[i+8];
+                    accu_wino_phase2[i+4] = accu_wino_phase1[i+4] - accu_wino_phase1[i+8] - accu_wino_phase1[i+12];
+                }
+                // Phase3: multiply matrix A. Generate 4 parital sums.
+                for(i = 0; i < 2; i++) {
+                    accu_wino_phase3[i*2+0] = accu_wino_phase2[i*4+0] + accu_wino_phase2[i*4+1] + accu_wino_phase2[i*4+2];
+                    accu_wino_phase3[i*2+1] = accu_wino_phase2[i*4+1] - accu_wino_phase2[i*4+2] - accu_wino_phase2[i*4+3];
+                }
+
+                for (int i = 0; i < RESULT_NUM_PER_MACELL; i++) {
+                    result[i] = accu_wino_phase3[i];
                     cslDebug((70, "    calculation_int8 winograd result = 0x%x\n", (uint32_t)result[i].to_int()));
-            }
-            else {
-                for(kernel_iter=0; kernel_iter<2; kernel_iter++) {
-                    accu = 0;
-                    cslDebug((70, "    kernel_iter  is 0x%x\n", kernel_iter));
-                    for (channel_iter=0; channel_iter<PARALLEL_CHANNEL_NUM; channel_iter++) {
-                        data   = data_operand[kernel_iter*PARALLEL_CHANNEL_NUM+channel_iter];
-                        weight = weight_operand[kernel_iter*PARALLEL_CHANNEL_NUM+channel_iter];
-                        cslDebug((70, "    channel_iter is 0x%x\n", channel_iter));
-                        cslDebug((70, "    Data        : 0x%02x\n", (uint8_t)data));
-                        cslDebug((70, "    Weight      : 0x%02x\n", (uint8_t)weight));
-                        if (kernel_iter==0) {
-                            wt_mask_k0  = (wt_mask[1] >> channel_iter) & 0x1;
-                            dat_mask_k0 = (dat_mask[1] >> channel_iter) & 0x1;
-                            cslDebug((70, "    dat_mask_k0 : %d\n", dat_mask_k0));
-                            cslDebug((70, "    wt_mask_k0  : %d\n", wt_mask_k0));
-                            if((wt_mask_k0 == 0) || (dat_mask_k0 == 0))
-                                continue;
-                        }
-                        else {
-                            wt_mask_k1  = (wt_mask[0] >> channel_iter) & 0x1;
-                            dat_mask_k1 = (dat_mask[0] >> channel_iter) & 0x1;
-                            cslDebug((70, "    dat_mask_k1 : %d\n", dat_mask_k1));
-                            cslDebug((70, "    wt_mask_k1  : %d\n", wt_mask_k1));
-                            if((wt_mask_k1 == 0) || (dat_mask_k1 == 0))
-                                continue;
-                        }
-                        //accu  = accu + data * weight;
-                        product = data * weight;
-                        accu    = accu + product;
-                        cslDebug((70, "    product    : 0x%x\n", (uint32_t)product));
-                        cslDebug((70, "    accu       : 0x%x\n", (uint32_t)accu));
-                    }
-                    result[kernel_iter] = accu; // save to index 0 and 4 of result array which contains 8 elements
-                    cslDebug((70, "    calculation_int8 result = 0x%x\n", (uint32_t)accu.to_int()));
                 }
+            } else {
+                accu = 0;
+
+                for (channel_iter = 0; channel_iter < NVDLA_MAC_ATOMIC_C_SIZE; channel_iter++) {
+                    data   = data_operand[channel_iter];
+                    weight = weight_operand[channel_iter];
+                    cslDebug((70, "    channel_iter is 0x%x\n", channel_iter));
+                    cslDebug((70, "    Data        : 0x%02x\n", (uint8_t)data));
+                    cslDebug((70, "    Weight      : 0x%02x\n", (uint8_t)weight));
+                    if (channel_iter < NVDLA_MAC_ATOMIC_C_SIZE / 2) {
+                        wt_mask_k0  = (wt_mask[1] >> channel_iter) & 0x1;
+                        dat_mask_k0 = (dat_mask[1] >> channel_iter) & 0x1;
+                        cslDebug((70, "    dat_mask_k0 : %d\n", dat_mask_k0));
+                        cslDebug((70, "    wt_mask_k0  : %d\n", wt_mask_k0));
+                        if((wt_mask_k0 == 0) || (dat_mask_k0 == 0))
+                            continue;
+                    } else {
+                        wt_mask_k1 = (wt_mask[0] >> (channel_iter - NVDLA_MAC_ATOMIC_C_SIZE / 2)) & 0x1;
+                        dat_mask_k1 = (dat_mask[0] >> (channel_iter - NVDLA_MAC_ATOMIC_C_SIZE / 2)) & 0x1;
+                        cslDebug((70, "    dat_mask_k1 : %d\n", dat_mask_k1));
+                        cslDebug((70, "    wt_mask_k1  : %d\n", wt_mask_k1));
+                        if((wt_mask_k1 == 0) || (dat_mask_k1 == 0))
+                            continue;
+                    }
+                    //accu  = accu + data * weight;
+                    product = data * weight;
+                    accu    = accu + product;
+                    cslDebug((70, "    product    : 0x%x\n", (uint32_t)product));
+                    cslDebug((70, "    accu       : 0x%x\n", (uint32_t)accu));
+                }
+                result[0] = accu; // save to index 0 and 4 of result array which contains 8 elements
+                cslDebug((70, "    calculation_int8 result = 0x%x\n", (uint32_t)accu.to_int()));
             }
         }
     }
@@ -215,8 +205,8 @@ public:
         for(int c = 0; c < 4; c++) {
             for(int y = 0; y < 4; y++) {
                 for(int x = 0; x < 4; x++) {
-                    data_array[c][y][x] = (data_operand[(y*4+x)*8+c*2+1].range(7,0), data_operand[(y*4+x)*8+c*2].range(7,0));
-                    weight_array[c][y][x]= (weight_operand[(y*4+x)*8+c*2+1], weight_operand[(y*4+x)*8+c*2]);
+                    data_array[c][y][x] = (data_operand[(y * 4 + x) * 8 + c * 2 + 1].range(7, 0), data_operand[(y * 4 + x) * 8 + c * 2].range(7, 0));
+                    weight_array[c][y][x] = (weight_operand[(y * 4 + x) * 8 + c * 2 + 1], weight_operand[(y * 4 + x) * 8 + c * 2]);
                 }
             }
         }
@@ -229,17 +219,18 @@ public:
         cslDebug((50, "    dat_mask[1] : 0x%016lx\n", dat_mask[1]));
         if (true == mac_cell_enable_) {
             if (winograd_op_) {
+                uint32_t channel_num = NVDLA_MAC_ATOMIC_C_SIZE / (4 * 4);
                 // Phase1: Generate 16 partial sums
-                for (i=0; i<16; i++) {
+                for (i = 0; i< 16; i++) {
                     accu_wino_phase1[i]   = 0;
-                    for (channel_iter=0; channel_iter<4; channel_iter++) {
-                        data   = (data_operand[i*8+channel_iter*2+1].range(7,0), data_operand[i*8+channel_iter*2].range(7,0));
-                        weight = (weight_operand[i*8+channel_iter*2+1], weight_operand[i*8+channel_iter*2]);
+                    for (channel_iter = 0; channel_iter < channel_num; channel_iter++) {
+                        data = (data_operand[i * channel_num * 2 + channel_iter * 2 + 1].range(7, 0), data_operand[i * channel_num * 2 + channel_iter * 2].range(7, 0));
+                        weight = (weight_operand[i * channel_num * 2 + channel_iter * 2 + 1], weight_operand[i * channel_num * 2 + channel_iter * 2]);
                         accu_wino_phase1[i] = accu_wino_phase1[i] + data * weight;
                     }
                 }
                 // Phase2: multiply transposition of matrix A. Generate 8 parital sums.
-                for (i=0; i<4; i++) {
+                for (i = 0; i < 4; i++) {
                     accu_wino_phase2[i+0] = accu_wino_phase1[i+0] + accu_wino_phase1[i+4] + accu_wino_phase1[i+8];
                     accu_wino_phase2[i+4] = accu_wino_phase1[i+4] - accu_wino_phase1[i+8] - accu_wino_phase1[i+12];
                 }
@@ -252,37 +243,36 @@ public:
                 (result[3], result[2]) = accu_wino_phase3[1];
                 (result[5], result[4]) = accu_wino_phase3[2];
                 (result[7], result[6]) = accu_wino_phase3[3];
-            }
-            else {
+            } else {
                 accu   = 0;
-                for (channel_iter=0; channel_iter<PARALLEL_CHANNEL_NUM; channel_iter++) {
-                    data   = (data_operand[channel_iter*2+1].range(7,0), data_operand[channel_iter*2].range(7,0));
-                    weight = (weight_operand[channel_iter*2+1], weight_operand[channel_iter*2]);
-                    if (channel_iter<32) {
-                        if (((wt_mask[1] >> (channel_iter*2)) & 0x1) != ((wt_mask[1] >> (channel_iter*2 + 1)) & 0x1))
+                for (channel_iter = 0; channel_iter < NVDLA_MAC_ATOMIC_C_SIZE; channel_iter++) {
+                    data = (data_operand[channel_iter * 2 + 1].range(7, 0), data_operand[channel_iter * 2].range(7, 0));
+                    weight = (weight_operand[channel_iter * 2 + 1], weight_operand[channel_iter * 2]);
+                    if (channel_iter < NVDLA_MAC_ATOMIC_C_SIZE / 2) {
+                        if (((wt_mask[1] >> (channel_iter * 2)) & 0x1) != ((wt_mask[1] >> (channel_iter * 2 + 1)) & 0x1))
                             FAIL(("Incorrect wt_mask[1]\n")); 
-                        if (((dat_mask[1] >> (channel_iter*2)) & 0x1) != ((dat_mask[1] >> (channel_iter*2 + 1)) & 0x1))
+                        if (((dat_mask[1] >> (channel_iter * 2)) & 0x1) != ((dat_mask[1] >> (channel_iter * 2 + 1)) & 0x1))
                             FAIL(("Incorrect dat_mask[1]\n")); 
-                        if(((wt_mask[1] >> (channel_iter*2)) & 0x1) == 0) {
-                            if(weight!=0)
+                        if (((wt_mask[1] >> (channel_iter * 2)) & 0x1) == 0) {
+                            if (weight != 0)
                                 FAIL(("Incorrect weight and wt_mask[1]\n"));
                             continue;
                         }
-                        if(((dat_mask[1] >> (channel_iter*2)) & 0x1) == 0) {
+                        if (((dat_mask[1] >> (channel_iter * 2)) & 0x1) == 0) {
                             continue;
                         }
                     }
                     else {
-                        if (((wt_mask[0] >> ((channel_iter-32)*2)) & 0x1) != ((wt_mask[0] >> ((channel_iter-32)*2 + 1)) & 0x1))
+                        if (((wt_mask[0] >> ((channel_iter - NVDLA_MAC_ATOMIC_C_SIZE / 2) * 2)) & 0x1) != ((wt_mask[0] >> ((channel_iter - NVDLA_MAC_ATOMIC_C_SIZE / 2) * 2 + 1)) & 0x1))
                             FAIL(("Incorrect wt_mask[0]\n")); 
-                        if (((dat_mask[0] >> ((channel_iter-32)*2)) & 0x1) != ((dat_mask[0] >> ((channel_iter-32)*2 + 1)) & 0x1))
+                        if (((dat_mask[0] >> ((channel_iter - NVDLA_MAC_ATOMIC_C_SIZE / 2) * 2)) & 0x1) != ((dat_mask[0] >> ((channel_iter - NVDLA_MAC_ATOMIC_C_SIZE / 2) * 2 + 1)) & 0x1))
                             FAIL(("Incorrect dat_mask[0]\n")); 
-                        if(((wt_mask[0] >> ((channel_iter-32)*2)) & 0x1) == 0) {
-                            if(weight!=0)
+                        if (((wt_mask[0] >> ((channel_iter - NVDLA_MAC_ATOMIC_C_SIZE / 2) * 2)) & 0x1) == 0) {
+                            if (weight != 0)
                                 FAIL(("Incorrect weight and wt_mask[0]\n"));
                             continue;
                         }
-                        if(((dat_mask[0] >> ((channel_iter-32)*2)) & 0x1) == 0) {
+                        if (((dat_mask[0] >> ((channel_iter - NVDLA_MAC_ATOMIC_C_SIZE / 2) * 2)) & 0x1) == 0) {
                             continue;
                         }
                     }
@@ -307,18 +297,18 @@ public:
 #ifdef DEBUG_CHECK
         int8_t mask_k0;
         int8_t mask_k1;
-        uint32_t    i, j;
+        uint32_t    i;
 #endif
     
         *nan_flag = 0; 
         *nan_value = 0;
-        nan_idx = 128;
+        nan_idx = NVDLA_MAC_ATOMIC_C_SIZE * 2;
 #pragma CTC SKIP
         // There is no NaN in weight
-        for(ch_iter = 0; ch_iter < PARALLEL_CHANNEL_NUM; ch_iter ++) {
-            fp16_exp    = weight_operand[ch_iter*2+1].range(6,2);
-            fp16_fra    = (weight_operand[ch_iter*2+1].range(1,0), weight_operand[ch_iter*2](7,0));
-            cur_idx     = ch_iter;
+        for (ch_iter = 0; ch_iter < NVDLA_MAC_ATOMIC_C_SIZE; ch_iter++) {
+            fp16_exp = weight_operand[ch_iter * 2 + 1].range(6, 2);
+            fp16_fra = (weight_operand[ch_iter * 2 + 1].range(1, 0), weight_operand[ch_iter * 2](7, 0));
+            cur_idx = ch_iter;
             if((fp16_exp == -1) && (fp16_fra != 0) && (cur_idx < nan_idx)) {
 #if LOG_DETAIL
                 cslDebug((70, "[FP16_NAN] find weight nan, cur_idx = %d\n\n", cur_idx));
@@ -327,13 +317,12 @@ public:
                 nan_idx = cur_idx;
                 nan_value->range(43,38) = 0x3f;
                 nan_value->range(26,0) = 0;
-                nan_value->range(37,37) = weight_operand[ch_iter*2+1].range(7,7);
+                nan_value->range(37, 37) = weight_operand[ch_iter * 2 + 1].range(7, 7);
                 nan_value->range(36,27) = fp16_fra;
             }
 
 #ifdef DEBUG_CHECK
-            i = 1 - int(ch_iter / 32);
-            j = ch_iter % 32;
+            i = 1 - int(ch_iter / (NVDLA_MAC_ATOMIC_C_SIZE / 2));
             mask_k0 = (wt_mask[i] >> (channel_iter*2)) & 0x1;
             mask_k1 = (wt_mask[i] >> (channel_iter*2+1)) & 0x1;
             if(fp16_exp == 0 && fp16_fra == 0 && (mask_k0 != 0 || mask_k1 != 0)) {
@@ -349,10 +338,10 @@ public:
         }
 #pragma CTC ENDSKIP
         
-        for(ch_iter = 0; ch_iter < PARALLEL_CHANNEL_NUM; ch_iter ++) {
-            fp16_exp    = data_operand[ch_iter*2+1].range(6,2);
-            fp16_fra    = (data_operand[ch_iter*2+1].range(1,0), data_operand[ch_iter*2](7,0));
-            cur_idx     = ch_iter + 64;
+        for (ch_iter = 0; ch_iter < NVDLA_MAC_ATOMIC_C_SIZE; ch_iter++) {
+            fp16_exp = data_operand[ch_iter * 2 + 1].range(6, 2);
+            fp16_fra = (data_operand[ch_iter * 2 + 1].range(1, 0), data_operand[ch_iter * 2](7, 0));
+            cur_idx = ch_iter + NVDLA_MAC_ATOMIC_C_SIZE;
             if((fp16_exp == -1) && (fp16_fra != 0) && (cur_idx < nan_idx)) {
 #if LOG_DETAIL
                 cslDebug((70, "[FP16_NAN] find data nan, cur_idx = %d\n\n", cur_idx));
@@ -366,8 +355,7 @@ public:
             }
 
 #ifdef DEBUG_CHECK
-            i = int(ch_iter / 32);
-            j = ch_iter % 32;
+            i = 1 - int(ch_iter / (NVDLA_MAC_ATOMIC_C_SIZE / 2));
             mask_k0 = (dat_mask[i] >> (channel_iter*2)) & 0x1;
             mask_k1 = (dat_mask[i] >> (channel_iter*2+1)) & 0x1;
             if(fp16_exp == 0 && fp16_fra == 0 && (mask_k0 != 0 || mask_k1 != 0)) {
@@ -390,11 +378,11 @@ public:
         uint32_t    dat_exp, wt_exp;
 
         *max_exp = 0;
-        for(exp_iter = 0; exp_iter < PARALLEL_CHANNEL_NUM; exp_iter ++) {
-            i = 1 - int(exp_iter / 32);
-            j = (exp_iter % 32) * 2;
-            dat_exp = data_operand[exp_iter*2+1].range(6,2);
-            wt_exp = weight_operand[exp_iter*2+1].range(6,2);
+        for(exp_iter = 0; exp_iter < NVDLA_MAC_ATOMIC_C_SIZE; exp_iter ++) {
+            i = 1 - int(exp_iter / (NVDLA_MAC_ATOMIC_C_SIZE / 2));
+            j = (exp_iter % (NVDLA_MAC_ATOMIC_C_SIZE / 2)) * 2;
+            dat_exp = data_operand[exp_iter * 2 + 1].range(6, 2);
+            wt_exp = weight_operand[exp_iter * 2 + 1].range(6, 2);
 
             if(!((wt_mask[i] >> j) & 0x1) || !((dat_mask[i] >> j) & 0x1)) {
                 dat_exp_sft[exp_iter] = 0;
@@ -424,7 +412,7 @@ public:
 #if LOG_DETAIL
         cslDebug((50, "[FP16_EXP]: max_exp = %x\n\n", *max_exp));
 #endif
-        for(exp_iter = 0; exp_iter < PARALLEL_CHANNEL_NUM; exp_iter ++) {
+        for(exp_iter = 0; exp_iter < NVDLA_MAC_ATOMIC_C_SIZE; exp_iter ++) {
             sum_exp_sft[exp_iter] = ((*max_exp - sum_exp_sft[exp_iter]) << 2);
         }
         *max_exp = *max_exp << 2;
@@ -603,12 +591,12 @@ public:
 #endif
 
         fp16_mts.range(15,11) = 0;
-        for(ch_iter = 0; ch_iter < PARALLEL_CHANNEL_NUM; ch_iter ++) {
+        for(ch_iter = 0; ch_iter < NVDLA_MAC_ATOMIC_C_SIZE; ch_iter ++) {
 #if LOG_DETAIL
             cslDebug((50, "[FP16_MUL] mul_idx = %d\n", ch_iter));
 #endif
-            i = 1 - int(ch_iter / 32);
-            j = (ch_iter % 32) * 2;
+            i = 1 - int(ch_iter / (NVDLA_MAC_ATOMIC_C_SIZE / 2));
+            j = (ch_iter % (NVDLA_MAC_ATOMIC_C_SIZE / 2)) * 2;
 
             if(!((wt_mask[i] >> j) & 0x1) || !((dat_mask[i] >> j) & 0x1)) {
 #if LOG_DETAIL
@@ -673,10 +661,10 @@ public:
         uint32_t    nan_flag;
         uint32_t    result_iter;
         uint32_t    max_exp;
-        uint32_t    dat_exp_sft[PARALLEL_CHANNEL_NUM];
-        uint32_t    wt_exp_sft[PARALLEL_CHANNEL_NUM];
-        uint32_t    sum_exp_sft[PARALLEL_CHANNEL_NUM];
-        int32_t     mts_product[PARALLEL_CHANNEL_NUM];
+        uint32_t    dat_exp_sft[NVDLA_MAC_ATOMIC_C_SIZE];
+        uint32_t    wt_exp_sft[NVDLA_MAC_ATOMIC_C_SIZE];
+        uint32_t    sum_exp_sft[NVDLA_MAC_ATOMIC_C_SIZE];
+        int32_t     mts_product[NVDLA_MAC_ATOMIC_C_SIZE];
         uint32_t    i;
         sc_int<FP16_MUL_BIT_WIDTH>             pp_phase1[16];
         sc_int<FP16_MUL_BIT_WIDTH>             pp_phase2[8];
@@ -700,7 +688,7 @@ public:
         double cal_out[4]={0,0,0,0};
         int32_t exp_new;
         double add4[16];
-        double marray[64];
+        double marray[NVDLA_MAC_ATOMIC_C_SIZE];
 #endif
 
         for (result_iter=0; result_iter < RESULT_NUM_PER_MACELL; result_iter++) {
@@ -726,28 +714,30 @@ public:
                 cal_fp16_exp(wt_mask, dat_mask, data_operand, weight_operand, dat_exp_sft, wt_exp_sft, sum_exp_sft, &max_exp);
                 cal_fp16_mul(wt_mask, dat_mask, data_operand, weight_operand, dat_exp_sft, wt_exp_sft, sum_exp_sft, mts_product);
 
+                uint32_t channel_num = NVDLA_MAC_ATOMIC_C_SIZE / (4 * 4);
+
                 for(i = 0; i < 4; i ++) {
                     pp_phase3[i] = 0;
                 }
 
-                for(i = 0; i < 16; i ++) {
-                    pp_phase1[i] = mts_product[i*4] + mts_product[i*4+1] + mts_product[i*4+2] + mts_product[i*4+3];
+                for (i = 0; i < 16; i++) {
+                    pp_phase1[i] = mts_product[i * channel_num] + mts_product[i * channel_num + 1] + mts_product[i * channel_num + 2] + mts_product[i * channel_num + 3];
                 }
 
                 if(!winograd_op_) {
-                    for(i = 0; i < 16; i ++) {
+                    for (i = 0; i < 16; i++) {
                         pp_phase3[0] += pp_phase1[i];
                     }
                     exp_dc = max_exp;
                     exp_wg = 0;
                 } else {
-                    for(i = 0; i < 4; i ++) {
-                        pp_phase2[i] = pp_phase1[i] + pp_phase1[i+4] + pp_phase1[i+8];
+                    for(i = 0; i < 4; i++) {
+                        pp_phase2[i+0] = pp_phase1[i+0] + pp_phase1[i+4] + pp_phase1[i+8];
                         pp_phase2[i+4] = pp_phase1[i+4] - pp_phase1[i+8] - pp_phase1[i+12];
                     }
 
                     for(i = 0; i < 2; i ++) {
-                        pp_phase3[i*2] = pp_phase2[i*4] + pp_phase2[i*4+1] + pp_phase2[i*4+2];
+                        pp_phase3[i*2+0] = pp_phase2[i*4+0] + pp_phase2[i*4+1] + pp_phase2[i*4+2];
                         pp_phase3[i*2+1] = pp_phase2[i*4+1] - pp_phase2[i*4+2] - pp_phase2[i*4+3];
                     }
                     exp_dc = max_exp;
@@ -761,25 +751,25 @@ public:
 
                 //stepheng. 20170406, add float checker.
 #ifdef DEBUG_ERROR_CHECK
-                for(j=0;j<PARALLEL_CHANNEL_NUM; j++){
-                    uint16_data_input =(data_operand[j*2+1].range(7,0),data_operand[j*2].range(7,0));
-                    uint16_weight_input =(weight_operand[j*2+1].range(7,0),weight_operand[j*2].range(7,0));
+                for (j = 0; j < NVDLA_MAC_ATOMIC_C_SIZE; j++){
+                    uint16_data_input = (data_operand[j * 2 + 1].range(7, 0), data_operand[j * 2].range(7, 0));
+                    uint16_weight_input = (weight_operand[j * 2 + 1].range(7, 0), weight_operand[j * 2].range(7, 0));
                     uint16_data = uint16_data_input;
                     uint16_weight = uint16_weight_input;
-                    if (uint16_data.range(14,0)== 0x7c00) {   //is max
+                    if (uint16_data.range(14,0) == 0x7c00) {   //is max
                         if (uint16_data[15]) {float_data = -65536;} else {float_data = 65536;}
                     }
                     else
                         float_data = half_float::detail::half2float(uint16_data_input);
 
-                    if (uint16_weight.range(14,0)==0x7c00){ //is max
+                    if (uint16_weight.range(14, 0) == 0x7c00){ //is max
                         if (uint16_weight[15]) {float_weight = -65536;} else {float_weight = 65536;}                    
                     }
                     else
                         float_weight= half_float::detail::half2float(uint16_weight_input);
-                    double_data= float_data;
-                    double_weight= float_weight;
-                    marray[j]= double_data* double_weight;
+                    double_data = float_data;
+                    double_weight = float_weight;
+                    marray[j]= double_data * double_weight;
                     cslDebug((50, "CMAC:index=0x%d data=0x%04x weight=0x%04x mul_result=0x%016lx marray[%d]=%e\n", j, uint16_data_input, uint16_weight_input, ((uint64_t)(result[1], result[0])), j, marray[j]));
                 }
                 exp_new = exp_dc;
@@ -789,17 +779,17 @@ public:
                 exp_new -= 50;
 
                 if(winograd_op_){
-                    for(j=0;j<16;j++){
-                        add4[j] = marray[j*4]+marray[j*4+1]+marray[j*4+2]+marray[j*4+3];	
+                    for (j = 0; j < NVDLA_MAC_ATOMIC_C_SIZE / 4; j++){
+                        add4[j] = marray[j * 4] + marray[j * 4 + 1] + marray[j * 4 + 2] + marray[j * 4 + 3];
                     }
-                    double_out[0]=add4[0]+add4[4]+add4[8]+add4[1]+add4[5]+add4[9]+add4[2]+add4[6]+add4[10];
-                    double_out[1]=add4[1]+add4[5]+add4[9]-add4[2]-add4[6]-add4[10]-add4[3]-add4[7]-add4[11];
-                    double_out[2]=add4[4]-add4[8]-add4[12]+add4[5]-add4[9]-add4[13]+add4[6]-add4[10]-add4[14];
-                    double_out[3]=add4[5]-add4[9]-add4[13]-add4[6]+add4[10]+add4[14]-add4[7]+add4[11]+add4[15];
-                    cmac_delta = 72*pow(2, exp_new);
-                    for(j=0;j<4;j++){
+                    double_out[0] = add4[0] + add4[4] + add4[8] + add4[1] + add4[5] + add4[9] + add4[2] + add4[6] + add4[10];
+                    double_out[1] = add4[1] + add4[5] + add4[9] - add4[2] - add4[6] - add4[10] - add4[3] - add4[7] - add4[11];
+                    double_out[2] = add4[4] - add4[8] - add4[12] + add4[5] - add4[9] - add4[13] + add4[6] - add4[10] - add4[14];
+                    double_out[3] = add4[5] - add4[9] - add4[13] - add4[6] + add4[10] + add4[14] - add4[7] + add4[11] + add4[15];
+                    cmac_delta = 72 * pow(2, exp_new);
+                    for (j = 0; j < 4; j++){
                         cal_out[j] = pp_phase3[j] * pow(2, exp_new);
-                        if(fabs(double_out[j]-cal_out[j])> cmac_delta){
+                        if (fabs(double_out[j] - cal_out[j])> cmac_delta){
 #ifdef LOG_DETAIL
                             cslDebug((50, "stepheng:the 0x%d\n th output, total 4", j));
                             //cslDebug((50, "stepheng:cmac pure V output origninal high 22bits: 0x%06lx\n",result[j*2+1] ));
@@ -812,12 +802,12 @@ public:
                     }
                 }
                 else {
-                    for(j=0;j<64;j++){
+                    for (j = 0; j < NVDLA_MAC_ATOMIC_C_SIZE; j++){
                         double_out[0] += marray[j];
                     }
-                    cmac_delta = 128*pow(2, exp_new);
+                    cmac_delta = 128 * pow(2, exp_new);
                     cal_out[0] = pp_phase3[0] * pow(2, exp_new);
-                    if(fabs(double_out[0]-cal_out[0])> cmac_delta){
+                    if (fabs(double_out[0] - cal_out[0])> cmac_delta) {
                         //cslDebug((50, "stepheng:cmac pure V output origninal high 22bits: 0x%06lx\n",result[1] ));
                         //cslDebug((50, "stepheng:cmac pure V output origninal low 22bits: 0x%06lx\n",result[0] ));
                         cslDebug((50, "stepheng:cmac pure C double-2-hex output: 0x%016lx\n",*((uint64_t*)(&double_out[0])) ));

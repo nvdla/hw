@@ -124,10 +124,10 @@ output [15:0] reg2dp_datout_scale;
 output  [5:0] reg2dp_datout_shifter;
 output        reg2dp_dma_en;
 output [31:0] reg2dp_dst_base_addr_high;
-output [26:0] reg2dp_dst_base_addr_low;
-output [26:0] reg2dp_dst_line_stride;
+output [31:0] reg2dp_dst_base_addr_low;
+output [31:0] reg2dp_dst_line_stride;
 output        reg2dp_dst_ram_type;
-output [26:0] reg2dp_dst_surface_stride;
+output [31:0] reg2dp_dst_surface_stride;
 output  [1:0] reg2dp_input_data_type;
 output        reg2dp_interrupt_ptr;
 output        reg2dp_lut_access_type;
@@ -190,10 +190,10 @@ wire   [15:0] reg2dp_d0_datout_scale;
 wire    [5:0] reg2dp_d0_datout_shifter;
 wire          reg2dp_d0_dma_en;
 wire   [31:0] reg2dp_d0_dst_base_addr_high;
-wire   [26:0] reg2dp_d0_dst_base_addr_low;
-wire   [26:0] reg2dp_d0_dst_line_stride;
+wire   [31:0] reg2dp_d0_dst_base_addr_low;
+wire   [31:0] reg2dp_d0_dst_line_stride;
 wire          reg2dp_d0_dst_ram_type;
-wire   [26:0] reg2dp_d0_dst_surface_stride;
+wire   [31:0] reg2dp_d0_dst_surface_stride;
 wire    [1:0] reg2dp_d0_input_data_type;
 wire          reg2dp_d0_lut_en;
 wire          reg2dp_d0_mul_bypass;
@@ -210,10 +210,10 @@ wire   [15:0] reg2dp_d1_datout_scale;
 wire    [5:0] reg2dp_d1_datout_shifter;
 wire          reg2dp_d1_dma_en;
 wire   [31:0] reg2dp_d1_dst_base_addr_high;
-wire   [26:0] reg2dp_d1_dst_base_addr_low;
-wire   [26:0] reg2dp_d1_dst_line_stride;
+wire   [31:0] reg2dp_d1_dst_base_addr_low;
+wire   [31:0] reg2dp_d1_dst_line_stride;
 wire          reg2dp_d1_dst_ram_type;
-wire   [26:0] reg2dp_d1_dst_surface_stride;
+wire   [31:0] reg2dp_d1_dst_surface_stride;
 wire    [1:0] reg2dp_d1_input_data_type;
 wire          reg2dp_d1_lut_en;
 wire          reg2dp_d1_mul_bypass;
@@ -284,10 +284,10 @@ reg    [15:0] reg2dp_datout_scale;
 reg     [5:0] reg2dp_datout_shifter;
 reg           reg2dp_dma_en;
 reg    [31:0] reg2dp_dst_base_addr_high;
-reg    [26:0] reg2dp_dst_base_addr_low;
-reg    [26:0] reg2dp_dst_line_stride;
+reg    [31:0] reg2dp_dst_base_addr_low;
+reg    [31:0] reg2dp_dst_line_stride;
 reg           reg2dp_dst_ram_type;
-reg    [26:0] reg2dp_dst_surface_stride;
+reg    [31:0] reg2dp_dst_surface_stride;
 reg     [1:0] reg2dp_input_data_type;
 reg           reg2dp_lut_en;
 reg           reg2dp_mul_bypass;
@@ -364,10 +364,10 @@ NV_NVDLA_CDP_REG_dual u_dual_reg_d0 (
   ,.datout_scale             (reg2dp_d0_datout_scale[15:0])          //|> w
   ,.datout_shifter           (reg2dp_d0_datout_shifter[5:0])         //|> w
   ,.dst_base_addr_high       (reg2dp_d0_dst_base_addr_high[31:0])    //|> w
-  ,.dst_base_addr_low        (reg2dp_d0_dst_base_addr_low[26:0])     //|> w
+  ,.dst_base_addr_low        (reg2dp_d0_dst_base_addr_low[31:0])     //|> w
   ,.dst_ram_type             (reg2dp_d0_dst_ram_type)                //|> w
-  ,.dst_line_stride          (reg2dp_d0_dst_line_stride[26:0])       //|> w
-  ,.dst_surface_stride       (reg2dp_d0_dst_surface_stride[26:0])    //|> w
+  ,.dst_line_stride          (reg2dp_d0_dst_line_stride[31:0])       //|> w
+  ,.dst_surface_stride       (reg2dp_d0_dst_surface_stride[31:0])    //|> w
   ,.mul_bypass               (reg2dp_d0_mul_bypass)                  //|> w
   ,.sqsum_bypass             (reg2dp_d0_sqsum_bypass)                //|> w
   ,.normalz_len              (reg2dp_d0_normalz_len[1:0])            //|> w
@@ -404,10 +404,10 @@ NV_NVDLA_CDP_REG_dual u_dual_reg_d1 (
   ,.datout_scale             (reg2dp_d1_datout_scale[15:0])          //|> w
   ,.datout_shifter           (reg2dp_d1_datout_shifter[5:0])         //|> w
   ,.dst_base_addr_high       (reg2dp_d1_dst_base_addr_high[31:0])    //|> w
-  ,.dst_base_addr_low        (reg2dp_d1_dst_base_addr_low[26:0])     //|> w
+  ,.dst_base_addr_low        (reg2dp_d1_dst_base_addr_low[31:0])     //|> w
   ,.dst_ram_type             (reg2dp_d1_dst_ram_type)                //|> w
-  ,.dst_line_stride          (reg2dp_d1_dst_line_stride[26:0])       //|> w
-  ,.dst_surface_stride       (reg2dp_d1_dst_surface_stride[26:0])    //|> w
+  ,.dst_line_stride          (reg2dp_d1_dst_line_stride[31:0])       //|> w
+  ,.dst_surface_stride       (reg2dp_d1_dst_surface_stride[31:0])    //|> w
   ,.mul_bypass               (reg2dp_d1_mul_bypass)                  //|> w
   ,.sqsum_bypass             (reg2dp_d1_sqsum_bypass)                //|> w
   ,.normalz_len              (reg2dp_d1_normalz_len[1:0])            //|> w

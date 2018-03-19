@@ -70,10 +70,10 @@ output  [9:0] reg2dp_partial_width_in_last;
 output  [9:0] reg2dp_partial_width_in_mid;
 output  [7:0] reg2dp_split_num;
 output [31:0] reg2dp_src_base_addr_high;
-output [26:0] reg2dp_src_base_addr_low;
-output [26:0] reg2dp_src_line_stride;
+output [31:0] reg2dp_src_base_addr_low;
+output [31:0] reg2dp_src_line_stride;
 output        reg2dp_src_ram_type;
-output [26:0] reg2dp_src_surface_stride;
+output [31:0] reg2dp_src_surface_stride;
 output        slcg_op_en;
 wire          csb_rresp_error;
 wire   [33:0] csb_rresp_pd_w;
@@ -106,10 +106,10 @@ wire    [9:0] reg2dp_d0_partial_width_in_last;
 wire    [9:0] reg2dp_d0_partial_width_in_mid;
 wire    [7:0] reg2dp_d0_split_num;
 wire   [31:0] reg2dp_d0_src_base_addr_high;
-wire   [26:0] reg2dp_d0_src_base_addr_low;
-wire   [26:0] reg2dp_d0_src_line_stride;
+wire   [31:0] reg2dp_d0_src_base_addr_low;
+wire   [31:0] reg2dp_d0_src_line_stride;
 wire          reg2dp_d0_src_ram_type;
-wire   [26:0] reg2dp_d0_src_surface_stride;
+wire   [31:0] reg2dp_d0_src_surface_stride;
 wire   [12:0] reg2dp_d1_cube_in_channel;
 wire   [12:0] reg2dp_d1_cube_in_height;
 wire   [12:0] reg2dp_d1_cube_in_width;
@@ -126,10 +126,10 @@ wire    [9:0] reg2dp_d1_partial_width_in_last;
 wire    [9:0] reg2dp_d1_partial_width_in_mid;
 wire    [7:0] reg2dp_d1_split_num;
 wire   [31:0] reg2dp_d1_src_base_addr_high;
-wire   [26:0] reg2dp_d1_src_base_addr_low;
-wire   [26:0] reg2dp_d1_src_line_stride;
+wire   [31:0] reg2dp_d1_src_base_addr_low;
+wire   [31:0] reg2dp_d1_src_line_stride;
 wire          reg2dp_d1_src_ram_type;
-wire   [26:0] reg2dp_d1_src_surface_stride;
+wire   [31:0] reg2dp_d1_src_surface_stride;
 wire    [2:0] reg2dp_op_en_reg_w;
 wire          reg2dp_producer;
 wire   [23:0] reg_offset;
@@ -178,10 +178,10 @@ reg     [9:0] reg2dp_partial_width_in_last;
 reg     [9:0] reg2dp_partial_width_in_mid;
 reg     [7:0] reg2dp_split_num;
 reg    [31:0] reg2dp_src_base_addr_high;
-reg    [26:0] reg2dp_src_base_addr_low;
-reg    [26:0] reg2dp_src_line_stride;
+reg    [31:0] reg2dp_src_base_addr_low;
+reg    [31:0] reg2dp_src_line_stride;
 reg           reg2dp_src_ram_type;
-reg    [26:0] reg2dp_src_surface_stride;
+reg    [31:0] reg2dp_src_surface_stride;
 reg    [62:0] req_pd;
 reg           req_pvld;
 reg           slcg_op_en_d1;
@@ -228,10 +228,10 @@ NV_NVDLA_PDP_RDMA_REG_dual u_dual_reg_d0 (
   ,.kernel_width           (reg2dp_d0_kernel_width[3:0])           //|> w
   ,.pad_width              (reg2dp_d0_pad_width[3:0])              //|> w
   ,.src_base_addr_high     (reg2dp_d0_src_base_addr_high[31:0])    //|> w
-  ,.src_base_addr_low      (reg2dp_d0_src_base_addr_low[26:0])     //|> w
-  ,.src_line_stride        (reg2dp_d0_src_line_stride[26:0])       //|> w
+  ,.src_base_addr_low      (reg2dp_d0_src_base_addr_low[31:0])     //|> w
+  ,.src_line_stride        (reg2dp_d0_src_line_stride[31:0])       //|> w
   ,.src_ram_type           (reg2dp_d0_src_ram_type)                //|> w
-  ,.src_surface_stride     (reg2dp_d0_src_surface_stride[26:0])    //|> w
+  ,.src_surface_stride     (reg2dp_d0_src_surface_stride[31:0])    //|> w
   ,.op_en                  (reg2dp_d0_op_en)                       //|< r
   ,.perf_read_stall        (dp2reg_d0_perf_read_stall[31:0])       //|< i
   );
@@ -259,10 +259,10 @@ NV_NVDLA_PDP_RDMA_REG_dual u_dual_reg_d1 (
   ,.kernel_width           (reg2dp_d1_kernel_width[3:0])           //|> w
   ,.pad_width              (reg2dp_d1_pad_width[3:0])              //|> w
   ,.src_base_addr_high     (reg2dp_d1_src_base_addr_high[31:0])    //|> w
-  ,.src_base_addr_low      (reg2dp_d1_src_base_addr_low[26:0])     //|> w
-  ,.src_line_stride        (reg2dp_d1_src_line_stride[26:0])       //|> w
+  ,.src_base_addr_low      (reg2dp_d1_src_base_addr_low[31:0])     //|> w
+  ,.src_line_stride        (reg2dp_d1_src_line_stride[31:0])       //|> w
   ,.src_ram_type           (reg2dp_d1_src_ram_type)                //|> w
-  ,.src_surface_stride     (reg2dp_d1_src_surface_stride[26:0])    //|> w
+  ,.src_surface_stride     (reg2dp_d1_src_surface_stride[31:0])    //|> w
   ,.op_en                  (reg2dp_d1_op_en)                       //|< r
   ,.perf_read_stall        (dp2reg_d1_perf_read_stall[31:0])       //|< i
   );

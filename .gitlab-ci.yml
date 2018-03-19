@@ -1,0 +1,11 @@
+before_script:
+  - export SNPSLMD_LICENSE_FILE="1711@sac-lic-31:1711@sc-lic-32:1711@lic-34:1711@sc-lic-33:1711@sc-lic-14"
+
+stages:
+  - test
+
+regress:
+  stage: test
+  script:
+    - make USE_VM_ENV=1
+    - /home/bin/ci_sanity -tot `pwd`

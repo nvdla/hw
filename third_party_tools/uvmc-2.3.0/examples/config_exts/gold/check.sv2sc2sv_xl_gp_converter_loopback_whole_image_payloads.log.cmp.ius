@@ -1,0 +1,8 @@
+UVM_INFO common/producer_loopback.svh(257) @ 10800: prod [producer::run_phase()] ... done producing transactions, expectedChecksum=fb000ca8 == actualChecksum=fb000ca8 Test PASSED !
+UVM_ERROR :    0
+UVM_FATAL :    0
+UVM_INFO common/producer_loopback.svh(429) @ 10000: prod [producer] [PRODUCER/CONFIG/QUERY] ADDR_WIDTH=64 DATA_WIDTH=128 LOCK_TYPE=0 CACHE_TYPE=0 PROT_TYPE=0
+UVM_INFO common/producer_loopback.svh(429) @ 10000: prod [producer] [PRODUCER/CONFIG/QUERY] ADDR_WIDTH=64 DATA_WIDTH=128 LOCK_TYPE=2 CACHE_TYPE=14 PROT_TYPE=6
+UVM_INFO common/producer_loopback.svh(227) @ 10000: prod [producer::run_phase()] [PRODUCER/GP/SEND] NUM_TRANSACTIONS=80 PAYLOAD_NUM_BYTES=2097152 ...
+UVM_INFO common/producer_loopback.svh(268) @ 10800: prod [PRODUCER/END_TEST] Dropping objection to ending the test
+[PRODUCER/END_TEST]     1

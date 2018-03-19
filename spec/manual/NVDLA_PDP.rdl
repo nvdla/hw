@@ -1,0 +1,902 @@
+// ================================================================
+// NVDLA Open Source Project
+//
+// Copyright(c) 2016 - 2017 NVIDIA Corporation.  Licensed under the
+// NVDLA Open Hardware License; Check "LICENSE" which comes with
+// this distribution for more information.
+// ================================================================
+
+property spec_sw_default {
+    type      = number;
+    component = field;
+};
+property spec_access {
+    type      = string;
+    component = field;
+};
+property sw_default_mask {
+    type      = number;
+    component = field;
+};
+property reset_mask {
+    type      = number;
+    component = field;
+};
+regfile regs_NVDLA_PDP{
+    default regwidth=32;
+    reg {
+        name = "S_STATUS";
+        desc = "
+////Planar Data Processor Registers
+";
+        enum S_STATUS_STATUS_0_enum {
+            IDLE = 2'd0;
+            RUNNING = 2'd1;
+            PENDING = 2'd2;
+        };
+        field {
+            encode          = S_STATUS_STATUS_0_enum;
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x0;
+            reset_mask      = 0x3;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } STATUS_0[1:0];
+        STATUS_0->desc="
+//// Status of configuration register group 0
+";
+        enum S_STATUS_STATUS_1_enum {
+            IDLE = 2'd0;
+            RUNNING = 2'd1;
+            PENDING = 2'd2;
+        };
+        field {
+            encode          = S_STATUS_STATUS_1_enum;
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x0;
+            reset_mask      = 0x3;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } STATUS_1[17:16];
+        STATUS_1->desc="
+//// Status of configuration register group 1
+";
+    }S_STATUS @0x0;
+    reg {
+        name = "S_POINTER";
+        enum S_POINTER_PRODUCER_enum {
+            GROUP_0 = 1'd0;
+            GROUP_1 = 1'd1;
+        };
+        field {
+            encode          = S_POINTER_PRODUCER_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } PRODUCER[0:0];
+        PRODUCER->desc="
+////Pointer for CSB master to access groups
+";
+        enum S_POINTER_CONSUMER_enum {
+            GROUP_0 = 1'd0;
+            GROUP_1 = 1'd1;
+        };
+        field {
+            encode          = S_POINTER_CONSUMER_enum;
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CONSUMER[16:16];
+        CONSUMER->desc="
+////Pointer for datapath to access groups
+";
+    }S_POINTER @0x4;
+    reg {
+        name = "D_OP_ENABLE";
+        desc = "
+//////////////////////////////////////////////////////////////////////////////////
+////                                                                            //
+////                    Define single group registers here                      //
+////                    Register name should shart with prefix D_               //
+////                                                                            //
+//////////////////////////////////////////////////////////////////////////////////
+//// 
+";
+        enum D_OP_ENABLE_OP_EN_enum {
+            DISABLE = 1'd0;
+            ENABLE = 1'd1;
+        };
+        field {
+            encode          = D_OP_ENABLE_OP_EN_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rwto;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } OP_EN[0:0];
+    }D_OP_ENABLE @0x8;
+    reg {
+        name = "D_DATA_CUBE_IN_WIDTH";
+        desc = "
+//// Data cube configuration, begin
+//// Input data cube size settings
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1fff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CUBE_IN_WIDTH[12:0];
+        CUBE_IN_WIDTH->desc="
+//// Element number in width direction used in non-split mode, range is 1~8192, actual width = WIDTH+1
+";
+    }D_DATA_CUBE_IN_WIDTH @0xc;
+    reg {
+        name = "D_DATA_CUBE_IN_HEIGHT";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1fff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CUBE_IN_HEIGHT[12:0];
+        CUBE_IN_HEIGHT->desc="
+//// Element number in height direction used in non-split mode, range is 1~8192, actual height = HEIGHT+1
+";
+    }D_DATA_CUBE_IN_HEIGHT @0x10;
+    reg {
+        name = "D_DATA_CUBE_IN_CHANNEL";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1fff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CUBE_IN_CHANNEL[12:0];
+        CUBE_IN_CHANNEL->desc="
+//// Element number in channel direction used in non-split mode, range is 1~8192, actual channel = CHANNEL+1
+";
+    }D_DATA_CUBE_IN_CHANNEL @0x14;
+    reg {
+        name = "D_DATA_CUBE_OUT_WIDTH";
+        desc = "
+//// Output data cube size settings
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1fff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CUBE_OUT_WIDTH[12:0];
+        CUBE_OUT_WIDTH->desc="
+//// Element number in width direction used in non-split mode, range is 1~8192, actual width = WIDTH+1
+";
+    }D_DATA_CUBE_OUT_WIDTH @0x18;
+    reg {
+        name = "D_DATA_CUBE_OUT_HEIGHT";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1fff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CUBE_OUT_HEIGHT[12:0];
+        CUBE_OUT_HEIGHT->desc="
+//// Element number in height direction used in non-split mode, range is 1~8192, actual height = HEIGHT+1
+";
+    }D_DATA_CUBE_OUT_HEIGHT @0x1c;
+    reg {
+        name = "D_DATA_CUBE_OUT_CHANNEL";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1fff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CUBE_OUT_CHANNEL[12:0];
+        CUBE_OUT_CHANNEL->desc="
+//// Element number in channel direction used in non-split mode, range is 1~8192, actual channel = CHANNEL+1
+";
+    }D_DATA_CUBE_OUT_CHANNEL @0x20;
+    reg {
+        name = "D_OPERATION_MODE_CFG";
+        desc = "
+//// Data cube configuration, end
+";
+        enum D_OPERATION_MODE_CFG_POOLING_METHOD_enum {
+            POOLING_METHOD_AVERAGE = 2'd0;
+            POOLING_METHOD_MAX = 2'd1;
+            POOLING_METHOD_MIN = 2'd2;
+        };
+        field {
+            encode          = D_OPERATION_MODE_CFG_POOLING_METHOD_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x3;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } POOLING_METHOD[1:0];
+        enum D_OPERATION_MODE_CFG_FLYING_MODE_enum {
+            ON_FLYING = 1'd0 {desc = "
+//// Source is SDP
+";};
+            OFF_FLYING = 1'd1 {desc = "
+//// Source is external memory
+";};
+        };
+        field {
+            encode          = D_OPERATION_MODE_CFG_FLYING_MODE_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } FLYING_MODE[4:4];
+        FLYING_MODE->desc="
+//// Input data from SDP 
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } SPLIT_NUM[15:8];
+        SPLIT_NUM->desc="
+//// When data buffer could not accommodate all temperal output data within the whole width, input/output data cube will be splited along height x channel plane. Since PDP line buffer size is (64*112bits*8), could accomodate 2048/4096 elements in int16/int8 format, the maximum line buffer limited output width is 2048/16=128 or 4096/32=128, since the width configuration could be 8192, so the split_num could be 8192/128=64. Actual value is SPLIT_NUM+1.
+";
+    }D_OPERATION_MODE_CFG @0x24;
+    reg {
+        name = "D_NAN_FLUSH_TO_ZERO";
+        enum D_NAN_FLUSH_TO_ZERO_NAN_TO_ZERO_enum {
+            DISABLE = 1'd0;
+            ENABLE = 1'd1;
+        };
+        field {
+            encode          = D_NAN_FLUSH_TO_ZERO_NAN_TO_ZERO_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } NAN_TO_ZERO[0:0];
+        NAN_TO_ZERO->desc="
+////option to flush input NaN to zero, only active in off-flying mode
+";
+    }D_NAN_FLUSH_TO_ZERO @0x28;
+    reg {
+        name = "D_PARTIAL_WIDTH_IN";
+        desc = "
+//// When data buffer could not accommodate all temperal output data within the whole width, output data cube will be splited along height x channel plane
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x3ff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } PARTIAL_WIDTH_IN_FIRST[9:0];
+        PARTIAL_WIDTH_IN_FIRST->desc="
+////only used in split mode, +1
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x3ff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } PARTIAL_WIDTH_IN_LAST[19:10];
+        PARTIAL_WIDTH_IN_LAST->desc="
+////only used in split mode, +1
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x3ff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } PARTIAL_WIDTH_IN_MID[29:20];
+        PARTIAL_WIDTH_IN_MID->desc="
+////only used in split mode and SPLIT_NUM is set more than 1, +1. PARTIAL_WIDTH_IN_FIRST + PARTIAL_WIDTH_IN_LAST + PARTIAL_WIDTH_IN_MID = input cube width
+";
+    }D_PARTIAL_WIDTH_IN @0x2c;
+    reg {
+        name = "D_PARTIAL_WIDTH_OUT";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x3ff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } PARTIAL_WIDTH_OUT_FIRST[9:0];
+        PARTIAL_WIDTH_OUT_FIRST->desc="
+////only used in split mode, +1
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x3ff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } PARTIAL_WIDTH_OUT_LAST[19:10];
+        PARTIAL_WIDTH_OUT_LAST->desc="
+////only used in split mode, +1
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x3ff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } PARTIAL_WIDTH_OUT_MID[29:20];
+        PARTIAL_WIDTH_OUT_MID->desc="
+////only used in split mode, and SPLIT_NUM is set more than 1, +1. PARTIAL_WIDTH_OUT_FIRST + PARTIAL_WIDTH_OUT_LAST + PARTIAL_WIDTH_OUT_MID = output cube width
+";
+    }D_PARTIAL_WIDTH_OUT @0x30;
+    reg {
+        name = "D_POOLING_KERNEL_CFG";
+        enum D_POOLING_KERNEL_CFG_KERNEL_WIDTH_enum {
+            KERNEL_WIDTH_1 = 4'd0;
+            KERNEL_WIDTH_2 = 4'd1;
+            KERNEL_WIDTH_3 = 4'd2;
+            KERNEL_WIDTH_4 = 4'd3;
+            KERNEL_WIDTH_5 = 4'd4;
+            KERNEL_WIDTH_6 = 4'd5;
+            KERNEL_WIDTH_7 = 4'd6;
+            KERNEL_WIDTH_8 = 4'd7;
+        };
+        field {
+            encode          = D_POOLING_KERNEL_CFG_KERNEL_WIDTH_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xf;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } KERNEL_WIDTH[3:0];
+        KERNEL_WIDTH->desc="
+//// +1
+";
+        enum D_POOLING_KERNEL_CFG_KERNEL_HEIGHT_enum {
+            KERNEL_HEIGHT_1 = 4'd0;
+            KERNEL_HEIGHT_2 = 4'd1;
+            KERNEL_HEIGHT_3 = 4'd2;
+            KERNEL_HEIGHT_4 = 4'd3;
+            KERNEL_HEIGHT_5 = 4'd4;
+            KERNEL_HEIGHT_6 = 4'd5;
+            KERNEL_HEIGHT_7 = 4'd6;
+            KERNEL_HEIGHT_8 = 4'd7;
+        };
+        field {
+            encode          = D_POOLING_KERNEL_CFG_KERNEL_HEIGHT_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xf;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } KERNEL_HEIGHT[11:8];
+        KERNEL_HEIGHT->desc="
+//// +1
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xf;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } KERNEL_STRIDE_WIDTH[19:16];
+        KERNEL_STRIDE_WIDTH->desc="
+//// +1
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xf;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } KERNEL_STRIDE_HEIGHT[23:20];
+        KERNEL_STRIDE_HEIGHT->desc="
+//// +1
+";
+    }D_POOLING_KERNEL_CFG @0x34;
+    reg {
+        name = "D_RECIP_KERNEL_WIDTH";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1ffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } RECIP_KERNEL_WIDTH[16:0];
+        RECIP_KERNEL_WIDTH->desc="
+//// reciprocal of kernel_width, set to actual value * 2^16 when INT8/INT16 format enabled. and set to actual value for fp16 precision mode with fp17 data format.
+";
+    }D_RECIP_KERNEL_WIDTH @0x38;
+    reg {
+        name = "D_RECIP_KERNEL_HEIGHT";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1ffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } RECIP_KERNEL_HEIGHT[16:0];
+        RECIP_KERNEL_HEIGHT->desc="
+//// reciprocal of kernel_height, set to actual value * 2^16 when INT8/INT16 format enabled. and set to actual value for fp16 precision mode with fp17 data format.
+";
+    }D_RECIP_KERNEL_HEIGHT @0x3c;
+    reg {
+        name = "D_POOLING_PADDING_CFG";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x7;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } PAD_LEFT[2:0];
+        PAD_LEFT->desc="
+////padding number. active for all of pooling mode. 
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x7;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } PAD_TOP[6:4];
+        PAD_TOP->desc="
+////padding number. active for all of pooling mode.
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x7;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } PAD_RIGHT[10:8];
+        PAD_RIGHT->desc="
+////padding number. active for all of pooling mode.
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x7;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } PAD_BOTTOM[14:12];
+        PAD_BOTTOM->desc="
+////padding number. active for all of pooling mode.
+";
+    }D_POOLING_PADDING_CFG @0x40;
+    reg {
+        name = "D_POOLING_PADDING_VALUE_1_CFG";
+        desc = "
+////PAD_VALUE_1X means the value in padding position. pad value only active in average pooling mode.
+////it is a signed value. please note its signed MSB bits,reg setting need signed bit extended.
+////For INT8, active pad value is signed 8bit value, 1x active bits is LSB 8bits; 
+////For INT16, active pad value is a 16bits number. 1x active bits is LSB 16bits
+////For FP16, pad value should always be set to value 0, support +/- 0 with fp17 format,sign bit extended.
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x7ffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } PAD_VALUE_1X[18:0];
+    }D_POOLING_PADDING_VALUE_1_CFG @0x44;
+    reg {
+        name = "D_POOLING_PADDING_VALUE_2_CFG";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x7ffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } PAD_VALUE_2X[18:0];
+    }D_POOLING_PADDING_VALUE_2_CFG @0x48;
+    reg {
+        name = "D_POOLING_PADDING_VALUE_3_CFG";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x7ffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } PAD_VALUE_3X[18:0];
+    }D_POOLING_PADDING_VALUE_3_CFG @0x4c;
+    reg {
+        name = "D_POOLING_PADDING_VALUE_4_CFG";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x7ffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } PAD_VALUE_4X[18:0];
+    }D_POOLING_PADDING_VALUE_4_CFG @0x50;
+    reg {
+        name = "D_POOLING_PADDING_VALUE_5_CFG";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x7ffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } PAD_VALUE_5X[18:0];
+    }D_POOLING_PADDING_VALUE_5_CFG @0x54;
+    reg {
+        name = "D_POOLING_PADDING_VALUE_6_CFG";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x7ffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } PAD_VALUE_6X[18:0];
+    }D_POOLING_PADDING_VALUE_6_CFG @0x58;
+    reg {
+        name = "D_POOLING_PADDING_VALUE_7_CFG";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x7ffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } PAD_VALUE_7X[18:0];
+    }D_POOLING_PADDING_VALUE_7_CFG @0x5c;
+    reg {
+        name = "D_SRC_BASE_ADDR_LOW";
+        desc = "
+//// Source data cube memory configuration, begin
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } SRC_BASE_ADDR_LOW[31:0];
+        SRC_BASE_ADDR_LOW->desc="
+////  Start address of the source data cube which will be read from external memory for normalization
+";
+    }D_SRC_BASE_ADDR_LOW @0x60;
+    reg {
+        name = "D_SRC_BASE_ADDR_HIGH";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } SRC_BASE_ADDR_HIGH[31:0];
+        SRC_BASE_ADDR_HIGH->desc="
+////  Start address of the source data cube which will be read from external memory for normalization
+";
+    }D_SRC_BASE_ADDR_HIGH @0x64;
+    reg {
+        name = "D_SRC_LINE_STRIDE";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } SRC_LINE_STRIDE[31:0];
+        SRC_LINE_STRIDE->desc="
+////  Specify stride between two consective lines within a surface, actual stride value = LINE_STRIDE
+";
+    }D_SRC_LINE_STRIDE @0x68;
+    reg {
+        name = "D_SRC_SURFACE_STRIDE";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } SRC_SURFACE_STRIDE[31:0];
+        SRC_SURFACE_STRIDE->desc="
+////  Specify stride between two consective surface, actual stride value = SURFACE_STRIDE
+";
+    }D_SRC_SURFACE_STRIDE @0x6c;
+    reg {
+        name = "D_DST_BASE_ADDR_LOW";
+        desc = "
+//// Destination data cube memory configuration, begin
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } DST_BASE_ADDR_LOW[31:0];
+        DST_BASE_ADDR_LOW->desc="
+////  Start address of the destination data cube which will be wrote to external memory
+";
+    }D_DST_BASE_ADDR_LOW @0x70;
+    reg {
+        name = "D_DST_BASE_ADDR_HIGH";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } DST_BASE_ADDR_HIGH[31:0];
+        DST_BASE_ADDR_HIGH->desc="
+////  Start address of the destination data cube which will be wrote external memory
+";
+    }D_DST_BASE_ADDR_HIGH @0x74;
+    reg {
+        name = "D_DST_LINE_STRIDE";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } DST_LINE_STRIDE[31:0];
+        DST_LINE_STRIDE->desc="
+////  Specify stride between two consective lines within a surface, actual stride value = LINE_STRIDE
+";
+    }D_DST_LINE_STRIDE @0x78;
+    reg {
+        name = "D_DST_SURFACE_STRIDE";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } DST_SURFACE_STRIDE[31:0];
+        DST_SURFACE_STRIDE->desc="
+////  Specify stride between two consective surface, actual stride value = SURFACE_STRIDE
+";
+    }D_DST_SURFACE_STRIDE @0x7c;
+    reg {
+        name = "D_DST_RAM_CFG";
+        enum D_DST_RAM_CFG_DST_RAM_TYPE_enum {
+            CV = 1'd0;
+            MC = 1'd1;
+        };
+        field {
+            encode          = D_DST_RAM_CFG_DST_RAM_TYPE_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } DST_RAM_TYPE[0:0];
+        DST_RAM_TYPE->desc="
+//// Specify target is MC or CV_SRAM
+";
+    }D_DST_RAM_CFG @0x80;
+    reg {
+        name = "D_DATA_FORMAT";
+        enum D_DATA_FORMAT_INPUT_DATA_enum {
+            INT8 = 2'd0;
+            INT16 = 2'd1;
+            FP16 = 2'd2;
+        };
+        field {
+            encode          = D_DATA_FORMAT_INPUT_DATA_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x3;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } INPUT_DATA[1:0];
+    }D_DATA_FORMAT @0x84;
+    reg {
+        name = "D_INF_INPUT_NUM";
+        desc = "
+////status register
+";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } INF_INPUT_NUM[31:0];
+        INF_INPUT_NUM->desc="
+//// input infinity element number
+";
+    }D_INF_INPUT_NUM @0x88;
+    reg {
+        name = "D_NAN_INPUT_NUM";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } NAN_INPUT_NUM[31:0];
+        NAN_INPUT_NUM->desc="
+//// input NaN element number
+";
+    }D_NAN_INPUT_NUM @0x8c;
+    reg {
+        name = "D_NAN_OUTPUT_NUM";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } NAN_OUTPUT_NUM[31:0];
+        NAN_OUTPUT_NUM->desc="
+//// output NaN element number
+";
+    }D_NAN_OUTPUT_NUM @0x90;
+    reg {
+        name = "D_PERF_ENABLE";
+        desc = "
+//// LUT status, begin
+";
+        enum D_PERF_ENABLE_DMA_EN_enum {
+            DISABLE = 1'd0;
+            ENABLE = 1'd1;
+        };
+        field {
+            encode          = D_PERF_ENABLE_DMA_EN_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } DMA_EN[0:0];
+        DMA_EN->desc="
+//// dma perf reg enable control.
+";
+    }D_PERF_ENABLE @0x94;
+    reg {
+        name = "D_PERF_WRITE_STALL";
+        desc = "
+////reg D_PERF_READ_STALL               NVDLA_INCR 
+////    31:0    r   PERF_READ_STALL     init=0 // element number that for both LUT under-flow.
+////
+";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } PERF_WRITE_STALL[31:0];
+        PERF_WRITE_STALL->desc="
+//// element number that for both LUT under-flow.
+";
+    }D_PERF_WRITE_STALL @0x98;
+    reg {
+        name = "D_CYA";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CYA[31:0];
+        CYA->desc="
+////CYA register
+";
+    }D_CYA @0x9c;
+};
+addrmap  {
+    regs_NVDLA_PDP NVDLA_PDP @0xb000;
+}addrmap_NVDLA;

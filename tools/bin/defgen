@@ -1,114 +1,201 @@
-#!/usr/bin/env perl
-################################################################
-#
-#  defgen - define generator
-#
-################################################################
-# program
-################################################################
+#!/usr/bin/env python
+from __future__ import division
+## Use Python 3 division behavior, in python 2.7, '/' and '//' are both floor division, in python 3.x, '/' means float division, '//' means floor division
+import re
+import sys
+import math
+#from math import log, pow, ceil, floor    # directly using math class function
+from pprint import pprint
+import argparse
 
-use strict;
-use File::Basename;
-my ($Progdir) = dirname ($0);
-my ($Program) = basename ($0);
+def log2(x):
+    return int(math.log(x,2))
+    #return math.log(x,2)
 
-################################################################
-# usage
-################################################################
+def pow2(x):
+    return int(math.pow(2, x))
+    #return math.pow(2, x)
 
-sub Usage { print << "END"
+def ceil(x):
+    # Please don't remove function int, this is for keeping same behavior between Python 2.7 and Python 3.x
+    return int(math.ceil(x))
 
-usage: $Program [-o <ofile>] <ifile(s)>
-  -u: print usage statement.
-  -h: print help statement.;
-  -o <file>: output file, default is stdout.
-  <file>: input file
+def floor(x):
+    # Please don't remove function int, this is for keeping same behavior between Python 2.7 and Python 3.x
+    return int(math.floor(x))
 
-END
-}
+def get_equation_list_from_string(string):
+    lonely_define_prog  = re.compile(r'^\s*\%define\s+(?P<lonely_define>\w+)\s*$')
+    string_prog         = re.compile(r'^\s*\%define\s+(?P<define_value>\w+)\s+(?P<string_expression>"[\w ]+")\s*$')
+    string_list_prog    = re.compile(r'^\s*\%define\s+(?P<define_value>\w+)\s+(?P<string_list_part_0>\w+)(?P<string_list_part_1>(\s+\w+)+)\s*$')
+    expression_prog     = re.compile(r'^\s*\%define\s+(?P<left_hand_variable>\w+)\s+(?P<right_hand_expression>.*)\s*$')
+    define_name_list = []
+    lonely_define_dict = {}
+    string_dict = {}
+    string_list_dict = {}
+    equation_list = []
 
-################################################################
-# help
-################################################################
+    line_list = string.split('\n') # only support Linux line change symbol
+    for line in line_list:
+        line_remove_comment = line.split('//')[0]
+        #print ('line_remove_comment')
+        #print (line_remove_comment)
+        result = lonely_define_prog.match(line_remove_comment)
+        if result:
+            lonely_define_dict[result.group('lonely_define')] = True
+            define_name_list.append(result.group('lonely_define'))
+            #print ('In lonely list')
+            continue
+        result = string_prog.match(line_remove_comment)
+        if result:
+            string_dict[result.group('define_value')] = result.group('string_expression')
+            define_name_list.append(result.group('define_value'))
+            #print ('In string list')
+            continue
+        result = string_list_prog.match(line_remove_comment)
+        if result:
+            string_list_dict[result.group('define_value')] = result.group('string_list_part_0')+result.group('string_list_part_1')
+            define_name_list.append(result.group('define_value'))
+            #print ('In string list')
+            continue
+        result = expression_prog.match(line_remove_comment)
+        if result:
+            equation_list.append("%s=%s" % (result.group('left_hand_variable'), result.group('right_hand_expression')))
+            define_name_list.append(result.group('left_hand_variable'))
+            #print ('In equation list')
+            continue
+    return (define_name_list, string_dict, string_list_dict, equation_list, lonely_define_dict)
 
-sub Help { print << 'END'
+def evaluate_equation_list(equation_list):
+    if type(equation_list) is not list:
+        raise Exception("Function evaluate_equation_list::", "input equation_list is not a list")
+    global_result_dict = {}
+    local_result_dict = {}
+    error_count = 0
+    for equation in equation_list:
+        #print (equation)
+        try:
+            exec(equation, globals(), local_result_dict)
+        except NameError:
+            left_hand_value, right_hand_value = tuple(equation.split('='))
+            print ("Error: DEFGEN: right hand value %s has not been defined" % right_hand_value)
+            print ("Origin line: define %s %s" % (left_hand_value, right_hand_value))
+            error_count += 1
+        except:
+            left_hand_value, right_hand_value = tuple(equation.split('='))
+            print ("Error: DEFGEN: unsupported grammar")
+            print ("define %s %s" % tuple(equation.split('=')))
+            error_count += 1
+    if error_count > 0:
+        raise Exception("DEFGEN: found %d error(s), please check and fix" % error_count)
+    return local_result_dict
 
-END
-}
+def get_project_define_variable_from_string(string):
+    define_name_list, string_dict, string_list_dict, equation_list, lonely_define_dict = get_equation_list_from_string(string)
+    #print ("equation_list")
+    #print (equation_list)
+    #### Convert final result to integer, it may be an invalid assumption, begin
+    evaluation_result_dict = evaluate_equation_list(equation_list)
+    #pprint (evaluation_result_dict)
+    #for key, value in evaluation_result_dict.items():
+    #    evaluation_result_dict[key] = int(value)
+    #### Convert final result to integer, it may be an invalid assumption, end
+    evaluation_result_dict.update(lonely_define_dict) 
+    evaluation_result_dict.update(string_dict) 
+    evaluation_result_dict.update(string_list_dict) 
+    return (evaluation_result_dict, define_name_list)
 
-################################################################
-# input
-################################################################
+def generate_define_file(input_file_path, output_file_path, backend):
+    # Read in file
+    f = open(input_file_path, 'r')
+    define_source_string = f.read()
+    f.close()
+    # Generate internal variable
+    variable_dict, define_name_list = get_project_define_variable_from_string(define_source_string)
+    # Generate write string
+    write_line_list = []
+    write_line_list.append("PROJVAR = {") if 'py' == backend else next
+    for define_name in define_name_list:
+        if define_name not in variable_dict:
+            continue
+        elif variable_dict[define_name] is True:
+            if 'c' == backend:
+                write_line_list.append("#define %s" % define_name)
+            if 'v' == backend:
+                write_line_list.append("`define %s" % define_name)
+            if 'pm' == backend:
+                write_line_list.append("$%s = 1;" % define_name)
+            if 'py' == backend:
+                write_line_list.append("    '%s':True," % define_name)
+            if 'mk' == backend:
+                write_line_list.append("%s := 1" % define_name)
+        else:
+            define_value = variable_dict[define_name]
+            if 'c' == backend:
+                write_line_list.append("#define %s %s" % (define_name, define_value))
+            if 'v' == backend:
+                write_line_list.append("`define %s %s" % (define_name, define_value))
+            if 'pm' == backend:
+                write_line_list.append("$%s = %s;" % (define_name, define_value))
+            if 'py' == backend:
+                write_line_list.append("    '%s':%s," % (define_name, define_value))
+            if 'mk' == backend:
+                write_line_list.append("%s := %s" % (define_name, define_value))
+    write_line_list.append("}") if 'py' == backend else next
+    write_string = '\n'.join(write_line_list)
+    f = open(output_file_path, 'w')
+    f.write(write_string)
+    f.close()
 
-use Getopt::Long;
-my ($opt_u);
-my ($opt_h);
-my ($opt_i);
-my ($opt_o);
-my ($opt_b);
-my ($opt_norm);
-GetOptions (
-  'u'   => \$opt_u, 
-  'h'   => \$opt_h,
-  'o=s' => \$opt_o,
-  'i=s' => \$opt_i,
-  'b=s' => \$opt_b,
-  ) or &Error ("unknown option: @ARGV");
 
-&Usage and exit 0 if ($opt_u); 
-&Usage and &Help and exit 0 if ($opt_h);
-
-my ($InFile)  = $opt_i;
-my ($OutFile) = $opt_o;
-my ($BackEnd) = $opt_b;
-
-################################################################
-# main
-################################################################
-
-&gen_define ($InFile, $OutFile, $BackEnd);
-
-################################################################
-# routines
-################################################################
-sub gen_define {
-    my $ifile = shift;
-    my $ofile = shift;
-    my $backend = shift;
-    open my $i_fh, "<", $ifile or &Error ("file not found: $ifile");
-    open my $o_fh, ">", $ofile or &Error ("file not found: $ofile");
-    while (my $line = <$i_fh>) {
-        if ($line =~ /^\s*%define\s*(\w+)\s*(\d+)?/) {
-            my $def = "";
-            if ($backend eq "c") {
-                $def = "#define ";
-            } elsif ($backend eq "v") {
-                $def = "`define ";
-            } elsif ($backend eq "pl") {
-                $def = '$';
-            } elsif ($backend eq "py") {
-                $def = "";
-            } else {
-                &Error ("no $backend backend is supported yet!")
-            }
-            my $key = $1;
-            my $val = $2 ? " $2" : "";
-
-            my $new_line = $def.$key.$val;
-            print $o_fh $new_line,"\n";
-        }
-        print;
-    }
-    close($o_fh);
-    close($i_fh);
-}
-
-sub Error {
-  my $Msg = shift;
-  my $Noc = shift;
-  use strict;
-  use Carp qw(croak);
-  print STDERR "ERROR: $Program: $Msg\n";
-  croak unless $Noc;
-  exit 1;
-}
+if __name__ == '__main__':
+    if sys.version_info[0] < 3:
+        print ("Warning: current Python version is under 3.0, to avoid unexpected behavior, please use Python 3.5 or later version. This warning will turn into an exception in future.")
+    parser = argparse.ArgumentParser(description='')
+    parser.add_argument('--show_grammar_examples','-s', dest='show_grammar_examples', action='store_true',
+                        help='Show supportted define grammar example')
+    parser.add_argument('--input_file','-i', dest='input_file',
+                        help='Specify input file')
+    parser.add_argument('--output_file','-o', dest='output_file',
+                        help='Specify output file')
+    parser.add_argument('--backend','-b', dest='backend',
+                        help='Specify backend')
+    config = vars(parser.parse_args())
+    if config['show_grammar_examples'] is True:
+        test_str = '''
+        %define lonely_define
+        %define face_have ear nose eye                  // String list example
+        %define value_define 10
+        %define value_define_hex 0x10
+        %define value_define_float 3.14
+        %define value_define_string "nv_large"
+        %define value_define_string_with_space "nvdla is open sourced"
+        //%define value_define_undef  undefined_right_hand_value   // Undefined value shall be report
+        //%define value_define_unknow_gramma  auto_code(NVDLA)     // Unsupported grammar, function auto_code is not supported
+        %define second_level_var value_define  +value_define// Comment follows content without space
+        %define third_level_var (second_level_var+    value_define)*  3-second_level_var// + - *
+        %define max_var max(second_level_var,value_define, third_level_var)  //  python self containted max function, inf argument numbers
+        %define float_divison max_var/3                 // division is a little bit complicated, in python 2.7, '/' and '//' are both floor division, in python 3, '/' means float division, '//' means floor division, however, '//' is used as comment marker
+        %define float_divison_ceiled ceil(max_var/3)    // float division, followed by ceil
+        %define float_divison_floored floor(max_var/3)  // float division, followed by ceil
+        %define base_2_log_128 log2(128)                // base 2 log
+        %define power_2_of_7_python_native 2**7         // Python nature power expression
+        %define power_2_of_8_func pow2(8)               // power 2
+'''
+        print ("Source of defgen:\n")
+        print (test_str)
+        var_dict, define_name_list = get_project_define_variable_from_string(test_str)
+        print ("Result of defgen, C backend:\n")
+        for define_name in define_name_list:
+            if define_name not in var_dict:
+                continue
+            elif var_dict[define_name] is True:
+                print ("#define %s" % define_name)
+            else:
+                define_value = var_dict[define_name]
+                print ("#define %s %s" % (define_name, define_value))
+        #print (var_dict)
+    else:
+        if (config['input_file'] is None) or (config['output_file'] is None) or (config['backend'] is None):
+            parser.error('Arguments --input_file --output_file --backend are required')
+        generate_define_file(config['input_file'],config['output_file'],config['backend'])

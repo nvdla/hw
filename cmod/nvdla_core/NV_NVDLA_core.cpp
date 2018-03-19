@@ -14,7 +14,11 @@
 #include "log.h"
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
-
+#ifdef  NVDLA_REFERENCE_MODEL_ENABLE
+#include "nvdla_scsv_register_extension_packer_defines.h"
+#include "nvdla_dbb_scsv_extension_packer.h"
+using namespace nvdla;
+#endif
 
 USING_SCSIM_NAMESPACE(cmod)
 USING_SCSIM_NAMESPACE(clib)
@@ -129,8 +133,8 @@ void NV_NVDLA_core::Initialize()
 #ifdef  NVDLA_REFERENCE_MODEL_ENABLE
     internal_monitor = new scsim::cmod::NvdlaCoreInternalMonitor("internal_monitor");
     // Register the extension packers
-    // nitro_scsv_converter::register_extension_packer<host1x_scsv_extension_packer>(0x99887766);
-    cdma_wt_dma_arbiter_override_enable = true;
+    nvdla_scsv_converter::register_extension_packer<nvdla_dbb_scsv_extension_packer>(NVDLA_DBB_SCSV_EXTENSION_PACKER_ID);
+    cdma_wt_dma_arbiter_override_enable = false;
 #else
     cdma_wt_dma_arbiter_override_enable = false;
 #endif
@@ -419,7 +423,6 @@ void NV_NVDLA_core::Initialize()
     pdp->cvif2pdp_wr_rsp(cvif2pdp_wr_rsp);
     cdp->cvif2cdp_wr_rsp(cvif2cdp_wr_rsp);
     rbk->cvif2rbk_wr_rsp(cvif2rbk_wr_rsp);
-    // ## GLB and its clients, FIXME, penli, GLB is not ready
     bdma->bdma2glb_done_intr[0] (bdma2glb_done_intr[0]); 
     bdma->bdma2glb_done_intr[1] (bdma2glb_done_intr[1]); 
     glb->bdma2glb_done_intr[0] (bdma2glb_done_intr[0]); 

@@ -21,69 +21,43 @@
 // #include "nvdla_ram_data_valid_DATA_WIDTH_1024_ECC_SIZE_1_iface.h"
 #include "NV_NVDLA_csc_base.h"
 #include "csc_reg_model.h"
-
 #include "csc_hls_wrapper.h"
+#include "nvdla_config.h"
 
-// FIXME, add buswidth define
-#define MEM_BUSWIDTH_IN_BIT                 64
-#define PADDING_NONE                        0
-#define PADDING_ZERO                        1
-#define PADDING_MIRROR                      2
-#define KERNEL_PER_GROUP_INT8               32
-#define KERNEL_PER_GROUP_INT16              16
-#define KERNEL_PER_GROUP_FP16               16
-#define CSC_RDMA_SIZE                      1024
-#define CSC_RDMA_BUFFER_CMOD_ENTRY_SIZE    1
-#define CSC_LOCAL_BUFFER_SIZE              256
-#define ELEMENT_PER_ATOM_INT8               32
-#define ELEMENT_PER_ATOM_INT16              16
-#define ELEMENT_PER_ATOM_FP16               16
-#define ELEMENT_PER_INPUT_ATOM              64
-#define ELEMENT_PER_INPUT_ATOM_WG           4
+#define MEM_BUS_WIDTH               (max(max(NVDLA_PRIMARY_MEMIF_WIDTH/8, NVDLA_SECONDARY_MEMIF_WIDTH/8), NVDLA_MEMORY_ATOMIC_SIZE*ELEMENT_SIZE_INT8))
+
 #define ELEMENT_SIZE_INT8                   1
 #define ELEMENT_SIZE_INT16                  2
 #define ELEMENT_SIZE_FP16                   2
-#define ATOM_SIZE_8BIT                      (ELEMENT_PER_ATOM_8BIT * ELEMENT_SIZE_INT8)
-#define ATOM_SIZE_16BIT                     (ELEMENT_PER_ATOM_16BIT * ELEMENT_SIZE_INT16)
 
-#define PARALLEL_CHANNEL_NUM                64
+#define ATOM_SIZE_INT8                      (NVDLA_MEMORY_ATOMIC_SIZE*ELEMENT_SIZE_INT8)
+#define ATOM_SIZE_INT16                     (NVDLA_MEMORY_ATOMIC_SIZE*ELEMENT_SIZE_INT16)
+#define ATOM_SIZE_FP16                      (NVDLA_MEMORY_ATOMIC_SIZE*ELEMENT_SIZE_FP16)
 
-#define CBUF_BANK_NUM                       16
-#define CBUF_ENTRY_PER_BANK                 256
-#undef  CBUF_ENTRY_NUM
-#define CBUF_ENTRY_NUM                      (CBUF_BANK_NUM*CBUF_ENTRY_PER_BANK)
-#define CBUF_ENTRY_SIZE                     128
-#undef  CBUF_HALF_ENTRY_SIZE
-#define CBUF_HALF_ENTRY_SIZE                (CBUF_ENTRY_SIZE/2)
-#define CBUF_DATA_BASE_BANK                 0
-#define CBUF_DATA_HEAD_BANK                 14
-#define CBUF_WEIGHT_BASE_BANK               1
-#define CBUF_WEIGHT_HEAD_BANK               15
-#undef  CBUF_ENTRY_CMOD_GRANULARITY_SIZE
-#define CBUF_ENTRY_CMOD_GRANULARITY_SIZE    8
-#define CBUF_ENTRY_CMOD_GRANULARITY_NUM     (CBUF_ENTRY_SIZE/CBUF_ENTRY_CMOD_GRANULARITY_SIZE)
-#define CSC2CMAC_CONTAINER_NUM              128
+#define NVDLA_MAC_ATOMIC_C_SIZE_WG          (NVDLA_MAC_ATOMIC_C_SIZE/(4*4))
+
+#define CBUF_ENTRY_NUM                      (NVDLA_CBUF_BANK_NUMBER*NVDLA_CBUF_BANK_DEPTH)
+#define CBUF_WMB_BANK_IDX                   15
+
+#define ATOM_PER_CBUF_ENTRY_INT8            (NVDLA_CBUF_BANK_WIDTH/ATOM_SIZE_INT8)
+#define ATOM_PER_CBUF_ENTRY_INT16           (NVDLA_CBUF_BANK_WIDTH/ATOM_SIZE_INT16)
+#define ATOM_PER_CBUF_ENTRY_FP16            (NVDLA_CBUF_BANK_WIDTH/ATOM_SIZE_FP16)
+
 #define CSC2CMAC_CONTAINER_BITWIDTH         8
+#define CBUF_ENTRY_CMOD_GRANULARITY_SIZE    8
+#define CBUF_ENTRY_CMOD_GRANULARITY_NUM     (NVDLA_CBUF_BANK_WIDTH/CBUF_ENTRY_CMOD_GRANULARITY_SIZE)
+
+#define CSC2CMAC_WEIGHT_MASK                ((1<<(NVDLA_MAC_ATOMIC_K_SIZE/2))-1)
+
 #define MAX_MEM_TRANSACTION_SIZE            256
-#define ATOM_CUBE_SIZE                      32
-
-#define CBUF_WMB_BANK                       15
-
-#define CSC_DATA_REUSE_EN                   1
-#define CSC_DATA_REUSE_DIS                  0
-#define CSC_WEIGHT_REUSE_EN                 1
-#define CSC_WEIGHT_REUSE_DIS                0
-#define CSC_FULL_WEIGHT_MODE_EN             1
-#define CSC_FULL_WEIGHT_MODE_DIS            0
-
-#define MAX_STRIPE_LENGTH_INT8              32
-#define MAX_STRIPE_LENGTH_INT16             32
 
 #define CACC_ENTRY_NUM                      (256*2)
 
 #define INPUT_DATA_FORMAT_DC                0
 #define INPUT_DATA_FORMAT_IMAGE             1
 #define INPUT_DATA_FORMAT_WINO              2
+
+#define CSC_LOCAL_BUFFER_SIZE              256
 
 /***************************************
  * Clarify on channel mask and kernel mask,
@@ -127,7 +101,7 @@ class NV_NVDLA_csc:
         uint32_t cbuf_wmb_entry_addr;
         uint32_t comp_updated_wt_entry_num;
         uint32_t comp_updated_wmb_entry_num;
-        uint8_t  kg_wt_first_entry_buffer[CBUF_ENTRY_SIZE];
+        uint8_t  kg_wt_first_entry_buffer[NVDLA_CBUF_BANK_WIDTH];
         // For weight compression
         uint32_t next_wt_idx;
         uint32_t next_wmb_idx;
@@ -135,8 +109,8 @@ class NV_NVDLA_csc:
         uint32_t next_wt_idx_bak;
         uint32_t next_wmb_idx_bak;
         uint8_t  wt_payload_available_bak;
-        uint64_t comp_entry_wt[16], comp_entry_wt_bak[16];
-        uint8_t  comp_entry_wmb[128], comp_entry_wmb_bak[128];
+        uint64_t comp_entry_wt[CBUF_ENTRY_CMOD_GRANULARITY_NUM], comp_entry_wt_bak[CBUF_ENTRY_CMOD_GRANULARITY_NUM];
+        uint8_t  comp_entry_wmb[NVDLA_CBUF_BANK_WIDTH], comp_entry_wmb_bak[NVDLA_CBUF_BANK_WIDTH];
         // Payloads
 
         nvdla_dat_info_update_t *data2sc_data_update_payload_;
@@ -181,7 +155,7 @@ class NV_NVDLA_csc:
         uint64_t    weight_kernel_num_available_;  // update by CSC
         uint64_t    weight_entry_idx_available_;   // update by CDMA
         uint64_t    weight_entry_idx_start_;       // update by CSC. Can be removed actually.
-        uint64_t    weight_layer_start_byte_idx_;  // The byte index of the first byte of current layer. It should be multiple of CBUF_ENTRY_SIZE
+        uint64_t    weight_layer_start_byte_idx_;  // The byte index of the first byte of current layer. It should be multiple of NVDLA_CBUF_BANK_WIDTH
         uint64_t    weight_entry_idx_free_skip_weight_rls_; // update by CSC
 
         uint64_t    wmb_entry_idx_available_;      // update by CDMA
@@ -211,7 +185,6 @@ class NV_NVDLA_csc:
         // FIFOs
         // # DMA buffers
         sc_core::sc_fifo <uint8_t>  *csc_act_share_buffer_;
-        sc_core::sc_fifo <uint8_t*> *act_data_read_rsp_fifo_;
         sc_core::sc_fifo <sc_uint<64>*> *cbuf_data_read_;
         sc_core::sc_fifo <sc_uint<64>*> *cbuf_weight_read_;
         sc_core::sc_fifo <sc_uint<64>*> *cbuf_wmb_read_;
@@ -252,7 +225,7 @@ class NV_NVDLA_csc:
         void get_decompressed_weight(uint8_t *read_data_curr_ptr, uint32_t current_kernel_channel);
         void read_cbuf_entry(uint32_t cbuf_entry_addr, uint8_t *read_data_ptr);
         uint16_t sign_extend_8to16(uint8_t int8_in);
-        void csc_read_one_image_entry(uint8_t post_y_extension, uint32_t post_y_extension_idx, int32_t input_atom_coor_width, int32_t input_atom_coor_height, uint32_t cbuf_entry_per_line, uint32_t element_size, bool last_super_channel, uint32_t last_super_channel_element_num, uint32_t cube_in_height, uint32_t cube_in_channel, uint8_t* read_data_ptr);
+        void csc_read_one_image_entry(uint8_t post_y_extension, uint32_t post_y_extension_idx, uint32_t input_atom_coor_width, uint32_t input_atom_coor_height, uint32_t cbuf_entry_per_line, uint32_t element_size, bool last_super_channel, uint32_t last_super_channel_element_num, uint32_t cube_in_height, uint32_t cube_in_channel, uint8_t* read_data_ptr);
         void save_info_kernel_group();
 };
 

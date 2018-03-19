@@ -1,0 +1,38 @@
+------------------------------------------------------------------------------
+Title: UVM-Connect and TLM-2.0 primer
+
+(see mentor-logo.jpg)
+
+*Revision 2.3.0 March 2015*
+
+
+|    //_______________________
+|   // Mentor Graphics, Corp. \_______________________________________
+|  //                                                               //
+| //   (C) Copyright, Mentor Graphics, Corp. 2003-2015              //
+| //   All Rights Reserved                                          //
+| //                                                                //
+| //    Licensed under the Apache License, Version 2.0 (the         //
+| //    "License"); you may not use this file except in             //
+| //    compliance with the License.  You may obtain a copy of      //
+| //    the License at                                              //
+| //                                                                //
+| //        http://www.apache.org/licenses/LICENSE-2.0              //
+| //                                                                //
+| //    Unless required by applicable law or agreed to in           //
+| //    writing, software distributed under the License is          //
+| //    distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR      //
+| //    CONDITIONS OF ANY KIND, either express or implied.  See     //
+| //    the License for the specific language governing             //
+| //    permissions and limitations under the License.              //
+| //---------------------------------------------------------------//
+
+------------------------------------------------------------------------------
+Topic: Abstract
+
+The UVM Connect library provides TLM1 and TLM2 connectivity between
+SystemC and SystemVerilog models and components. It also provides a
+UVM Command API for accessing and controlling UVM simulation from
+SystemC (or C or C++).  This document provides a user guide to the
+UVM-Connect API package itself as well as a primer on TLM-2.0 usage
+in general.

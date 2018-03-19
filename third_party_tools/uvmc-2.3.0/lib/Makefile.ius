@@ -1,0 +1,130 @@
+# ============================================================================
+#  @(#) $Id: Makefile.ius 1257 2014-11-22 16:18:55Z jstickle $
+# ============================================================================
+
+#    //_______________________
+#   // Mentor Graphics, Corp. \_______________________________________
+#  //                                                               //
+# //   (C) Copyright, Mentor Graphics, Corp. 2003-2014              //
+# //   All Rights Reserved                                          //
+# //                                                                //
+# //    Licensed under the Apache License, Version 2.0 (the         //
+# //    "License"); you may not use this file except in             //
+# //    compliance with the License.  You may obtain a copy of      //
+# //    the License at                                              //
+# //                                                                //
+# //        http://www.apache.org/licenses/LICENSE-2.0              //
+# //                                                                //
+# //    Unless required by applicable law or agreed to in           //
+# //    writing, software distributed under the License is          //
+# //    distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR      //
+# //    CONDITIONS OF ANY KIND, either express or implied.  See     //
+# //    the License for the specific language governing            //
+# //    permissions and limitations under the License.            //
+# //-------------------------------------------------------------//
+
+help:
+	@echo " -----------------------------------------------------------------";
+	@echo "|                   UVMC LIBRARY COMPILATION                      |";
+	@echo " -----------------------------------------------------------------";
+	@echo "|                                                                 |";
+	@echo "| The UVM and UVMC libraries must be compiled prior to running    |";
+	@echo "| any example.                                                    |";
+	@echo "|                                                                 |";
+	@echo "| Usage                                                           |";
+	@echo "| =====                                                           |";
+	@echo "|                                                                 |";
+	@echo "|   make [variable=value] <target(s)>                             |";
+	@echo "|                                                                 |";
+	@echo "| Targets                                                         |";
+	@echo "| =======                                                         |";
+	@echo "|                                                                 |";
+	@echo "| You can combine targets to build more than one library.         |";
+	@echo "|                                                                 |";
+	@echo "|   uvmc32    make UVM Connect (uvmc_pkg) 32b                     |";
+	@echo "|   uvmc64    make UVM Connect (uvmc_pkg) 64b                     |";
+	@echo "|                                                                 |";
+	@echo "| Recommended usage:                                              |";
+	@echo "|                                                                 |";
+	@echo "|   gmake -f Makefile.ius all                                     |";
+	@echo "|                                                                 |";
+	@echo "| Variables                                                       |";
+	@echo "| =========                                                       |";
+	@echo "|                                                                 |";
+	@echo "| The following variables can be set as environment variables,    |";
+	@echo "| e.g. setenv UVM_HOME <path-to-UVM>, or provided on the make     |";
+	@echo "| command line, e.g. BITS=64.                                     |";
+	@echo "|                                                                 |";
+	@echo "| UVM_HOME                                                        |";
+	@echo "|                                                                 |";
+	@echo "|   Location of the UVM source (defaults to area in $(IUS_HOME))  |";
+	@echo "|                                                                 |";
+	@echo "| UVMC_HOME                                                       |";
+	@echo "|                                                                 |";
+	@echo "|   The location of the UVM Connect source. If not                |";
+	@echo "|   specified, the parent of this lib directory (..) is chosen.   |";
+	@echo "|   Unless you are compiling outside the UVMC installation tree,  |";
+	@echo "|   you will not need to set this variable.                       |";
+	@echo "|                                                                 |";
+	@echo "| UVMC_LIB / UVM_LIB                                              |";
+	@echo "|                                                                 |";
+	@echo "|   You can override the default work directory into which library|";
+	@echo "|   object files are placed by specifying any of these variables  |";
+	@echo "|   via an environment variable setting or make command line      |";
+	@echo "|   options. Make command line options take precedence.           |";
+	@echo "|                                                                 |";
+	@echo "| Other options:                                                  |";
+	@echo "|                                                                 |";
+	@echo "|   clean : Remove all library directories                        |";
+	@echo "|   help  : Print this help information                           |";
+	@echo "|                                                                 |";
+	@echo "|                                                                 |";
+	@echo " -----------------------------------------------------------------";
+
+UVMC_HOME ?= ..
+UVMC_LIB ?= $(UVMC_HOME)/lib/uvmc_lib_ius
+UVM_LIB  ?= $(UVMC_HOME)/lib/uvmc_lib_ius
+
+BITS ?=
+IUS_GCC ?= 4.4
+
+all: check_uvm_home clean uvmc32 uvmc64
+
+check_uvm_home:
+ifndef IUS_HOME
+	@echo "ERROR: IUS_HOME, UVM_HOME environment variable is not defined"
+	IUS_HOME
+endif
+	
+uvmc32: $(UVMC_LIB)/cds.lib
+	$(MAKE) -f Makefile.ius lib
+
+uvmc64: $(UVMC_LIB)/cds.lib
+	$(MAKE) -f Makefile.ius BITS=-64 lib
+
+$(UVMC_LIB)/cds.lib:
+	mkdir -p $(UVMC_LIB)
+	echo "define uvmc_lib $(UVMC_LIB)" > $@
+	echo "define work uvmc_lib" > $(UVMC_LIB)/hdl.var
+
+lib:
+	irun \
+		-elaborate \
+		-work uvmc_lib \
+		-cdslib $(UVMC_LIB)/cds.lib \
+		-hdlvar $(UVMC_LIB)/hdl.var \
+		-nclibdirname $(UVMC_LIB) \
+		-access rw \
+		$(BITS) \
+		-gcc_vers $(IUS_GCC) \
+		-uvmhome $(UVM_HOME) \
+		-incdir $(UVM_HOME)/src \
+		-incdir $(UVMC_HOME)/src/connect/sv \
+		$(UVMC_HOME)/src/connect/sv/uvmc_pkg.sv \
+		$(UVM_HOME)/src/dpi/uvm_dpi.cc \
+		-cflags "-g -I$(IUS_HOME)/tools/include -I$(UVMC_HOME)/src/connect/sc" \
+		$(UVMC_HOME)/src/connect/sc/uvmc.cpp \
+		+UVM_VERBOSITY=$(UVM_VERBOSITY)
+
+clean:
+	\rm -rf $(UVMC_LIB) ncsc.log irun.log

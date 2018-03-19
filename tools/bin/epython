@@ -1,0 +1,163 @@
+#!/usr/bin/env python
+
+import os
+import sys
+import argparse
+import re
+import io
+
+__DESCRIPTION__ = '''
+=====================================
+# epython - embedded python utility #
+=====================================
+
+The tool is used to execute inline python code from source files, and 
+generate use-expected ouput codes. It can be viewed as a auto codes generator, 
+when user need to do some duplicated,redundant or modularized coding works.
+Embedded python scripts found within specific comments of the input files are
+executed and capture into the output file.
+
+The default output file is a temp file with name which is adding suffix ".python" to
+origin input file name: <INPUT_FILE_NAME>.python. Alternatively, user can specify an 
+output file or self update.
+
+The embeded scripts within the input file are recognized on lines with below format:
+
+//:| <python>
+
+Be careful only inserting one space (no random) characters between "//:]" and python codes 
+as python syntax are space sentitive.
+
+The embeded scripts within the input file execute inseting ouput codes between following
+statements:
+
+//:) epython: generated_beg (DO NOT EDIT BELOW)
+...
+//:) epython: generated_end (DO NOT EDIT ABOVE)
+
+Adjacent embedded script lines define multi-line python scripts and non-adjacent
+embedded script lines define multiple perl scripts.
+
+//:|<python script 1 - line 1>
+//:|<python script 1 - line 2>
+
+VS
+
+//:|<python script 1 - line 1>
+
+//:|<python script 2 - line 1>
+
+Example:
+
+//:| for i in range(0,2):
+//:|     print("Hello World: %0d" % i)
+//:) epython: generated_beg (DO NOT EDIT BELOW)
+Hello World: 0
+Hello World: 1
+//:) epython: generated_end (DO NOT EDIT ABOVE)
+
+'''
+
+parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter, description=__DESCRIPTION__)
+parser.add_argument('-u', '--update', dest='update', action='store_true', default=False, help='update mode, output generated codes to input file')
+parser.add_argument('file', type=str, help='Specify source input file')
+parser.add_argument('-o', '--output', dest='output', type=str, help='Specify ouput file, if not, work in update mode')
+parser.add_argument('-p', '--project', dest='project', type=str, required=True, help='Specify project name')
+args = vars(parser.parse_args())
+
+class AddModulePath:
+    ''' Use file LICENCE as TOT marker '''
+
+    def __init__(self, project):
+        self._ref_tot_path = '.'
+        self._project      = project
+
+    def get_ref_tot_path(self):
+        tot_marker = os.path.join(self._ref_tot_path, 'LICENSE')
+        if os.path.isfile(tot_marker) is False:
+            self._ref_tot_path = os.path.join('..', self._ref_tot_path) 
+            self._ref_tot_path = self.get_ref_tot_path()
+        return self._ref_tot_path
+
+    def set_module_path(self):
+        self.get_ref_tot_path()
+        defs_path       = os.path.join(self._ref_tot_path, 'outdir', self._project, 'spec/defs')
+        manual_path     = os.path.join(self._ref_tot_path, 'outdir', self._project, 'spec/manual')
+        verif_tool_path = os.path.join(self._ref_tot_path, 'verif/tools')
+        sys.path.append(defs_path)
+        sys.path.append(manual_path)
+        sys.path.append(verif_tool_path)
+
+class ProcessFile:
+    ''' File process class defination '''
+
+    def __init__(self, args_dict):
+        self._update   = args_dict['update']
+        self._in_file  = args_dict['file']
+        self._out_file = args_dict['output']
+        self._indent   = ''
+
+    def exe_input(self):
+        scripts  = '' 
+        gen_flag = 0
+        self._tmp_file = self._in_file + '.python'
+        tmp_file_hdl   = open(self._tmp_file, 'w')
+        in_file_hdl    = open(self._in_file, 'r')
+        for line in in_file_hdl:
+            py_line = re.match(r'^(\s*)//\s*:\|\s(.*\n)', line)
+            gen_beg = re.match(r'^\s*//\s*:\) epython: generated_beg.*\n', line)
+            gen_end = re.match(r'^\s*//\s*:\) epython: generated_end.*\n', line)
+            if gen_beg: gen_flag = 1
+            if py_line:
+                self._indent = py_line.group(1)
+                scripts += py_line.group(2)
+                tmp_file_hdl.write(line)
+            else:
+                if scripts:
+                    self.codes_gen(tmp_file_hdl, scripts)
+                    scripts = ''
+                if gen_flag==0: tmp_file_hdl.write(line)
+            if gen_end: gen_flag = 0
+        if scripts:
+            self.codes_gen(tmp_file_hdl, scripts)
+            scripts = ''
+        tmp_file_hdl.close()
+        in_file_hdl.close()
+
+    def exe_output(self):
+        if self._update:
+            diff = os.system('cmp -s %0s %0s' % (self._tmp_file, self._in_file) )
+            os.system('mv %0s %0s' % (self._tmp_file, self._in_file))
+            os.system('rm -f %0s' % self._tmp_file)
+            if diff:
+                print('FILE: %0s modified' % self._in_file)
+            else:
+                print('FILE: %0s unchanged' % self._in_file)
+        elif self._out_file:
+            diff = os.system('cmp -s %0s %0s' % (self._tmp_file, self._out_file) )
+            os.system('mv %0s %0s' % (self._tmp_file, self._out_file))
+            os.system('rm -f %0s' % self._tmp_file)
+            if diff:
+                print('FILE: %0s modified' % self._out_file)
+            else:
+                print('FILE: %0s unchanged' % self._out_file)
+
+    def codes_gen(self, hdl, scripts):
+        codes = self.exe_python(scripts)
+        hdl.write('%0s//:) epython: generated_beg (DO NOT EDIT BELOW)\n' % self._indent)
+        hdl.write(codes)
+        hdl.write('%0s//:) epython: generated_end (DO NOT EDIT ABOVE)\n' % self._indent)
+
+    def exe_python(self, scripts):
+        myout = io.StringIO()
+        sys.stdout = myout
+        exec(scripts)
+        sys.stdout = sys.__stdout__
+        return myout.getvalue()
+
+if __name__ == '__main__':
+    add_module_path = AddModulePath(args['project'])
+    add_module_path.set_module_path()
+    process_file = ProcessFile(args)
+    process_file.exe_input()
+    process_file.exe_output()

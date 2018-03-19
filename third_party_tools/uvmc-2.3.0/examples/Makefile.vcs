@@ -1,0 +1,2 @@
+all compile build sim check clean:
+	$(MAKE) MAKEFILE=Makefile.vcs $@

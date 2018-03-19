@@ -12,11 +12,15 @@
 module NV_NVDLA_BDMA_store (
    nvdla_core_clk                //|< i
   ,nvdla_core_rstn               //|< i
+#ifdef NVDLA_SECONDARY_MEMIF_ENABLE
   ,bdma2cvif_wr_req_ready        //|< i
+#endif
   ,bdma2mcif_wr_req_ready        //|< i
+#ifdef NVDLA_SECONDARY_MEMIF_ENABLE
   ,cvif2bdma_rd_rsp_pd           //|< i
   ,cvif2bdma_rd_rsp_valid        //|< i
   ,cvif2bdma_wr_rsp_complete     //|< i
+#endif
   ,dma_write_stall_count_cen     //|< i
   ,ld2st_rd_pd                   //|< i
   ,ld2st_rd_pvld                 //|< i
@@ -24,13 +28,17 @@ module NV_NVDLA_BDMA_store (
   ,mcif2bdma_rd_rsp_valid        //|< i
   ,mcif2bdma_wr_rsp_complete     //|< i
   ,pwrbus_ram_pd                 //|< i
+#ifdef NVDLA_SECONDARY_MEMIF_ENABLE
   ,bdma2cvif_rd_cdt_lat_fifo_pop //|> o
   ,bdma2cvif_wr_req_pd           //|> o
   ,bdma2cvif_wr_req_valid        //|> o
+#endif
   ,bdma2mcif_rd_cdt_lat_fifo_pop //|> o
   ,bdma2mcif_wr_req_pd           //|> o
   ,bdma2mcif_wr_req_valid        //|> o
+#ifdef NVDLA_SECONDARY_MEMIF_ENABLE
   ,cvif2bdma_rd_rsp_ready        //|> o
+#endif
   ,dma_write_stall_count         //|> o
   ,ld2st_rd_prdy                 //|> o
   ,mcif2bdma_rd_rsp_ready        //|> o
@@ -51,25 +59,33 @@ input          mcif2bdma_rd_rsp_valid;  /* data valid */
 output         mcif2bdma_rd_rsp_ready;  /* data return handshake */
 input  [513:0] mcif2bdma_rd_rsp_pd;
 
+#ifdef NVDLA_SECONDARY_MEMIF_ENABLE
 input          cvif2bdma_rd_rsp_valid;  /* data valid */
 output         cvif2bdma_rd_rsp_ready;  /* data return handshake */
 input  [513:0] cvif2bdma_rd_rsp_pd;
+#endif
 
 output  bdma2mcif_rd_cdt_lat_fifo_pop;
 
+#ifdef NVDLA_SECONDARY_MEMIF_ENABLE
 output  bdma2cvif_rd_cdt_lat_fifo_pop;
+#endif
 
 output         bdma2mcif_wr_req_valid;  /* data valid */
 input          bdma2mcif_wr_req_ready;  /* data return handshake */
 output [514:0] bdma2mcif_wr_req_pd;     /* pkt_id_width=1 pkt_widths=78,514  */
 
+#ifdef NVDLA_SECONDARY_MEMIF_ENABLE
 output         bdma2cvif_wr_req_valid;  /* data valid */
 input          bdma2cvif_wr_req_ready;  /* data return handshake */
 output [514:0] bdma2cvif_wr_req_pd;     /* pkt_id_width=1 pkt_widths=78,514  */
+#endif
 
 input  mcif2bdma_wr_rsp_complete;
 
+#ifdef NVDLA_SECONDARY_MEMIF_ENABLE
 input  cvif2bdma_wr_rsp_complete;
+#endif
 
 input          ld2st_rd_pvld;  /* data valid */
 output         ld2st_rd_prdy;  /* data return handshake */
@@ -89,7 +105,9 @@ reg            ack_bot_id;
 reg            ack_bot_vld;
 reg            ack_top_id;
 reg            ack_top_vld;
+#ifdef NVDLA_SECONDARY_MEMIF_ENABLE
 reg            bdma2cvif_rd_cdt_lat_fifo_pop;
+#endif
 reg            bdma2mcif_rd_cdt_lat_fifo_pop;
 reg     [11:0] beat_count;
 reg            cmd_en;
@@ -148,9 +166,11 @@ wire           cv_int_wr_req_valid_d0;
 wire           cv_int_wr_rsp_complete;
 wire           cv_releasing;
 wire           cv_wr_req_rdyi;
+#ifdef NVDLA_SECONDARY_MEMIF_ENABLE
 wire   [513:0] cvif2bdma_rd_rsp_pd_d0;
 wire           cvif2bdma_rd_rsp_ready_d0;
 wire           cvif2bdma_rd_rsp_valid_d0;
+#endif
 wire           dma_rd_cdt_lat_fifo_pop;
 wire   [513:0] dma_rd_rsp_pd;
 wire           dma_rd_rsp_ram_type;
@@ -252,12 +272,14 @@ assign mcif2bdma_rd_rsp_ready_d0 = mc_int_rd_rsp_ready;
 assign mc_int_rd_rsp_pd[513:0] = mcif2bdma_rd_rsp_pd_d0[513:0];
 
 
+#ifdef NVDLA_SECONDARY_MEMIF_ENABLE
 assign cvif2bdma_rd_rsp_valid_d0 = cvif2bdma_rd_rsp_valid;
 assign cvif2bdma_rd_rsp_ready = cvif2bdma_rd_rsp_ready_d0;
 assign cvif2bdma_rd_rsp_pd_d0[513:0] = cvif2bdma_rd_rsp_pd[513:0];
 assign cv_int_rd_rsp_valid = cvif2bdma_rd_rsp_valid_d0;
 assign cvif2bdma_rd_rsp_ready_d0 = cv_int_rd_rsp_ready;
 assign cv_int_rd_rsp_pd[513:0] = cvif2bdma_rd_rsp_pd_d0[513:0];
+#endif
 
 NV_NVDLA_BDMA_STORE_pipe_p1 pipe_p1 (
    .nvdla_core_clk      (nvdla_core_clk)          //|< i
@@ -269,6 +291,7 @@ NV_NVDLA_BDMA_STORE_pipe_p1 pipe_p1 (
   ,.mc_dma_rd_rsp_vld   (mc_dma_rd_rsp_vld)       //|> w
   ,.mc_int_rd_rsp_ready (mc_int_rd_rsp_ready)     //|> w
   );
+#ifdef NVDLA_SECONDARY_MEMIF_ENABLE
 NV_NVDLA_BDMA_STORE_pipe_p2 pipe_p2 (
    .nvdla_core_clk      (nvdla_core_clk)          //|< i
   ,.nvdla_core_rstn     (nvdla_core_rstn)         //|< i
@@ -282,6 +305,11 @@ NV_NVDLA_BDMA_STORE_pipe_p2 pipe_p2 (
 assign dma_rd_rsp_vld = mc_dma_rd_rsp_vld | cv_dma_rd_rsp_vld;
 assign dma_rd_rsp_pd = ({514{mc_dma_rd_rsp_vld}} & mc_dma_rd_rsp_pd) 
                         | ({514{cv_dma_rd_rsp_vld}} & cv_dma_rd_rsp_pd);
+#else 
+assign dma_rd_rsp_vld = mc_dma_rd_rsp_vld; 
+assign dma_rd_rsp_pd = ({514{mc_dma_rd_rsp_vld}} & mc_dma_rd_rsp_pd); 
+#endif
+
 
 `ifdef SPYGLASS_ASSERT_ON
 `else
@@ -311,7 +339,11 @@ assign dma_rd_rsp_pd = ({514{mc_dma_rd_rsp_vld}} & mc_dma_rd_rsp_pd)
 `endif // SYNTHESIS
 `endif // FV_ASSERT_ON
   // VCS coverage off 
+#ifdef NVDLA_SECONDARY_MEMIF_ENABLE
   nv_assert_never #(0,0,"DMAIF: mcif and cvif should never return data both")      zzz_assert_never_1x (nvdla_core_clk, `ASSERT_RESET, mc_dma_rd_rsp_vld & cv_dma_rd_rsp_vld); // spyglass disable W504 SelfDeterminedExpr-ML 
+#else
+  nv_assert_never #(0,0,"DMAIF: mcif and cvif should never return data both")      zzz_assert_never_1x (nvdla_core_clk, `ASSERT_RESET, mc_dma_rd_rsp_vld); // spyglass disable W504 SelfDeterminedExpr-ML 
+#endif
   // VCS coverage on
 `undef ASSERT_RESET
 `endif // ASSERT_ON
@@ -336,6 +368,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   bdma2mcif_rd_cdt_lat_fifo_pop <= dma_rd_cdt_lat_fifo_pop & (dma_rd_rsp_ram_type == 1'b1);
   end
 end
+#ifdef NVDLA_SECONDARY_MEMIF_ENABLE
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
     bdma2cvif_rd_cdt_lat_fifo_pop <= 1'b0;
@@ -343,6 +376,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   bdma2cvif_rd_cdt_lat_fifo_pop <= dma_rd_cdt_lat_fifo_pop & (dma_rd_rsp_ram_type == 1'b0);
   end
 end
+#endif
 //==================================
 //===Load Cmd from Context QUEUE
 //==================================
@@ -683,11 +717,19 @@ end
 //DMA WRITE req : pkt : cmd+data
 assign dma_wr_req_ram_type          = reg_cmd_dst_ram_type;
 // wr Channel: Request 
+#ifdef NVDLA_SECONDARY_MEMIF_ENABLE
 assign cv_dma_wr_req_vld = dma_wr_req_vld & (dma_wr_req_ram_type == 1'b0);
+#endif
 assign mc_dma_wr_req_vld = dma_wr_req_vld & (dma_wr_req_ram_type == 1'b1);
+#ifdef NVDLA_SECONDARY_MEMIF_ENABLE
 assign cv_wr_req_rdyi = cv_dma_wr_req_rdy & (dma_wr_req_ram_type == 1'b0);
+#endif
 assign mc_wr_req_rdyi = mc_dma_wr_req_rdy & (dma_wr_req_ram_type == 1'b1);
+#ifdef NVDLA_SECONDARY_MEMIF_ENABLE
 assign wr_req_rdyi = mc_wr_req_rdyi | cv_wr_req_rdyi;
+#else
+assign wr_req_rdyi = mc_wr_req_rdyi; 
+#endif
 assign dma_wr_req_rdy= wr_req_rdyi;
 NV_NVDLA_BDMA_STORE_pipe_p3 pipe_p3 (
    .nvdla_core_clk      (nvdla_core_clk)          //|< i
@@ -699,6 +741,7 @@ NV_NVDLA_BDMA_STORE_pipe_p3 pipe_p3 (
   ,.mc_int_wr_req_pd    (mc_int_wr_req_pd[514:0]) //|> w
   ,.mc_int_wr_req_valid (mc_int_wr_req_valid)     //|> w
   );
+#ifdef NVDLA_SECONDARY_MEMIF_ENABLE
 NV_NVDLA_BDMA_STORE_pipe_p4 pipe_p4 (
    .nvdla_core_clk      (nvdla_core_clk)          //|< i
   ,.nvdla_core_rstn     (nvdla_core_rstn)         //|< i
@@ -709,6 +752,7 @@ NV_NVDLA_BDMA_STORE_pipe_p4 pipe_p4 (
   ,.cv_int_wr_req_pd    (cv_int_wr_req_pd[514:0]) //|> w
   ,.cv_int_wr_req_valid (cv_int_wr_req_valid)     //|> w
   );
+#endif
 
 assign mc_int_wr_req_valid_d0 = mc_int_wr_req_valid;
 assign mc_int_wr_req_ready = mc_int_wr_req_ready_d0;
@@ -718,20 +762,23 @@ assign mc_int_wr_req_ready_d0 = bdma2mcif_wr_req_ready;
 assign bdma2mcif_wr_req_pd[514:0] = mc_int_wr_req_pd_d0[514:0];
 
 
+#ifdef NVDLA_SECONDARY_MEMIF_ENABLE
 assign cv_int_wr_req_valid_d0 = cv_int_wr_req_valid;
 assign cv_int_wr_req_ready = cv_int_wr_req_ready_d0;
 assign cv_int_wr_req_pd_d0[514:0] = cv_int_wr_req_pd[514:0];
 assign bdma2cvif_wr_req_valid = cv_int_wr_req_valid_d0;
 assign cv_int_wr_req_ready_d0 = bdma2cvif_wr_req_ready;
 assign bdma2cvif_wr_req_pd[514:0] = cv_int_wr_req_pd_d0[514:0];
+#endif
 
 // wr Channel: Response
 
 assign mc_int_wr_rsp_complete = mcif2bdma_wr_rsp_complete;
 
 
+#ifdef NVDLA_SECONDARY_MEMIF_ENABLE
 assign cv_int_wr_rsp_complete = cvif2bdma_wr_rsp_complete;
-
+#endif
 assign require_ack = (dma_wr_req_pd[514:514]==0) & (dma_wr_req_pd[77:77]==1);
 assign ack_raw_vld = dma_wr_req_vld & wr_req_rdyi & require_ack;
 assign ack_raw_id  = dma_wr_req_ram_type;
@@ -985,6 +1032,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   mc_dma_wr_rsp_complete <= mc_int_wr_rsp_complete;
   end
 end
+#ifdef NVDLA_SECONDARY_MEMIF_ENABLE
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
     cv_dma_wr_rsp_complete <= 1'b0;
@@ -992,6 +1040,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   cv_dma_wr_rsp_complete <= cv_int_wr_rsp_complete;
   end
 end
+#endif
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
     dma_wr_rsp_complete <= 1'b0;
@@ -1014,6 +1063,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
    end
   end
 end
+#ifdef NVDLA_SECONDARY_MEMIF_ENABLE
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
     cv_pending <= 1'b0;
@@ -1029,9 +1079,16 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
    end
   end
 end
+#endif
 assign mc_releasing = ack_top_id==1'b1 & (mc_dma_wr_rsp_complete | mc_pending);
+#ifdef NVDLA_SECONDARY_MEMIF_ENABLE
 assign cv_releasing = ack_top_id==1'b0 & (cv_dma_wr_rsp_complete | cv_pending);
+#endif
+#ifdef NVDLA_SECONDARY_MEMIF_ENABLE
 assign releasing = mc_releasing | cv_releasing;
+#else
+assign releasing = mc_releasing; 
+#endif
 `ifdef SPYGLASS_ASSERT_ON
 `else
 // spyglass disable_block NoWidthInBasedNum-ML 
@@ -1060,7 +1117,11 @@ assign releasing = mc_releasing | cv_releasing;
 `endif // SYNTHESIS
 `endif // FV_ASSERT_ON
   // VCS coverage off 
+  #ifdef NVDLA_SECONDARY_MEMIF_ENABLE
   nv_assert_never #(0,0,"no release both together")      zzz_assert_never_8x (nvdla_core_clk, `ASSERT_RESET, mc_releasing & cv_releasing); // spyglass disable W504 SelfDeterminedExpr-ML 
+  #else
+  nv_assert_never #(0,0,"no release both together")      zzz_assert_never_8x (nvdla_core_clk, `ASSERT_RESET, mc_releasing ); // spyglass disable W504 SelfDeterminedExpr-ML 
+  #endif
   // VCS coverage on
 `undef ASSERT_RESET
 `endif // ASSERT_ON
@@ -1150,7 +1211,9 @@ assign releasing = mc_releasing | cv_releasing;
 `endif // SYNTHESIS
 `endif // FV_ASSERT_ON
   // VCS coverage off 
+  #ifdef NVDLA_SECONDARY_MEMIF_ENABLE
   nv_assert_never #(0,0,"no cv resp back and pending together")      zzz_assert_never_10x (nvdla_core_clk, `ASSERT_RESET, cv_pending & cv_dma_wr_rsp_complete); // spyglass disable W504 SelfDeterminedExpr-ML 
+  #endif
   // VCS coverage on
 `undef ASSERT_RESET
 `endif // ASSERT_ON
@@ -1195,7 +1258,9 @@ assign releasing = mc_releasing | cv_releasing;
 `endif // SYNTHESIS
 `endif // FV_ASSERT_ON
   // VCS coverage off 
+  #ifdef NVDLA_SECONDARY_MEMIF_ENABLE
   nv_assert_never #(0,0,"no ack_top_vld when resp from cv")      zzz_assert_never_11x (nvdla_core_clk, `ASSERT_RESET, (cv_pending | cv_dma_wr_rsp_complete) & !ack_top_vld); // spyglass disable W504 SelfDeterminedExpr-ML 
+  #endif
   // VCS coverage on
 `undef ASSERT_RESET
 `endif // ASSERT_ON
@@ -1275,7 +1340,11 @@ assign releasing = mc_releasing | cv_releasing;
     property dmaif_bdma__two_completes__0_cov;
         disable iff((nvdla_core_rstn !== 1) || funcpoint_cover_off)
         @(posedge nvdla_core_clk)
+	#ifdef NVDLA_SECONDARY_MEMIF_ENABLE
         mc_dma_wr_rsp_complete & cv_dma_wr_rsp_complete;
+	#else
+        mc_dma_wr_rsp_complete; 
+	#endif
     endproperty
     // Cover 0 : "mc_dma_wr_rsp_complete & cv_dma_wr_rsp_complete"
     FUNCPOINT_dmaif_bdma__two_completes__0_COV : cover property (dmaif_bdma__two_completes__0_cov);
@@ -1291,7 +1360,11 @@ assign releasing = mc_releasing | cv_releasing;
     property dmaif_bdma__one_pending_complete_with_mc__1_cov;
         disable iff((nvdla_core_rstn !== 1) || funcpoint_cover_off)
         @(posedge nvdla_core_clk)
+	#ifdef NVDLA_SECONDARY_MEMIF_ENABLE
         cv_pending & mc_dma_wr_rsp_complete;
+	#else
+        mc_dma_wr_rsp_complete;
+	#endif
     endproperty
     // Cover 1 : "cv_pending & mc_dma_wr_rsp_complete"
     FUNCPOINT_dmaif_bdma__one_pending_complete_with_mc__1_COV : cover property (dmaif_bdma__one_pending_complete_with_mc__1_cov);
@@ -1307,7 +1380,11 @@ assign releasing = mc_releasing | cv_releasing;
     property dmaif_bdma__one_pending_complete_with_cv__2_cov;
         disable iff((nvdla_core_rstn !== 1) || funcpoint_cover_off)
         @(posedge nvdla_core_clk)
+	#ifdef NVDLA_SECONDARY_MEMIF_ENABLE
         mc_pending & cv_dma_wr_rsp_complete;
+	#else
+        mc_pending;
+	#endif
     endproperty
     // Cover 2 : "mc_pending & cv_dma_wr_rsp_complete"
     FUNCPOINT_dmaif_bdma__one_pending_complete_with_cv__2_COV : cover property (dmaif_bdma__one_pending_complete_with_cv__2_cov);
@@ -1323,7 +1400,11 @@ assign releasing = mc_releasing | cv_releasing;
     property dmaif_bdma__sequence_complete_cv_one_cycle_after_mc_in_order__3_cov;
         disable iff((nvdla_core_rstn !== 1) || funcpoint_cover_off)
         @(posedge nvdla_core_clk)
+	#ifdef NVDLA_SECONDARY_MEMIF_ENABLE
         cv_int_wr_rsp_complete & mc_dma_wr_rsp_complete & ack_top_id==1'b1;
+	#else
+        mc_dma_wr_rsp_complete & ack_top_id==1'b1;
+	#endif
     endproperty
     // Cover 3 : "cv_int_wr_rsp_complete & mc_dma_wr_rsp_complete & ack_top_id==1'b1"
     FUNCPOINT_dmaif_bdma__sequence_complete_cv_one_cycle_after_mc_in_order__3_COV : cover property (dmaif_bdma__sequence_complete_cv_one_cycle_after_mc_in_order__3_cov);
@@ -1339,7 +1420,11 @@ assign releasing = mc_releasing | cv_releasing;
     property dmaif_bdma__sequence_complete_cv_one_cycle_after_mc_out_of_order__4_cov;
         disable iff((nvdla_core_rstn !== 1) || funcpoint_cover_off)
         @(posedge nvdla_core_clk)
+	#ifdef NVDLA_SECONDARY_MEMIF_ENABLE
         cv_int_wr_rsp_complete & mc_dma_wr_rsp_complete & ack_top_id==1'b0;
+	#else
+        mc_dma_wr_rsp_complete & ack_top_id==1'b0;
+	#endif
     endproperty
     // Cover 4 : "cv_int_wr_rsp_complete & mc_dma_wr_rsp_complete & ack_top_id==1'b0"
     FUNCPOINT_dmaif_bdma__sequence_complete_cv_one_cycle_after_mc_out_of_order__4_COV : cover property (dmaif_bdma__sequence_complete_cv_one_cycle_after_mc_out_of_order__4_cov);
@@ -1355,7 +1440,11 @@ assign releasing = mc_releasing | cv_releasing;
     property dmaif_bdma__sequence_complete_mc_one_cycle_after_cv_in_order__5_cov;
         disable iff((nvdla_core_rstn !== 1) || funcpoint_cover_off)
         @(posedge nvdla_core_clk)
+	#ifdef NVDLA_SECONDARY_MEMIF_ENABLE
         mc_int_wr_rsp_complete & cv_dma_wr_rsp_complete & ack_top_id==1'b0;
+	#else
+        mc_int_wr_rsp_complete &  ack_top_id==1'b0;
+	#endif
     endproperty
     // Cover 5 : "mc_int_wr_rsp_complete & cv_dma_wr_rsp_complete & ack_top_id==1'b0"
     FUNCPOINT_dmaif_bdma__sequence_complete_mc_one_cycle_after_cv_in_order__5_COV : cover property (dmaif_bdma__sequence_complete_mc_one_cycle_after_cv_in_order__5_cov);
@@ -1371,7 +1460,11 @@ assign releasing = mc_releasing | cv_releasing;
     property dmaif_bdma__sequence_complete_mc_one_cycle_after_cv_out_of_order__6_cov;
         disable iff((nvdla_core_rstn !== 1) || funcpoint_cover_off)
         @(posedge nvdla_core_clk)
+	#ifdef NVDLA_SECONDARY_MEMIF_ENABLE
         mc_int_wr_rsp_complete & cv_dma_wr_rsp_complete & ack_top_id==1'b1;
+	#else
+        mc_int_wr_rsp_complete & ack_top_id==1'b1;
+	#endif
     endproperty
     // Cover 6 : "mc_int_wr_rsp_complete & cv_dma_wr_rsp_complete & ack_top_id==1'b1"
     FUNCPOINT_dmaif_bdma__sequence_complete_mc_one_cycle_after_cv_out_of_order__6_COV : cover property (dmaif_bdma__sequence_complete_mc_one_cycle_after_cv_out_of_order__6_cov);
@@ -1898,6 +1991,7 @@ endmodule // NV_NVDLA_BDMA_STORE_pipe_p1
 // **************************************************************************************************************
 // Generated by ::pipe -m -bc -os cv_dma_rd_rsp_pd (cv_dma_rd_rsp_vld,dma_rd_rsp_rdy) <= cv_int_rd_rsp_pd[513:0] (cv_int_rd_rsp_valid,cv_int_rd_rsp_ready)
 // **************************************************************************************************************
+#ifdef NVDLA_SECONDARY_MEMIF_ENABLE
 module NV_NVDLA_BDMA_STORE_pipe_p2 (
    nvdla_core_clk
   ,nvdla_core_rstn
@@ -2301,6 +2395,7 @@ wire p2_assert_clk = nvdla_core_clk;
 `endif // SPYGLASS_ASSERT_ON
 `endif
 endmodule // NV_NVDLA_BDMA_STORE_pipe_p2
+#endif
 
 
 
@@ -2718,6 +2813,7 @@ endmodule // NV_NVDLA_BDMA_STORE_pipe_p3
 // **************************************************************************************************************
 // Generated by ::pipe -m -bc -is cv_int_wr_req_pd (cv_int_wr_req_valid,cv_int_wr_req_ready) <= dma_wr_req_pd[514:0] (cv_dma_wr_req_vld,cv_dma_wr_req_rdy)
 // **************************************************************************************************************
+#ifdef NVDLA_SECONDARY_MEMIF_ENABLE
 module NV_NVDLA_BDMA_STORE_pipe_p4 (
    nvdla_core_clk
   ,nvdla_core_rstn
@@ -3121,6 +3217,7 @@ wire p4_assert_clk = nvdla_core_clk;
 `endif // SPYGLASS_ASSERT_ON
 `endif
 endmodule // NV_NVDLA_BDMA_STORE_pipe_p4
+#endif
 
 
 //
@@ -4561,6 +4658,7 @@ input  [1:0] wa;
 input  [1:0] ra;
 output [513:0] dout;
 
+`ifndef FPGA
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_0 (.A(pwrbus_ram_pd[0]));
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_1 (.A(pwrbus_ram_pd[1]));
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_2 (.A(pwrbus_ram_pd[2]));
@@ -4593,7 +4691,7 @@ NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_28 (.A(pwrbus_ram_pd[28]));
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_29 (.A(pwrbus_ram_pd[29]));
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_30 (.A(pwrbus_ram_pd[30]));
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_31 (.A(pwrbus_ram_pd[31]));
-
+`endif
 
 `ifdef EMU
 
@@ -4918,7 +5016,7 @@ end
 
 
 // Tie-offs for pwrbus_ram_pd
-
+`ifndef FPGA
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_0 (.A(pwrbus_ram_pd[0]));
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_1 (.A(pwrbus_ram_pd[1]));
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_2 (.A(pwrbus_ram_pd[2]));
@@ -4951,6 +5049,7 @@ NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_28 (.A(pwrbus_ram_pd[28]));
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_29 (.A(pwrbus_ram_pd[29]));
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_30 (.A(pwrbus_ram_pd[30]));
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_31 (.A(pwrbus_ram_pd[31]));
+`endif
 //
 // Read-side Idle Calculation
 //

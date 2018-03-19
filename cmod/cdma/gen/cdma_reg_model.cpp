@@ -9,8 +9,8 @@
 // File Name: cdma_reg_model.cpp
 
 #include "cdma_reg_model.h"
-#include "arnvdla.uh"
-#include "arnvdla.h"
+#include "opendla.uh"
+#include "opendla.h"
 #include "cmacros.uh"
 #include "log.h"
 #define __STDC_FORMAT_MACROS

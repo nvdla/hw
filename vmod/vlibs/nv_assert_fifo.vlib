@@ -58,8 +58,8 @@ module nv_assert_fifo (
   integer error_count;
   initial error_count = 0;
 
-  `include "assertion_task.h"
-  `include "assertion_header.h"
+  `include "assertion_task.vh"
+  `include "assertion_header.vh"
 
   `ifdef ASSERT_INIT_MSG
     initial

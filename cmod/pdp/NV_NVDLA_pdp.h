@@ -25,21 +25,10 @@
 #include "pdp_reg_model.h"
 #include "pdp_rdma_reg_model.h"
 #include "NvdlaDataFormatConvertor.h"
+#include "nvdla_config.h"
 
-#define PDP_RDMA_TRANSACTION_SIZE_GRANULARITY   32
-#define PDP_RDMA_BUFFER_CMOD_ENTRY_GRANULARITY  4
-#define PDP_WDMA_BUFFER_SIZE    256
-#define PDP_CVT_OUT_BIT_WIDTH   16
-#define PDP_CVT_OUT_NUMBER      8
-#define PDP_GROUP_SIZE_IN_BYTE  32
-#define MAX_MEM_TRANSACTION_SIZE    256
-#define KERNEL_PER_GROUP_INT8   32
-#define KERNEL_PER_GROUP_INT16  16
-#define KERNEL_PER_GROUP_FP16   16
-#define KERNEL_PER_GROUP_SIZE   32
 #define SDP2PDP_ELEMENT_NUM     8
 #define SDP2PDP_ELEMENT_BIT_WIDTH   16
-#define PDP_WRITE_DMA_SUB_TRANSACTION_SIZE  64
 
 #define DATA_FORMAT_IS_INT8                 0
 #define DATA_FORMAT_IS_INT16                1
@@ -47,36 +36,39 @@
 #define ELEMENT_SIZE_INT8                   1
 #define ELEMENT_SIZE_INT16                  2
 #define ELEMENT_SIZE_FP16                   2
-#define ELEMENT_PER_ATOM_INT8               32
-#define ELEMENT_PER_ATOM_INT16              16
-#define ELEMENT_PER_ATOM_FP16               16
+#define ELEMENT_PER_ATOM_INT8               DLA_ATOM_SIZE
+#define ELEMENT_PER_ATOM_INT16              (DLA_ATOM_SIZE/2)
+#define ELEMENT_PER_ATOM_FP16               (DLA_ATOM_SIZE/2)
+
+#define KERNEL_PER_GROUP_INT8   ELEMENT_PER_ATOM_INT8
+#define KERNEL_PER_GROUP_INT16  ELEMENT_PER_ATOM_INT16
+#define KERNEL_PER_GROUP_FP16   ELEMENT_PER_ATOM_FP16
 
 #define TAG_CMD 0
 #define TAG_DATA 1
 
-#define ATOM_CUBE_SIZE   32
 #define PDP_RDMA_BUFFER_TOTAL_SIZE    32*8192
-#define PDP_RDMA_BUFFER_ENTRY_SIZE    ATOM_CUBE_SIZE
+#define PDP_RDMA_BUFFER_ENTRY_SIZE    DLA_ATOM_SIZE
 #define PDP_RDMA_BUFFER_ENTRY_NUM     PDP_RDMA_BUFFER_TOTAL_SIZE/PDP_RDMA_BUFFER_ENTRY_SIZE
+
 #define SDP2PDP_PAYLOAD_SIZE    32
-#define SDP2PDP_PAYLOAD_ELEMENT_NUM   16
-#define SDP2PDP_FIFO_ENTRY_NUM  16 // ATOM_CUBE_SIZE/SDP2PDP_PAYLOAD_SIZE
+#define SDP2PDP_PAYLOAD_ELEMENT_NUM   SDP_MAX_THROUGHPUT
+#define SDP2PDP_FIFO_ENTRY_NUM  16 // DLA_ATOM_SIZE/SDP2PDP_PAYLOAD_SIZE
 
 #define PDP_LINE_BUFFER_INT8_ELEMENT_NUM    8*1024
 #define PDP_LINE_BUFFER_INT16_ELEMENT_NUM   4*1024
 #define PDP_LINE_BUFFER_FP16_ELEMENT_NUM    4*1024
-#define PDP_LINE_BUFFER_PHYSICAL_BUFFER_NUM 8
-#define PDP_LINE_BUFFER_SIZE                (PDP_LINE_BUFFER_INT8_ELEMENT_NUM*2)
-#define PDP_LINE_BUFFER_ENTRY_NUM           (PDP_LINE_BUFFER_SIZE)/(ATOM_CUBE_SIZE*2) //Each atom consumes 64Bytes
+#define PDP_LINE_BUFFER_SIZE                (PDP_LINE_BUFFER_INT8_ELEMENT_NUM*2)     // Size in Byte
+#define PDP_LINE_BUFFER_ENTRY_NUM           (PDP_LINE_BUFFER_SIZE/(DLA_ATOM_SIZE*2)) // The number of bytes consumed by one atom is DLA_ATOM_SIZE*2
 
 #define POOLING_FLYING_MODE_ON_FLYING   NVDLA_PDP_D_OPERATION_MODE_CFG_0_FLYING_MODE_ON_FLYING
 #define POOLING_FLYING_MODE_OFF_FLYING  NVDLA_PDP_D_OPERATION_MODE_CFG_0_FLYING_MODE_OFF_FLYING
 #define POOLING_METHOD_AVE              NVDLA_PDP_D_OPERATION_MODE_CFG_0_POOLING_METHOD_POOLING_METHOD_AVERAGE
 #define POOLING_METHOD_MAX              NVDLA_PDP_D_OPERATION_MODE_CFG_0_POOLING_METHOD_POOLING_METHOD_MAX
 #define POOLING_METHOD_MIN              NVDLA_PDP_D_OPERATION_MODE_CFG_0_POOLING_METHOD_POOLING_METHOD_MIN
-#define DATA_TYPE_IS_INT    0
-#define DATA_TYPE_IS_FLOAT  1
+
 #define PDP_MAX_PADDING_SIZE    7
+#define LOW_ADDRESS_SHIFT               (NVDLA_PDP_RDMA_D_SRC_BASE_ADDR_LOW_0_SRC_BASE_ADDR_LOW_SHIFT)
 
 // class NvdlaDataFormatConvertor;
 SCSIM_NAMESPACE_START(clib)
@@ -145,12 +137,7 @@ class NV_NVDLA_pdp:
         sc_event pdp_rdma_done_;
         sc_event pdp_kickoff_;
         sc_event pdp_done_;
-        sc_core::sc_fifo<uint8_t>  *line_buffer_usage_free_[PDP_LINE_BUFFER_ENTRY_NUM];
-        sc_core::sc_fifo<uint8_t>  *line_buffer_usage_available_;
-        // sc_event                        *line_buffer_usage_free_read_event;
-        // sc_event                        *line_buffer_usage_free_write_event;
-        // sc_mutex line_buffer_data_ready_;
-        // uint32_t line_buffer_data_num_;
+        sc_core::sc_fifo<uint8_t> *line_buffer_usage_free_[PDP_LINE_BUFFER_ENTRY_NUM];
         sc_core::sc_fifo<uint8_t> *line_buffer_ready_[PDP_LINE_BUFFER_ENTRY_NUM];
 
         // Evaluated configs based on register config 
@@ -172,7 +159,7 @@ class NV_NVDLA_pdp:
         uint8_t   pdp_cvt_truncate_lsb_input_;
         uint8_t   pdp_cvt_truncate_msb_input_;
 
-        sc_core::sc_fifo    <uint8_t *> *spd2pdp_fifo_;
+        sc_core::sc_fifo    <uint8_t *> *sdp2pdp_fifo_;
         sc_core::sc_fifo          <uint8_t *> *rdma_buffer_;
         sc_core::sc_fifo          <uint8_t *> *wdma_buffer_;
         sc_core::sc_fifo <pdp_ack_info *>     *pdp_ack_fifo_;

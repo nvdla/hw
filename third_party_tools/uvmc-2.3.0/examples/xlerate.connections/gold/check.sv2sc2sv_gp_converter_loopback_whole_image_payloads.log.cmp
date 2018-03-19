@@ -1,0 +1,26 @@
+# UVM_INFO common/producer_loopback.svh(95) @ 0: prod [producer::run_phase()] [PRODUCER/GP/SEND] NUM_TRANSACTIONS=80 PAYLOAD_NUM_BYTES=2097152 ...
+# UVM_INFO common/producer_loopback.svh(118) @ 800: prod [producer::run_phase()] ... done producing transactions, expected_checksum=fb000000 == actual_checksum=fb000000 Test PASSED !
+# UVM_INFO common/producer_loopback.svh(127) @ 800: prod [PRODUCER/END_TEST] Dropping objection to ending the test
+# UVM_INFO uvm_objection.svh(1268) @ 800: reporter [TEST_DONE] 'run' phase is ready to proceed to the 'extract' phase
+# 
+# --- UVM Report catcher Summary ---
+# 
+# 
+# Number of demoted UVM_FATAL reports  :    0
+# Number of demoted UVM_ERROR reports  :    0
+# Number of demoted UVM_WARNING reports:    0
+# Number of caught UVM_FATAL reports   :    0
+# Number of caught UVM_ERROR reports   :    0
+# Number of caught UVM_WARNING reports :    0
+# 
+# --- UVM Report Summary ---
+# 
+# ** Report counts by severity
+# UVM_INFO :
+# UVM_WARNING :    0
+# UVM_ERROR :    0
+# UVM_FATAL :    0
+# ** Report counts by id
+# [PRODUCER/END_TEST]     1
+# [RNTST]     1
+# [TEST_DONE]     1

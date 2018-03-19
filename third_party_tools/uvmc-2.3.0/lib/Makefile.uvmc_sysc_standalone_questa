@@ -1,0 +1,65 @@
+# ============================================================================
+#  @(#) $Id: Makefile.uvmc_sysc_standalone_questa 1408 2015-03-02 14:27:35Z jstickle $
+# ============================================================================
+
+#    //_______________________
+#   // Mentor Graphics, Corp. \_______________________________________
+#  //                                                               //
+# //   (C) Copyright, Mentor Graphics, Corp. 2003-2014              //
+# //   All Rights Reserved                                          //
+# //                                                                //
+# //    Licensed under the Apache License, Version 2.0 (the         //
+# //    "License"); you may not use this file except in             //
+# //    compliance with the License.  You may obtain a copy of      //
+# //    the License at                                              //
+# //                                                                //
+# //        http://www.apache.org/licenses/LICENSE-2.0              //
+# //                                                                //
+# //    Unless required by applicable law or agreed to in           //
+# //    writing, software distributed under the License is          //
+# //    distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR      //
+# //    CONDITIONS OF ANY KIND, either express or implied.  See     //
+# //    the License for the specific language governing            //
+# //    permissions and limitations under the License.            //
+# //-------------------------------------------------------------//
+
+# This Makefile adds support for an OSCI SystemC version of UVM-Connect SC for
+# uses with a non-Questa OSCI SystemC kernel. See comments in
+# Makefile.uvmc_sysc_standalone for more details.
+
+all: build
+
+BITS ?= $(MTI_VCO_MODE)
+
+include common.mk
+
+LIB = ../lib
+LIBOBJ = $(LIB)/questa/$(UVMC_BUILD_PLATFORM)
+
+INCL += \
+    -I$(MTI_HOME)/include/systemc -I$(MTI_HOME)/include -I$(UVM_HOME)/src/dpi
+
+build: fix_modelsim_ini $(LIBOBJ)/uvmc.build_imprint
+	$(MAKE) -f Makefile.uvmc_sysc_standalone build \
+		LIBOBJ="$(LIBOBJ)" BITS="$(BITS)" INCL="$(INCL)"
+	rm -f modelsim.ini
+
+$(LIBOBJ)/uvmc.build_imprint:
+	mkdir -p $(LIBOBJ)
+	BITS=$(BITS); export BITS; perl ../examples/common/xlcheck.pl env_questa | grep questa
+	BITS=$(BITS); export BITS; perl ../examples/common/xlcheck.pl env_gcc | grep gcc
+	BITS=$(BITS); export BITS; perl ../examples/common/xlcheck.pl env_questa | grep questa > $@
+	BITS=$(BITS); export BITS; perl ../examples/common/xlcheck.pl env_gcc | grep gcc >> $@
+
+GCC_PATH = `which gcc`
+
+# Fix modelsim.ini to point to 
+fix_modelsim_ini:
+	vmap -c
+	echo "[sccom]" >> modelsim.ini
+	echo "CppPath = $(GCC_PATH)" >> modelsim.ini
+	echo "DpiCppPath = $(GCC_PATH)" >> modelsim.ini
+
+clean:
+	$(MAKE) -f Makefile.uvmc_sysc_standalone clean \
+		LIBOBJ="$(LIBOBJ)" INCL="$(INCL)"

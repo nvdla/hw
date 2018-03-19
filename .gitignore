@@ -1,12 +1,12 @@
 *~
+*.pyc
 *.swp
 *.raw2
+*.log
 *txn.raw
 out.txt
-verif/sim
-!verif/sim/Makefile
-!verif/sim/check*.pl
 vmod/dw_components/
 outdir/
 .nvprojectname
 tree.make
+.cleaned

@@ -1,32 +1,42 @@
 DEPTH := ../..
 include $(DEPTH)/tools/make/common.make
-
 # the output dir
-OUT_DIR = $(TOT)/$(OUTDIR)/$(PROJECT)/$(REL_PATH_FROM_TOT)
+OUT_DIR := $(TOT)/$(OUTDIR)/$(PROJECT)/$(REL_PATH_FROM_TOT)
+MODULES := NVDLA_CSC
+MODULES += NVDLA_BDMA
+MODULES += NVDLA_CACC
+MODULES += NVDLA_CDMA
+MODULES += NVDLA_CDP
+MODULES += NVDLA_CDP_RDMA
+MODULES += NVDLA_CMAC_A
+MODULES += NVDLA_CMAC_B
+MODULES += NVDLA_CVIF
+MODULES += NVDLA_GEC
+MODULES += NVDLA_GLB
+MODULES += NVDLA_MCIF
+MODULES += NVDLA_PDP
+MODULES += NVDLA_PDP_RDMA
+MODULES += NVDLA_RBK
+MODULES += NVDLA_SDP
+MODULES += NVDLA_SDP_RDMA
+MODULES += nvdla
+RDL_FILES := $(MODULES:%=%.rdl)
 
-#====================================
-# FIXME: change below test parameters and rdl input to real one 
-#====================================
-REG_PARMS = test.parms
-REG_RDL = test.rdl
-
-# several backends 
-REG_V = $(OUT_DIR)/regs_v.v
-REG_S = $(OUT_DIR)/sv/
-REG_U = $(OUT_DIR)/regs_ral.sv
-REG_C = $(OUT_DIR)/cmod
-REG_D = $(OUT_DIR)/dmod
-default:
-	@mkdir -p $(OUT_DIR)
-	$(AT)$(JAVA) -jar Ordt.jar -parms $(REG_PARMS) -systemverilog $(REG_S) -verilog $(REG_V) -uvmregs $(REG_U) -cppmod $(REG_C) -cppdrvmod $(REG_D) $(REG_RDL)
-	#@cp -f $(REG_V) $(OUT_DIR)/; rm $(REG_V) -rf
-	#@cp -f $(REG_U) $(OUT_DIR)/; rm $(REG_U) -rf
-	#@cp -rf $(REG_S) $(OUT_DIR)/; rm $(REG_S) -rf
-	#@cp -rf $(REG_C) $(OUT_DIR)/; rm $(REG_C) -rf
-	#@cp -rf $(REG_D) $(OUT_DIR)/; rm $(REG_D) -rf
+VCP_OUT_FILES := $(addprefix $(OUT_DIR)/,$(RDL_FILES))
+# Make Rules
+default: $(VCP_OUT_FILES) OUT_FILES 
 	@echo "=============================================="
 	@echo "files are generated under $(OUT_DIR)"
 	@echo "=============================================="
+
+$(VCP_OUT_FILES) : $(OUT_DIR)/% : % $(PROJ_HEAD) $(VCP) 
+ifeq (,$(wildcard $(OUT_DIR)))
+	@mkdir -p $(OUT_DIR)
+endif
+	$(VCP) -i $< -o $@ -imacros $(PROJ_HEAD) -cpp $(CPP)
+
+.phony OUT_FILES: $(PATH_SPEC_MANUAL)/RDLMerge.pl $(OUT_DIR)/nvdla.rdl $(RDL_FILES) Makefile
+	$(AT)$(PERL) $(PATH_SPEC_MANUAL)/RDLMerge.pl $(OUT_DIR)/nvdla.rdl $(JAVA) $(PERL) $(OUT_DIR)
 
 # ======================
 .PHONE: clean

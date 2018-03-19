@@ -19,22 +19,21 @@
 #include "scsim_common.h"
 // #include "nvdla_ram_data_valid_DATA_WIDTH_1024_ECC_SIZE_1_iface.h"
 #include "NV_NVDLA_cbuf_base.h"
+#include "nvdla_config.h"
 
-// FIXME, add buswidth define
-#define CBUF_BANK_NUM                       16
-#define CBUF_ENTRY_PER_BANK                 256
-#undef  CBUF_ENTRY_NUM
-#define CBUF_ENTRY_NUM                      CBUF_BANK_NUM*CBUF_ENTRY_PER_BANK
-#define CBUF_ENTRY_SIZE                     128
-#undef  CBUF_ENTRY_CMOD_GRANULARITY_SIZE
+#define ELEMENT_SIZE_INT8           1
+#define ELEMENT_SIZE_INT16          2
+#define ELEMENT_SIZE_FP16           2
+
+#define ATOM_SIZE_INT8              (NVDLA_MEMORY_ATOMIC_SIZE*ELEMENT_SIZE_INT8)
+#define ATOM_SIZE_INT16             (NVDLA_MEMORY_ATOMIC_SIZE*ELEMENT_SIZE_INT16)
+#define ATOM_SIZE_FP16              (NVDLA_MEMORY_ATOMIC_SIZE*ELEMENT_SIZE_FP16)
+
+#define CBUF_ENTRY_NUM                      (NVDLA_CBUF_BANK_NUMBER*NVDLA_CBUF_BANK_DEPTH)
 #define CBUF_ENTRY_CMOD_GRANULARITY_SIZE    1
-#define CBUF_ENTRY_CMOD_GRAN_PER_ENTRY      CBUF_ENTRY_SIZE / CBUF_ENTRY_CMOD_GRANULARITY_SIZE
-#undef  CBUF_HALF_ENTRY_SIZE
-#define CBUF_HALF_ENTRY_SIZE                CBUF_ENTRY_SIZE/2
-#define CBUF_DATA_BASE_BANK                 0
-#define CBUF_DATA_HEAD_BANK                 14
-#define CBUF_WEIGHT_BASE_BANK               1
-#define CBUF_WEIGHT_HEAD_BANK               15
+#define CBUF_ENTRY_CMOD_GRAN_PER_ENTRY      (NVDLA_CBUF_BANK_WIDTH/CBUF_ENTRY_CMOD_GRANULARITY_SIZE)
+
+#define DEBUG_DUMP
 
 SCSIM_NAMESPACE_START(clib)
 // clib class forward declaration
@@ -64,7 +63,6 @@ class NV_NVDLA_cbuf:
         // sc_uint<64>     *cbuf_ram_;
         // Buffer composed by uint8_t
         uint8_t *cbuf_ram_;
-
         // Delay
         sc_core::sc_time dma_delay_;
         // sc_core::sc_time csb_delay_;
@@ -76,6 +74,10 @@ class NV_NVDLA_cbuf:
 
         // Function declaration
         void Reset();
+#ifdef DEBUG_DUMP
+        FILE        *fp_cdma2cbuf_data;
+        FILE        *fp_cdma2cbuf_weight;
+#endif
 };
 
 SCSIM_NAMESPACE_END()

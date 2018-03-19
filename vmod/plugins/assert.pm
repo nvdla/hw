@@ -28,8 +28,8 @@ use Text::ParseWords qw(shellwords);
     -init_cdt <n> : initial credit number when type is vld_credit_max, default is 1
     -max_cdt <n>  : max credit number when type is vld_credit_max, default is 65
     
-    -clk  <clk>  :  name of clock, "clk" by default
-    -rst  <rst>  :  name of reset, "rst" by default
+    -clk  <clk>  :  name of clock, "nvdla_core_clk" by default
+    -rst  <rst>  :  name of reset, "nvdla_core_rstn" by default
 
 =cut
 
@@ -57,8 +57,8 @@ sub assert {
     my $vld   = "vld";
     my $cdt   = "cdt";
     
-    my $clk   = "clk";
-    my $rst   = "rst";
+    my $clk   = "nvdla_core_clk";
+    my $rst   = "nvdla_core_rstn";
     
     my $indent= 0;
     GetOptions (

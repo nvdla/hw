@@ -9,13 +9,19 @@
 // File Name: bdma_reg_model.cpp
 
 #include "bdma_reg_model.h"
-#include "arnvdla.uh"
-#include "arnvdla.h"
+#include "opendla.uh"
+#include "opendla.h"
 #include "cmacros.uh"
 #include "bdmacoreconfigclass.h"
 #include "log.h"
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
+
+
+//HACK
+//In opendla.h, there are no DEFAULT_MASK definitions
+#define NVDLA_BDMA_STATUS_0_FREE_SLOT_DEFAULT_MASK 0xff
+#define NVDLA_BDMA_STATUS_0_IDLE_DEFAULT_MASK      0x1
 
 #pragma CTC SKIP
 SCSIM_NAMESPACE_START(cmod)
@@ -47,39 +53,38 @@ bdma_reg_model::~bdma_reg_model() {
 #pragma CTC ENDSKIP
 
 bool bdma_reg_model::BdmaAccessRegister(uint32_t reg_addr, uint32_t & data, bool is_write) {
-    uint32_t offset, operation_enable_offset, launch0_offset, launch1_offset;
+    uint32_t offset, operation_enable_offset, launch0_offset, launch1_offset, status_offset;
     uint32_t rdata = 0;
 
     offset                  = (reg_addr & 0xFFF);  // each sub-unit has only 4KBytes
     operation_enable_offset = REG_off(NVDLA_BDMA_CFG_OP);
     launch0_offset          = REG_off(NVDLA_BDMA_CFG_LAUNCH0);
     launch1_offset          = REG_off(NVDLA_BDMA_CFG_LAUNCH1);
+    status_offset           = REG_off(NVDLA_BDMA_STATUS);
 
     if (is_write) { // Write Request
-        // Check operation enable bit is valid
-        if ( (NVDLA_BDMA_CFG_OP_0_EN_ENABLE<<NVDLA_BDMA_CFG_OP_0_EN_SHIFT) != bdma_register_group->rCFG_OP.uEN() ) {
-            bdma_register_group->SetWritable(offset, data);
-            if ((offset == operation_enable_offset) && (NVDLA_BDMA_CFG_OP_0_EN_ENABLE<<NVDLA_BDMA_CFG_OP_0_EN_SHIFT) == bdma_register_group->rCFG_OP.uEN() ) {
-                op_count++;
-                BdmaUpdateVariables(bdma_register_group);
-                operation_enable_event_.notify();
-                wait(operation_enable_clr_event_);
-            }
-            else if ((offset == launch0_offset) && (NVDLA_BDMA_CFG_LAUNCH0_0_GRP0_LAUNCH_YES == bdma_register_group->rCFG_LAUNCH0.uGRP0_LAUNCH())) {
-                bdma_register_group->rSTATUS.uGRP0_BUSY(1);
-                launch_grp0_event_.notify();
-            }
-            else if ((offset == launch1_offset) && (NVDLA_BDMA_CFG_LAUNCH1_0_GRP1_LAUNCH_YES == bdma_register_group->rCFG_LAUNCH1.uGRP1_LAUNCH())) {
-                bdma_register_group->rSTATUS.uGRP1_BUSY(1);
-                launch_grp1_event_.notify();
-            }
-            else
-            {
-            }
+        cslDebug((50, "bdma is_write=%d reg_addr=0x%x offset=0x%x value=0x%x\x0A", is_write, reg_addr, offset, data));
+        if (offset == operation_enable_offset) {
+            op_count++;
+            BdmaUpdateVariables(bdma_register_group);
+            operation_enable_event_.notify();
         }
-        // Write done
+        else if (offset == launch0_offset) {
+            bdma_register_group->rSTATUS.uGRP0_BUSY(1);
+            launch_grp0_event_.notify();
+        }
+        else if (offset == launch1_offset) {
+            bdma_register_group->rSTATUS.uGRP1_BUSY(1);
+            launch_grp1_event_.notify();
+        }
+        else if (offset == status_offset) { //status register is read-only
+        }
+        else {
+            bdma_register_group->SetWritable(offset, data);
+        }
     } else { // Read Request
         bdma_register_group->GetReadable(offset, &rdata);
+        cslDebug((50, "bdma is_write=%d reg_addr=0x%x offset=0x%x value=0x%x\x0A", is_write, reg_addr, offset, rdata));
         data = rdata;
     }
     return true;
@@ -98,12 +103,9 @@ void bdma_reg_model::BdmaClearOperationEnable() {
 }
 
 void bdma_reg_model::BdmaUpdateFreeConfigSlotNum(uint8_t num) {
-    uint32_t reg_offset, data;
-    reg_offset = REG_off(NVDLA_BDMA_STATUS);
-    bdma_register_group->GetReadable(reg_offset, &data);
-    data = ( ((num &  NVDLA_BDMA_STATUS_0_FREE_SLOT_DEFAULT_MASK) << NVDLA_BDMA_STATUS_0_FREE_SLOT_SHIFT) | 
-            (data & ~(NVDLA_BDMA_STATUS_0_FREE_SLOT_DEFAULT_MASK  << NVDLA_BDMA_STATUS_0_FREE_SLOT_SHIFT)) );
-    bdma_register_group->SetWritable(reg_offset, data);
+    uint32_t data;
+    data = num & NVDLA_BDMA_STATUS_0_FREE_SLOT_DEFAULT_MASK;
+    bdma_register_group->rSTATUS.uFREE_SLOT(data);
 }
 
 void bdma_reg_model::BdmaUpdateIdleStatus(bool status) {

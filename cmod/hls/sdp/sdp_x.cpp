@@ -111,7 +111,6 @@ void X_alu (
                     // OP: fp16-fp32
                     xDataType alu_op = Fp16ToFp32(AluOp.data[i]);
 
-                    // FIXME: cfg_ should be in fp32 format
                     // CFG: shift_value -> fp32
                     //ACINTF(1) cfg_alu_shift_sign = (ACINTF(1))0;
                     //ACINTF(xDataExpoSize) cfg_alu_shift_expo = cfg_alu_shift_value;

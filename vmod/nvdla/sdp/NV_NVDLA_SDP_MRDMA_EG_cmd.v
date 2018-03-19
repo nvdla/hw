@@ -12,110 +12,85 @@
 module NV_NVDLA_SDP_MRDMA_EG_cmd (
    nvdla_core_clk        //|< i
   ,nvdla_core_rstn       //|< i
-  ,cmd2dat_dma_prdy      //|< i
-  ,cmd2dat_spt_prdy      //|< i
+  ,pwrbus_ram_pd         //|< i
+  ,eg_done               //|< i
   ,cq2eg_pd              //|< i
   ,cq2eg_pvld            //|< i
-  ,eg_done               //|< i
-  ,pwrbus_ram_pd         //|< i
-  ,reg2dp_height         //|< i
-  ,reg2dp_in_precision   //|< i
-  ,reg2dp_proc_precision //|< i
-  ,reg2dp_width          //|< i
+  ,cq2eg_prdy            //|> o
   ,cmd2dat_dma_pd        //|> o
   ,cmd2dat_dma_pvld      //|> o
+  ,cmd2dat_dma_prdy      //|< i
   ,cmd2dat_spt_pd        //|> o
   ,cmd2dat_spt_pvld      //|> o
-  ,cq2eg_prdy            //|> o
+  ,cmd2dat_spt_prdy      //|< i
+  ,reg2dp_height         //|< i
+  ,reg2dp_width          //|< i
+  ,reg2dp_in_precision   //|< i
+  ,reg2dp_proc_precision //|< i
   );
+
 //
 // NV_NVDLA_SDP_MRDMA_EG_cmd_ports.v
 //
-input  nvdla_core_clk;   /* cq2eg, cmd2dat_spt, cmd2dat_dma */
-input  nvdla_core_rstn;  /* cq2eg, cmd2dat_spt, cmd2dat_dma */
-
-input         cq2eg_pvld;  /* data valid */
-output        cq2eg_prdy;  /* data return handshake */
+input  nvdla_core_clk;   
+input  nvdla_core_rstn; 
+input [31:0]  pwrbus_ram_pd;
+input         eg_done;
+input         cq2eg_pvld;  
+output        cq2eg_prdy;  
 input  [13:0] cq2eg_pd;
-
-output        cmd2dat_spt_pvld;  /* data valid */
-input         cmd2dat_spt_prdy;  /* data return handshake */
+output        cmd2dat_spt_pvld;  
+input         cmd2dat_spt_prdy;  
 output [12:0] cmd2dat_spt_pd;
-
-output        cmd2dat_dma_pvld;  /* data valid */
-input         cmd2dat_dma_prdy;  /* data return handshake */
+output        cmd2dat_dma_pvld;  
+input         cmd2dat_dma_prdy;  
 output [14:0] cmd2dat_dma_pd;
+input [12:0]  reg2dp_height;
+input  [1:0]  reg2dp_in_precision;
+input  [1:0]  reg2dp_proc_precision;
+input [12:0]  reg2dp_width;
 
-input [31:0] pwrbus_ram_pd;
-
-input eg_done;
-input [12:0] reg2dp_height;
-input  [1:0] reg2dp_in_precision;
-input  [1:0] reg2dp_proc_precision;
-input [12:0] reg2dp_width;
-reg          cmd_cube_end;
-reg   [13:0] cmd_dma_size;
-reg   [11:0] cmd_spt_size;
-reg          cmd_vld;
-reg   [13:0] ig2eg_dma_size;
-reg          is_primary;
 wire         cfg_di_int16;
+wire         cfg_do_int8;
 wire         cfg_do_16;
 wire         cfg_do_fp16;
 wire         cfg_do_int16;
-wire         cfg_do_int8;
-wire         cfg_mode_16to8;
 wire         cfg_mode_1x1_pack;
+reg          cmd_vld;
 wire         cmd_rdy;
-wire         cq2eg_accept;
+reg          cmd_cube_end;
+reg   [13:0] cmd_dma_size;
+reg   [12:0] cmd_spt_size;
 wire         dma_cube_end;
 wire  [14:0] dma_fifo_pd;
 wire         dma_fifo_prdy;
 wire         dma_fifo_pvld;
-wire         dma_req_en;
 wire  [13:0] dma_size;
+reg   [13:0] ig2eg_dma_size;
+wire         cq2eg_accept;
 wire         ig2eg_cube_end;
 wire  [12:0] ig2eg_size;
-wire  [11:0] ig2eg_spt_size;
+wire  [12:0] ig2eg_spt_size;
 wire  [12:0] spt_fifo_pd;
 wire         spt_fifo_prdy;
 wire         spt_fifo_pvld;
-wire         spt_primary;
-wire  [11:0] spt_size;
-// synoff nets
-
-// monitor nets
-
-// debug nets
-
-// tie high nets
-
-// tie low nets
-
-// no connect nets
-
-// not all bits used nets
-
-// todo nets
+wire  [12:0] spt_size;
 
     
 //==============
 // CFG
-//assign cfg_di_int8  = reg2dp_in_precision == NVDLA_GENERIC_PRECISION_ENUM_INT8;
 assign cfg_di_int16 = reg2dp_in_precision == 1 ;
 assign cfg_do_int8  = reg2dp_proc_precision == 0 ;
 assign cfg_do_int16 = reg2dp_proc_precision == 1 ;
-assign cfg_do_fp16 = reg2dp_proc_precision == 2 ;
-assign cfg_do_16 = cfg_do_int16 | cfg_do_fp16;
-//
-assign cfg_mode_16to8 = cfg_di_int16 & cfg_do_int8;
+assign cfg_do_fp16  = reg2dp_proc_precision == 2 ;
+assign cfg_do_16    = cfg_do_int16 | cfg_do_fp16;
 assign cfg_mode_1x1_pack = (reg2dp_width==0) & (reg2dp_height==0);
+#ifdef NVDLA_SDP_DATA_TYPE_INT16TO8
+wire   cfg_mode_16to8 = cfg_di_int16 & cfg_do_int8;
+#endif
 
-// unpack from rd_pd, which should be the same order as wr_pd
-
-// PKT_UNPACK_WIRE( sdp_mrdma_ig2eg ,  ig2eg_ ,  cq2eg_pd )
-assign        ig2eg_size[12:0] =     cq2eg_pd[12:0];
-assign         ig2eg_cube_end  =     cq2eg_pd[13];
+assign   ig2eg_size[12:0] = cq2eg_pd[12:0];
+assign   ig2eg_cube_end   = cq2eg_pd[13];
 
 assign cq2eg_prdy = !cmd_vld || cmd_rdy;
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
@@ -124,14 +99,13 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   end else begin
   if ((cq2eg_prdy) == 1'b1) begin
     cmd_vld <= cq2eg_pvld;
-  // VCS coverage off
-  end else if ((cq2eg_prdy) == 1'b0) begin
-  end else begin
-    cmd_vld <= 'bx;  // spyglass disable STARC-2.10.1.6 W443 NoWidthInBasedNum-ML -- (Constant containing x or z used, Based number `bx contains an X, Width specification missing for based number)
-  // VCS coverage on
+  //end else if ((cq2eg_prdy) == 1'b0) begin
+  //end else begin
+  //  cmd_vld <= 1'bx;  
   end
   end
 end
+
 `ifdef SPYGLASS_ASSERT_ON
 `else
 // spyglass disable_block NoWidthInBasedNum-ML 
@@ -179,24 +153,25 @@ end
 // spyglass enable_block WRN_58 
 // spyglass enable_block WRN_61 
 `endif // SPYGLASS_ASSERT_ON
+
 assign cq2eg_accept = cq2eg_pvld & cq2eg_prdy;
 
-// spt_size is in unit of 64B
-assign ig2eg_spt_size[11:0] = ig2eg_size[12:1];
+//dma_size is in unit of atomic_m * 1B
+assign ig2eg_spt_size[12:0] = ig2eg_size;  //ig2eg_size[12:1];
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
-    cmd_spt_size <= {12{1'b0}};
+    cmd_spt_size <= {13{1'b0}};
   end else begin
   if ((cq2eg_accept) == 1'b1) begin
     cmd_spt_size <= ig2eg_spt_size;
-  // VCS coverage off
-  end else if ((cq2eg_accept) == 1'b0) begin
-  end else begin
-    cmd_spt_size <= 'bx;  // spyglass disable STARC-2.10.1.6 W443 NoWidthInBasedNum-ML -- (Constant containing x or z used, Based number `bx contains an X, Width specification missing for based number)
-  // VCS coverage on
+  //end else if ((cq2eg_accept) == 1'b0) begin
+  //end else begin
+  //  cmd_spt_size <= 13'bx;  
   end
   end
 end
+
+
 `ifdef SPYGLASS_ASSERT_ON
 `else
 // spyglass disable_block NoWidthInBasedNum-ML 
@@ -245,7 +220,8 @@ end
 // spyglass enable_block WRN_61 
 `endif // SPYGLASS_ASSERT_ON
 
-// dma_size is in unit of 16B
+//dma_size is in unit of 16B
+#ifdef NVDLA_SDP_DATA_TYPE_INT16TO8
 always @(
   cfg_do_16
   or ig2eg_size
@@ -256,30 +232,35 @@ always @(
         ig2eg_dma_size = {1'b0,ig2eg_size};
     end else begin
         if (cfg_mode_1x1_pack) begin
-            if (cfg_mode_16to8) begin
+            if (cfg_mode_16to8) 
                 ig2eg_dma_size = {1'b0,ig2eg_size};
-            end else begin
+            else
                 ig2eg_dma_size = {ig2eg_size,1'b1};
-            end
         end else begin
             ig2eg_dma_size = {ig2eg_size,1'b1};
         end
     end
 end
+#else 
+always @( ig2eg_size ) begin
+ ig2eg_dma_size = {1'b0,ig2eg_size};    //fixme
+end
+#endif 
+
+
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
     cmd_dma_size <= {14{1'b0}};
   end else begin
   if ((cq2eg_accept) == 1'b1) begin
     cmd_dma_size <= ig2eg_dma_size;
-  // VCS coverage off
-  end else if ((cq2eg_accept) == 1'b0) begin
-  end else begin
-    cmd_dma_size <= 'bx;  // spyglass disable STARC-2.10.1.6 W443 NoWidthInBasedNum-ML -- (Constant containing x or z used, Based number `bx contains an X, Width specification missing for based number)
-  // VCS coverage on
+  //end else if ((cq2eg_accept) == 1'b0) begin
+  //end else begin
+  //  cmd_dma_size <= 14'bx;  
   end
   end
 end
+
 `ifdef SPYGLASS_ASSERT_ON
 `else
 // spyglass disable_block NoWidthInBasedNum-ML 
@@ -334,11 +315,9 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   end else begin
   if ((cq2eg_accept) == 1'b1) begin
     cmd_cube_end <= ig2eg_cube_end;
-  // VCS coverage off
-  end else if ((cq2eg_accept) == 1'b0) begin
-  end else begin
-    cmd_cube_end <= 'bx;  // spyglass disable STARC-2.10.1.6 W443 NoWidthInBasedNum-ML -- (Constant containing x or z used, Based number `bx contains an X, Width specification missing for based number)
-  // VCS coverage on
+  //end else if ((cq2eg_accept) == 1'b0) begin
+  //end else begin
+  //  cmd_cube_end <= 1'bx;  
   end
   end
 end
@@ -389,7 +368,9 @@ end
 // spyglass enable_block WRN_58 
 // spyglass enable_block WRN_61 
 `endif // SPYGLASS_ASSERT_ON
-
+          
+#ifdef NVDLA_SDP_DATA_TYPE_INT16TO8
+reg     is_primary;
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
     is_primary <= 1'b0;
@@ -404,79 +385,64 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   end
 end
 
-// SPT
-assign spt_size = cmd_spt_size;
-assign spt_primary = is_primary || (!cfg_mode_16to8);
+wire spt_primary = is_primary || (!cfg_mode_16to8);
 
-// DMA: 
+wire dma_req_en = cfg_mode_1x1_pack || (!is_primary) || (!cfg_mode_16to8);
+#else 
+wire dma_req_en = 1'b1; 
+#endif
+
+assign spt_size = cmd_spt_size;
 assign dma_size = cmd_dma_size;
-// will cancel the secondary cmd when 16->8
-assign dma_req_en = cfg_mode_1x1_pack || (!is_primary) || (!cfg_mode_16to8);
 assign dma_cube_end = cmd_cube_end;
+
 
 //==============
 // OUTPUT PACK and PIPE: To EG_DAT
 //==============
+assign       spt_fifo_pd[12:0] = spt_size[12:0];
+#ifdef NVDLA_SDP_DATA_TYPE_INT16TO8
+assign       spt_fifo_pd[12]   = spt_primary ;
+#endif
 
-// PKT_PACK_WIRE( sdp_mrdma_eg_spt ,  spt_ ,  spt_fifo_pd )
-assign       spt_fifo_pd[11:0] =     spt_size[11:0];
-assign       spt_fifo_pd[12] =     spt_primary ;
-
-// PKT_PACK_WIRE( sdp_mrdma_eg_dma ,  dma_ ,  dma_fifo_pd )
-assign       dma_fifo_pd[13:0] =     dma_size[13:0];
-assign       dma_fifo_pd[14] =     dma_cube_end ;
+assign       dma_fifo_pd[13:0] = dma_size[13:0];
+assign       dma_fifo_pd[14]   = dma_cube_end ;
 
 assign spt_fifo_pvld = cmd_vld & dma_fifo_prdy;
 assign dma_fifo_pvld = cmd_vld & dma_req_en & spt_fifo_prdy;
 assign cmd_rdy = spt_fifo_prdy & dma_fifo_prdy;
 
 NV_NVDLA_SDP_MRDMA_EG_CMD_sfifo u_sfifo (
-   .nvdla_core_clk   (nvdla_core_clk)       //|< i
-  ,.nvdla_core_rstn  (nvdla_core_rstn)      //|< i
-  ,.spt_fifo_prdy    (spt_fifo_prdy)        //|> w
-  ,.spt_fifo_pvld    (spt_fifo_pvld)        //|< w
-  ,.spt_fifo_pd      (spt_fifo_pd[12:0])    //|< w
-  ,.cmd2dat_spt_prdy (cmd2dat_spt_prdy)     //|< i
-  ,.cmd2dat_spt_pvld (cmd2dat_spt_pvld)     //|> o
-  ,.cmd2dat_spt_pd   (cmd2dat_spt_pd[12:0]) //|> o
-  ,.pwrbus_ram_pd    (pwrbus_ram_pd[31:0])  //|< i
-  );
-NV_NVDLA_SDP_MRDMA_EG_CMD_dfifo u_dfifo (
-   .nvdla_core_clk   (nvdla_core_clk)       //|< i
-  ,.nvdla_core_rstn  (nvdla_core_rstn)      //|< i
-  ,.dma_fifo_prdy    (dma_fifo_prdy)        //|> w
-  ,.dma_fifo_pvld    (dma_fifo_pvld)        //|< w
-  ,.dma_fifo_pd      (dma_fifo_pd[14:0])    //|< w
-  ,.cmd2dat_dma_prdy (cmd2dat_dma_prdy)     //|< i
-  ,.cmd2dat_dma_pvld (cmd2dat_dma_pvld)     //|> o
-  ,.cmd2dat_dma_pd   (cmd2dat_dma_pd[14:0]) //|> o
-  ,.pwrbus_ram_pd    (pwrbus_ram_pd[31:0])  //|< i
+   .nvdla_core_clk   (nvdla_core_clk)       
+  ,.nvdla_core_rstn  (nvdla_core_rstn)      
+  ,.spt_fifo_prdy    (spt_fifo_prdy)        
+  ,.spt_fifo_pvld    (spt_fifo_pvld)        
+  ,.spt_fifo_pd      (spt_fifo_pd[12:0])    
+  ,.cmd2dat_spt_prdy (cmd2dat_spt_prdy)     
+  ,.cmd2dat_spt_pvld (cmd2dat_spt_pvld)     
+  ,.cmd2dat_spt_pd   (cmd2dat_spt_pd[12:0]) 
+  ,.pwrbus_ram_pd    (pwrbus_ram_pd[31:0])  
   );
 
-//==============
-// OBS
-//assign obs_bus_sdp_mrdma_eg_cq_rd_prdy       = cq2eg_prdy; 
-//assign obs_bus_sdp_mrdma_eg_cq_rd_pvld       = cq2eg_pvld;
-//assign obs_bus_sdp_mrdma_eg_cmd_dma_rd_prdy  = cmd2dat_dma_prdy; 
-//assign obs_bus_sdp_mrdma_eg_cmd_dma_rd_pvld  = cmd2dat_dma_pvld; 
-//assign obs_bus_sdp_mrdma_eg_cmd_dma_wr_prdy  = dma_fifo_prdy; 
-//assign obs_bus_sdp_mrdma_eg_cmd_dma_wr_pvld  = dma_fifo_pvld; 
-//assign obs_bus_sdp_mrdma_eg_cmd_spt_rd_prdy  = cmd2dat_spt_prdy; 
-//assign obs_bus_sdp_mrdma_eg_cmd_spt_rd_pvld  = cmd2dat_spt_pvld; 
-//assign obs_bus_sdp_mrdma_eg_cmd_spt_wr_prdy  = spt_fifo_prdy; 
-//assign obs_bus_sdp_mrdma_eg_cmd_spt_wr_pvld  = spt_fifo_pvld; 
+//fixme
+NV_NVDLA_SDP_MRDMA_EG_CMD_dfifo u_dfifo (
+   .nvdla_core_clk   (nvdla_core_clk)       
+  ,.nvdla_core_rstn  (nvdla_core_rstn)      
+  ,.dma_fifo_prdy    (dma_fifo_prdy)        
+  ,.dma_fifo_pvld    (dma_fifo_pvld)        
+  ,.dma_fifo_pd      (dma_fifo_pd[14:0])    
+  ,.cmd2dat_dma_prdy (cmd2dat_dma_prdy)     
+  ,.cmd2dat_dma_pvld (cmd2dat_dma_pvld)     
+  ,.cmd2dat_dma_pd   (cmd2dat_dma_pd[14:0]) 
+  ,.pwrbus_ram_pd    (pwrbus_ram_pd[31:0])  
+  );
+
+
 
 endmodule // NV_NVDLA_SDP_MRDMA_EG_cmd
 
-//
-// AUTOMATICALLY GENERATED -- DO NOT EDIT OR CHECK IN
-//
-// /home/nvtools/engr/2017/03/11_05_00_06/nvtools/scripts/fifogen
-// fifogen -input_config_yaml ../../../../../../../socd/ip_chip_tools/1.0/defs/public/fifogen/golden/tlit5/fifogen.yml -no_make_ram -no_make_ram -stdout -m NV_NVDLA_SDP_MRDMA_EG_CMD_sfifo -clk_name nvdla_core_clk -reset_name nvdla_core_rstn -wr_pipebus spt_fifo -rd_pipebus cmd2dat_spt -rand_none -ram_bypass -d 4 -w 13 -ram ff [Chosen ram type: ff - fifogen_flops (user specified, thus no other ram type is allowed)]
-// chip config vars: assertion_module_prefix=nv_  strict_synchronizers=1  strict_synchronizers_use_lib_cells=1  strict_synchronizers_use_tm_lib_cells=1  strict_sync_randomizer=1  assertion_message_prefix=FIFOGEN_ASSERTION  allow_async_fifola=0  ignore_ramgen_fifola_variant=1  uses_p_SSYNC=0  uses_prand=1  uses_rammake_inc=1  use_x_or_0=1  force_wr_reg_gated=1  no_force_reset=1  no_timescale=1  no_pli_ifdef=1  requires_full_throughput=1  ram_auto_ff_bits_cutoff=16  ram_auto_ff_width_cutoff=2  ram_auto_ff_width_cutoff_max_depth=32  ram_auto_ff_depth_cutoff=-1  ram_auto_ff_no_la2_depth_cutoff=5  ram_auto_la2_width_cutoff=8  ram_auto_la2_width_cutoff_max_depth=56  ram_auto_la2_depth_cutoff=16  flopram_emu_model=1  dslp_single_clamp_port=1  dslp_clamp_port=1  slp_single_clamp_port=1  slp_clamp_port=1  master_clk_gated=1  clk_gate_module=NV_CLK_gate_power  redundant_timing_flops=0  hot_reset_async_force_ports_and_loopback=1  ram_sleep_en_width=1  async_cdc_reg_id=NV_AFIFO_  rd_reg_default_for_async=1  async_ram_instance_prefix=NV_ASYNC_RAM_  allow_rd_busy_reg_warning=0  do_dft_xelim_gating=1  add_dft_xelim_wr_clkgate=1  add_dft_xelim_rd_clkgate=1 
-//
-// leda B_3208_NV OFF -- Unequal length LHS and RHS in assignment
-// leda B_1405 OFF -- 2 asynchronous resets in this unit detected
+
+
 `define FORCE_CONTENTION_ASSERTION_RESET_ACTIVE 1'b1
 `include "simulate_x_tick.vh"
 
@@ -878,6 +844,7 @@ input  [1:0] wa;
 input  [2:0] ra;
 output [12:0] dout;
 
+`ifndef FPGA
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_0 (.A(pwrbus_ram_pd[0]));
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_1 (.A(pwrbus_ram_pd[1]));
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_2 (.A(pwrbus_ram_pd[2]));
@@ -910,7 +877,7 @@ NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_28 (.A(pwrbus_ram_pd[28]));
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_29 (.A(pwrbus_ram_pd[29]));
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_30 (.A(pwrbus_ram_pd[30]));
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_31 (.A(pwrbus_ram_pd[31]));
-
+`endif
 
 `ifdef EMU
 
@@ -1062,15 +1029,8 @@ endmodule // vmw_NV_NVDLA_SDP_MRDMA_EG_CMD_sfifo_flopram_rwsa_4x13
 
 `endif // EMU
 
-//
-// AUTOMATICALLY GENERATED -- DO NOT EDIT OR CHECK IN
-//
-// /home/nvtools/engr/2017/03/11_05_00_06/nvtools/scripts/fifogen
-// fifogen -input_config_yaml ../../../../../../../socd/ip_chip_tools/1.0/defs/public/fifogen/golden/tlit5/fifogen.yml -no_make_ram -no_make_ram -stdout -m NV_NVDLA_SDP_MRDMA_EG_CMD_dfifo -clk_name nvdla_core_clk -reset_name nvdla_core_rstn -wr_pipebus dma_fifo -rd_pipebus cmd2dat_dma -rand_none -ram_bypass -d 4 -w 15 -ram ff [Chosen ram type: ff - fifogen_flops (user specified, thus no other ram type is allowed)]
-// chip config vars: assertion_module_prefix=nv_  strict_synchronizers=1  strict_synchronizers_use_lib_cells=1  strict_synchronizers_use_tm_lib_cells=1  strict_sync_randomizer=1  assertion_message_prefix=FIFOGEN_ASSERTION  allow_async_fifola=0  ignore_ramgen_fifola_variant=1  uses_p_SSYNC=0  uses_prand=1  uses_rammake_inc=1  use_x_or_0=1  force_wr_reg_gated=1  no_force_reset=1  no_timescale=1  no_pli_ifdef=1  requires_full_throughput=1  ram_auto_ff_bits_cutoff=16  ram_auto_ff_width_cutoff=2  ram_auto_ff_width_cutoff_max_depth=32  ram_auto_ff_depth_cutoff=-1  ram_auto_ff_no_la2_depth_cutoff=5  ram_auto_la2_width_cutoff=8  ram_auto_la2_width_cutoff_max_depth=56  ram_auto_la2_depth_cutoff=16  flopram_emu_model=1  dslp_single_clamp_port=1  dslp_clamp_port=1  slp_single_clamp_port=1  slp_clamp_port=1  master_clk_gated=1  clk_gate_module=NV_CLK_gate_power  redundant_timing_flops=0  hot_reset_async_force_ports_and_loopback=1  ram_sleep_en_width=1  async_cdc_reg_id=NV_AFIFO_  rd_reg_default_for_async=1  async_ram_instance_prefix=NV_ASYNC_RAM_  allow_rd_busy_reg_warning=0  do_dft_xelim_gating=1  add_dft_xelim_wr_clkgate=1  add_dft_xelim_rd_clkgate=1 
-//
-// leda B_3208_NV OFF -- Unequal length LHS and RHS in assignment
-// leda B_1405 OFF -- 2 asynchronous resets in this unit detected
+
+
 `define FORCE_CONTENTION_ASSERTION_RESET_ACTIVE 1'b1
 `include "simulate_x_tick.vh"
 
@@ -1472,6 +1432,7 @@ input  [1:0] wa;
 input  [2:0] ra;
 output [14:0] dout;
 
+`ifndef FPGA
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_0 (.A(pwrbus_ram_pd[0]));
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_1 (.A(pwrbus_ram_pd[1]));
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_2 (.A(pwrbus_ram_pd[2]));
@@ -1504,7 +1465,7 @@ NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_28 (.A(pwrbus_ram_pd[28]));
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_29 (.A(pwrbus_ram_pd[29]));
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_30 (.A(pwrbus_ram_pd[30]));
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_31 (.A(pwrbus_ram_pd[31]));
-
+`endif
 
 `ifdef EMU
 

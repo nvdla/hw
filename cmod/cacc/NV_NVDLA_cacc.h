@@ -25,6 +25,7 @@
 #include "nvdla_xx2csb_resp_iface.h"
 #include "NV_NVDLA_cacc_base.h"
 #include "cacc_reg_model.h"
+#include "nvdla_config.h"
 
 //stepheng add cacc FP39 define.20170329
 //#define CACC_FP39
@@ -41,37 +42,25 @@
      #define FP16_MLEN 40
 #endif
 
-#define MAC_OUTPUT_BIT_WIDTH_INT8                   22
-#define MAC_OUTPUT_BIT_WIDTH_INT16                  46
-#define MAC_OUTPUT_BIT_WIDTH_FP16                   32
+#define MAC_OUTPUT_BIT_WIDTH_INT8               22
+#define MAC_OUTPUT_BIT_WIDTH_INT16              46
+#define MAC_OUTPUT_BIT_WIDTH_FP16               32
 
-#define ACCU_ASSEMBLY_BIT_WIDTH_INT8                32
-//#define ACCU_ASSEMBLY_BIT_WIDTH_INT16               48
-#define ACCU_ASSEMBLY_BIT_WIDTH_INT16               FP16_ALEN   //stepheng.20170329
-#define ACCU_ASSEMBLY_BIT_WIDTH_FP16                32
+#define ACCU_ASSEMBLY_BIT_WIDTH_INT8            32
+#define ACCU_ASSEMBLY_BIT_WIDTH_INT16           FP16_ALEN   //stepheng.20170329
+#define ACCU_ASSEMBLY_BIT_WIDTH_FP16            32
 
-#define ACCU_DELIVERY_BIT_WIDTH_INT8                32
-#define ACCU_DELIVERY_BIT_WIDTH_INT16               32
-#define ACCU_DELIVERY_BIT_WIDTH_FP16                32
+#define ACCU_DELIVERY_BIT_WIDTH_INT8            32
+#define ACCU_DELIVERY_BIT_WIDTH_INT16           32
+#define ACCU_DELIVERY_BIT_WIDTH_FP16            32
 
-#define ACCU_DELIVERY_BIT_WIDTH_COMMON_INT8         8
-#define ACCU_DELIVERY_BIT_WIDTH_COMMON_INT16        16
-#define ACCU_DELIVERY_BIT_WIDTH_COMMON_FP16         16
+#define ACCU_DELIVERY_BIT_WIDTH_COMMON_INT8     8
+#define ACCU_DELIVERY_BIT_WIDTH_COMMON_INT16    16
+#define ACCU_DELIVERY_BIT_WIDTH_COMMON_FP16     16
 
-#undef  PARALLEL_KERNEL_NUM_INT8
-#define PARALLEL_KERNEL_NUM_INT8            32
-#undef  PARALLEL_KERNEL_NUM_INT16
-#define PARALLEL_KERNEL_NUM_INT16           16
-#undef  MAC_CELL_NUM
-#define MAC_CELL_NUM                        16
-#define ELEMENT_PER_MAC_CELL_INT8           8
-
-#define ATOM_ELEMENT_NUM_INT8               32
-#define ATOM_ELEMENT_NUM_INT16              16
-#define ATOM_ELEMENT_NUM_FP16               16
-#define SUB_ATOM_ELEMENT_NUM_INT8           8
-#define SUB_ATOM_ELEMENT_NUM_INT16          4
-#define SUB_ATOM_ELEMENT_NUM_FP16           4
+#define MAC_CELL_NUM							NVDLA_MAC_ATOMIC_K_SIZE
+#define HALF_MAC_CELL_NUM						(MAC_CELL_NUM/2)
+#define RESULT_NUM_PER_MACCELL					4
 
 #define DIRECT_CONV_ASSEMBLY_ENTRY_NUM          256
 #define DIRECT_CONV_DELIVERY_ENTRY_NUM          256
@@ -79,34 +68,10 @@
 //For simplicity, multiply 2 here for INT8 case.
 #define SRAM_GROUP_SIZE             (MAC_CELL_NUM*2*DIRECT_CONV_DELIVERY_ENTRY_NUM)
 
-#define MAC_CELL_STRIDE_INT8        8
-#define MAC_CELL_STRIDE_INT16       4
-#define MAC_CELL_STRIDE_FP16        2
-
 #define CONV_MODE_DIRECT_CONVOLUTION    0
 #define CONV_MODE_WINOGRAD              1
 
-#define SPLIT_C_ENABLE 1
-#define SPLIT_C_DISABLE 0
-
-#define CACC_TO_SDP_THROUGHPUT_INT8     16
-#define CACC_TO_SDP_THROUGHPUT_INT16    16
-#define CACC_TO_SDP_THROUGHPUT_FP16     16
-
-#define HALF_MAC_CELL_NUM                   8
-#define RESULT_NUM_PER_MACCELL              8
-
 #define MAX_BATCH_SIZE                  32
-#define ATOM_CUBE_SIZE                  32
-
-// FIXME
-/**************************************************
- * input output format config conflict with IAS
- * Shall CSC/CMAC/CACC switch syn or asyn
- * CACCU already considered output DMA sequence, confirm on writephile and regular sequence
- * Is truncation configurable
- * Output throughputs change from 8 elements to 32 elements
-**************************************************/
 
 
 SCSIM_NAMESPACE_START(clib)

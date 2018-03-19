@@ -1,0 +1,86 @@
+#!/usr/bin/env python
+import nvdla_python_test_common as test_common
+
+def run(project):
+    test, test_name, test_shortcut = test_common.creat_test(__file__, project)
+    address_lsb_mask_bits = test_shortcut['address_lsb_mask_bits']
+    layer_name = test.add_hardware_layer("auto_layer_name", "CONV_SDP")
+    layer_config = {
+        'cc.conv_mode' : 'direct',
+        'cc.in_precision':'INT8',
+        'cc.proc_precision':'INT8',
+        'cc.datain_format':'feature',
+        'cc.datain_width':7,
+        'cc.datain_height':7,
+        'cc.datain_channel':31,
+        'cc.datain_width_ext':7,
+        'cc.datain_height_ext':7,
+        'cc.datain_channel_ext':31,
+        'cc.datain_ram_type':'MCIF',
+        'cc.datain_addr_high_0':0,
+        #'cc.datain_addr_low_0':0x4000000,
+        'cc.datain_addr_low_0':0x80000000 >> address_lsb_mask_bits,
+        'cc.line_stride':8,
+        'cc.surf_stride':64,
+        'cc.line_packed':'TRUE',
+        'cc.surf_packed':'TRUE',
+        'cc.batches':0,
+        'cc.entries':1, ## TODO maybe 7 later
+        'cc.grains':0,
+        'cc.weight_format':'UNCOMPRESSED',
+        'cc.byte_per_kernel':31,
+        'cc.weight_kernel':31,
+        'cc.weight_bytes':8,
+        'cc.weight_ram_type':'MCIF',
+        'cc.weight_addr_high':0,
+        #'cc.weight_addr_low':0x4002000,
+        'cc.weight_addr_low':0x80040000 >> address_lsb_mask_bits,
+        'cc.conv_x_stride':0,
+        'cc.conv_y_stride':0,
+        'cc.conv_x_stride_ext':0,
+        'cc.conv_y_stride_ext':0,
+        'cc.weight_width_ext':0,
+        'cc.weight_height_ext':0,
+        'cc.weight_channel_ext':31,
+        'cc.pad_left':0,
+        'cc.pad_right':0,
+        'cc.pad_top':0,
+        'cc.pad_bottom':0,
+        'cc.data_bank':7,
+        'cc.weight_bank':7,
+        'cc.y_extension':0,
+        'cc.dataout_width':7,
+        'cc.dataout_height':7,
+        'cc.dataout_channel':31,
+        'cc.atomics':63,
+        'cc.rls_slices':7,
+        'cc.x_dilation_ext':0,
+        'cc.y_dilation_ext':0,
+        'cc.clip_truncate': 0,
+        'sdp.width' : 7,
+        'sdp.height': 7,
+        'sdp.channel': 31,
+        #'sdp.dst_base_addr_low' : 0x4004000,
+        'sdp.dst_base_addr_low' : 0x80080000 >> address_lsb_mask_bits,
+        'sdp.dst_line_stride' : 8,
+        'sdp.dst_surface_stride' : 64,
+        #'sdp.brdma_disable': 'yEs',
+        #'sdp.nrdma_disable': 'yeS',
+        #'sdp.erdma_disable': 'Yes',
+        'sdp.bs_bypass': 'Yes',
+        'sdp.bn_bypass': 'yEs',
+        'sdp.ew_bypass': 'yeS',
+        #'sdp.in_precision':'INT8',
+        'sdp.proc_precision':'INT8',
+        'sdp.out_precision':'INT8',
+        #'sdp.src_ram_type': 'src_ram_type_MC',
+        'sdp.flying_mode' : 'ON',
+        'sdp.dst_ram_type': 'MC',
+        'sdp.cvt_scale': 1,
+    }
+    test.update_layer_setting(layer_name, layer_config)
+    test.update_layer_memory(layer_name, {'input':'ALL_ZERO', 'weight':'ALL_ZERO', 'output':'RANDOM'})
+    test_common.generate_trace(test, test_name)
+
+if __name__ == "__main__":
+    run('nv_small')

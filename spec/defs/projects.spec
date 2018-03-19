@@ -1,3 +1,22 @@
+#if defined(FEATURE_DATA_TYPE_INT8)
+    %define NVDLA_FEATURE_DATA_TYPE_INT8
+    %define NVDLA_BPE 8
+#elif defined(FEATURE_DATA_TYPE_INT16_FP16)
+    %define NVDLA_FEATURE_DATA_TYPE_INT16_FP16
+    %define NVDLA_BPE 16
+#else
+    #error " NVDLA_FEATURE_DATA_TYPE_INT8 must be set"
+#endif
+
+#if defined(WEIGHT_DATA_TYPE_INT8)
+    %define NVDLA_WEIGHT_DATA_TYPE_INT8
+#elif defined(WEIGHT_DATA_TYPE_INT16_FP16)
+    %define NVDLA_WEIGHT_DATA_TYPE_INT16_FP16
+#else
+    #error " NVDLA_WEIGHT_DATA_TYPE_INT8 must be set"
+#endif
+
+
 #if defined(WEIGHT_COMPRESSION_ENABLE)
     %define NVDLA_WEIGHT_COMPRESSION_ENABLE
 #elif defined(WEIGHT_COMPRESSION_DISABLE)
@@ -96,12 +115,21 @@
     #error "one of NVDLA_CDP_{EN,DIS}ABLE must be set"
 #endif
 
+#if defined(RETIMING_ENABLE)
+    %define NVDLA_RETIMING_ENABLE
+#elif defined(RETIMING_DISABLE)
+#else
+    #error "one of NVDLA_RETIMING_{EN,DIS}ABLE must be set"
+#endif
+
 #if defined(MAC_ATOMIC_C_SIZE_64)
     %define NVDLA_MAC_ATOMIC_C_SIZE 64 
+#elif defined(MAC_ATOMIC_C_SIZE_32)
+    %define NVDLA_MAC_ATOMIC_C_SIZE 32 
 #elif defined(MAC_ATOMIC_C_SIZE_8)
     %define NVDLA_MAC_ATOMIC_C_SIZE 8 
 #else
-    #error "one of NVDLA_MAC_ATOMIC_C_SIZE_{64,8} must be set"
+    #error "one of NVDLA_MAC_ATOMIC_C_SIZE_{64,32,8} must be set"
 #endif
 
 #if defined(MAC_ATOMIC_K_SIZE_32)
@@ -137,40 +165,60 @@
 
 #if defined(CBUF_BANK_WIDTH_64)
     %define NVDLA_CBUF_BANK_WIDTH 64
+#elif defined(CBUF_BANK_WIDTH_32)
+    %define NVDLA_CBUF_BANK_WIDTH 32
 #elif defined(CBUF_BANK_WIDTH_8)
     %define NVDLA_CBUF_BANK_WIDTH 8
 #else
-    #error "one of NVDLA_CBUF_BANK_WIDTH_{64,8} must be set"
+    #error "one of NVDLA_CBUF_BANK_WIDTH_{64,32,8} must be set"
 #endif
 
 #if defined(CBUF_BANK_DEPTH_512)
     %define NVDLA_CBUF_BANK_DEPTH 512
+#elif defined(CBUF_BANK_DEPTH_128)
+    %define NVDLA_CBUF_BANK_DEPTH 128
 #else
-    #error "only NVDLA_CBUF_BANK_DEPTH_512 can be set"
+    #error "only NVDLA_CBUF_BANK_DEPTH_{512,128} can be set"
 #endif
 
-#if defined(SDP_BS_THROUGHPUT_16)
-    %define NVDLA_SDP_BS_THROUGHPUT 16
-#elif defined(SDP_BS_THROUGHPUT_1)
-    %define NVDLA_SDP_BS_THROUGHPUT 1
+#if defined(SDP_BS_ENABLE)
+ #if defined(SDP_BS_THROUGHPUT_16)
+     %define NVDLA_SDP_BS_THROUGHPUT 16
+ #elif defined(SDP_BS_THROUGHPUT_1)
+     %define NVDLA_SDP_BS_THROUGHPUT 1
+ #else
+     #error "one of NVDLA_SDP_BS_THROUGHPUT_{16,1} must be set"
+ #endif
 #else
-    #error "one of NVDLA_SDP_BS_THROUGHPUT_{16,1} must be set"
+     %define NVDLA_SDP_BS_THROUGHPUT 0 
+#endif 
+
+#if defined(SDP_BN_ENABLE)
+ #if defined(SDP_BN_THROUGHPUT_16)
+     %define NVDLA_SDP_BN_THROUGHPUT 16 
+ #elif defined(SDP_BN_THROUGHPUT_1)
+     %define NVDLA_SDP_BN_THROUGHPUT 1 
+ #else
+     #error "one of NVDLA_SDP_BN_THROUGHPUT_{16,1} must be set"
+ #endif
+#else
+     %define NVDLA_SDP_BN_THROUGHPUT 0 
 #endif
 
-#if defined(SDP_BN_THROUGHPUT_16)
-    %define NVDLA_SDP_BN_THROUGHPUT 16 
-#elif defined(SDP_BN_THROUGHPUT_1)
-    %define NVDLA_SDP_BN_THROUGHPUT 1 
+#if defined(SDP_EW_ENABLE)
+ #if defined(SDP_EW_THROUGHPUT_4)
+     %define NVDLA_SDP_EW_THROUGHPUT 4
+ #elif defined(SDP_EW_THROUGHPUT_x)
+     %define NVDLA_SDP_EW_THROUGHPUT 1
+ #else
+     #error "one of NVDLA_SDP_EW_THROUGHPUT_{4,x} must be set"
+ #endif
 #else
-    #error "one of NVDLA_SDP_BN_THROUGHPUT_{16,1} must be set"
+     %define NVDLA_SDP_EW_THROUGHPUT 0
 #endif
 
-#if defined(SDP_EW_THROUGHPUT_4)
-    %define NVDLA_SDP_EW_THROUGHPUT 4
-#elif defined(SDP_EW_THROUGHPUT_x)
-#else
-    #error "one of NVDLA_SDP_EW_THROUGHPUT_{4,x} must be set"
-#endif
+%define NVDLA_SDP_MAX_THROUGHPUT max(NVDLA_SDP_EW_THROUGHPUT, NVDLA_SDP_BN_THROUGHPUT,NVDLA_SDP_BS_THROUGHPUT)
+%define NVDLA_SDP2PDP_WIDTH  (NVDLA_SDP_MAX_THROUGHPUT * NVDLA_BPE)
 
 #if defined(PDP_THROUGHPUT_8)
     %define NVDLA_PDP_THROUGHPUT 8
@@ -232,3 +280,63 @@
 #else
     #error "one of NVDLA_SECONDARY_MEMIF_WIDTH_{512,x} must be set"
 #endif
+
+#if defined(MEM_ADDRESS_WIDTH_64)
+    %define NVDLA_MEM_ADDRESS_WIDTH 64
+#elif defined(MEM_ADDRESS_WIDTH_32)
+    %define NVDLA_MEM_ADDRESS_WIDTH 32
+#else
+    #error "one of NVDLA_PRIMARY_MEMIF_WIDTH_{512,64} must be set"
+#endif
+
+#if defined(SECONDARY_MEMIF_ENABLE)
+    %define NVDLA_MEMIF_WIDTH max(NVDLA_PRIMARY_MEMIF_WIDTH, NVDLA_SECONDARY_MEMIF_WIDTH, NVDLA_MEMORY_ATOMIC_SIZE*NVDLA_BPE)
+#elif defined(SECONDARY_MEMIF_DISABLE)
+    %define NVDLA_MEMIF_WIDTH max(NVDLA_PRIMARY_MEMIF_WIDTH, NVDLA_MEMORY_ATOMIC_SIZE*NVDLA_BPE)
+#else
+    #error "one of NVDLA_SECONDARY_MEMIF_{EN,DIS}ABLE must be set"
+#endif
+
+%define NVDLA_DMA_RD_SIZE   15
+%define NVDLA_DMA_WR_SIZE   13
+%define NVDLA_DMA_MASK_BIT int( NVDLA_MEMIF_WIDTH / NVDLA_BPE / NVDLA_MEMORY_ATOMIC_SIZE )
+%define NVDLA_DMA_RD_RSP   int( NVDLA_MEMIF_WIDTH + NVDLA_DMA_MASK_BIT )
+%define NVDLA_DMA_WR_REQ   int( NVDLA_MEMIF_WIDTH + NVDLA_DMA_MASK_BIT + 1 )
+%define NVDLA_DMA_WR_CMD   int( NVDLA_MEM_ADDRESS_WIDTH + NVDLA_DMA_WR_SIZE +1)
+%define NVDLA_DMA_RD_REQ   int( NVDLA_MEM_ADDRESS_WIDTH + NVDLA_DMA_RD_SIZE )
+
+%define NVDLA_MEMORY_ATOMIC_LOG2  log2(NVDLA_MEMORY_ATOMIC_SIZE)
+%define NVDLA_PRIMARY_MEMIF_WIDTH_LOG2 log2(NVDLA_PRIMARY_MEMIF_WIDTH/8)
+%define NVDLA_SECONDARY_MEMIF_WIDTH_LOG2 log2(NVDLA_SECONDARY_MEMIF_WIDTH/8)
+
+#if defined(NUM_DMA_READ_CLIENTS_10)
+    %define NVDLA_NUM_DMA_READ_CLIENTS 10
+#endif
+
+#if defined(NUM_DMA_WRITE_CLIENTS_5)
+    %define NVDLA_NUM_DMA_WRITE_CLIENTS 5
+#endif
+
+#if defined(NUM_DMA_READ_CLIENTS_7)
+    %define NVDLA_NUM_DMA_READ_CLIENTS 7
+#endif
+
+#if defined(NUM_DMA_WRITE_CLIENTS_3)
+    %define NVDLA_NUM_DMA_WRITE_CLIENTS 3
+#endif
+
+#if defined(DESIGNWARE_NOEXIST)
+    %define DESIGNWARE_NOEXIST
+#endif
+
+%define NVDLA_MAC_ATOMIC_C_SIZE_LOG2    log2(NVDLA_MAC_ATOMIC_C_SIZE)
+%define NVDLA_MAC_ATOMIC_K_SIZE_LOG2    log2(NVDLA_MAC_ATOMIC_K_SIZE)
+%define NVDLA_CBUF_BANK_NUMBER_LOG2     log2(NVDLA_CBUF_BANK_NUMBER)
+%define NVDLA_CBUF_BANK_WIDTH_LOG2      log2(NVDLA_CBUF_BANK_WIDTH)
+%define NVDLA_CBUF_BANK_DEPTH_LOG2      log2(NVDLA_CBUF_BANK_DEPTH)
+%define NVDLA_CBUF_DEPTH_LOG2           log2(NVDLA_CBUF_BANK_NUMBER)+log2(NVDLA_CBUF_BANK_DEPTH)
+%define NVDLA_CBUF_ENTRY_WIDTH          NVDLA_MAC_ATOMIC_C_SIZE*NVDLA_BPE
+%define NVDLA_CBUF_WIDTH_LOG2           log2(NVDLA_CBUF_ENTRY_WIDTH)
+%define NVDLA_BPE_LOG2                  log2(NVDLA_BPE)
+%define NVDLA_MAC_RESULT_WIDTH          NVDLA_BPE*2+NVDLA_MAC_ATOMIC_C_SIZE_LOG2
+%define NVDLA_CC_ATOMC_DIV_ATOMK        int(NVDLA_MAC_ATOMIC_C_SIZE/NVDLA_MAC_ATOMIC_K_SIZE)

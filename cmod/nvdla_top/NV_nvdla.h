@@ -39,6 +39,21 @@ private:
     NvdlaTopDummy   *nvdla_top_dummy;
      
     sc_buffer<bool> m_coreIrq;
+
+public:  
+// For reference model usage, begin                                                                                                                                               
+#ifdef  NVDLA_REFERENCE_MODEL_ENABLE
+    tlm_utils::multi_passthrough_initiator_socket<NV_nvdla, 32, tlm::tlm_base_protocol_types, 1, sc_core::SC_ZERO_OR_MORE_BOUND> dma_monitor_mc;
+    tlm_utils::multi_passthrough_initiator_socket<NV_nvdla, 32, tlm::tlm_base_protocol_types, 1, sc_core::SC_ZERO_OR_MORE_BOUND> dma_monitor_cv;
+    tlm_utils::multi_passthrough_initiator_socket<NV_nvdla, 32, tlm::tlm_base_protocol_types, 1, sc_core::SC_ZERO_OR_MORE_BOUND> convolution_core_monitor_initiator;
+    tlm_utils::multi_passthrough_initiator_socket<NV_nvdla, 32, tlm::tlm_base_protocol_types, 1, sc_core::SC_ZERO_OR_MORE_BOUND> post_processing_monitor_initiator;
+    // Credit grant targets
+    tlm_utils::multi_passthrough_target_socket<NV_nvdla, 32, tlm::tlm_base_protocol_types> dma_monitor_mc_credit;
+    tlm_utils::multi_passthrough_target_socket<NV_nvdla, 32, tlm::tlm_base_protocol_types> dma_monitor_cv_credit;
+    tlm_utils::multi_passthrough_target_socket<NV_nvdla, 32, tlm::tlm_base_protocol_types> convolution_core_monitor_credit;
+    tlm_utils::multi_passthrough_target_socket<NV_nvdla, 32, tlm::tlm_base_protocol_types> post_processing_monitor_credit;
+#endif       
+// For reference model usage, end
 };
 
 SCSIM_NAMESPACE_END()

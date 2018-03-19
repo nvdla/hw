@@ -1,0 +1,302 @@
+# ============================================================================
+#  @(#) $Id: Makefile.questa 1408 2015-03-02 14:27:35Z jstickle $
+# ============================================================================
+
+#    //_______________________
+#   // Mentor Graphics, Corp. \_______________________________________
+#  //                                                               //
+# //   (C) Copyright, Mentor Graphics, Corp. 2003-2014              //
+# //   All Rights Reserved                                          //
+# //                                                                //
+# //    Licensed under the Apache License, Version 2.0 (the         //
+# //    "License"); you may not use this file except in             //
+# //    compliance with the License.  You may obtain a copy of      //
+# //    the License at                                              //
+# //                                                                //
+# //        http://www.apache.org/licenses/LICENSE-2.0              //
+# //                                                                //
+# //    Unless required by applicable law or agreed to in           //
+# //    writing, software distributed under the License is          //
+# //    distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR      //
+# //    CONDITIONS OF ANY KIND, either express or implied.  See     //
+# //    the License for the specific language governing            //
+# //    permissions and limitations under the License.            //
+# //-------------------------------------------------------------//
+
+help:
+	@echo " -----------------------------------------------------------------";
+	@echo "|                   UVMC LIBRARY COMPILATION                      |";
+	@echo " -----------------------------------------------------------------";
+	@echo "|                                                                 |";
+	@echo "| The UVM and UVMC libraries must be compiled prior to running    |";
+	@echo "| any example.                                                    |";
+	@echo "|                                                                 |";
+	@echo "| Questa users should not require building the UVM (or OVM)       |";
+	@echo "| libraries, as they came precompiled and debug ready with        |";
+	@echo "| the Questa distribution. Use the modelsim.ini to specifiy the   |";
+	@echo "| UVM/OVM version you want to compile against.                    |";
+	@echo "|                                                                 |";
+	@echo "| Usage                                                           |";
+	@echo "| =====                                                           |";
+	@echo "|                                                                 |";
+	@echo "|   make [variable=value] <target(s)>                             |";
+	@echo "|                                                                 |";
+	@echo "| Targets                                                         |";
+	@echo "| =======                                                         |";
+	@echo "|                                                                 |";
+	@echo "| You can combine targets to build more than one library.         |";
+	@echo "|                                                                 |";
+	@echo "|   uvmc      makes both uvmc32 and uvmc64                        |";
+	@echo "|   uvmc32    make UVM Connect (uvmc_pkg) 32b                     |";
+	@echo "|   uvmc64    make UVM Connect (uvmc_pkg) 64b                     |";
+	@echo "|                                                                 |";
+	@echo "|   ovmc      makes both ovmc32 and ovmc64                        |";
+	@echo "|   ovmc32    make UVM Connect for OVM (ovmc_pkg) 32b             |";
+	@echo "|   ovmc64    make UVM Connect for OVM (ovmc_pkg) 64b             |";
+	@echo "|                                                                 |";
+	@echo "|                                                                 |";
+	@echo "| To build a custom UVM/OVM, override the built-in library        |";
+	@echo "| distributed with Questa, specify one or more of the following   |";
+	@echo "| targets *before* any of the uvmc/ovmc targets above. You        |";
+	@echo "| must define UVM_HOME (or OVM_HOME) when using these targets.    |";
+	@echo "|                                                                 |";
+	@echo "|   uvm       makes both uvm32 and uvm64                          |";
+	@echo "|   uvm32     make UVM lib (uvm_pkg) 32b (override built-in)      |";
+	@echo "|   uvm64     make UVM lib (uvm_pkg) 64b (override built-in)      |";
+	@echo "|                                                                 |";
+	@echo "|                                                                 |";
+	@echo "|   ovm       makes both ovm32 and ovm64                          |";
+	@echo "|   ovm32     make OVM lib (ovm_pkg) 32b (override built-in)      |";
+	@echo "|   ovm64     make OVM lib (ovm_pkg) 64b (override built-in)      |";
+	@echo "|                                                                 |";
+	@echo "| Recommended usage:                                              |";
+	@echo "|                                                                 |";
+	@echo "|   Build 32/64-bit libraries for UVM Connect, using built-in UVM |";
+	@echo "|                                                                 |";
+	@echo "|   > make uvmc                                                   |";
+	@echo "|                                                                 |";
+	@echo "| Alternate usage:                                                |";
+	@echo "|                                                                 |";
+	@echo "|   Build 32 bit libraries for both UVM and UVM Connect           |";
+	@echo "|                                                                 |";
+	@echo "|   > make uvm32 uvmc32 UVM_HOME=<path-to-UVM-source>             |";
+	@echo "|                                                                 |";
+	@echo "|                                                                 |";
+	@echo "| Variables                                                       |";
+	@echo "| =========                                                       |";
+	@echo "|                                                                 |";
+	@echo "| The following variables can be set as environment variables,    |";
+	@echo "| e.g. setenv UVM_HOME <path-to-UVM>, or provided on the make     |";
+	@echo "| command line, e.g. BITS=64.                                     |";
+	@echo "|                                                                 |";
+	@echo "| UVM_HOME / OVM_HOME                                             |";
+	@echo "|                                                                 |";
+	@echo "|   Location of the UVM / OVM source. Required when not using the |";
+	@echo "|   debug-enabled UVM or OVM library that ships with Questa.      |";
+	@echo "|   It is recommended that you use the built-in libraries and thus|";
+	@echo "|   leave UVM_HOME and OVM_HOME undefined, even as an env variable|";
+	@echo "|   Make sure Questa choses UVM 1.1a or OVM 2.1.1 or greater.     |";
+	@echo "|   You can select which built-in library via your modelsim.ini.  |";
+	@echo "|                                                                 |";
+	@echo "|   *** MAKE SURE you use the same UVM/OVM version for compiling  |";
+	@echo "|       user code as was used for compiling UVM Connect.          |";
+	@echo "|                                                                 |";
+	@echo "| UVMC_HOME                                                       |";
+	@echo "|                                                                 |";
+	@echo "|   The location of the UVM Connect source. If not                |";
+	@echo "|   specified, the parent of this lib directory (..) is chosen.   |";
+	@echo "|   Unless you are compiling outside the UVMC installation tree,  |";
+	@echo "|   you will not need to set this variable.                       |";
+	@echo "|                                                                 |";
+	@echo "| UVMC_LIB / UVM_LIB                                              |";
+	@echo "| OVMC_LIB / OVM_LIB                                              |";
+	@echo "|                                                                 |";
+	@echo "|   You can override the default work directory into which library|";
+	@echo "|   object files are placed by specifying any of these variables  |";
+	@echo "|   via an environment variable setting or make command line      |";
+	@echo "|   options. Make command line options take precedence.           |";
+	@echo "|                                                                 |";
+	@echo "| Other options:                                                  |";
+	@echo "|                                                                 |";
+	@echo "|   clean : Remove all library directories                        |";
+	@echo "|   help  : Print this help information                           |";
+	@echo "|                                                                 |";
+	@echo "|                                                                 |";
+	@echo " -----------------------------------------------------------------";
+
+
+UVMC_HOME ?= ..
+
+UVM_LIB  ?= $(UVMC_HOME)/lib/uvmc_lib
+UVMC_LIB ?= $(UVMC_HOME)/lib/uvmc_lib
+OVM_LIB  ?= $(UVMC_HOME)/lib/ovmc_lib
+OVMC_LIB ?= $(UVMC_HOME)/lib/ovmc_lib
+
+BITS = 32
+
+#---------------------#
+# COMBINATION TARGETS #
+#---------------------#
+
+uvmc: clean_uvmc uvmc32 uvmc64
+
+ovmc: clean_ovmc ovmc32 ovmc64
+
+uvm: clean_uvm uvm32 uvm64
+
+ovm: clean_ovm ovm32 ovm64
+
+clean: clean_uvmc clean_ovmc
+
+
+#------#
+# UVMC #
+#------#
+
+uvmc_pkg: check_uvm_home
+	vlib $(UVMC_LIB)
+	vlog  -$(BITS) \
+              -work $(UVMC_LIB) \
+              +incdir+$(UVM_HOME)/src \
+              +incdir+$(UVMC_HOME)/src/connect/sv \
+              -L $(UVM_LIB) \
+              $(UVMC_HOME)/src/connect/sv/uvmc_pkg.sv
+	sccom -$(BITS) \
+              -work $(UVMC_LIB) \
+              -Wall \
+              -g \
+              -I$(UVMC_HOME)/src/connect/sc \
+              $(UVMC_HOME)/src/connect/sc/uvmc.cpp
+	sccom -$(BITS) \
+              -work $(UVMC_LIB) \
+              -g \
+              -I$(UVMC_HOME)/src/connect/sc \
+              -lib $(UVMC_LIB) \
+              -DSC_INCLUDE_DYNAMIC_PROCESSES \
+              -linkshared
+
+uvmc32:
+	$(MAKE) -f $(UVMC_HOME)/lib/Makefile.questa BITS=32 uvmc_pkg
+
+uvmc64:
+	$(MAKE) -f $(UVMC_HOME)/lib/Makefile.questa BITS=64 uvmc_pkg
+
+clean_uvmc:
+	@if [ -d $(UVMC_LIB) ];  then \
+           rm -rf $(UVMC_LIB);  \
+	fi
+
+
+#------#
+# OVMC #
+#------#
+
+ovmc_pkg: 
+	vlib $(OVMC_LIB)
+	vlog  -$(BITS) \
+              -work $(OVMC_LIB) \
+              +define+OVMC \
+              +incdir+$(OVM_HOME)/src \
+              +incdir+$(UVMC_HOME)/src/connect/sv \
+              -L $(OVM_LIB) \
+              $(UVMC_HOME)/src/connect/sv/ovmc_pkg.sv
+	sccom -$(BITS) \
+              -work $(OVMC_LIB) \
+              -Wall \
+              -g \
+              -I$(UVMC_HOME)/src/connect/sc \
+              $(UVMC_HOME)/src/connect/sc/uvmc.cpp
+	sccom -$(BITS) \
+              -work $(OVMC_LIB) \
+              -g \
+              -I$(UVMC_HOME)/src/connect/sc \
+              -lib $(OVMC_LIB) \
+              -DSC_INCLUDE_DYNAMIC_PROCESSES \
+              -linkshared
+
+ovmc32:
+	$(MAKE) -f $(UVMC_HOME)/lib/Makefile.questa BITS=32 ovmc_pkg
+
+ovmc64:
+	$(MAKE) -f $(UVMC_HOME)/lib/Makefile.questa BITS=64 ovmc_pkg
+
+clean_ovmc:
+	@if [ -d $(OVMC_LIB) ];  then \
+           rm -rf $(OVMC_LIB);  \
+	fi
+
+
+
+
+# NOTE: Questa users should use the built-in libraries that
+#       ship with Questa. These libraries provide extra debug
+#       features not present in the Accella open-source library.
+#       To use the built-in libraries, do not specify the 'uvm'
+#       or 'ovm' targets when making 'uvmc' or 'ovmc'.
+
+#-----#
+# UVM #
+#-----#
+
+uvm_pkg: check_uvm_home
+	vlib $(UVM_LIB)
+	vlog  -$(BITS) \
+              -work $(UVM_LIB) \
+              +incdir+$(UVM_HOME)/src \
+              $(UVM_HOME)/src/uvm_pkg.sv \
+              $(UVM_HOME)/src/dpi/uvm_dpi.cc
+
+uvm32:
+	$(MAKE) -f $(UVMC_HOME)/lib/Makefile.questa BITS=32 uvm_pkg
+
+uvm64:
+	$(MAKE) -f $(UVMC_HOME)/lib/Makefile.questa BITS=64 uvm_pkg
+
+clean_uvm:
+	@if [ -d $(UVM_LIB) ];  then \
+           rm -rf $(UVM_LIB); \
+	fi
+
+check_uvm_home:
+ifndef UVM_HOME
+	@echo ""
+	@echo "*** "
+	@echo "*** ERROR: Must define UVM_HOME to build UVM library ***"
+	@echo "*** "
+	@echo ""
+	exit 1
+endif
+
+	
+#-----#
+# OVM #
+#-----#
+
+ovm_pkg: check_ovm_home
+	vlib $(OVM_LIB)
+	vlog  -$(BITS) \
+              -work $(OVM_LIB) \
+              +incdir+$(OVM_HOME)/src \
+              $(OVM_HOME)/src/ovm_pkg.sv
+
+ovm32:
+	$(MAKE) -f $(UVMC_HOME)/lib/Makefile.questa BITS=32 ovm_pkg
+
+ovm64:
+	$(MAKE) -f $(UVMC_HOME)/lib/Makefile.questa BITS=64 ovm_pkg
+
+clean_ovm:
+	@if [ -d $(OVM_LIB) ];  then \
+           rm -rf $(OVM_LIB);  \
+	fi
+
+check_ovm_home:
+ifndef OVM_HOME
+	@echo ""
+	@echo "*** "
+	@echo "*** ERROR: Must define OVM_HOME to build OVM library ***"
+	@echo "*** "
+	@echo ""
+	exit 1
+endif
+

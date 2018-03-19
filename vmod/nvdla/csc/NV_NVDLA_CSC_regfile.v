@@ -74,7 +74,7 @@ output        reg2dp_conv_mode;
 output  [2:0] reg2dp_conv_x_stride_ext;
 output  [2:0] reg2dp_conv_y_stride_ext;
 output [31:0] reg2dp_cya;
-output  [3:0] reg2dp_data_bank;
+output  [4:0] reg2dp_data_bank;
 output        reg2dp_data_reuse;
 output [12:0] reg2dp_datain_channel_ext;
 output        reg2dp_datain_format;
@@ -83,7 +83,7 @@ output [12:0] reg2dp_datain_width_ext;
 output [12:0] reg2dp_dataout_channel;
 output [12:0] reg2dp_dataout_height;
 output [12:0] reg2dp_dataout_width;
-output [11:0] reg2dp_entries;
+output [13:0] reg2dp_entries;
 output  [1:0] reg2dp_in_precision;
 output        reg2dp_op_en;
 output  [4:0] reg2dp_pad_left;
@@ -94,7 +94,7 @@ output  [1:0] reg2dp_proc_precision;
 output [11:0] reg2dp_rls_slices;
 output        reg2dp_skip_data_rls;
 output        reg2dp_skip_weight_rls;
-output  [3:0] reg2dp_weight_bank;
+output  [4:0] reg2dp_weight_bank;
 output [24:0] reg2dp_weight_bytes;
 output [12:0] reg2dp_weight_channel_ext;
 output        reg2dp_weight_format;
@@ -128,7 +128,7 @@ wire          reg2dp_d0_conv_mode;
 wire    [2:0] reg2dp_d0_conv_x_stride_ext;
 wire    [2:0] reg2dp_d0_conv_y_stride_ext;
 wire   [31:0] reg2dp_d0_cya;
-wire    [3:0] reg2dp_d0_data_bank;
+wire    [4:0] reg2dp_d0_data_bank;
 wire          reg2dp_d0_data_reuse;
 wire   [12:0] reg2dp_d0_datain_channel_ext;
 wire          reg2dp_d0_datain_format;
@@ -137,7 +137,7 @@ wire   [12:0] reg2dp_d0_datain_width_ext;
 wire   [12:0] reg2dp_d0_dataout_channel;
 wire   [12:0] reg2dp_d0_dataout_height;
 wire   [12:0] reg2dp_d0_dataout_width;
-wire   [11:0] reg2dp_d0_entries;
+wire   [13:0] reg2dp_d0_entries;
 wire    [1:0] reg2dp_d0_in_precision;
 wire          reg2dp_d0_op_en_trigger;
 wire    [4:0] reg2dp_d0_pad_left;
@@ -148,7 +148,7 @@ wire    [1:0] reg2dp_d0_proc_precision;
 wire   [11:0] reg2dp_d0_rls_slices;
 wire          reg2dp_d0_skip_data_rls;
 wire          reg2dp_d0_skip_weight_rls;
-wire    [3:0] reg2dp_d0_weight_bank;
+wire    [4:0] reg2dp_d0_weight_bank;
 wire   [24:0] reg2dp_d0_weight_bytes;
 wire   [12:0] reg2dp_d0_weight_channel_ext;
 wire          reg2dp_d0_weight_format;
@@ -166,7 +166,7 @@ wire          reg2dp_d1_conv_mode;
 wire    [2:0] reg2dp_d1_conv_x_stride_ext;
 wire    [2:0] reg2dp_d1_conv_y_stride_ext;
 wire   [31:0] reg2dp_d1_cya;
-wire    [3:0] reg2dp_d1_data_bank;
+wire    [4:0] reg2dp_d1_data_bank;
 wire          reg2dp_d1_data_reuse;
 wire   [12:0] reg2dp_d1_datain_channel_ext;
 wire          reg2dp_d1_datain_format;
@@ -175,7 +175,7 @@ wire   [12:0] reg2dp_d1_datain_width_ext;
 wire   [12:0] reg2dp_d1_dataout_channel;
 wire   [12:0] reg2dp_d1_dataout_height;
 wire   [12:0] reg2dp_d1_dataout_width;
-wire   [11:0] reg2dp_d1_entries;
+wire   [13:0] reg2dp_d1_entries;
 wire    [1:0] reg2dp_d1_in_precision;
 wire          reg2dp_d1_op_en_trigger;
 wire    [4:0] reg2dp_d1_pad_left;
@@ -186,7 +186,7 @@ wire    [1:0] reg2dp_d1_proc_precision;
 wire   [11:0] reg2dp_d1_rls_slices;
 wire          reg2dp_d1_skip_data_rls;
 wire          reg2dp_d1_skip_weight_rls;
-wire    [3:0] reg2dp_d1_weight_bank;
+wire    [4:0] reg2dp_d1_weight_bank;
 wire   [24:0] reg2dp_d1_weight_bytes;
 wire   [12:0] reg2dp_d1_weight_channel_ext;
 wire          reg2dp_d1_weight_format;
@@ -235,7 +235,7 @@ reg           reg2dp_d0_op_en;
 reg           reg2dp_d0_op_en_w;
 reg           reg2dp_d1_op_en;
 reg           reg2dp_d1_op_en_w;
-reg     [3:0] reg2dp_data_bank;
+reg     [4:0] reg2dp_data_bank;
 reg           reg2dp_data_reuse;
 reg    [12:0] reg2dp_datain_channel_ext;
 reg           reg2dp_datain_format;
@@ -244,7 +244,7 @@ reg    [12:0] reg2dp_datain_width_ext;
 reg    [12:0] reg2dp_dataout_channel;
 reg    [12:0] reg2dp_dataout_height;
 reg    [12:0] reg2dp_dataout_width;
-reg    [11:0] reg2dp_entries;
+reg    [13:0] reg2dp_entries;
 reg     [1:0] reg2dp_in_precision;
 reg           reg2dp_op_en_ori;
 reg     [2:0] reg2dp_op_en_reg;
@@ -256,7 +256,7 @@ reg     [1:0] reg2dp_proc_precision;
 reg    [11:0] reg2dp_rls_slices;
 reg           reg2dp_skip_data_rls;
 reg           reg2dp_skip_weight_rls;
-reg     [3:0] reg2dp_weight_bank;
+reg     [4:0] reg2dp_weight_bank;
 reg    [24:0] reg2dp_weight_bytes;
 reg    [12:0] reg2dp_weight_channel_ext;
 reg           reg2dp_weight_format;
@@ -299,8 +299,8 @@ NV_NVDLA_CSC_dual_reg u_dual_reg_d0 (
   ,.nvdla_core_clk     (nvdla_core_clk)                     //|< i
   ,.nvdla_core_rstn    (nvdla_core_rstn)                    //|< i
   ,.atomics            (reg2dp_d0_atomics[20:0])            //|> w
-  ,.data_bank          (reg2dp_d0_data_bank[3:0])           //|> w
-  ,.weight_bank        (reg2dp_d0_weight_bank[3:0])         //|> w
+  ,.data_bank          (reg2dp_d0_data_bank[4:0])           //|> w
+  ,.weight_bank        (reg2dp_d0_weight_bank[4:0])         //|> w
   ,.batches            (reg2dp_d0_batches[4:0])             //|> w
   ,.conv_x_stride_ext  (reg2dp_d0_conv_x_stride_ext[2:0])   //|> w
   ,.conv_y_stride_ext  (reg2dp_d0_conv_y_stride_ext[2:0])   //|> w
@@ -314,7 +314,7 @@ NV_NVDLA_CSC_dual_reg u_dual_reg_d0 (
   ,.dataout_channel    (reg2dp_d0_dataout_channel[12:0])    //|> w
   ,.x_dilation_ext     (reg2dp_d0_x_dilation_ext[4:0])      //|> w
   ,.y_dilation_ext     (reg2dp_d0_y_dilation_ext[4:0])      //|> w
-  ,.entries            (reg2dp_d0_entries[11:0])            //|> w
+  ,.entries            (reg2dp_d0_entries[13:0])            //|> w
   ,.conv_mode          (reg2dp_d0_conv_mode)                //|> w
   ,.data_reuse         (reg2dp_d0_data_reuse)               //|> w
   ,.in_precision       (reg2dp_d0_in_precision[1:0])        //|> w
@@ -347,8 +347,8 @@ NV_NVDLA_CSC_dual_reg u_dual_reg_d1 (
   ,.nvdla_core_clk     (nvdla_core_clk)                     //|< i
   ,.nvdla_core_rstn    (nvdla_core_rstn)                    //|< i
   ,.atomics            (reg2dp_d1_atomics[20:0])            //|> w
-  ,.data_bank          (reg2dp_d1_data_bank[3:0])           //|> w
-  ,.weight_bank        (reg2dp_d1_weight_bank[3:0])         //|> w
+  ,.data_bank          (reg2dp_d1_data_bank[4:0])           //|> w
+  ,.weight_bank        (reg2dp_d1_weight_bank[4:0])         //|> w
   ,.batches            (reg2dp_d1_batches[4:0])             //|> w
   ,.conv_x_stride_ext  (reg2dp_d1_conv_x_stride_ext[2:0])   //|> w
   ,.conv_y_stride_ext  (reg2dp_d1_conv_y_stride_ext[2:0])   //|> w
@@ -362,7 +362,7 @@ NV_NVDLA_CSC_dual_reg u_dual_reg_d1 (
   ,.dataout_channel    (reg2dp_d1_dataout_channel[12:0])    //|> w
   ,.x_dilation_ext     (reg2dp_d1_x_dilation_ext[4:0])      //|> w
   ,.y_dilation_ext     (reg2dp_d1_y_dilation_ext[4:0])      //|> w
-  ,.entries            (reg2dp_d1_entries[11:0])            //|> w
+  ,.entries            (reg2dp_d1_entries[13:0])            //|> w
   ,.conv_mode          (reg2dp_d1_conv_mode)                //|> w
   ,.data_reuse         (reg2dp_d1_data_reuse)               //|> w
   ,.in_precision       (reg2dp_d1_in_precision[1:0])        //|> w

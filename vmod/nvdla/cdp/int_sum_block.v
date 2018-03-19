@@ -11,22 +11,12 @@
 module int_sum_block (
    nvdla_core_clk
   ,nvdla_core_rstn
-  ,int8_en
   ,len5
   ,len7
   ,len9
   ,load_din_2d
   ,load_din_d
   ,reg2dp_normalz_len
-  ,sq_pd_int16_0
-  ,sq_pd_int16_1
-  ,sq_pd_int16_2
-  ,sq_pd_int16_3
-  ,sq_pd_int16_4
-  ,sq_pd_int16_5
-  ,sq_pd_int16_6
-  ,sq_pd_int16_7
-  ,sq_pd_int16_8
   ,sq_pd_int8_lsb_0
   ,sq_pd_int8_lsb_1
   ,sq_pd_int8_lsb_2
@@ -45,27 +35,16 @@ module int_sum_block (
   ,sq_pd_int8_msb_6
   ,sq_pd_int8_msb_7
   ,sq_pd_int8_msb_8
-  ,int16_sum
   ,int8_sum
   );
 input         nvdla_core_clk;
 input         nvdla_core_rstn;
-input         int8_en;
 input         len5;
 input         len7;
 input         len9;
 input         load_din_2d;
 input         load_din_d;
 input   [1:0] reg2dp_normalz_len;
-input  [32:0] sq_pd_int16_0;
-input  [32:0] sq_pd_int16_1;
-input  [32:0] sq_pd_int16_2;
-input  [32:0] sq_pd_int16_3;
-input  [32:0] sq_pd_int16_4;
-input  [32:0] sq_pd_int16_5;
-input  [32:0] sq_pd_int16_6;
-input  [32:0] sq_pd_int16_7;
-input  [32:0] sq_pd_int16_8;
 input  [16:0] sq_pd_int8_lsb_0;
 input  [16:0] sq_pd_int8_lsb_1;
 input  [16:0] sq_pd_int8_lsb_2;
@@ -84,9 +63,7 @@ input  [16:0] sq_pd_int8_msb_5;
 input  [16:0] sq_pd_int8_msb_6;
 input  [16:0] sq_pd_int8_msb_7;
 input  [16:0] sq_pd_int8_msb_8;
-output [36:0] int16_sum;
 output [41:0] int8_sum;
-reg    [36:0] int16_sum;
 reg    [34:0] int16_sum3;
 reg    [35:0] int16_sum5;
 reg    [35:0] int16_sum7;
@@ -120,14 +97,14 @@ wire   [32:0] sq6;
 wire   [32:0] sq7;
 wire   [32:0] sq8;
 
-assign sq3[32:0] = int8_en ? {16'd0,sq_pd_int8_lsb_3[16:0]} :sq_pd_int16_3[32:0];
-assign sq5[32:0] = int8_en ? {16'd0,sq_pd_int8_lsb_5[16:0]} :sq_pd_int16_5[32:0];
-assign sq2[32:0] = int8_en ? {16'd0,sq_pd_int8_lsb_2[16:0]} :sq_pd_int16_2[32:0];
-assign sq6[32:0] = int8_en ? {16'd0,sq_pd_int8_lsb_6[16:0]} :sq_pd_int16_6[32:0];
-assign sq1[32:0] = int8_en ? {16'd0,sq_pd_int8_lsb_1[16:0]} :sq_pd_int16_1[32:0];
-assign sq7[32:0] = int8_en ? {16'd0,sq_pd_int8_lsb_7[16:0]} :sq_pd_int16_7[32:0];
-assign sq0[32:0] = int8_en ? {16'd0,sq_pd_int8_lsb_0[16:0]} :sq_pd_int16_0[32:0];
-assign sq8[32:0] = int8_en ? {16'd0,sq_pd_int8_lsb_8[16:0]} :sq_pd_int16_8[32:0];
+assign sq3[32:0] = {16'd0,sq_pd_int8_lsb_3[16:0]};
+assign sq5[32:0] = {16'd0,sq_pd_int8_lsb_5[16:0]};
+assign sq2[32:0] = {16'd0,sq_pd_int8_lsb_2[16:0]};
+assign sq6[32:0] = {16'd0,sq_pd_int8_lsb_6[16:0]};
+assign sq1[32:0] = {16'd0,sq_pd_int8_lsb_1[16:0]};
+assign sq7[32:0] = {16'd0,sq_pd_int8_lsb_7[16:0]};
+assign sq0[32:0] = {16'd0,sq_pd_int8_lsb_0[16:0]};
+assign sq8[32:0] = {16'd0,sq_pd_int8_lsb_8[16:0]};
 
 //sum process
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
@@ -625,7 +602,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     sq4_d[32:0] <= {33{1'b0}};
   end else begin
   if ((load_din_d) == 1'b1) begin
-    sq4_d[32:0] <= (int8_en ? {16'd0,sq_pd_int8_lsb_4[16:0]} : sq_pd_int16_4[32:0]);
+    sq4_d[32:0] <= {16'd0,sq_pd_int8_lsb_4[16:0]};
   // VCS coverage off
   end else if ((load_din_d) == 1'b0) begin
   end else begin
@@ -743,10 +720,10 @@ end
 // spyglass enable_block WRN_61 
 `endif // SPYGLASS_ASSERT_ON
 
-assign int8_lsb_sum3 = int8_en? int16_sum3[18:0] : 19'd0;
-assign int8_lsb_sum5 = int8_en? int16_sum5[19:0] : 20'd0;
-assign int8_lsb_sum7 = int8_en? int16_sum7[19:0] : 20'd0;
-assign int8_lsb_sum9 = int8_en? int16_sum9[20:0] : 21'd0;
+assign int8_lsb_sum3 = int16_sum3[18:0];
+assign int8_lsb_sum5 = int16_sum5[19:0];
+assign int8_lsb_sum7 = int16_sum7[19:0];
+assign int8_lsb_sum9 = int16_sum9[20:0];
 
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
@@ -993,7 +970,6 @@ end
 // spyglass enable_block WRN_61 
 `endif // SPYGLASS_ASSERT_ON
 
-//assign sq4[32:0] = int8_en ? {16'd0,sq_pd_int8_lsb_4[16:0]} : sq_pd_int16_4[32:0];
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
     int16_sum3[34:0] <= {35{1'b0}};
@@ -1258,23 +1234,18 @@ always @(
     2'h0 : begin
         int8_lsb_sum = {2'd0,int8_lsb_sum3};
         int8_msb_sum = {2'd0,int8_msb_sum3};
-        int16_sum    = {2'd0,int16_sum3};
     end
     2'h1 : begin
         int8_lsb_sum = {1'd0,int8_lsb_sum5};
         int8_msb_sum = {1'd0,int8_msb_sum5};
-        int16_sum    = {1'd0,int16_sum5};
     end
     2'h2 : begin
         int8_lsb_sum = {1'b0,int8_lsb_sum7};
         int8_msb_sum = {1'b0,int8_msb_sum7};
-        int16_sum    = {1'b0,int16_sum7};
     end
     default: begin
-    //NVDLA_CDP_D_LRN_CFG_0_NORMALZ_LEN_LEN9: begin
         int8_lsb_sum = int8_lsb_sum9[20:0];
         int8_msb_sum = int8_msb_sum9[20:0];
-        int16_sum    = int16_sum9[36:0];
     end
     endcase
 end

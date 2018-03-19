@@ -1,0 +1,103 @@
+# //------------------------------------------------------------//
+# //   Copyright 2012 Synopsys, Inc                             //
+# //   All Rights Reserved Worldwid                             //
+# //                                                            //
+# //   Licensed under the Apache License, Version 2.0 (the      //
+# //   "License"); you may not use this file except in          //
+# //   compliance with the License.  You may obtain a copy of   //
+# //   the License at                                           //
+# //                                                            //
+# //       http://www.apache.org/licenses/LICENSE-2.0           //
+# //                                                            //
+# //   Unless required by applicable law or agreed to in        //
+# //   writing, software distributed under the License is       //
+# //   distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR   //
+# //   CONDITIONS OF ANY KIND, either express or implied.  See  //
+# //   the License for the specific language governing          //
+# //   permissions and limitations under the License.           //
+# //------------------------------------------------------------//
+
+UVMC_HOME ?= ../..
+
+TRACE_OPT=
+ifdef TRACE
+TRACE_OPT=+UVMC_COMMAND_TRACE
+endif
+
+help:
+	@echo " -----------------------------------------------------------------";
+	@echo "|                     UVM COMMAND EXAMPLES                        |";
+	@echo " -----------------------------------------------------------------";
+	@echo "|                                                                 |";
+	@echo "| Usage:                                                          |";
+	@echo "|                                                                 |";
+	@echo "|   make [UVM_HOME=path] [UVMC_HOME=path] [TRACE=1] <example>     |";
+	@echo "|                                                                 |";
+	@echo "| where <example> is one of                                       |";
+	@echo "|                                                                 |";
+	@echo "|   config    : shows usage of the UVMC set/get config API        |";
+	@echo "|                                                                 |";
+	@echo "|   reporting : shows how to issue and filter UVM standard        |";
+	@echo "|               reports                                           |";
+	@echo "|                                                                 |";
+	@echo "|   factory   : shows how to set type and instance overrides and  |";
+	@echo "|               dump factory state and perform factory debug      |";
+	@echo "|                                                                 |";
+	@echo "|   topology  : illusrates how (and when) to dump UVM topology    |";
+	@echo "|                                                                 |";
+	@echo "|   phasing   : show how SC can wait for any UVM phase state      |";
+	@echo "|               and raise/drop objections to control their        |";
+	@echo "|               progression                                       |";
+	@echo "|                                                                 |";
+	@echo "| UVM_HOME and UVMC_HOME, if specified, will override any         |";
+	@echo "| environment variables by the same name. If the UVM_HOME env     |";
+	@echo "| variable is not defined, you must specify UVM_HOME on the       |";
+	@echo "| command line. If you are running these examples outside the     |";
+	@echo "| the UVMC directory tree you must either define the UVMC_HOME    |";
+	@echo "| environment variable or specify UVMC_HOME on the command line.  |";
+	@echo "|                                                                 |";
+	@echo "| If TRACE=1 is used, UVM command tracing is enabled (try it!)    |";
+	@echo "|                                                                 |";
+	@echo "| Other options:                                                  |";
+	@echo "|                                                                 |";
+	@echo "|   all   : Run all examples after cleaning.                      |";
+	@echo "|   clean : Remove simulation files and directories               |";
+	@echo "|   help  : Print this help information                           |";
+	@echo "|                                                                 |";
+	@echo "|                                                                 |";
+	@echo " -----------------------------------------------------------------";
+
+include $(UVMC_HOME)/examples/common/Makefile.vcs
+
+all: topology factory reporting phasing config
+
+config:
+	$(MAKE) -f Makefile.vcs clean comp run EXAMPLE=ex_config ARGS="+CONFIG_ON +TRANS_ON" 
+
+reporting:
+	$(MAKE) -f Makefile.vcs clean comp run EXAMPLE=ex_reporting 
+
+factory:
+	$(MAKE) -f Makefile.vcs clean comp run EXAMPLE=ex_factory 
+
+topology:
+	$(MAKE) -f Makefile.vcs clean comp run  EXAMPLE=ex_print_topology 
+
+phasing:
+	$(MAKE) -f Makefile.vcs clean comp run EXAMPLE=ex_phase_control ARGS=+PHASING_ON
+
+comp:
+	$(SYSCAN) $(EXAMPLE).cpp -debug_all
+	$(VLOGAN) sv_main.sv +define+UVM_OBJECT_MUST_HAVE_CONSTRUCTOR 
+	$(VCS_ELAB) sv_main sc_main -debug_all
+
+comp_sv_on_top:
+	$(SYSCAN) ex_phase_control.cpp:ex_phase_control -cflags -DVCS_SC
+	$(VCS) +define+SC_TOP=ex_phase_control sv_main.sv
+
+sim: run
+
+run:	
+	$(SIMV) $(TRACE_OPT) $(ARGS) +UVM_NO_RELNOTES 2>&1 |tee $(EXAMPLE)_run.log
+	grep "UVM_ERROR : *0$$" $(EXAMPLE)_run.log
+	grep "UVM_FATAL : *0$$" $(EXAMPLE)_run.log

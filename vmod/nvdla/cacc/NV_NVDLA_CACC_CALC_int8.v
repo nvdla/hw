@@ -72,22 +72,6 @@ wire   [33:0] in_mask_op;
 wire          mon_pos_pd_c;
 wire   [33:0] oi_pd;
 
-// synoff nets
-
-// monitor nets
-
-// debug nets
-
-// tie high nets
-
-// tie low nets
-
-// no connect nets
-
-// not all bits used nets
-
-// todo nets
-
     
 
 assign i_sel = in_sel;
@@ -118,53 +102,6 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   end
   end
 end
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-`ifndef SYNTHESIS
-  // VCS coverage off 
-  nv_assert_no_x #(0,1,0,"No X's allowed on control signals")      zzz_assert_no_x_1x (nvdla_core_clk, `ASSERT_RESET, 1'd1,  (^(i_vld))); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`endif
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
 
 //====================
 // Addition
@@ -340,6 +277,7 @@ end
   `endif
 `endif
 //VCS coverage on
+
 
 
 endmodule // NV_NVDLA_CACC_CALC_int8

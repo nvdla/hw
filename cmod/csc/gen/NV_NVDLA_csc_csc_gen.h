@@ -8,8 +8,8 @@
 
 // File Name: NV_NVDLA_csc_csc_gen.h
 
-#include "log.h"
 #include "NV_NVDLA_csc.h"
+#include "log.h"
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 

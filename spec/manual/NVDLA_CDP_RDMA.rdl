@@ -1,0 +1,382 @@
+// ================================================================
+// NVDLA Open Source Project
+//
+// Copyright(c) 2016 - 2017 NVIDIA Corporation.  Licensed under the
+// NVDLA Open Hardware License; Check "LICENSE" which comes with
+// this distribution for more information.
+// ================================================================
+
+property spec_sw_default {
+    type      = number;
+    component = field;
+};
+property spec_access {
+    type      = string;
+    component = field;
+};
+property sw_default_mask {
+    type      = number;
+    component = field;
+};
+property reset_mask {
+    type      = number;
+    component = field;
+};
+regfile regs_NVDLA_CDP_RDMA{
+    default regwidth=32;
+    reg {
+        name = "S_STATUS";
+        desc = "
+////Read DMA for Channel Data Processor Registers
+";
+        enum S_STATUS_STATUS_0_enum {
+            IDLE = 2'd0;
+            RUNNING = 2'd1;
+            PENDING = 2'd2;
+        };
+        field {
+            encode          = S_STATUS_STATUS_0_enum;
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x0;
+            reset_mask      = 0x3;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } STATUS_0[1:0];
+        STATUS_0->desc="
+//// Status of configuration register group 0
+";
+        enum S_STATUS_STATUS_1_enum {
+            IDLE = 2'd0;
+            RUNNING = 2'd1;
+            PENDING = 2'd2;
+        };
+        field {
+            encode          = S_STATUS_STATUS_1_enum;
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x0;
+            reset_mask      = 0x3;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } STATUS_1[17:16];
+        STATUS_1->desc="
+//// Status of configuration register group 1
+";
+    }S_STATUS @0x0;
+    reg {
+        name = "S_POINTER";
+        enum S_POINTER_PRODUCER_enum {
+            GROUP_0 = 1'd0;
+            GROUP_1 = 1'd1;
+        };
+        field {
+            encode          = S_POINTER_PRODUCER_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } PRODUCER[0:0];
+        PRODUCER->desc="
+////Pointer for CSB master to access groups
+";
+        enum S_POINTER_CONSUMER_enum {
+            GROUP_0 = 1'd0;
+            GROUP_1 = 1'd1;
+        };
+        field {
+            encode          = S_POINTER_CONSUMER_enum;
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CONSUMER[16:16];
+        CONSUMER->desc="
+////Pointer for datapath to access groups
+";
+    }S_POINTER @0x4;
+    reg {
+        name = "D_OP_ENABLE";
+        desc = "
+//////////////////////////////////////////////////////////////////////////////////
+////                                                                            //
+////                    Define single group registers here                      //
+////                    Register name should shart with prefix D_               //
+////                                                                            //
+//////////////////////////////////////////////////////////////////////////////////
+//// 
+";
+        enum D_OP_ENABLE_OP_EN_enum {
+            DISABLE = 1'd0;
+            ENABLE = 1'd1;
+        };
+        field {
+            encode          = D_OP_ENABLE_OP_EN_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rwto;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } OP_EN[0:0];
+    }D_OP_ENABLE @0x8;
+    reg {
+        name = "D_DATA_CUBE_WIDTH";
+        desc = "
+//// Data cube configuration, begin
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1fff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } WIDTH[12:0];
+        WIDTH->desc="
+//// Element number in width direction, range is 1~8192, actual width = WIDTH+1
+";
+    }D_DATA_CUBE_WIDTH @0xc;
+    reg {
+        name = "D_DATA_CUBE_HEIGHT";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1fff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } HEIGHT[12:0];
+        HEIGHT->desc="
+//// Element number in height direction, range is 1~8192, actual height = HEIGHT+1
+";
+    }D_DATA_CUBE_HEIGHT @0x10;
+    reg {
+        name = "D_DATA_CUBE_CHANNEL";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1fff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CHANNEL[12:0];
+        CHANNEL->desc="
+//// Element number in channel direction, range is 1~8192, actual channel = CHANNEL+1
+";
+    }D_DATA_CUBE_CHANNEL @0x14;
+    reg {
+        name = "D_SRC_BASE_ADDR_LOW";
+        desc = "
+//// Data cube configuration, end
+//// Source data cube memory configuration, begin
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } SRC_BASE_ADDR_LOW[31:0];
+        SRC_BASE_ADDR_LOW->desc="
+////  Start address of the source data cube which will be read from external memory for normalization
+";
+    }D_SRC_BASE_ADDR_LOW @0x18;
+    reg {
+        name = "D_SRC_BASE_ADDR_HIGH";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } SRC_BASE_ADDR_HIGH[31:0];
+        SRC_BASE_ADDR_HIGH->desc="
+////  Start address of the source data cube which will be read from external memory for normalization
+";
+    }D_SRC_BASE_ADDR_HIGH @0x1c;
+    reg {
+        name = "D_SRC_LINE_STRIDE";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } SRC_LINE_STRIDE[31:0];
+        SRC_LINE_STRIDE->desc="
+////  Specify stride between two consective lines within a surface, actual stride value = LINE_STRIDE
+";
+    }D_SRC_LINE_STRIDE @0x20;
+    reg {
+        name = "D_SRC_SURFACE_STRIDE";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } SRC_SURFACE_STRIDE[31:0];
+        SRC_SURFACE_STRIDE->desc="
+////  Specify stride between two consective surface, actual stride value = SURFACE_STRIDE
+";
+    }D_SRC_SURFACE_STRIDE @0x24;
+    reg {
+        name = "D_SRC_DMA_CFG";
+        enum D_SRC_DMA_CFG_SRC_RAM_TYPE_enum {
+            CV = 1'd0;
+            MC = 1'd1;
+        };
+        field {
+            encode          = D_SRC_DMA_CFG_SRC_RAM_TYPE_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } SRC_RAM_TYPE[0:0];
+        SRC_RAM_TYPE->desc="
+//// Specify target is MC or CV_SRAM
+";
+    }D_SRC_DMA_CFG @0x28;
+    reg {
+        name = "D_SRC_COMPRESSION_EN";
+        desc = "
+//// Source data is compresed or not, always disable in NVDLA version 1.0
+";
+        enum D_SRC_COMPRESSION_EN_SRC_COMPRESSION_EN_enum {
+            DISABLE = 1'd0;
+            ENABLE = 1'd1;
+        };
+        field {
+            encode          = D_SRC_COMPRESSION_EN_SRC_COMPRESSION_EN_enum;
+            sw              = r;
+            hw              = r;
+            spec_access     = c;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } SRC_COMPRESSION_EN[0:0];
+    }D_SRC_COMPRESSION_EN @0x2c;
+    reg {
+        name = "D_OPERATION_MODE";
+        desc = "
+//// Source data cube memory configuration, end
+////Always disable this reg in the 1st verion.
+////1:0     rw  OPERATION_MODE      init=0
+";
+        enum D_OPERATION_MODE_OPERATION_MODE_enum {
+            READPHILE = 2'd0;
+            WRITEPHILE = 2'd1;
+            ORDINARY = 2'd2;
+        };
+        field {
+            encode          = D_OPERATION_MODE_OPERATION_MODE_enum;
+            sw              = r;
+            hw              = r;
+            spec_access     = c;
+            reset           = 0x0;
+            reset_mask      = 0x3;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } OPERATION_MODE[1:0];
+    }D_OPERATION_MODE @0x30;
+    reg {
+        name = "D_DATA_FORMAT";
+        enum D_DATA_FORMAT_INPUT_DATA_enum {
+            INT8 = 2'd0;
+            INT16 = 2'd1;
+            FP16 = 2'd2;
+        };
+        field {
+            encode          = D_DATA_FORMAT_INPUT_DATA_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x3;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } INPUT_DATA[1:0];
+    }D_DATA_FORMAT @0x34;
+    reg {
+        name = "D_PERF_ENABLE";
+        desc = "
+///////////////////////////////////////////
+//// LUT status, begin
+";
+        enum D_PERF_ENABLE_DMA_EN_enum {
+            DISABLE = 1'd0;
+            ENABLE = 1'd1;
+        };
+        field {
+            encode          = D_PERF_ENABLE_DMA_EN_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } DMA_EN[0:0];
+        DMA_EN->desc="
+//// dma perf reg enable control.
+";
+    }D_PERF_ENABLE @0x38;
+    reg {
+        name = "D_PERF_READ_STALL";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } PERF_READ_STALL[31:0];
+        PERF_READ_STALL->desc="
+//// element number that for both LUT under-flow.
+";
+    }D_PERF_READ_STALL @0x3c;
+    reg {
+        name = "D_CYA";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CYA[31:0];
+        CYA->desc="
+////CYA register
+";
+    }D_CYA @0x40;
+};
+addrmap  {
+    regs_NVDLA_CDP_RDMA NVDLA_CDP_RDMA @0xc000;
+}addrmap_NVDLA;

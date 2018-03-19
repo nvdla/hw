@@ -9,6 +9,7 @@
 // File Name: NV_NVDLA_SDP_CORE_Y_lut.v
 
 `include "simulate_x_tick.vh"
+#include "NV_NVDLA_SDP_define.h"
 module NV_NVDLA_SDP_CORE_Y_lut (
    nvdla_core_clk                  //|< i
   ,nvdla_core_rstn                 //|< i
@@ -56,11 +57,11 @@ input  nvdla_core_rstn;
 
 output         lut2inp_pvld;  /* data valid */
 input          lut2inp_prdy;  /* data return handshake */
-output [739:0] lut2inp_pd;
+output [EW_LUT_OUT_DW-1:0] lut2inp_pd;
 
 input          idx2lut_pvld;  /* data valid */
 output         idx2lut_prdy;  /* data return handshake */
-input  [323:0] idx2lut_pd;
+input  [EW_IDX_OUT_DW-1:0] idx2lut_pd;
 
 input          reg2dp_lut_int_access_type;
 input    [9:0] reg2dp_lut_int_addr;
@@ -90,408 +91,76 @@ output  [31:0] dp2reg_lut_lo_hit;
 output  [31:0] dp2reg_lut_oflow;
 output  [31:0] dp2reg_lut_uflow;
 input   [31:0] pwrbus_ram_pd;
-input op_en_load;
-reg     [15:0] REG_le_0;
-reg     [15:0] REG_le_1;
-reg     [15:0] REG_le_10;
-reg     [15:0] REG_le_11;
-reg     [15:0] REG_le_12;
-reg     [15:0] REG_le_13;
-reg     [15:0] REG_le_14;
-reg     [15:0] REG_le_15;
-reg     [15:0] REG_le_16;
-reg     [15:0] REG_le_17;
-reg     [15:0] REG_le_18;
-reg     [15:0] REG_le_19;
-reg     [15:0] REG_le_2;
-reg     [15:0] REG_le_20;
-reg     [15:0] REG_le_21;
-reg     [15:0] REG_le_22;
-reg     [15:0] REG_le_23;
-reg     [15:0] REG_le_24;
-reg     [15:0] REG_le_25;
-reg     [15:0] REG_le_26;
-reg     [15:0] REG_le_27;
-reg     [15:0] REG_le_28;
-reg     [15:0] REG_le_29;
-reg     [15:0] REG_le_3;
-reg     [15:0] REG_le_30;
-reg     [15:0] REG_le_31;
-reg     [15:0] REG_le_32;
-reg     [15:0] REG_le_33;
-reg     [15:0] REG_le_34;
-reg     [15:0] REG_le_35;
-reg     [15:0] REG_le_36;
-reg     [15:0] REG_le_37;
-reg     [15:0] REG_le_38;
-reg     [15:0] REG_le_39;
-reg     [15:0] REG_le_4;
-reg     [15:0] REG_le_40;
-reg     [15:0] REG_le_41;
-reg     [15:0] REG_le_42;
-reg     [15:0] REG_le_43;
-reg     [15:0] REG_le_44;
-reg     [15:0] REG_le_45;
-reg     [15:0] REG_le_46;
-reg     [15:0] REG_le_47;
-reg     [15:0] REG_le_48;
-reg     [15:0] REG_le_49;
-reg     [15:0] REG_le_5;
-reg     [15:0] REG_le_50;
-reg     [15:0] REG_le_51;
-reg     [15:0] REG_le_52;
-reg     [15:0] REG_le_53;
-reg     [15:0] REG_le_54;
-reg     [15:0] REG_le_55;
-reg     [15:0] REG_le_56;
-reg     [15:0] REG_le_57;
-reg     [15:0] REG_le_58;
-reg     [15:0] REG_le_59;
-reg     [15:0] REG_le_6;
-reg     [15:0] REG_le_60;
-reg     [15:0] REG_le_61;
-reg     [15:0] REG_le_62;
-reg     [15:0] REG_le_63;
-reg     [15:0] REG_le_64;
-reg     [15:0] REG_le_7;
-reg     [15:0] REG_le_8;
-reg     [15:0] REG_le_9;
-reg     [15:0] REG_lo_0;
-reg     [15:0] REG_lo_1;
-reg     [15:0] REG_lo_10;
-reg     [15:0] REG_lo_100;
-reg     [15:0] REG_lo_101;
-reg     [15:0] REG_lo_102;
-reg     [15:0] REG_lo_103;
-reg     [15:0] REG_lo_104;
-reg     [15:0] REG_lo_105;
-reg     [15:0] REG_lo_106;
-reg     [15:0] REG_lo_107;
-reg     [15:0] REG_lo_108;
-reg     [15:0] REG_lo_109;
-reg     [15:0] REG_lo_11;
-reg     [15:0] REG_lo_110;
-reg     [15:0] REG_lo_111;
-reg     [15:0] REG_lo_112;
-reg     [15:0] REG_lo_113;
-reg     [15:0] REG_lo_114;
-reg     [15:0] REG_lo_115;
-reg     [15:0] REG_lo_116;
-reg     [15:0] REG_lo_117;
-reg     [15:0] REG_lo_118;
-reg     [15:0] REG_lo_119;
-reg     [15:0] REG_lo_12;
-reg     [15:0] REG_lo_120;
-reg     [15:0] REG_lo_121;
-reg     [15:0] REG_lo_122;
-reg     [15:0] REG_lo_123;
-reg     [15:0] REG_lo_124;
-reg     [15:0] REG_lo_125;
-reg     [15:0] REG_lo_126;
-reg     [15:0] REG_lo_127;
-reg     [15:0] REG_lo_128;
-reg     [15:0] REG_lo_129;
-reg     [15:0] REG_lo_13;
-reg     [15:0] REG_lo_130;
-reg     [15:0] REG_lo_131;
-reg     [15:0] REG_lo_132;
-reg     [15:0] REG_lo_133;
-reg     [15:0] REG_lo_134;
-reg     [15:0] REG_lo_135;
-reg     [15:0] REG_lo_136;
-reg     [15:0] REG_lo_137;
-reg     [15:0] REG_lo_138;
-reg     [15:0] REG_lo_139;
-reg     [15:0] REG_lo_14;
-reg     [15:0] REG_lo_140;
-reg     [15:0] REG_lo_141;
-reg     [15:0] REG_lo_142;
-reg     [15:0] REG_lo_143;
-reg     [15:0] REG_lo_144;
-reg     [15:0] REG_lo_145;
-reg     [15:0] REG_lo_146;
-reg     [15:0] REG_lo_147;
-reg     [15:0] REG_lo_148;
-reg     [15:0] REG_lo_149;
-reg     [15:0] REG_lo_15;
-reg     [15:0] REG_lo_150;
-reg     [15:0] REG_lo_151;
-reg     [15:0] REG_lo_152;
-reg     [15:0] REG_lo_153;
-reg     [15:0] REG_lo_154;
-reg     [15:0] REG_lo_155;
-reg     [15:0] REG_lo_156;
-reg     [15:0] REG_lo_157;
-reg     [15:0] REG_lo_158;
-reg     [15:0] REG_lo_159;
-reg     [15:0] REG_lo_16;
-reg     [15:0] REG_lo_160;
-reg     [15:0] REG_lo_161;
-reg     [15:0] REG_lo_162;
-reg     [15:0] REG_lo_163;
-reg     [15:0] REG_lo_164;
-reg     [15:0] REG_lo_165;
-reg     [15:0] REG_lo_166;
-reg     [15:0] REG_lo_167;
-reg     [15:0] REG_lo_168;
-reg     [15:0] REG_lo_169;
-reg     [15:0] REG_lo_17;
-reg     [15:0] REG_lo_170;
-reg     [15:0] REG_lo_171;
-reg     [15:0] REG_lo_172;
-reg     [15:0] REG_lo_173;
-reg     [15:0] REG_lo_174;
-reg     [15:0] REG_lo_175;
-reg     [15:0] REG_lo_176;
-reg     [15:0] REG_lo_177;
-reg     [15:0] REG_lo_178;
-reg     [15:0] REG_lo_179;
-reg     [15:0] REG_lo_18;
-reg     [15:0] REG_lo_180;
-reg     [15:0] REG_lo_181;
-reg     [15:0] REG_lo_182;
-reg     [15:0] REG_lo_183;
-reg     [15:0] REG_lo_184;
-reg     [15:0] REG_lo_185;
-reg     [15:0] REG_lo_186;
-reg     [15:0] REG_lo_187;
-reg     [15:0] REG_lo_188;
-reg     [15:0] REG_lo_189;
-reg     [15:0] REG_lo_19;
-reg     [15:0] REG_lo_190;
-reg     [15:0] REG_lo_191;
-reg     [15:0] REG_lo_192;
-reg     [15:0] REG_lo_193;
-reg     [15:0] REG_lo_194;
-reg     [15:0] REG_lo_195;
-reg     [15:0] REG_lo_196;
-reg     [15:0] REG_lo_197;
-reg     [15:0] REG_lo_198;
-reg     [15:0] REG_lo_199;
-reg     [15:0] REG_lo_2;
-reg     [15:0] REG_lo_20;
-reg     [15:0] REG_lo_200;
-reg     [15:0] REG_lo_201;
-reg     [15:0] REG_lo_202;
-reg     [15:0] REG_lo_203;
-reg     [15:0] REG_lo_204;
-reg     [15:0] REG_lo_205;
-reg     [15:0] REG_lo_206;
-reg     [15:0] REG_lo_207;
-reg     [15:0] REG_lo_208;
-reg     [15:0] REG_lo_209;
-reg     [15:0] REG_lo_21;
-reg     [15:0] REG_lo_210;
-reg     [15:0] REG_lo_211;
-reg     [15:0] REG_lo_212;
-reg     [15:0] REG_lo_213;
-reg     [15:0] REG_lo_214;
-reg     [15:0] REG_lo_215;
-reg     [15:0] REG_lo_216;
-reg     [15:0] REG_lo_217;
-reg     [15:0] REG_lo_218;
-reg     [15:0] REG_lo_219;
-reg     [15:0] REG_lo_22;
-reg     [15:0] REG_lo_220;
-reg     [15:0] REG_lo_221;
-reg     [15:0] REG_lo_222;
-reg     [15:0] REG_lo_223;
-reg     [15:0] REG_lo_224;
-reg     [15:0] REG_lo_225;
-reg     [15:0] REG_lo_226;
-reg     [15:0] REG_lo_227;
-reg     [15:0] REG_lo_228;
-reg     [15:0] REG_lo_229;
-reg     [15:0] REG_lo_23;
-reg     [15:0] REG_lo_230;
-reg     [15:0] REG_lo_231;
-reg     [15:0] REG_lo_232;
-reg     [15:0] REG_lo_233;
-reg     [15:0] REG_lo_234;
-reg     [15:0] REG_lo_235;
-reg     [15:0] REG_lo_236;
-reg     [15:0] REG_lo_237;
-reg     [15:0] REG_lo_238;
-reg     [15:0] REG_lo_239;
-reg     [15:0] REG_lo_24;
-reg     [15:0] REG_lo_240;
-reg     [15:0] REG_lo_241;
-reg     [15:0] REG_lo_242;
-reg     [15:0] REG_lo_243;
-reg     [15:0] REG_lo_244;
-reg     [15:0] REG_lo_245;
-reg     [15:0] REG_lo_246;
-reg     [15:0] REG_lo_247;
-reg     [15:0] REG_lo_248;
-reg     [15:0] REG_lo_249;
-reg     [15:0] REG_lo_25;
-reg     [15:0] REG_lo_250;
-reg     [15:0] REG_lo_251;
-reg     [15:0] REG_lo_252;
-reg     [15:0] REG_lo_253;
-reg     [15:0] REG_lo_254;
-reg     [15:0] REG_lo_255;
-reg     [15:0] REG_lo_256;
-reg     [15:0] REG_lo_26;
-reg     [15:0] REG_lo_27;
-reg     [15:0] REG_lo_28;
-reg     [15:0] REG_lo_29;
-reg     [15:0] REG_lo_3;
-reg     [15:0] REG_lo_30;
-reg     [15:0] REG_lo_31;
-reg     [15:0] REG_lo_32;
-reg     [15:0] REG_lo_33;
-reg     [15:0] REG_lo_34;
-reg     [15:0] REG_lo_35;
-reg     [15:0] REG_lo_36;
-reg     [15:0] REG_lo_37;
-reg     [15:0] REG_lo_38;
-reg     [15:0] REG_lo_39;
-reg     [15:0] REG_lo_4;
-reg     [15:0] REG_lo_40;
-reg     [15:0] REG_lo_41;
-reg     [15:0] REG_lo_42;
-reg     [15:0] REG_lo_43;
-reg     [15:0] REG_lo_44;
-reg     [15:0] REG_lo_45;
-reg     [15:0] REG_lo_46;
-reg     [15:0] REG_lo_47;
-reg     [15:0] REG_lo_48;
-reg     [15:0] REG_lo_49;
-reg     [15:0] REG_lo_5;
-reg     [15:0] REG_lo_50;
-reg     [15:0] REG_lo_51;
-reg     [15:0] REG_lo_52;
-reg     [15:0] REG_lo_53;
-reg     [15:0] REG_lo_54;
-reg     [15:0] REG_lo_55;
-reg     [15:0] REG_lo_56;
-reg     [15:0] REG_lo_57;
-reg     [15:0] REG_lo_58;
-reg     [15:0] REG_lo_59;
-reg     [15:0] REG_lo_6;
-reg     [15:0] REG_lo_60;
-reg     [15:0] REG_lo_61;
-reg     [15:0] REG_lo_62;
-reg     [15:0] REG_lo_63;
-reg     [15:0] REG_lo_64;
-reg     [15:0] REG_lo_65;
-reg     [15:0] REG_lo_66;
-reg     [15:0] REG_lo_67;
-reg     [15:0] REG_lo_68;
-reg     [15:0] REG_lo_69;
-reg     [15:0] REG_lo_7;
-reg     [15:0] REG_lo_70;
-reg     [15:0] REG_lo_71;
-reg     [15:0] REG_lo_72;
-reg     [15:0] REG_lo_73;
-reg     [15:0] REG_lo_74;
-reg     [15:0] REG_lo_75;
-reg     [15:0] REG_lo_76;
-reg     [15:0] REG_lo_77;
-reg     [15:0] REG_lo_78;
-reg     [15:0] REG_lo_79;
-reg     [15:0] REG_lo_8;
-reg     [15:0] REG_lo_80;
-reg     [15:0] REG_lo_81;
-reg     [15:0] REG_lo_82;
-reg     [15:0] REG_lo_83;
-reg     [15:0] REG_lo_84;
-reg     [15:0] REG_lo_85;
-reg     [15:0] REG_lo_86;
-reg     [15:0] REG_lo_87;
-reg     [15:0] REG_lo_88;
-reg     [15:0] REG_lo_89;
-reg     [15:0] REG_lo_9;
-reg     [15:0] REG_lo_90;
-reg     [15:0] REG_lo_91;
-reg     [15:0] REG_lo_92;
-reg     [15:0] REG_lo_93;
-reg     [15:0] REG_lo_94;
-reg     [15:0] REG_lo_95;
-reg     [15:0] REG_lo_96;
-reg     [15:0] REG_lo_97;
-reg     [15:0] REG_lo_98;
-reg     [15:0] REG_lo_99;
+input          op_en_load;
+
 reg            idx2lut_prdy;
-reg     [15:0] le_data0_0;
-reg     [15:0] le_data0_1;
-reg     [15:0] le_data0_2;
-reg     [15:0] le_data0_3;
-reg     [15:0] le_data1_0;
-reg     [15:0] le_data1_1;
-reg     [15:0] le_data1_2;
-reg     [15:0] le_data1_3;
-reg     [15:0] le_lut_data;
-reg     [15:0] lo_data0_0;
-reg     [15:0] lo_data0_1;
-reg     [15:0] lo_data0_2;
-reg     [15:0] lo_data0_3;
-reg     [15:0] lo_data1_0;
-reg     [15:0] lo_data1_1;
-reg     [15:0] lo_data1_2;
-reg     [15:0] lo_data1_3;
-reg     [15:0] lo_lut_data;
-reg    [739:0] lut2inp_pd;
+reg    [EW_LUT_OUT_DW-1:0] lut2inp_pd;
 reg            lut2inp_pvld;
-reg     [31:0] lut_hybrid_cnt;
-reg    [323:0] lut_in_pd;
+reg    [EW_IDX_OUT_DW-1:0] lut_in_pd;
 reg            lut_in_pvld;
+wire           lut_in_prdy;
+wire   [EW_LUT_OUT_DW-1:0] lut_out_pd;
+wire           lut_out_pvld;
+reg            lut_out_prdy;
+
+//: my $k = NVDLA_SDP_EW_THROUGHPUT;
+//: my $m = LUT_TABLE_MAX_DEPTH;
+//: foreach my $lut (qw(le lo)) {
+//:   foreach my $i  (0..${m}-1) {
+//:     print "reg     [15:0] REG_${lut}_${i}; \n";
+//:   }
+//: }
+//: foreach my $lut (qw(le lo)) {
+//:   foreach my $j (0..1) {
+//:     foreach my $i  (0..${k}-1) {
+//:       print "reg     [15:0] ${lut}_data${j}_${i}; \n";
+//:     }
+//:   }
+//: }
+reg     [15:0] le_lut_data;
+reg     [15:0] lo_lut_data;
+
+#ifdef NVDLA_FEATURE_DATA_TYPE_FP16
+//: my $k = NVDLA_SDP_EW_THROUGHPUT;
+//: foreach my $i  (0..${k}-1) {
+//: print qq(
+//: reg      [7:0] out_bias${i}_expo;
+//: reg     [22:0] out_bias${i}_mant;
+//: reg            out_bias${i}_sign;
+//: );
+//: }
+#endif
+
+//: my $k = NVDLA_SDP_EW_THROUGHPUT;
+//: foreach my $i  (0..${k}-1) {
+//: print qq(
+//: reg     [31:0] out_bias${i};
+//: reg     [31:0] out_offset${i};
+//: reg     [15:0] out_scale${i};
+//: reg      [4:0] out_shift${i};
+//: );
+//: }
+
+wire     [4:0] lut_hybrid_sum;
+wire     [4:0] lut_le_hit_sum;
+wire     [4:0] lut_lo_hit_sum;
+wire     [4:0] lut_oflow_sum;
+wire     [4:0] lut_uflow_sum;
+wire     [4:0] perf_lut_hybrid_add;
+wire     [0:0] perf_lut_hybrid_sub;
+wire     [4:0] perf_lut_le_hit_add;
+wire     [0:0] perf_lut_le_hit_sub;
+wire     [4:0] perf_lut_lo_hit_add;
+wire     [0:0] perf_lut_lo_hit_sub;
+wire     [4:0] perf_lut_oflow_add;
+wire     [0:0] perf_lut_oflow_sub;
+wire     [4:0] perf_lut_uflow_add;
+wire     [0:0] perf_lut_uflow_sub;
+reg     [31:0] lut_hybrid_cnt;
 reg     [31:0] lut_le_hit_cnt;
 reg     [31:0] lut_lo_hit_cnt;
 reg     [31:0] lut_oflow_cnt;
-reg            lut_out_prdy;
 reg     [31:0] lut_uflow_cnt;
-reg     [31:0] out_bias0;
-reg      [7:0] out_bias0_expo;
-reg     [22:0] out_bias0_mant;
-reg            out_bias0_sign;
-reg     [31:0] out_bias1;
-reg      [7:0] out_bias1_expo;
-reg     [22:0] out_bias1_mant;
-reg            out_bias1_sign;
-reg     [31:0] out_bias2;
-reg      [7:0] out_bias2_expo;
-reg     [22:0] out_bias2_mant;
-reg            out_bias2_sign;
-reg     [31:0] out_bias3;
-reg      [7:0] out_bias3_expo;
-reg     [22:0] out_bias3_mant;
-reg            out_bias3_sign;
-reg     [31:0] out_offset0;
-reg     [31:0] out_offset1;
-reg     [31:0] out_offset2;
-reg     [31:0] out_offset3;
-reg     [15:0] out_scale0;
-reg     [15:0] out_scale1;
-reg     [15:0] out_scale2;
-reg     [15:0] out_scale3;
-reg      [4:0] out_shift0;
-reg      [4:0] out_shift1;
-reg      [4:0] out_shift2;
-reg      [4:0] out_shift3;
-reg    [323:0] p1_pipe_data;
-reg    [323:0] p1_pipe_rand_data;
-reg            p1_pipe_rand_ready;
-reg            p1_pipe_rand_valid;
-reg            p1_pipe_ready;
-reg            p1_pipe_ready_bc;
-reg            p1_pipe_valid;
-reg    [739:0] p2_pipe_data;
-reg    [739:0] p2_pipe_rand_data;
-reg            p2_pipe_rand_ready;
-reg            p2_pipe_rand_valid;
-reg            p2_pipe_ready;
-reg            p2_pipe_ready_bc;
-reg    [739:0] p2_pipe_skid_data;
-reg            p2_pipe_skid_ready;
-reg            p2_pipe_skid_valid;
-reg            p2_pipe_valid;
-reg            p2_skid_catch;
-reg    [739:0] p2_skid_data;
-reg            p2_skid_ready;
-reg            p2_skid_ready_flop;
-reg            p2_skid_valid;
 reg            perf_lut_hybrid_adv;
 reg     [31:0] perf_lut_hybrid_cnt_cur;
 reg     [33:0] perf_lut_hybrid_cnt_ext;
@@ -522,639 +191,63 @@ reg     [33:0] perf_lut_uflow_cnt_ext;
 reg     [33:0] perf_lut_uflow_cnt_mod;
 reg     [33:0] perf_lut_uflow_cnt_new;
 reg     [33:0] perf_lut_uflow_cnt_nxt;
-wire    [15:0] REG_le_100;
-wire    [15:0] REG_le_101;
-wire    [15:0] REG_le_102;
-wire    [15:0] REG_le_103;
-wire    [15:0] REG_le_104;
-wire    [15:0] REG_le_105;
-wire    [15:0] REG_le_106;
-wire    [15:0] REG_le_107;
-wire    [15:0] REG_le_108;
-wire    [15:0] REG_le_109;
-wire    [15:0] REG_le_110;
-wire    [15:0] REG_le_111;
-wire    [15:0] REG_le_112;
-wire    [15:0] REG_le_113;
-wire    [15:0] REG_le_114;
-wire    [15:0] REG_le_115;
-wire    [15:0] REG_le_116;
-wire    [15:0] REG_le_117;
-wire    [15:0] REG_le_118;
-wire    [15:0] REG_le_119;
-wire    [15:0] REG_le_120;
-wire    [15:0] REG_le_121;
-wire    [15:0] REG_le_122;
-wire    [15:0] REG_le_123;
-wire    [15:0] REG_le_124;
-wire    [15:0] REG_le_125;
-wire    [15:0] REG_le_126;
-wire    [15:0] REG_le_127;
-wire    [15:0] REG_le_128;
-wire    [15:0] REG_le_129;
-wire    [15:0] REG_le_130;
-wire    [15:0] REG_le_131;
-wire    [15:0] REG_le_132;
-wire    [15:0] REG_le_133;
-wire    [15:0] REG_le_134;
-wire    [15:0] REG_le_135;
-wire    [15:0] REG_le_136;
-wire    [15:0] REG_le_137;
-wire    [15:0] REG_le_138;
-wire    [15:0] REG_le_139;
-wire    [15:0] REG_le_140;
-wire    [15:0] REG_le_141;
-wire    [15:0] REG_le_142;
-wire    [15:0] REG_le_143;
-wire    [15:0] REG_le_144;
-wire    [15:0] REG_le_145;
-wire    [15:0] REG_le_146;
-wire    [15:0] REG_le_147;
-wire    [15:0] REG_le_148;
-wire    [15:0] REG_le_149;
-wire    [15:0] REG_le_150;
-wire    [15:0] REG_le_151;
-wire    [15:0] REG_le_152;
-wire    [15:0] REG_le_153;
-wire    [15:0] REG_le_154;
-wire    [15:0] REG_le_155;
-wire    [15:0] REG_le_156;
-wire    [15:0] REG_le_157;
-wire    [15:0] REG_le_158;
-wire    [15:0] REG_le_159;
-wire    [15:0] REG_le_160;
-wire    [15:0] REG_le_161;
-wire    [15:0] REG_le_162;
-wire    [15:0] REG_le_163;
-wire    [15:0] REG_le_164;
-wire    [15:0] REG_le_165;
-wire    [15:0] REG_le_166;
-wire    [15:0] REG_le_167;
-wire    [15:0] REG_le_168;
-wire    [15:0] REG_le_169;
-wire    [15:0] REG_le_170;
-wire    [15:0] REG_le_171;
-wire    [15:0] REG_le_172;
-wire    [15:0] REG_le_173;
-wire    [15:0] REG_le_174;
-wire    [15:0] REG_le_175;
-wire    [15:0] REG_le_176;
-wire    [15:0] REG_le_177;
-wire    [15:0] REG_le_178;
-wire    [15:0] REG_le_179;
-wire    [15:0] REG_le_180;
-wire    [15:0] REG_le_181;
-wire    [15:0] REG_le_182;
-wire    [15:0] REG_le_183;
-wire    [15:0] REG_le_184;
-wire    [15:0] REG_le_185;
-wire    [15:0] REG_le_186;
-wire    [15:0] REG_le_187;
-wire    [15:0] REG_le_188;
-wire    [15:0] REG_le_189;
-wire    [15:0] REG_le_190;
-wire    [15:0] REG_le_191;
-wire    [15:0] REG_le_192;
-wire    [15:0] REG_le_193;
-wire    [15:0] REG_le_194;
-wire    [15:0] REG_le_195;
-wire    [15:0] REG_le_196;
-wire    [15:0] REG_le_197;
-wire    [15:0] REG_le_198;
-wire    [15:0] REG_le_199;
-wire    [15:0] REG_le_200;
-wire    [15:0] REG_le_201;
-wire    [15:0] REG_le_202;
-wire    [15:0] REG_le_203;
-wire    [15:0] REG_le_204;
-wire    [15:0] REG_le_205;
-wire    [15:0] REG_le_206;
-wire    [15:0] REG_le_207;
-wire    [15:0] REG_le_208;
-wire    [15:0] REG_le_209;
-wire    [15:0] REG_le_210;
-wire    [15:0] REG_le_211;
-wire    [15:0] REG_le_212;
-wire    [15:0] REG_le_213;
-wire    [15:0] REG_le_214;
-wire    [15:0] REG_le_215;
-wire    [15:0] REG_le_216;
-wire    [15:0] REG_le_217;
-wire    [15:0] REG_le_218;
-wire    [15:0] REG_le_219;
-wire    [15:0] REG_le_220;
-wire    [15:0] REG_le_221;
-wire    [15:0] REG_le_222;
-wire    [15:0] REG_le_223;
-wire    [15:0] REG_le_224;
-wire    [15:0] REG_le_225;
-wire    [15:0] REG_le_226;
-wire    [15:0] REG_le_227;
-wire    [15:0] REG_le_228;
-wire    [15:0] REG_le_229;
-wire    [15:0] REG_le_230;
-wire    [15:0] REG_le_231;
-wire    [15:0] REG_le_232;
-wire    [15:0] REG_le_233;
-wire    [15:0] REG_le_234;
-wire    [15:0] REG_le_235;
-wire    [15:0] REG_le_236;
-wire    [15:0] REG_le_237;
-wire    [15:0] REG_le_238;
-wire    [15:0] REG_le_239;
-wire    [15:0] REG_le_240;
-wire    [15:0] REG_le_241;
-wire    [15:0] REG_le_242;
-wire    [15:0] REG_le_243;
-wire    [15:0] REG_le_244;
-wire    [15:0] REG_le_245;
-wire    [15:0] REG_le_246;
-wire    [15:0] REG_le_247;
-wire    [15:0] REG_le_248;
-wire    [15:0] REG_le_249;
-wire    [15:0] REG_le_250;
-wire    [15:0] REG_le_251;
-wire    [15:0] REG_le_252;
-wire    [15:0] REG_le_253;
-wire    [15:0] REG_le_254;
-wire    [15:0] REG_le_255;
-wire    [15:0] REG_le_256;
-wire    [15:0] REG_le_65;
-wire    [15:0] REG_le_66;
-wire    [15:0] REG_le_67;
-wire    [15:0] REG_le_68;
-wire    [15:0] REG_le_69;
-wire    [15:0] REG_le_70;
-wire    [15:0] REG_le_71;
-wire    [15:0] REG_le_72;
-wire    [15:0] REG_le_73;
-wire    [15:0] REG_le_74;
-wire    [15:0] REG_le_75;
-wire    [15:0] REG_le_76;
-wire    [15:0] REG_le_77;
-wire    [15:0] REG_le_78;
-wire    [15:0] REG_le_79;
-wire    [15:0] REG_le_80;
-wire    [15:0] REG_le_81;
-wire    [15:0] REG_le_82;
-wire    [15:0] REG_le_83;
-wire    [15:0] REG_le_84;
-wire    [15:0] REG_le_85;
-wire    [15:0] REG_le_86;
-wire    [15:0] REG_le_87;
-wire    [15:0] REG_le_88;
-wire    [15:0] REG_le_89;
-wire    [15:0] REG_le_90;
-wire    [15:0] REG_le_91;
-wire    [15:0] REG_le_92;
-wire    [15:0] REG_le_93;
-wire    [15:0] REG_le_94;
-wire    [15:0] REG_le_95;
-wire    [15:0] REG_le_96;
-wire    [15:0] REG_le_97;
-wire    [15:0] REG_le_98;
-wire    [15:0] REG_le_99;
-wire   [279:0] cmd_fifo_rd_pd;
+
+wire   [70*NVDLA_SDP_EW_THROUGHPUT-1:0] cmd_fifo_rd_pd;
 wire           cmd_fifo_rd_prdy;
 wire           cmd_fifo_rd_pvld;
-wire   [279:0] cmd_fifo_wr_pd;
+wire   [70*NVDLA_SDP_EW_THROUGHPUT-1:0] cmd_fifo_wr_pd;
 wire           cmd_fifo_wr_prdy;
 wire           cmd_fifo_wr_pvld;
-wire   [127:0] dat_fifo_rd_pd;
+wire   [32*NVDLA_SDP_EW_THROUGHPUT-1:0] dat_fifo_rd_pd;
 wire           dat_fifo_rd_prdy;
 wire           dat_fifo_rd_pvld;
-wire   [127:0] dat_fifo_wr_pd;
+wire   [32*NVDLA_SDP_EW_THROUGHPUT-1:0] dat_fifo_wr_pd;
 wire           dat_fifo_wr_pvld;
-wire    [15:0] dat_in_y0_0;
-wire    [15:0] dat_in_y0_1;
-wire    [15:0] dat_in_y0_2;
-wire    [15:0] dat_in_y0_3;
-wire    [15:0] dat_in_y1_0;
-wire    [15:0] dat_in_y1_1;
-wire    [15:0] dat_in_y1_2;
-wire    [15:0] dat_in_y1_3;
-wire           le_wr_en_0;
-wire           le_wr_en_1;
-wire           le_wr_en_10;
-wire           le_wr_en_11;
-wire           le_wr_en_12;
-wire           le_wr_en_13;
-wire           le_wr_en_14;
-wire           le_wr_en_15;
-wire           le_wr_en_16;
-wire           le_wr_en_17;
-wire           le_wr_en_18;
-wire           le_wr_en_19;
-wire           le_wr_en_2;
-wire           le_wr_en_20;
-wire           le_wr_en_21;
-wire           le_wr_en_22;
-wire           le_wr_en_23;
-wire           le_wr_en_24;
-wire           le_wr_en_25;
-wire           le_wr_en_26;
-wire           le_wr_en_27;
-wire           le_wr_en_28;
-wire           le_wr_en_29;
-wire           le_wr_en_3;
-wire           le_wr_en_30;
-wire           le_wr_en_31;
-wire           le_wr_en_32;
-wire           le_wr_en_33;
-wire           le_wr_en_34;
-wire           le_wr_en_35;
-wire           le_wr_en_36;
-wire           le_wr_en_37;
-wire           le_wr_en_38;
-wire           le_wr_en_39;
-wire           le_wr_en_4;
-wire           le_wr_en_40;
-wire           le_wr_en_41;
-wire           le_wr_en_42;
-wire           le_wr_en_43;
-wire           le_wr_en_44;
-wire           le_wr_en_45;
-wire           le_wr_en_46;
-wire           le_wr_en_47;
-wire           le_wr_en_48;
-wire           le_wr_en_49;
-wire           le_wr_en_5;
-wire           le_wr_en_50;
-wire           le_wr_en_51;
-wire           le_wr_en_52;
-wire           le_wr_en_53;
-wire           le_wr_en_54;
-wire           le_wr_en_55;
-wire           le_wr_en_56;
-wire           le_wr_en_57;
-wire           le_wr_en_58;
-wire           le_wr_en_59;
-wire           le_wr_en_6;
-wire           le_wr_en_60;
-wire           le_wr_en_61;
-wire           le_wr_en_62;
-wire           le_wr_en_63;
-wire           le_wr_en_64;
-wire           le_wr_en_7;
-wire           le_wr_en_8;
-wire           le_wr_en_9;
-wire           lo_wr_en_0;
-wire           lo_wr_en_1;
-wire           lo_wr_en_10;
-wire           lo_wr_en_100;
-wire           lo_wr_en_101;
-wire           lo_wr_en_102;
-wire           lo_wr_en_103;
-wire           lo_wr_en_104;
-wire           lo_wr_en_105;
-wire           lo_wr_en_106;
-wire           lo_wr_en_107;
-wire           lo_wr_en_108;
-wire           lo_wr_en_109;
-wire           lo_wr_en_11;
-wire           lo_wr_en_110;
-wire           lo_wr_en_111;
-wire           lo_wr_en_112;
-wire           lo_wr_en_113;
-wire           lo_wr_en_114;
-wire           lo_wr_en_115;
-wire           lo_wr_en_116;
-wire           lo_wr_en_117;
-wire           lo_wr_en_118;
-wire           lo_wr_en_119;
-wire           lo_wr_en_12;
-wire           lo_wr_en_120;
-wire           lo_wr_en_121;
-wire           lo_wr_en_122;
-wire           lo_wr_en_123;
-wire           lo_wr_en_124;
-wire           lo_wr_en_125;
-wire           lo_wr_en_126;
-wire           lo_wr_en_127;
-wire           lo_wr_en_128;
-wire           lo_wr_en_129;
-wire           lo_wr_en_13;
-wire           lo_wr_en_130;
-wire           lo_wr_en_131;
-wire           lo_wr_en_132;
-wire           lo_wr_en_133;
-wire           lo_wr_en_134;
-wire           lo_wr_en_135;
-wire           lo_wr_en_136;
-wire           lo_wr_en_137;
-wire           lo_wr_en_138;
-wire           lo_wr_en_139;
-wire           lo_wr_en_14;
-wire           lo_wr_en_140;
-wire           lo_wr_en_141;
-wire           lo_wr_en_142;
-wire           lo_wr_en_143;
-wire           lo_wr_en_144;
-wire           lo_wr_en_145;
-wire           lo_wr_en_146;
-wire           lo_wr_en_147;
-wire           lo_wr_en_148;
-wire           lo_wr_en_149;
-wire           lo_wr_en_15;
-wire           lo_wr_en_150;
-wire           lo_wr_en_151;
-wire           lo_wr_en_152;
-wire           lo_wr_en_153;
-wire           lo_wr_en_154;
-wire           lo_wr_en_155;
-wire           lo_wr_en_156;
-wire           lo_wr_en_157;
-wire           lo_wr_en_158;
-wire           lo_wr_en_159;
-wire           lo_wr_en_16;
-wire           lo_wr_en_160;
-wire           lo_wr_en_161;
-wire           lo_wr_en_162;
-wire           lo_wr_en_163;
-wire           lo_wr_en_164;
-wire           lo_wr_en_165;
-wire           lo_wr_en_166;
-wire           lo_wr_en_167;
-wire           lo_wr_en_168;
-wire           lo_wr_en_169;
-wire           lo_wr_en_17;
-wire           lo_wr_en_170;
-wire           lo_wr_en_171;
-wire           lo_wr_en_172;
-wire           lo_wr_en_173;
-wire           lo_wr_en_174;
-wire           lo_wr_en_175;
-wire           lo_wr_en_176;
-wire           lo_wr_en_177;
-wire           lo_wr_en_178;
-wire           lo_wr_en_179;
-wire           lo_wr_en_18;
-wire           lo_wr_en_180;
-wire           lo_wr_en_181;
-wire           lo_wr_en_182;
-wire           lo_wr_en_183;
-wire           lo_wr_en_184;
-wire           lo_wr_en_185;
-wire           lo_wr_en_186;
-wire           lo_wr_en_187;
-wire           lo_wr_en_188;
-wire           lo_wr_en_189;
-wire           lo_wr_en_19;
-wire           lo_wr_en_190;
-wire           lo_wr_en_191;
-wire           lo_wr_en_192;
-wire           lo_wr_en_193;
-wire           lo_wr_en_194;
-wire           lo_wr_en_195;
-wire           lo_wr_en_196;
-wire           lo_wr_en_197;
-wire           lo_wr_en_198;
-wire           lo_wr_en_199;
-wire           lo_wr_en_2;
-wire           lo_wr_en_20;
-wire           lo_wr_en_200;
-wire           lo_wr_en_201;
-wire           lo_wr_en_202;
-wire           lo_wr_en_203;
-wire           lo_wr_en_204;
-wire           lo_wr_en_205;
-wire           lo_wr_en_206;
-wire           lo_wr_en_207;
-wire           lo_wr_en_208;
-wire           lo_wr_en_209;
-wire           lo_wr_en_21;
-wire           lo_wr_en_210;
-wire           lo_wr_en_211;
-wire           lo_wr_en_212;
-wire           lo_wr_en_213;
-wire           lo_wr_en_214;
-wire           lo_wr_en_215;
-wire           lo_wr_en_216;
-wire           lo_wr_en_217;
-wire           lo_wr_en_218;
-wire           lo_wr_en_219;
-wire           lo_wr_en_22;
-wire           lo_wr_en_220;
-wire           lo_wr_en_221;
-wire           lo_wr_en_222;
-wire           lo_wr_en_223;
-wire           lo_wr_en_224;
-wire           lo_wr_en_225;
-wire           lo_wr_en_226;
-wire           lo_wr_en_227;
-wire           lo_wr_en_228;
-wire           lo_wr_en_229;
-wire           lo_wr_en_23;
-wire           lo_wr_en_230;
-wire           lo_wr_en_231;
-wire           lo_wr_en_232;
-wire           lo_wr_en_233;
-wire           lo_wr_en_234;
-wire           lo_wr_en_235;
-wire           lo_wr_en_236;
-wire           lo_wr_en_237;
-wire           lo_wr_en_238;
-wire           lo_wr_en_239;
-wire           lo_wr_en_24;
-wire           lo_wr_en_240;
-wire           lo_wr_en_241;
-wire           lo_wr_en_242;
-wire           lo_wr_en_243;
-wire           lo_wr_en_244;
-wire           lo_wr_en_245;
-wire           lo_wr_en_246;
-wire           lo_wr_en_247;
-wire           lo_wr_en_248;
-wire           lo_wr_en_249;
-wire           lo_wr_en_25;
-wire           lo_wr_en_250;
-wire           lo_wr_en_251;
-wire           lo_wr_en_252;
-wire           lo_wr_en_253;
-wire           lo_wr_en_254;
-wire           lo_wr_en_255;
-wire           lo_wr_en_256;
-wire           lo_wr_en_26;
-wire           lo_wr_en_27;
-wire           lo_wr_en_28;
-wire           lo_wr_en_29;
-wire           lo_wr_en_3;
-wire           lo_wr_en_30;
-wire           lo_wr_en_31;
-wire           lo_wr_en_32;
-wire           lo_wr_en_33;
-wire           lo_wr_en_34;
-wire           lo_wr_en_35;
-wire           lo_wr_en_36;
-wire           lo_wr_en_37;
-wire           lo_wr_en_38;
-wire           lo_wr_en_39;
-wire           lo_wr_en_4;
-wire           lo_wr_en_40;
-wire           lo_wr_en_41;
-wire           lo_wr_en_42;
-wire           lo_wr_en_43;
-wire           lo_wr_en_44;
-wire           lo_wr_en_45;
-wire           lo_wr_en_46;
-wire           lo_wr_en_47;
-wire           lo_wr_en_48;
-wire           lo_wr_en_49;
-wire           lo_wr_en_5;
-wire           lo_wr_en_50;
-wire           lo_wr_en_51;
-wire           lo_wr_en_52;
-wire           lo_wr_en_53;
-wire           lo_wr_en_54;
-wire           lo_wr_en_55;
-wire           lo_wr_en_56;
-wire           lo_wr_en_57;
-wire           lo_wr_en_58;
-wire           lo_wr_en_59;
-wire           lo_wr_en_6;
-wire           lo_wr_en_60;
-wire           lo_wr_en_61;
-wire           lo_wr_en_62;
-wire           lo_wr_en_63;
-wire           lo_wr_en_64;
-wire           lo_wr_en_65;
-wire           lo_wr_en_66;
-wire           lo_wr_en_67;
-wire           lo_wr_en_68;
-wire           lo_wr_en_69;
-wire           lo_wr_en_7;
-wire           lo_wr_en_70;
-wire           lo_wr_en_71;
-wire           lo_wr_en_72;
-wire           lo_wr_en_73;
-wire           lo_wr_en_74;
-wire           lo_wr_en_75;
-wire           lo_wr_en_76;
-wire           lo_wr_en_77;
-wire           lo_wr_en_78;
-wire           lo_wr_en_79;
-wire           lo_wr_en_8;
-wire           lo_wr_en_80;
-wire           lo_wr_en_81;
-wire           lo_wr_en_82;
-wire           lo_wr_en_83;
-wire           lo_wr_en_84;
-wire           lo_wr_en_85;
-wire           lo_wr_en_86;
-wire           lo_wr_en_87;
-wire           lo_wr_en_88;
-wire           lo_wr_en_89;
-wire           lo_wr_en_9;
-wire           lo_wr_en_90;
-wire           lo_wr_en_91;
-wire           lo_wr_en_92;
-wire           lo_wr_en_93;
-wire           lo_wr_en_94;
-wire           lo_wr_en_95;
-wire           lo_wr_en_96;
-wire           lo_wr_en_97;
-wire           lo_wr_en_98;
-wire           lo_wr_en_99;
+
+//: my $k = NVDLA_SDP_EW_THROUGHPUT;
+//: foreach my $j (0..1) {
+//:   foreach my $i  (0..${k}-1) {
+//:   print"wire    [15:0] dat_in_y${j}_${i}; \n";
+//:   }
+//: }
+
+//: my $ed = LUT_TABLE_LE_DEPTH;
+//: my $od = LUT_TABLE_LO_DEPTH;
+//: foreach my $i  (0..${ed}-1) {
+//:  print"wire           le_wr_en_$i; \n";
+//: }
+//: foreach my $i  (0..${od}-1) {
+//:  print"wire           lo_wr_en_$i; \n";
+//: }
+
+//: my $k = NVDLA_SDP_EW_THROUGHPUT;
+//: foreach my $i  (0..${k}-1) {
+//: print qq(
+//: wire     [8:0] lut_in_addr${i};
+//: wire     [8:0] lut_in_addr${i}_0;
+//: wire     [8:0] lut_in_addr${i}_1;
+//: wire    [34:0] lut_in_fraction${i};
+//: wire           lut_in_hybrid${i};
+//: wire           lut_in_le_hit${i};
+//: wire           lut_in_lo_hit${i};
+//: wire           lut_in_oflow${i};
+//: wire           lut_in_sel${i};
+//: wire           lut_in_uflow${i};
+//: wire    [31:0] lut_in_x${i};
+//: wire           out_flow${i};
+//: wire    [34:0] out_fraction${i};
+//: wire           out_oflow${i};
+//: wire           out_sel${i};
+//: wire           out_uflow${i};
+//: wire    [31:0] out_x${i};
+//: wire    [15:0] out_y0_${i};
+//: wire    [15:0] out_y1_${i};
+//: );
+//: }
+
 wire           lut_access_type;
 wire     [9:0] lut_addr;
 wire    [15:0] lut_data;
-wire     [2:0] lut_hybrid_sum;
-wire     [8:0] lut_in_addr0;
-wire     [8:0] lut_in_addr0_0;
-wire     [8:0] lut_in_addr0_1;
-wire     [8:0] lut_in_addr1;
-wire     [8:0] lut_in_addr1_0;
-wire     [8:0] lut_in_addr1_1;
-wire     [8:0] lut_in_addr2;
-wire     [8:0] lut_in_addr2_0;
-wire     [8:0] lut_in_addr2_1;
-wire     [8:0] lut_in_addr3;
-wire     [8:0] lut_in_addr3_0;
-wire     [8:0] lut_in_addr3_1;
-wire    [34:0] lut_in_fraction0;
-wire    [34:0] lut_in_fraction1;
-wire    [34:0] lut_in_fraction2;
-wire    [34:0] lut_in_fraction3;
-wire           lut_in_hybrid0;
-wire           lut_in_hybrid1;
-wire           lut_in_hybrid2;
-wire           lut_in_hybrid3;
-wire           lut_in_le_hit0;
-wire           lut_in_le_hit1;
-wire           lut_in_le_hit2;
-wire           lut_in_le_hit3;
-wire           lut_in_lo_hit0;
-wire           lut_in_lo_hit1;
-wire           lut_in_lo_hit2;
-wire           lut_in_lo_hit3;
-wire           lut_in_oflow0;
-wire           lut_in_oflow1;
-wire           lut_in_oflow2;
-wire           lut_in_oflow3;
-wire           lut_in_prdy;
-wire           lut_in_sel0;
-wire           lut_in_sel1;
-wire           lut_in_sel2;
-wire           lut_in_sel3;
-wire           lut_in_uflow0;
-wire           lut_in_uflow1;
-wire           lut_in_uflow2;
-wire           lut_in_uflow3;
-wire    [31:0] lut_in_x0;
-wire    [31:0] lut_in_x1;
-wire    [31:0] lut_in_x2;
-wire    [31:0] lut_in_x3;
-wire     [2:0] lut_le_hit_sum;
-wire     [2:0] lut_lo_hit_sum;
-wire     [2:0] lut_oflow_sum;
-wire   [739:0] lut_out_pd;
-wire           lut_out_pvld;
-wire    [27:0] lut_pd;
-wire           lut_table_id;
-wire     [2:0] lut_uflow_sum;
-wire           mon_cmd_fifo_rd_pvld;
-wire           out_flow0;
-wire           out_flow1;
-wire           out_flow2;
-wire           out_flow3;
-wire    [34:0] out_fraction0;
-wire    [34:0] out_fraction1;
-wire    [34:0] out_fraction2;
-wire    [34:0] out_fraction3;
-wire           out_oflow0;
-wire           out_oflow1;
-wire           out_oflow2;
-wire           out_oflow3;
-wire           out_sel0;
-wire           out_sel1;
-wire           out_sel2;
-wire           out_sel3;
-wire           out_uflow0;
-wire           out_uflow1;
-wire           out_uflow2;
-wire           out_uflow3;
-wire    [31:0] out_x0;
-wire    [31:0] out_x1;
-wire    [31:0] out_x2;
-wire    [31:0] out_x3;
-wire    [15:0] out_y0_0;
-wire    [15:0] out_y0_1;
-wire    [15:0] out_y0_2;
-wire    [15:0] out_y0_3;
-wire    [15:0] out_y1_0;
-wire    [15:0] out_y1_1;
-wire    [15:0] out_y1_2;
-wire    [15:0] out_y1_3;
-wire     [2:0] perf_lut_hybrid_add;
-wire     [0:0] perf_lut_hybrid_sub;
-wire     [2:0] perf_lut_le_hit_add;
-wire     [0:0] perf_lut_le_hit_sub;
-wire     [2:0] perf_lut_lo_hit_add;
-wire     [0:0] perf_lut_lo_hit_sub;
-wire     [2:0] perf_lut_oflow_add;
-wire     [0:0] perf_lut_oflow_sub;
-wire     [2:0] perf_lut_uflow_add;
-wire     [0:0] perf_lut_uflow_sub;
 wire    [27:0] pro2lut_pd;
 wire           pro2lut_valid;
 wire     [9:0] pro_in_addr;
@@ -1165,21 +258,10 @@ wire           pro_in_table_id;
 wire           pro_in_wr;
 wire           pro_in_wr_en;
 wire           rd_lut_en;
-// synoff nets
 
-// monitor nets
-
-// debug nets
-
-// tie high nets
-
-// tie low nets
-
-// no connect nets
-
-// not all bits used nets
-
-// todo nets
+wire    [27:0] lut_pd;
+wire           lut_table_id;
+wire           mon_cmd_fifo_rd_pvld;
 
     
 //==============
@@ -1202,10 +284,10 @@ assign pro2lut_pd   = lut_pd;
 
 
 // PKT_UNPACK_WIRE( sdp_y_lut_pro ,  pro_in_ ,  pro2lut_pd )
-assign        pro_in_addr[9:0] =     pro2lut_pd[9:0];
-assign        pro_in_data[15:0] =     pro2lut_pd[25:10];
-assign         pro_in_table_id  =     pro2lut_pd[26];
-assign         pro_in_wr  =     pro2lut_pd[27];
+assign pro_in_addr[9:0]  =     pro2lut_pd[9:0];
+assign pro_in_data[15:0] =     pro2lut_pd[25:10];
+assign pro_in_table_id   =     pro2lut_pd[26];
+assign pro_in_wr         =     pro2lut_pd[27];
 assign pro_in_wr_en = pro2lut_valid & (pro_in_wr== 1'h1 );
 //assign pro_in_rd_en = pro2lut_valid & pro_in_wr==0;
 assign pro_in_select_le = pro_in_table_id== 1'h0 ;
@@ -22554,389 +21636,76 @@ end
 `endif // SPYGLASS_ASSERT_ON
 
 
-//=======================================
-// FROM IDX: Input PIPE
-//## pipe (1) randomizer
-`ifndef SYNTHESIS
-reg p1_pipe_rand_active;
-`endif
-always @(
-  `ifndef SYNTHESIS
-  p1_pipe_rand_active
-  or 
-     `endif
-     idx2lut_pvld
-  or p1_pipe_rand_ready
-  or idx2lut_pd
-  ) begin
-  `ifdef SYNTHESIS
-  p1_pipe_rand_valid = idx2lut_pvld;
-  idx2lut_prdy = p1_pipe_rand_ready;
-  p1_pipe_rand_data = idx2lut_pd;
-  `else
-  // VCS coverage off
-  p1_pipe_rand_valid = (p1_pipe_rand_active)? 1'b0 : idx2lut_pvld;
-  idx2lut_prdy = (p1_pipe_rand_active)? 1'b0 : p1_pipe_rand_ready;
-  p1_pipe_rand_data = (p1_pipe_rand_active)?  'bx : idx2lut_pd;
-  // VCS coverage on
-  `endif
-end
-`ifndef SYNTHESIS
-// VCS coverage off
-//// randomization init   
-integer p1_pipe_stall_cycles;
-integer p1_pipe_stall_probability;
-integer p1_pipe_stall_cycles_min;
-integer p1_pipe_stall_cycles_max;
-initial begin
-  p1_pipe_stall_cycles = 0;
-  p1_pipe_stall_probability = 0;
-  p1_pipe_stall_cycles_min = 1;
-  p1_pipe_stall_cycles_max = 10;
-`ifndef SYNTH_LEVEL1_COMPILE
-  if      ( $value$plusargs( "NV_NVDLA_SDP_CORE_Y_lut_pipe_rand_probability=%d",  p1_pipe_stall_probability ) ) ; // deprecated
-  else if ( $value$plusargs(    "default_pipe_rand_probability=%d",  p1_pipe_stall_probability ) ) ; // deprecated
-  if      ( $value$plusargs( "NV_NVDLA_SDP_CORE_Y_lut_pipe_stall_probability=%d", p1_pipe_stall_probability ) ) ; 
-  else if ( $value$plusargs(    "default_pipe_stall_probability=%d", p1_pipe_stall_probability ) ) ; 
-  if      ( $value$plusargs( "NV_NVDLA_SDP_CORE_Y_lut_pipe_stall_cycles_min=%d",  p1_pipe_stall_cycles_min  ) ) ;
-  else if ( $value$plusargs(    "default_pipe_stall_cycles_min=%d",  p1_pipe_stall_cycles_min  ) ) ;
-  if      ( $value$plusargs( "NV_NVDLA_SDP_CORE_Y_lut_pipe_stall_cycles_max=%d",  p1_pipe_stall_cycles_max  ) ) ;
-  else if ( $value$plusargs(    "default_pipe_stall_cycles_max=%d",  p1_pipe_stall_cycles_max  ) ) ;
-`endif
-end
-// randomization globals
-`ifndef SYNTH_LEVEL1_COMPILE
-`ifdef SIMTOP_RANDOMIZE_STALLS
-always @( `SIMTOP_RANDOMIZE_STALLS.global_stall_event ) begin
-  if ( ! $test$plusargs( "NV_NVDLA_SDP_CORE_Y_lut_pipe_stall_probability" ) ) p1_pipe_stall_probability = `SIMTOP_RANDOMIZE_STALLS.global_stall_pipe_probability;
-  if ( ! $test$plusargs( "NV_NVDLA_SDP_CORE_Y_lut_pipe_stall_cycles_min"  ) ) p1_pipe_stall_cycles_min  = `SIMTOP_RANDOMIZE_STALLS.global_stall_pipe_cycles_min;
-  if ( ! $test$plusargs( "NV_NVDLA_SDP_CORE_Y_lut_pipe_stall_cycles_max"  ) ) p1_pipe_stall_cycles_max  = `SIMTOP_RANDOMIZE_STALLS.global_stall_pipe_cycles_max;
-end
-`endif
-`endif
-//// randomization active
-reg p1_pipe_rand_enable;
-reg p1_pipe_rand_poised;
-always @(
-  p1_pipe_stall_cycles
-  or p1_pipe_stall_probability
-  or idx2lut_pvld
-  ) begin
-  p1_pipe_rand_active = p1_pipe_stall_cycles != 0;
-  p1_pipe_rand_enable = p1_pipe_stall_probability != 0;
-  p1_pipe_rand_poised = p1_pipe_rand_enable && !p1_pipe_rand_active && idx2lut_pvld === 1'b1;
-end
-//// randomization cycles
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-  if (!nvdla_core_rstn) begin
-    p1_pipe_stall_cycles <= 1'b0;
-  end else begin
-  if (p1_pipe_rand_poised) begin
-    if (p1_pipe_stall_probability >= prand_inst0(1, 100)) begin
-      p1_pipe_stall_cycles <= prand_inst1(p1_pipe_stall_cycles_min, p1_pipe_stall_cycles_max);
-    end
-  end else if (p1_pipe_rand_active) begin
-    p1_pipe_stall_cycles <= p1_pipe_stall_cycles - 1;
-  end else begin
-    p1_pipe_stall_cycles <= 0;
-  end
-  end
-end
-
-`ifdef SYNTH_LEVEL1_COMPILE
-`else
-`ifdef SYNTHESIS
-`else
-`ifdef PRAND_VERILOG
-// Only verilog needs any local variables
-reg [47:0] prand_local_seed0;
-reg prand_initialized0;
-reg prand_no_rollpli0;
-`endif
-`endif
-`endif
-
-function [31:0] prand_inst0;
-//VCS coverage off
-    input [31:0] min;
-    input [31:0] max;
-    reg [32:0] diff;
-    
-    begin
-`ifdef SYNTH_LEVEL1_COMPILE
-        prand_inst0 = min;
-`else
-`ifdef SYNTHESIS
-        prand_inst0 = min;
-`else
-`ifdef PRAND_VERILOG
-        if (prand_initialized0 !== 1'b1) begin
-            prand_no_rollpli0 = $test$plusargs("NO_ROLLPLI");
-            if (!prand_no_rollpli0)
-                prand_local_seed0 = {$prand_get_seed(0), 16'b0};
-            prand_initialized0 = 1'b1;
-        end
-        if (prand_no_rollpli0) begin
-            prand_inst0 = min;
-        end else begin
-            diff = max - min + 1;
-            prand_inst0 = min + prand_local_seed0[47:16] % diff;
-            // magic numbers taken from Java's random class (same as lrand48)
-            prand_local_seed0 = prand_local_seed0 * 48'h5deece66d + 48'd11;
-        end
-`else
-`ifdef PRAND_OFF
-        prand_inst0 = min;
-`else
-        prand_inst0 = $RollPLI(min, max, "auto");
-`endif
-`endif
-`endif
-`endif
-    end
-//VCS coverage on
-endfunction
-
-
-`ifdef SYNTH_LEVEL1_COMPILE
-`else
-`ifdef SYNTHESIS
-`else
-`ifdef PRAND_VERILOG
-// Only verilog needs any local variables
-reg [47:0] prand_local_seed1;
-reg prand_initialized1;
-reg prand_no_rollpli1;
-`endif
-`endif
-`endif
-
-function [31:0] prand_inst1;
-//VCS coverage off
-    input [31:0] min;
-    input [31:0] max;
-    reg [32:0] diff;
-    
-    begin
-`ifdef SYNTH_LEVEL1_COMPILE
-        prand_inst1 = min;
-`else
-`ifdef SYNTHESIS
-        prand_inst1 = min;
-`else
-`ifdef PRAND_VERILOG
-        if (prand_initialized1 !== 1'b1) begin
-            prand_no_rollpli1 = $test$plusargs("NO_ROLLPLI");
-            if (!prand_no_rollpli1)
-                prand_local_seed1 = {$prand_get_seed(1), 16'b0};
-            prand_initialized1 = 1'b1;
-        end
-        if (prand_no_rollpli1) begin
-            prand_inst1 = min;
-        end else begin
-            diff = max - min + 1;
-            prand_inst1 = min + prand_local_seed1[47:16] % diff;
-            // magic numbers taken from Java's random class (same as lrand48)
-            prand_local_seed1 = prand_local_seed1 * 48'h5deece66d + 48'd11;
-        end
-`else
-`ifdef PRAND_OFF
-        prand_inst1 = min;
-`else
-        prand_inst1 = $RollPLI(min, max, "auto");
-`endif
-`endif
-`endif
-`endif
-    end
-//VCS coverage on
-endfunction
-
-`endif
-// VCS coverage on
-//## pipe (1) valid-ready-bubble-collapse
-always @(
-  p1_pipe_ready
-  or p1_pipe_valid
-  ) begin
-  p1_pipe_ready_bc = p1_pipe_ready || !p1_pipe_valid;
-end
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-  if (!nvdla_core_rstn) begin
-    p1_pipe_valid <= 1'b0;
-  end else begin
-  p1_pipe_valid <= (p1_pipe_ready_bc)? p1_pipe_rand_valid : 1'd1;
-  end
-end
-always @(posedge nvdla_core_clk) begin
-  // VCS sop_coverage_off start
-  p1_pipe_data <= (p1_pipe_ready_bc && p1_pipe_rand_valid)? p1_pipe_rand_data : p1_pipe_data;
-  // VCS sop_coverage_off end
-end
-always @(
-  p1_pipe_ready_bc
-  ) begin
-  p1_pipe_rand_ready = p1_pipe_ready_bc;
-end
-//## pipe (1) output
-always @(
-  p1_pipe_valid
-  or lut_in_prdy
-  or p1_pipe_data
-  ) begin
-  lut_in_pvld = p1_pipe_valid;
-  p1_pipe_ready = lut_in_prdy;
-  lut_in_pd = p1_pipe_data;
-end
-//## pipe (1) assertions/testpoints
-`ifndef VIVA_PLUGIN_PIPE_DISABLE_ASSERTIONS
-wire p1_assert_clk = nvdla_core_clk;
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-`ifndef SYNTHESIS
-  // VCS coverage off 
-  nv_assert_no_x #(0,1,0,"No X's allowed on control signals")      zzz_assert_no_x_323x (nvdla_core_clk, `ASSERT_RESET, nvdla_core_rstn, (lut_in_pvld^lut_in_prdy^idx2lut_pvld^idx2lut_prdy)); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`endif
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-  // VCS coverage off 
-  nv_assert_hold_throughout_event_interval #(0,1,0,"valid removed before ready")      zzz_assert_hold_throughout_event_interval_324x (nvdla_core_clk, `ASSERT_RESET, (idx2lut_pvld && !idx2lut_prdy), (idx2lut_pvld), (idx2lut_prdy)); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`endif
+//viva_pipe -bc lut_in_pd(lut_in_pvld, lut_in_prdy) <= idx2lut_pd(idx2lut_pvld,idx2lut_prdy);
+NV_NVDLA_SDP_CORE_Y_lut_pipe_p1  pipe_p1 (
+   .nvdla_core_clk  (nvdla_core_clk)              
+  ,.nvdla_core_rstn (nvdla_core_rstn)             
+  ,.idx2lut_pvld    (idx2lut_pvld)               
+  ,.idx2lut_prdy    (idx2lut_prdy)               
+  ,.idx2lut_pd      (idx2lut_pd[EW_IDX_OUT_DW-1:0])         
+  ,.lut_in_pvld     (lut_in_pvld)              
+  ,.lut_in_prdy     (lut_in_prdy)              
+  ,.lut_in_pd       (lut_in_pd[EW_IDX_OUT_DW-1:0])          
+  );
 
 // PKT_UNPACK_WIRE( sdp_y_lut_in ,  lut_in_ ,  lut_in_pd )
-assign        lut_in_fraction0[34:0] =     lut_in_pd[34:0];
-assign        lut_in_fraction1[34:0] =     lut_in_pd[69:35];
-assign        lut_in_fraction2[34:0] =     lut_in_pd[104:70];
-assign        lut_in_fraction3[34:0] =     lut_in_pd[139:105];
-assign        lut_in_x0[31:0] =     lut_in_pd[171:140];
-assign        lut_in_x1[31:0] =     lut_in_pd[203:172];
-assign        lut_in_x2[31:0] =     lut_in_pd[235:204];
-assign        lut_in_x3[31:0] =     lut_in_pd[267:236];
-assign         lut_in_oflow0  =     lut_in_pd[268];
-assign         lut_in_oflow1  =     lut_in_pd[269];
-assign         lut_in_oflow2  =     lut_in_pd[270];
-assign         lut_in_oflow3  =     lut_in_pd[271];
-assign         lut_in_uflow0  =     lut_in_pd[272];
-assign         lut_in_uflow1  =     lut_in_pd[273];
-assign         lut_in_uflow2  =     lut_in_pd[274];
-assign         lut_in_uflow3  =     lut_in_pd[275];
-assign         lut_in_sel0  =     lut_in_pd[276];
-assign         lut_in_sel1  =     lut_in_pd[277];
-assign         lut_in_sel2  =     lut_in_pd[278];
-assign         lut_in_sel3  =     lut_in_pd[279];
-assign        lut_in_addr0[8:0] =     lut_in_pd[288:280];
-assign        lut_in_addr1[8:0] =     lut_in_pd[297:289];
-assign        lut_in_addr2[8:0] =     lut_in_pd[306:298];
-assign        lut_in_addr3[8:0] =     lut_in_pd[315:307];
-assign         lut_in_le_hit0  =     lut_in_pd[316];
-assign         lut_in_le_hit1  =     lut_in_pd[317];
-assign         lut_in_le_hit2  =     lut_in_pd[318];
-assign         lut_in_le_hit3  =     lut_in_pd[319];
-assign         lut_in_lo_hit0  =     lut_in_pd[320];
-assign         lut_in_lo_hit1  =     lut_in_pd[321];
-assign         lut_in_lo_hit2  =     lut_in_pd[322];
-assign         lut_in_lo_hit3  =     lut_in_pd[323];
+//: my $k=NVDLA_SDP_EW_THROUGHPUT;
+//: my $bx =NVDLA_SDP_EW_THROUGHPUT*35;
+//: my $bof=NVDLA_SDP_EW_THROUGHPUT*(35+32);
+//: my $buf=NVDLA_SDP_EW_THROUGHPUT*(35+32+1);
+//: my $bsl=NVDLA_SDP_EW_THROUGHPUT*(35+32+2);
+//: my $ba =NVDLA_SDP_EW_THROUGHPUT*(35+32+3);
+//: my $beh=NVDLA_SDP_EW_THROUGHPUT*(35+32+12);
+//: my $boh=NVDLA_SDP_EW_THROUGHPUT*(35+32+13);
+//: foreach my $i  (0..${k}-1) {
+//: print "assign   lut_in_fraction${i}[34:0] =  lut_in_pd[35*${i}+34:35*${i}]; \n";
+//: }
+//: foreach my $i  (0..${k}-1) {
+//: print "assign   lut_in_x${i}[31:0]        =  lut_in_pd[32*${i}+31+${bx}:32*${i}+${bx}]; \n";
+//: }
+//: foreach my $i  (0..${k}-1) {
+//: print "assign   lut_in_oflow${i}          =  lut_in_pd[${i}+${bof}]; \n";
+//: }
+//: foreach my $i  (0..${k}-1) {
+//: print "assign   lut_in_uflow${i}          =  lut_in_pd[${i}+${buf}]; \n";
+//: }
+//: foreach my $i  (0..${k}-1) {
+//: print "assign   lut_in_sel${i}            =  lut_in_pd[${i}+${bsl}]; \n";
+//: }
+//: foreach my $i  (0..${k}-1) {
+//: print "assign   lut_in_addr${i}[8:0]      =  lut_in_pd[9*${i}+8+${ba}:9*${i}+${ba}]; \n"; 
+//: }
+//: foreach my $i  (0..${k}-1) {
+//: print "assign   lut_in_le_hit${i}         =  lut_in_pd[${i}+${beh}]; \n";
+//: }
+//: foreach my $i  (0..${k}-1) {
+//: print "assign   lut_in_lo_hit${i}         =  lut_in_pd[${i}+${boh}]; \n";
+//: }
+
 
 //=======================================
 // PERF STATISTIC
 // OFLOW
-assign lut_oflow_sum[2:0] = lut_in_oflow3 + lut_in_oflow2 + lut_in_oflow1 + lut_in_oflow0;
+//: my $k=NVDLA_SDP_EW_THROUGHPUT;
+//: print "assign lut_oflow_sum[4:0] = lut_in_oflow0";
+//: if(${k} >1) {
+//: foreach my $i  (1..${k}-1) {
+//: print "+ lut_in_oflow${i}";
+//: }
+//: }
+//: print ";\n";
+
 assign perf_lut_oflow_add = (&lut_oflow_cnt) ? 0 : lut_oflow_sum;
 assign perf_lut_oflow_sub = 1'b0;
 assign dp2reg_lut_oflow = lut_oflow_cnt;
-
-// perf_lut_oflow adv logic
 
 always @(
   perf_lut_oflow_add
   or perf_lut_oflow_sub
   ) begin
-  perf_lut_oflow_adv = perf_lut_oflow_add[2:0] != {{2{1'b0}}, perf_lut_oflow_sub[0:0]};
+  perf_lut_oflow_adv = perf_lut_oflow_add[4:0] != {{4{1'b0}}, perf_lut_oflow_sub[0:0]};
 end
     
-// perf_lut_oflow cnt logic
 always @(
   perf_lut_oflow_cnt_cur
   or perf_lut_oflow_add
@@ -22944,15 +21713,11 @@ always @(
   or perf_lut_oflow_adv
   or op_en_load
   ) begin
-  // VCS sop_coverage_off start
   perf_lut_oflow_cnt_ext[33:0] = {1'b0, 1'b0, perf_lut_oflow_cnt_cur};
-  perf_lut_oflow_cnt_mod[33:0] = perf_lut_oflow_cnt_cur + perf_lut_oflow_add[2:0] - perf_lut_oflow_sub[0:0]; // spyglass disable W164b
+  perf_lut_oflow_cnt_mod[33:0] = perf_lut_oflow_cnt_cur + perf_lut_oflow_add[4:0] - perf_lut_oflow_sub[0:0]; // spyglass disable W164b
   perf_lut_oflow_cnt_new[33:0] = (perf_lut_oflow_adv)? perf_lut_oflow_cnt_mod[33:0] : perf_lut_oflow_cnt_ext[33:0];
   perf_lut_oflow_cnt_nxt[33:0] = (op_en_load)? 34'd0 : perf_lut_oflow_cnt_new[33:0];
-  // VCS sop_coverage_off end
 end
-
-// perf_lut_oflow flops
 
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
@@ -22964,8 +21729,6 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   end
 end
 
-// perf_lut_oflow output logic
-
 always @(
   perf_lut_oflow_cnt_cur
   ) begin
@@ -22974,21 +21737,26 @@ end
     
   
 // UFLOW
-assign lut_uflow_sum[2:0] = lut_in_uflow3 + lut_in_uflow2 + lut_in_uflow1 + lut_in_uflow0;
+//: my $k=NVDLA_SDP_EW_THROUGHPUT;
+//: print "assign lut_uflow_sum[4:0] = lut_in_uflow0";
+//: if(${k} >1) {
+//: foreach my $i  (1..${k}-1) {
+//: print "+ lut_in_uflow${i}";
+//: }
+//: }
+//: print ";\n";
+
 assign perf_lut_uflow_add = (&lut_uflow_cnt) ? 0 : lut_uflow_sum;
 assign perf_lut_uflow_sub = 1'b0;
 assign dp2reg_lut_uflow = lut_uflow_cnt;
-
-// perf_lut_uflow adv logic
 
 always @(
   perf_lut_uflow_add
   or perf_lut_uflow_sub
   ) begin
-  perf_lut_uflow_adv = perf_lut_uflow_add[2:0] != {{2{1'b0}}, perf_lut_uflow_sub[0:0]};
+  perf_lut_uflow_adv = perf_lut_uflow_add[4:0] != {{4{1'b0}}, perf_lut_uflow_sub[0:0]};
 end
     
-// perf_lut_uflow cnt logic
 always @(
   perf_lut_uflow_cnt_cur
   or perf_lut_uflow_add
@@ -22996,15 +21764,11 @@ always @(
   or perf_lut_uflow_adv
   or op_en_load
   ) begin
-  // VCS sop_coverage_off start
   perf_lut_uflow_cnt_ext[33:0] = {1'b0, 1'b0, perf_lut_uflow_cnt_cur};
-  perf_lut_uflow_cnt_mod[33:0] = perf_lut_uflow_cnt_cur + perf_lut_uflow_add[2:0] - perf_lut_uflow_sub[0:0]; // spyglass disable W164b
+  perf_lut_uflow_cnt_mod[33:0] = perf_lut_uflow_cnt_cur + perf_lut_uflow_add[4:0] - perf_lut_uflow_sub[0:0]; // spyglass disable W164b
   perf_lut_uflow_cnt_new[33:0] = (perf_lut_uflow_adv)? perf_lut_uflow_cnt_mod[33:0] : perf_lut_uflow_cnt_ext[33:0];
   perf_lut_uflow_cnt_nxt[33:0] = (op_en_load)? 34'd0 : perf_lut_uflow_cnt_new[33:0];
-  // VCS sop_coverage_off end
 end
-
-// perf_lut_uflow flops
 
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
@@ -23016,8 +21780,6 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   end
 end
 
-// perf_lut_uflow output logic
-
 always @(
   perf_lut_uflow_cnt_cur
   ) begin
@@ -23026,25 +21788,30 @@ end
     
   
 // HYBRID
-  assign lut_in_hybrid0 = !(lut_in_oflow0 | lut_in_uflow0);
-  assign lut_in_hybrid1 = !(lut_in_oflow1 | lut_in_uflow1);
-  assign lut_in_hybrid2 = !(lut_in_oflow2 | lut_in_uflow2);
-  assign lut_in_hybrid3 = !(lut_in_oflow3 | lut_in_uflow3);
-assign lut_hybrid_sum[2:0] = lut_in_hybrid3 + lut_in_hybrid2 + lut_in_hybrid1 + lut_in_hybrid0;
+//: my $k=NVDLA_SDP_EW_THROUGHPUT;
+//: foreach my $i  (1..${k}-1) {
+//: print "assign lut_in_hybrid${i} = !(lut_in_oflow${i} | lut_in_uflow${i}); \n";
+//: }
+//: print "\n";
+//: print "assign lut_hybrid_sum[4:0] = lut_in_hybrid0";
+//: if(${k} >1) {
+//: foreach my $i  (1..${k}-1) {
+//: print "+ lut_in_hybrid${i}";
+//: }
+//: }
+//: print ";\n";
+
 assign perf_lut_hybrid_add = (&lut_hybrid_cnt) ? 0 : lut_hybrid_sum;
 assign perf_lut_hybrid_sub = 1'b0;
 assign dp2reg_lut_hybrid = lut_hybrid_cnt;
-
-// perf_lut_hybrid adv logic
 
 always @(
   perf_lut_hybrid_add
   or perf_lut_hybrid_sub
   ) begin
-  perf_lut_hybrid_adv = perf_lut_hybrid_add[2:0] != {{2{1'b0}}, perf_lut_hybrid_sub[0:0]};
+  perf_lut_hybrid_adv = perf_lut_hybrid_add[4:0] != {{4{1'b0}}, perf_lut_hybrid_sub[0:0]};
 end
     
-// perf_lut_hybrid cnt logic
 always @(
   perf_lut_hybrid_cnt_cur
   or perf_lut_hybrid_add
@@ -23052,12 +21819,10 @@ always @(
   or perf_lut_hybrid_adv
   or op_en_load
   ) begin
-  // VCS sop_coverage_off start
   perf_lut_hybrid_cnt_ext[33:0] = {1'b0, 1'b0, perf_lut_hybrid_cnt_cur};
-  perf_lut_hybrid_cnt_mod[33:0] = perf_lut_hybrid_cnt_cur + perf_lut_hybrid_add[2:0] - perf_lut_hybrid_sub[0:0]; // spyglass disable W164b
+  perf_lut_hybrid_cnt_mod[33:0] = perf_lut_hybrid_cnt_cur + perf_lut_hybrid_add[4:0] - perf_lut_hybrid_sub[0:0]; // spyglass disable W164b
   perf_lut_hybrid_cnt_new[33:0] = (perf_lut_hybrid_adv)? perf_lut_hybrid_cnt_mod[33:0] : perf_lut_hybrid_cnt_ext[33:0];
   perf_lut_hybrid_cnt_nxt[33:0] = (op_en_load)? 34'd0 : perf_lut_hybrid_cnt_new[33:0];
-  // VCS sop_coverage_off end
 end
 
 // perf_lut_hybrid flops
@@ -23082,18 +21847,24 @@ end
     
   
 // LE_HIT
-assign lut_le_hit_sum[2:0] = lut_in_le_hit3 + lut_in_le_hit2 + lut_in_le_hit1 + lut_in_le_hit0;
+//: my $k=NVDLA_SDP_EW_THROUGHPUT;
+//: print "assign lut_le_hit_sum[4:0] = lut_in_le_hit0";
+//: if(${k} >1) {
+//: foreach my $i  (1..${k}-1) {
+//: print "+ lut_in_le_hit${i}";
+//: }
+//: }
+//: print ";\n";
+
 assign perf_lut_le_hit_add = (&lut_le_hit_cnt) ? 0 : lut_le_hit_sum;
 assign perf_lut_le_hit_sub = 1'b0;
 assign dp2reg_lut_le_hit = lut_le_hit_cnt;
-
-// perf_lut_le_hit adv logic
 
 always @(
   perf_lut_le_hit_add
   or perf_lut_le_hit_sub
   ) begin
-  perf_lut_le_hit_adv = perf_lut_le_hit_add[2:0] != {{2{1'b0}}, perf_lut_le_hit_sub[0:0]};
+  perf_lut_le_hit_adv = perf_lut_le_hit_add[4:0] != {{4{1'b0}}, perf_lut_le_hit_sub[0:0]};
 end
     
 // perf_lut_le_hit cnt logic
@@ -23106,13 +21877,10 @@ always @(
   ) begin
   // VCS sop_coverage_off start
   perf_lut_le_hit_cnt_ext[33:0] = {1'b0, 1'b0, perf_lut_le_hit_cnt_cur};
-  perf_lut_le_hit_cnt_mod[33:0] = perf_lut_le_hit_cnt_cur + perf_lut_le_hit_add[2:0] - perf_lut_le_hit_sub[0:0]; // spyglass disable W164b
+  perf_lut_le_hit_cnt_mod[33:0] = perf_lut_le_hit_cnt_cur + perf_lut_le_hit_add[4:0] - perf_lut_le_hit_sub[0:0]; 
   perf_lut_le_hit_cnt_new[33:0] = (perf_lut_le_hit_adv)? perf_lut_le_hit_cnt_mod[33:0] : perf_lut_le_hit_cnt_ext[33:0];
   perf_lut_le_hit_cnt_nxt[33:0] = (op_en_load)? 34'd0 : perf_lut_le_hit_cnt_new[33:0];
-  // VCS sop_coverage_off end
 end
-
-// perf_lut_le_hit flops
 
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
@@ -23124,8 +21892,6 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   end
 end
 
-// perf_lut_le_hit output logic
-
 always @(
   perf_lut_le_hit_cnt_cur
   ) begin
@@ -23134,21 +21900,26 @@ end
     
   
 // LO_HIT
-assign lut_lo_hit_sum[2:0] = lut_in_lo_hit3 + lut_in_lo_hit2 + lut_in_lo_hit1 + lut_in_lo_hit0;
+//: my $k=NVDLA_SDP_EW_THROUGHPUT;
+//: print "assign lut_lo_hit_sum[4:0] = lut_in_lo_hit0";
+//: if(${k} >1) {
+//: foreach my $i  (1..${k}-1) {
+//: print "+ lut_in_lo_hit${i}";
+//: }
+//: }
+//: print ";\n";
+
 assign perf_lut_lo_hit_add = (&lut_lo_hit_cnt) ? 0 : lut_lo_hit_sum;
 assign perf_lut_lo_hit_sub = 1'b0;
 assign dp2reg_lut_lo_hit = lut_lo_hit_cnt;
-
-// perf_lut_lo_hit adv logic
 
 always @(
   perf_lut_lo_hit_add
   or perf_lut_lo_hit_sub
   ) begin
-  perf_lut_lo_hit_adv = perf_lut_lo_hit_add[2:0] != {{2{1'b0}}, perf_lut_lo_hit_sub[0:0]};
+  perf_lut_lo_hit_adv = perf_lut_lo_hit_add[4:0] != {{4{1'b0}}, perf_lut_lo_hit_sub[0:0]};
 end
     
-// perf_lut_lo_hit cnt logic
 always @(
   perf_lut_lo_hit_cnt_cur
   or perf_lut_lo_hit_add
@@ -23156,15 +21927,11 @@ always @(
   or perf_lut_lo_hit_adv
   or op_en_load
   ) begin
-  // VCS sop_coverage_off start
   perf_lut_lo_hit_cnt_ext[33:0] = {1'b0, 1'b0, perf_lut_lo_hit_cnt_cur};
-  perf_lut_lo_hit_cnt_mod[33:0] = perf_lut_lo_hit_cnt_cur + perf_lut_lo_hit_add[2:0] - perf_lut_lo_hit_sub[0:0]; // spyglass disable W164b
+  perf_lut_lo_hit_cnt_mod[33:0] = perf_lut_lo_hit_cnt_cur + perf_lut_lo_hit_add[4:0] - perf_lut_lo_hit_sub[0:0]; // spyglass disable W164b
   perf_lut_lo_hit_cnt_new[33:0] = (perf_lut_lo_hit_adv)? perf_lut_lo_hit_cnt_mod[33:0] : perf_lut_lo_hit_cnt_ext[33:0];
   perf_lut_lo_hit_cnt_nxt[33:0] = (op_en_load)? 34'd0 : perf_lut_lo_hit_cnt_new[33:0];
-  // VCS sop_coverage_off end
 end
-
-// perf_lut_lo_hit flops
 
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
@@ -23176,8450 +21943,51 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   end
 end
 
-// perf_lut_lo_hit output logic
-
 always @(
   perf_lut_lo_hit_cnt_cur
   ) begin
   lut_lo_hit_cnt[31:0] = perf_lut_lo_hit_cnt_cur[31:0];
 end
-    
+  
+ 
   
 //=======================================
 // rd addr mux 
-  assign lut_in_addr0_0 = lut_in_addr0;
-  assign lut_in_addr1_0 = lut_in_addr1;
-  assign lut_in_addr2_0 = lut_in_addr2;
-  assign lut_in_addr3_0 = lut_in_addr3;
-  assign lut_in_addr0_1 = lut_in_addr0 + 1;
-  assign lut_in_addr1_1 = lut_in_addr1 + 1;
-  assign lut_in_addr2_1 = lut_in_addr2 + 1;
-  assign lut_in_addr3_1 = lut_in_addr3 + 1;
-always @(
-  lut_in_addr0_0
-  or REG_le_0
-  or REG_le_1
-  or REG_le_2
-  or REG_le_3
-  or REG_le_4
-  or REG_le_5
-  or REG_le_6
-  or REG_le_7
-  or REG_le_8
-  or REG_le_9
-  or REG_le_10
-  or REG_le_11
-  or REG_le_12
-  or REG_le_13
-  or REG_le_14
-  or REG_le_15
-  or REG_le_16
-  or REG_le_17
-  or REG_le_18
-  or REG_le_19
-  or REG_le_20
-  or REG_le_21
-  or REG_le_22
-  or REG_le_23
-  or REG_le_24
-  or REG_le_25
-  or REG_le_26
-  or REG_le_27
-  or REG_le_28
-  or REG_le_29
-  or REG_le_30
-  or REG_le_31
-  or REG_le_32
-  or REG_le_33
-  or REG_le_34
-  or REG_le_35
-  or REG_le_36
-  or REG_le_37
-  or REG_le_38
-  or REG_le_39
-  or REG_le_40
-  or REG_le_41
-  or REG_le_42
-  or REG_le_43
-  or REG_le_44
-  or REG_le_45
-  or REG_le_46
-  or REG_le_47
-  or REG_le_48
-  or REG_le_49
-  or REG_le_50
-  or REG_le_51
-  or REG_le_52
-  or REG_le_53
-  or REG_le_54
-  or REG_le_55
-  or REG_le_56
-  or REG_le_57
-  or REG_le_58
-  or REG_le_59
-  or REG_le_60
-  or REG_le_61
-  or REG_le_62
-  or REG_le_63
-  or REG_le_64
-  or REG_le_65
-  or REG_le_66
-  or REG_le_67
-  or REG_le_68
-  or REG_le_69
-  or REG_le_70
-  or REG_le_71
-  or REG_le_72
-  or REG_le_73
-  or REG_le_74
-  or REG_le_75
-  or REG_le_76
-  or REG_le_77
-  or REG_le_78
-  or REG_le_79
-  or REG_le_80
-  or REG_le_81
-  or REG_le_82
-  or REG_le_83
-  or REG_le_84
-  or REG_le_85
-  or REG_le_86
-  or REG_le_87
-  or REG_le_88
-  or REG_le_89
-  or REG_le_90
-  or REG_le_91
-  or REG_le_92
-  or REG_le_93
-  or REG_le_94
-  or REG_le_95
-  or REG_le_96
-  or REG_le_97
-  or REG_le_98
-  or REG_le_99
-  or REG_le_100
-  or REG_le_101
-  or REG_le_102
-  or REG_le_103
-  or REG_le_104
-  or REG_le_105
-  or REG_le_106
-  or REG_le_107
-  or REG_le_108
-  or REG_le_109
-  or REG_le_110
-  or REG_le_111
-  or REG_le_112
-  or REG_le_113
-  or REG_le_114
-  or REG_le_115
-  or REG_le_116
-  or REG_le_117
-  or REG_le_118
-  or REG_le_119
-  or REG_le_120
-  or REG_le_121
-  or REG_le_122
-  or REG_le_123
-  or REG_le_124
-  or REG_le_125
-  or REG_le_126
-  or REG_le_127
-  or REG_le_128
-  or REG_le_129
-  or REG_le_130
-  or REG_le_131
-  or REG_le_132
-  or REG_le_133
-  or REG_le_134
-  or REG_le_135
-  or REG_le_136
-  or REG_le_137
-  or REG_le_138
-  or REG_le_139
-  or REG_le_140
-  or REG_le_141
-  or REG_le_142
-  or REG_le_143
-  or REG_le_144
-  or REG_le_145
-  or REG_le_146
-  or REG_le_147
-  or REG_le_148
-  or REG_le_149
-  or REG_le_150
-  or REG_le_151
-  or REG_le_152
-  or REG_le_153
-  or REG_le_154
-  or REG_le_155
-  or REG_le_156
-  or REG_le_157
-  or REG_le_158
-  or REG_le_159
-  or REG_le_160
-  or REG_le_161
-  or REG_le_162
-  or REG_le_163
-  or REG_le_164
-  or REG_le_165
-  or REG_le_166
-  or REG_le_167
-  or REG_le_168
-  or REG_le_169
-  or REG_le_170
-  or REG_le_171
-  or REG_le_172
-  or REG_le_173
-  or REG_le_174
-  or REG_le_175
-  or REG_le_176
-  or REG_le_177
-  or REG_le_178
-  or REG_le_179
-  or REG_le_180
-  or REG_le_181
-  or REG_le_182
-  or REG_le_183
-  or REG_le_184
-  or REG_le_185
-  or REG_le_186
-  or REG_le_187
-  or REG_le_188
-  or REG_le_189
-  or REG_le_190
-  or REG_le_191
-  or REG_le_192
-  or REG_le_193
-  or REG_le_194
-  or REG_le_195
-  or REG_le_196
-  or REG_le_197
-  or REG_le_198
-  or REG_le_199
-  or REG_le_200
-  or REG_le_201
-  or REG_le_202
-  or REG_le_203
-  or REG_le_204
-  or REG_le_205
-  or REG_le_206
-  or REG_le_207
-  or REG_le_208
-  or REG_le_209
-  or REG_le_210
-  or REG_le_211
-  or REG_le_212
-  or REG_le_213
-  or REG_le_214
-  or REG_le_215
-  or REG_le_216
-  or REG_le_217
-  or REG_le_218
-  or REG_le_219
-  or REG_le_220
-  or REG_le_221
-  or REG_le_222
-  or REG_le_223
-  or REG_le_224
-  or REG_le_225
-  or REG_le_226
-  or REG_le_227
-  or REG_le_228
-  or REG_le_229
-  or REG_le_230
-  or REG_le_231
-  or REG_le_232
-  or REG_le_233
-  or REG_le_234
-  or REG_le_235
-  or REG_le_236
-  or REG_le_237
-  or REG_le_238
-  or REG_le_239
-  or REG_le_240
-  or REG_le_241
-  or REG_le_242
-  or REG_le_243
-  or REG_le_244
-  or REG_le_245
-  or REG_le_246
-  or REG_le_247
-  or REG_le_248
-  or REG_le_249
-  or REG_le_250
-  or REG_le_251
-  or REG_le_252
-  or REG_le_253
-  or REG_le_254
-  or REG_le_255
-  or REG_le_256
-  ) begin
-case (lut_in_addr0_0) 
-
-0: le_data0_0 = REG_le_0;
-1: le_data0_0 = REG_le_1;
-2: le_data0_0 = REG_le_2;
-3: le_data0_0 = REG_le_3;
-4: le_data0_0 = REG_le_4;
-5: le_data0_0 = REG_le_5;
-6: le_data0_0 = REG_le_6;
-7: le_data0_0 = REG_le_7;
-8: le_data0_0 = REG_le_8;
-9: le_data0_0 = REG_le_9;
-10: le_data0_0 = REG_le_10;
-11: le_data0_0 = REG_le_11;
-12: le_data0_0 = REG_le_12;
-13: le_data0_0 = REG_le_13;
-14: le_data0_0 = REG_le_14;
-15: le_data0_0 = REG_le_15;
-16: le_data0_0 = REG_le_16;
-17: le_data0_0 = REG_le_17;
-18: le_data0_0 = REG_le_18;
-19: le_data0_0 = REG_le_19;
-20: le_data0_0 = REG_le_20;
-21: le_data0_0 = REG_le_21;
-22: le_data0_0 = REG_le_22;
-23: le_data0_0 = REG_le_23;
-24: le_data0_0 = REG_le_24;
-25: le_data0_0 = REG_le_25;
-26: le_data0_0 = REG_le_26;
-27: le_data0_0 = REG_le_27;
-28: le_data0_0 = REG_le_28;
-29: le_data0_0 = REG_le_29;
-30: le_data0_0 = REG_le_30;
-31: le_data0_0 = REG_le_31;
-32: le_data0_0 = REG_le_32;
-33: le_data0_0 = REG_le_33;
-34: le_data0_0 = REG_le_34;
-35: le_data0_0 = REG_le_35;
-36: le_data0_0 = REG_le_36;
-37: le_data0_0 = REG_le_37;
-38: le_data0_0 = REG_le_38;
-39: le_data0_0 = REG_le_39;
-40: le_data0_0 = REG_le_40;
-41: le_data0_0 = REG_le_41;
-42: le_data0_0 = REG_le_42;
-43: le_data0_0 = REG_le_43;
-44: le_data0_0 = REG_le_44;
-45: le_data0_0 = REG_le_45;
-46: le_data0_0 = REG_le_46;
-47: le_data0_0 = REG_le_47;
-48: le_data0_0 = REG_le_48;
-49: le_data0_0 = REG_le_49;
-50: le_data0_0 = REG_le_50;
-51: le_data0_0 = REG_le_51;
-52: le_data0_0 = REG_le_52;
-53: le_data0_0 = REG_le_53;
-54: le_data0_0 = REG_le_54;
-55: le_data0_0 = REG_le_55;
-56: le_data0_0 = REG_le_56;
-57: le_data0_0 = REG_le_57;
-58: le_data0_0 = REG_le_58;
-59: le_data0_0 = REG_le_59;
-60: le_data0_0 = REG_le_60;
-61: le_data0_0 = REG_le_61;
-62: le_data0_0 = REG_le_62;
-63: le_data0_0 = REG_le_63;
-64: le_data0_0 = REG_le_64;
-65: le_data0_0 = REG_le_65;
-66: le_data0_0 = REG_le_66;
-67: le_data0_0 = REG_le_67;
-68: le_data0_0 = REG_le_68;
-69: le_data0_0 = REG_le_69;
-70: le_data0_0 = REG_le_70;
-71: le_data0_0 = REG_le_71;
-72: le_data0_0 = REG_le_72;
-73: le_data0_0 = REG_le_73;
-74: le_data0_0 = REG_le_74;
-75: le_data0_0 = REG_le_75;
-76: le_data0_0 = REG_le_76;
-77: le_data0_0 = REG_le_77;
-78: le_data0_0 = REG_le_78;
-79: le_data0_0 = REG_le_79;
-80: le_data0_0 = REG_le_80;
-81: le_data0_0 = REG_le_81;
-82: le_data0_0 = REG_le_82;
-83: le_data0_0 = REG_le_83;
-84: le_data0_0 = REG_le_84;
-85: le_data0_0 = REG_le_85;
-86: le_data0_0 = REG_le_86;
-87: le_data0_0 = REG_le_87;
-88: le_data0_0 = REG_le_88;
-89: le_data0_0 = REG_le_89;
-90: le_data0_0 = REG_le_90;
-91: le_data0_0 = REG_le_91;
-92: le_data0_0 = REG_le_92;
-93: le_data0_0 = REG_le_93;
-94: le_data0_0 = REG_le_94;
-95: le_data0_0 = REG_le_95;
-96: le_data0_0 = REG_le_96;
-97: le_data0_0 = REG_le_97;
-98: le_data0_0 = REG_le_98;
-99: le_data0_0 = REG_le_99;
-100: le_data0_0 = REG_le_100;
-101: le_data0_0 = REG_le_101;
-102: le_data0_0 = REG_le_102;
-103: le_data0_0 = REG_le_103;
-104: le_data0_0 = REG_le_104;
-105: le_data0_0 = REG_le_105;
-106: le_data0_0 = REG_le_106;
-107: le_data0_0 = REG_le_107;
-108: le_data0_0 = REG_le_108;
-109: le_data0_0 = REG_le_109;
-110: le_data0_0 = REG_le_110;
-111: le_data0_0 = REG_le_111;
-112: le_data0_0 = REG_le_112;
-113: le_data0_0 = REG_le_113;
-114: le_data0_0 = REG_le_114;
-115: le_data0_0 = REG_le_115;
-116: le_data0_0 = REG_le_116;
-117: le_data0_0 = REG_le_117;
-118: le_data0_0 = REG_le_118;
-119: le_data0_0 = REG_le_119;
-120: le_data0_0 = REG_le_120;
-121: le_data0_0 = REG_le_121;
-122: le_data0_0 = REG_le_122;
-123: le_data0_0 = REG_le_123;
-124: le_data0_0 = REG_le_124;
-125: le_data0_0 = REG_le_125;
-126: le_data0_0 = REG_le_126;
-127: le_data0_0 = REG_le_127;
-128: le_data0_0 = REG_le_128;
-129: le_data0_0 = REG_le_129;
-130: le_data0_0 = REG_le_130;
-131: le_data0_0 = REG_le_131;
-132: le_data0_0 = REG_le_132;
-133: le_data0_0 = REG_le_133;
-134: le_data0_0 = REG_le_134;
-135: le_data0_0 = REG_le_135;
-136: le_data0_0 = REG_le_136;
-137: le_data0_0 = REG_le_137;
-138: le_data0_0 = REG_le_138;
-139: le_data0_0 = REG_le_139;
-140: le_data0_0 = REG_le_140;
-141: le_data0_0 = REG_le_141;
-142: le_data0_0 = REG_le_142;
-143: le_data0_0 = REG_le_143;
-144: le_data0_0 = REG_le_144;
-145: le_data0_0 = REG_le_145;
-146: le_data0_0 = REG_le_146;
-147: le_data0_0 = REG_le_147;
-148: le_data0_0 = REG_le_148;
-149: le_data0_0 = REG_le_149;
-150: le_data0_0 = REG_le_150;
-151: le_data0_0 = REG_le_151;
-152: le_data0_0 = REG_le_152;
-153: le_data0_0 = REG_le_153;
-154: le_data0_0 = REG_le_154;
-155: le_data0_0 = REG_le_155;
-156: le_data0_0 = REG_le_156;
-157: le_data0_0 = REG_le_157;
-158: le_data0_0 = REG_le_158;
-159: le_data0_0 = REG_le_159;
-160: le_data0_0 = REG_le_160;
-161: le_data0_0 = REG_le_161;
-162: le_data0_0 = REG_le_162;
-163: le_data0_0 = REG_le_163;
-164: le_data0_0 = REG_le_164;
-165: le_data0_0 = REG_le_165;
-166: le_data0_0 = REG_le_166;
-167: le_data0_0 = REG_le_167;
-168: le_data0_0 = REG_le_168;
-169: le_data0_0 = REG_le_169;
-170: le_data0_0 = REG_le_170;
-171: le_data0_0 = REG_le_171;
-172: le_data0_0 = REG_le_172;
-173: le_data0_0 = REG_le_173;
-174: le_data0_0 = REG_le_174;
-175: le_data0_0 = REG_le_175;
-176: le_data0_0 = REG_le_176;
-177: le_data0_0 = REG_le_177;
-178: le_data0_0 = REG_le_178;
-179: le_data0_0 = REG_le_179;
-180: le_data0_0 = REG_le_180;
-181: le_data0_0 = REG_le_181;
-182: le_data0_0 = REG_le_182;
-183: le_data0_0 = REG_le_183;
-184: le_data0_0 = REG_le_184;
-185: le_data0_0 = REG_le_185;
-186: le_data0_0 = REG_le_186;
-187: le_data0_0 = REG_le_187;
-188: le_data0_0 = REG_le_188;
-189: le_data0_0 = REG_le_189;
-190: le_data0_0 = REG_le_190;
-191: le_data0_0 = REG_le_191;
-192: le_data0_0 = REG_le_192;
-193: le_data0_0 = REG_le_193;
-194: le_data0_0 = REG_le_194;
-195: le_data0_0 = REG_le_195;
-196: le_data0_0 = REG_le_196;
-197: le_data0_0 = REG_le_197;
-198: le_data0_0 = REG_le_198;
-199: le_data0_0 = REG_le_199;
-200: le_data0_0 = REG_le_200;
-201: le_data0_0 = REG_le_201;
-202: le_data0_0 = REG_le_202;
-203: le_data0_0 = REG_le_203;
-204: le_data0_0 = REG_le_204;
-205: le_data0_0 = REG_le_205;
-206: le_data0_0 = REG_le_206;
-207: le_data0_0 = REG_le_207;
-208: le_data0_0 = REG_le_208;
-209: le_data0_0 = REG_le_209;
-210: le_data0_0 = REG_le_210;
-211: le_data0_0 = REG_le_211;
-212: le_data0_0 = REG_le_212;
-213: le_data0_0 = REG_le_213;
-214: le_data0_0 = REG_le_214;
-215: le_data0_0 = REG_le_215;
-216: le_data0_0 = REG_le_216;
-217: le_data0_0 = REG_le_217;
-218: le_data0_0 = REG_le_218;
-219: le_data0_0 = REG_le_219;
-220: le_data0_0 = REG_le_220;
-221: le_data0_0 = REG_le_221;
-222: le_data0_0 = REG_le_222;
-223: le_data0_0 = REG_le_223;
-224: le_data0_0 = REG_le_224;
-225: le_data0_0 = REG_le_225;
-226: le_data0_0 = REG_le_226;
-227: le_data0_0 = REG_le_227;
-228: le_data0_0 = REG_le_228;
-229: le_data0_0 = REG_le_229;
-230: le_data0_0 = REG_le_230;
-231: le_data0_0 = REG_le_231;
-232: le_data0_0 = REG_le_232;
-233: le_data0_0 = REG_le_233;
-234: le_data0_0 = REG_le_234;
-235: le_data0_0 = REG_le_235;
-236: le_data0_0 = REG_le_236;
-237: le_data0_0 = REG_le_237;
-238: le_data0_0 = REG_le_238;
-239: le_data0_0 = REG_le_239;
-240: le_data0_0 = REG_le_240;
-241: le_data0_0 = REG_le_241;
-242: le_data0_0 = REG_le_242;
-243: le_data0_0 = REG_le_243;
-244: le_data0_0 = REG_le_244;
-245: le_data0_0 = REG_le_245;
-246: le_data0_0 = REG_le_246;
-247: le_data0_0 = REG_le_247;
-248: le_data0_0 = REG_le_248;
-249: le_data0_0 = REG_le_249;
-250: le_data0_0 = REG_le_250;
-251: le_data0_0 = REG_le_251;
-252: le_data0_0 = REG_le_252;
-253: le_data0_0 = REG_le_253;
-254: le_data0_0 = REG_le_254;
-255: le_data0_0 = REG_le_255;
-256: le_data0_0 = REG_le_256;
-//VCS coverage off
-default : begin 
-            le_data0_0[15:0] = {16{`x_or_0}};
-          end  
-//VCS coverage on
-endcase
-end
-
-always @(
-  lut_in_addr1_0
-  or REG_le_0
-  or REG_le_1
-  or REG_le_2
-  or REG_le_3
-  or REG_le_4
-  or REG_le_5
-  or REG_le_6
-  or REG_le_7
-  or REG_le_8
-  or REG_le_9
-  or REG_le_10
-  or REG_le_11
-  or REG_le_12
-  or REG_le_13
-  or REG_le_14
-  or REG_le_15
-  or REG_le_16
-  or REG_le_17
-  or REG_le_18
-  or REG_le_19
-  or REG_le_20
-  or REG_le_21
-  or REG_le_22
-  or REG_le_23
-  or REG_le_24
-  or REG_le_25
-  or REG_le_26
-  or REG_le_27
-  or REG_le_28
-  or REG_le_29
-  or REG_le_30
-  or REG_le_31
-  or REG_le_32
-  or REG_le_33
-  or REG_le_34
-  or REG_le_35
-  or REG_le_36
-  or REG_le_37
-  or REG_le_38
-  or REG_le_39
-  or REG_le_40
-  or REG_le_41
-  or REG_le_42
-  or REG_le_43
-  or REG_le_44
-  or REG_le_45
-  or REG_le_46
-  or REG_le_47
-  or REG_le_48
-  or REG_le_49
-  or REG_le_50
-  or REG_le_51
-  or REG_le_52
-  or REG_le_53
-  or REG_le_54
-  or REG_le_55
-  or REG_le_56
-  or REG_le_57
-  or REG_le_58
-  or REG_le_59
-  or REG_le_60
-  or REG_le_61
-  or REG_le_62
-  or REG_le_63
-  or REG_le_64
-  or REG_le_65
-  or REG_le_66
-  or REG_le_67
-  or REG_le_68
-  or REG_le_69
-  or REG_le_70
-  or REG_le_71
-  or REG_le_72
-  or REG_le_73
-  or REG_le_74
-  or REG_le_75
-  or REG_le_76
-  or REG_le_77
-  or REG_le_78
-  or REG_le_79
-  or REG_le_80
-  or REG_le_81
-  or REG_le_82
-  or REG_le_83
-  or REG_le_84
-  or REG_le_85
-  or REG_le_86
-  or REG_le_87
-  or REG_le_88
-  or REG_le_89
-  or REG_le_90
-  or REG_le_91
-  or REG_le_92
-  or REG_le_93
-  or REG_le_94
-  or REG_le_95
-  or REG_le_96
-  or REG_le_97
-  or REG_le_98
-  or REG_le_99
-  or REG_le_100
-  or REG_le_101
-  or REG_le_102
-  or REG_le_103
-  or REG_le_104
-  or REG_le_105
-  or REG_le_106
-  or REG_le_107
-  or REG_le_108
-  or REG_le_109
-  or REG_le_110
-  or REG_le_111
-  or REG_le_112
-  or REG_le_113
-  or REG_le_114
-  or REG_le_115
-  or REG_le_116
-  or REG_le_117
-  or REG_le_118
-  or REG_le_119
-  or REG_le_120
-  or REG_le_121
-  or REG_le_122
-  or REG_le_123
-  or REG_le_124
-  or REG_le_125
-  or REG_le_126
-  or REG_le_127
-  or REG_le_128
-  or REG_le_129
-  or REG_le_130
-  or REG_le_131
-  or REG_le_132
-  or REG_le_133
-  or REG_le_134
-  or REG_le_135
-  or REG_le_136
-  or REG_le_137
-  or REG_le_138
-  or REG_le_139
-  or REG_le_140
-  or REG_le_141
-  or REG_le_142
-  or REG_le_143
-  or REG_le_144
-  or REG_le_145
-  or REG_le_146
-  or REG_le_147
-  or REG_le_148
-  or REG_le_149
-  or REG_le_150
-  or REG_le_151
-  or REG_le_152
-  or REG_le_153
-  or REG_le_154
-  or REG_le_155
-  or REG_le_156
-  or REG_le_157
-  or REG_le_158
-  or REG_le_159
-  or REG_le_160
-  or REG_le_161
-  or REG_le_162
-  or REG_le_163
-  or REG_le_164
-  or REG_le_165
-  or REG_le_166
-  or REG_le_167
-  or REG_le_168
-  or REG_le_169
-  or REG_le_170
-  or REG_le_171
-  or REG_le_172
-  or REG_le_173
-  or REG_le_174
-  or REG_le_175
-  or REG_le_176
-  or REG_le_177
-  or REG_le_178
-  or REG_le_179
-  or REG_le_180
-  or REG_le_181
-  or REG_le_182
-  or REG_le_183
-  or REG_le_184
-  or REG_le_185
-  or REG_le_186
-  or REG_le_187
-  or REG_le_188
-  or REG_le_189
-  or REG_le_190
-  or REG_le_191
-  or REG_le_192
-  or REG_le_193
-  or REG_le_194
-  or REG_le_195
-  or REG_le_196
-  or REG_le_197
-  or REG_le_198
-  or REG_le_199
-  or REG_le_200
-  or REG_le_201
-  or REG_le_202
-  or REG_le_203
-  or REG_le_204
-  or REG_le_205
-  or REG_le_206
-  or REG_le_207
-  or REG_le_208
-  or REG_le_209
-  or REG_le_210
-  or REG_le_211
-  or REG_le_212
-  or REG_le_213
-  or REG_le_214
-  or REG_le_215
-  or REG_le_216
-  or REG_le_217
-  or REG_le_218
-  or REG_le_219
-  or REG_le_220
-  or REG_le_221
-  or REG_le_222
-  or REG_le_223
-  or REG_le_224
-  or REG_le_225
-  or REG_le_226
-  or REG_le_227
-  or REG_le_228
-  or REG_le_229
-  or REG_le_230
-  or REG_le_231
-  or REG_le_232
-  or REG_le_233
-  or REG_le_234
-  or REG_le_235
-  or REG_le_236
-  or REG_le_237
-  or REG_le_238
-  or REG_le_239
-  or REG_le_240
-  or REG_le_241
-  or REG_le_242
-  or REG_le_243
-  or REG_le_244
-  or REG_le_245
-  or REG_le_246
-  or REG_le_247
-  or REG_le_248
-  or REG_le_249
-  or REG_le_250
-  or REG_le_251
-  or REG_le_252
-  or REG_le_253
-  or REG_le_254
-  or REG_le_255
-  or REG_le_256
-  ) begin
-case (lut_in_addr1_0) 
-
-0: le_data0_1 = REG_le_0;
-1: le_data0_1 = REG_le_1;
-2: le_data0_1 = REG_le_2;
-3: le_data0_1 = REG_le_3;
-4: le_data0_1 = REG_le_4;
-5: le_data0_1 = REG_le_5;
-6: le_data0_1 = REG_le_6;
-7: le_data0_1 = REG_le_7;
-8: le_data0_1 = REG_le_8;
-9: le_data0_1 = REG_le_9;
-10: le_data0_1 = REG_le_10;
-11: le_data0_1 = REG_le_11;
-12: le_data0_1 = REG_le_12;
-13: le_data0_1 = REG_le_13;
-14: le_data0_1 = REG_le_14;
-15: le_data0_1 = REG_le_15;
-16: le_data0_1 = REG_le_16;
-17: le_data0_1 = REG_le_17;
-18: le_data0_1 = REG_le_18;
-19: le_data0_1 = REG_le_19;
-20: le_data0_1 = REG_le_20;
-21: le_data0_1 = REG_le_21;
-22: le_data0_1 = REG_le_22;
-23: le_data0_1 = REG_le_23;
-24: le_data0_1 = REG_le_24;
-25: le_data0_1 = REG_le_25;
-26: le_data0_1 = REG_le_26;
-27: le_data0_1 = REG_le_27;
-28: le_data0_1 = REG_le_28;
-29: le_data0_1 = REG_le_29;
-30: le_data0_1 = REG_le_30;
-31: le_data0_1 = REG_le_31;
-32: le_data0_1 = REG_le_32;
-33: le_data0_1 = REG_le_33;
-34: le_data0_1 = REG_le_34;
-35: le_data0_1 = REG_le_35;
-36: le_data0_1 = REG_le_36;
-37: le_data0_1 = REG_le_37;
-38: le_data0_1 = REG_le_38;
-39: le_data0_1 = REG_le_39;
-40: le_data0_1 = REG_le_40;
-41: le_data0_1 = REG_le_41;
-42: le_data0_1 = REG_le_42;
-43: le_data0_1 = REG_le_43;
-44: le_data0_1 = REG_le_44;
-45: le_data0_1 = REG_le_45;
-46: le_data0_1 = REG_le_46;
-47: le_data0_1 = REG_le_47;
-48: le_data0_1 = REG_le_48;
-49: le_data0_1 = REG_le_49;
-50: le_data0_1 = REG_le_50;
-51: le_data0_1 = REG_le_51;
-52: le_data0_1 = REG_le_52;
-53: le_data0_1 = REG_le_53;
-54: le_data0_1 = REG_le_54;
-55: le_data0_1 = REG_le_55;
-56: le_data0_1 = REG_le_56;
-57: le_data0_1 = REG_le_57;
-58: le_data0_1 = REG_le_58;
-59: le_data0_1 = REG_le_59;
-60: le_data0_1 = REG_le_60;
-61: le_data0_1 = REG_le_61;
-62: le_data0_1 = REG_le_62;
-63: le_data0_1 = REG_le_63;
-64: le_data0_1 = REG_le_64;
-65: le_data0_1 = REG_le_65;
-66: le_data0_1 = REG_le_66;
-67: le_data0_1 = REG_le_67;
-68: le_data0_1 = REG_le_68;
-69: le_data0_1 = REG_le_69;
-70: le_data0_1 = REG_le_70;
-71: le_data0_1 = REG_le_71;
-72: le_data0_1 = REG_le_72;
-73: le_data0_1 = REG_le_73;
-74: le_data0_1 = REG_le_74;
-75: le_data0_1 = REG_le_75;
-76: le_data0_1 = REG_le_76;
-77: le_data0_1 = REG_le_77;
-78: le_data0_1 = REG_le_78;
-79: le_data0_1 = REG_le_79;
-80: le_data0_1 = REG_le_80;
-81: le_data0_1 = REG_le_81;
-82: le_data0_1 = REG_le_82;
-83: le_data0_1 = REG_le_83;
-84: le_data0_1 = REG_le_84;
-85: le_data0_1 = REG_le_85;
-86: le_data0_1 = REG_le_86;
-87: le_data0_1 = REG_le_87;
-88: le_data0_1 = REG_le_88;
-89: le_data0_1 = REG_le_89;
-90: le_data0_1 = REG_le_90;
-91: le_data0_1 = REG_le_91;
-92: le_data0_1 = REG_le_92;
-93: le_data0_1 = REG_le_93;
-94: le_data0_1 = REG_le_94;
-95: le_data0_1 = REG_le_95;
-96: le_data0_1 = REG_le_96;
-97: le_data0_1 = REG_le_97;
-98: le_data0_1 = REG_le_98;
-99: le_data0_1 = REG_le_99;
-100: le_data0_1 = REG_le_100;
-101: le_data0_1 = REG_le_101;
-102: le_data0_1 = REG_le_102;
-103: le_data0_1 = REG_le_103;
-104: le_data0_1 = REG_le_104;
-105: le_data0_1 = REG_le_105;
-106: le_data0_1 = REG_le_106;
-107: le_data0_1 = REG_le_107;
-108: le_data0_1 = REG_le_108;
-109: le_data0_1 = REG_le_109;
-110: le_data0_1 = REG_le_110;
-111: le_data0_1 = REG_le_111;
-112: le_data0_1 = REG_le_112;
-113: le_data0_1 = REG_le_113;
-114: le_data0_1 = REG_le_114;
-115: le_data0_1 = REG_le_115;
-116: le_data0_1 = REG_le_116;
-117: le_data0_1 = REG_le_117;
-118: le_data0_1 = REG_le_118;
-119: le_data0_1 = REG_le_119;
-120: le_data0_1 = REG_le_120;
-121: le_data0_1 = REG_le_121;
-122: le_data0_1 = REG_le_122;
-123: le_data0_1 = REG_le_123;
-124: le_data0_1 = REG_le_124;
-125: le_data0_1 = REG_le_125;
-126: le_data0_1 = REG_le_126;
-127: le_data0_1 = REG_le_127;
-128: le_data0_1 = REG_le_128;
-129: le_data0_1 = REG_le_129;
-130: le_data0_1 = REG_le_130;
-131: le_data0_1 = REG_le_131;
-132: le_data0_1 = REG_le_132;
-133: le_data0_1 = REG_le_133;
-134: le_data0_1 = REG_le_134;
-135: le_data0_1 = REG_le_135;
-136: le_data0_1 = REG_le_136;
-137: le_data0_1 = REG_le_137;
-138: le_data0_1 = REG_le_138;
-139: le_data0_1 = REG_le_139;
-140: le_data0_1 = REG_le_140;
-141: le_data0_1 = REG_le_141;
-142: le_data0_1 = REG_le_142;
-143: le_data0_1 = REG_le_143;
-144: le_data0_1 = REG_le_144;
-145: le_data0_1 = REG_le_145;
-146: le_data0_1 = REG_le_146;
-147: le_data0_1 = REG_le_147;
-148: le_data0_1 = REG_le_148;
-149: le_data0_1 = REG_le_149;
-150: le_data0_1 = REG_le_150;
-151: le_data0_1 = REG_le_151;
-152: le_data0_1 = REG_le_152;
-153: le_data0_1 = REG_le_153;
-154: le_data0_1 = REG_le_154;
-155: le_data0_1 = REG_le_155;
-156: le_data0_1 = REG_le_156;
-157: le_data0_1 = REG_le_157;
-158: le_data0_1 = REG_le_158;
-159: le_data0_1 = REG_le_159;
-160: le_data0_1 = REG_le_160;
-161: le_data0_1 = REG_le_161;
-162: le_data0_1 = REG_le_162;
-163: le_data0_1 = REG_le_163;
-164: le_data0_1 = REG_le_164;
-165: le_data0_1 = REG_le_165;
-166: le_data0_1 = REG_le_166;
-167: le_data0_1 = REG_le_167;
-168: le_data0_1 = REG_le_168;
-169: le_data0_1 = REG_le_169;
-170: le_data0_1 = REG_le_170;
-171: le_data0_1 = REG_le_171;
-172: le_data0_1 = REG_le_172;
-173: le_data0_1 = REG_le_173;
-174: le_data0_1 = REG_le_174;
-175: le_data0_1 = REG_le_175;
-176: le_data0_1 = REG_le_176;
-177: le_data0_1 = REG_le_177;
-178: le_data0_1 = REG_le_178;
-179: le_data0_1 = REG_le_179;
-180: le_data0_1 = REG_le_180;
-181: le_data0_1 = REG_le_181;
-182: le_data0_1 = REG_le_182;
-183: le_data0_1 = REG_le_183;
-184: le_data0_1 = REG_le_184;
-185: le_data0_1 = REG_le_185;
-186: le_data0_1 = REG_le_186;
-187: le_data0_1 = REG_le_187;
-188: le_data0_1 = REG_le_188;
-189: le_data0_1 = REG_le_189;
-190: le_data0_1 = REG_le_190;
-191: le_data0_1 = REG_le_191;
-192: le_data0_1 = REG_le_192;
-193: le_data0_1 = REG_le_193;
-194: le_data0_1 = REG_le_194;
-195: le_data0_1 = REG_le_195;
-196: le_data0_1 = REG_le_196;
-197: le_data0_1 = REG_le_197;
-198: le_data0_1 = REG_le_198;
-199: le_data0_1 = REG_le_199;
-200: le_data0_1 = REG_le_200;
-201: le_data0_1 = REG_le_201;
-202: le_data0_1 = REG_le_202;
-203: le_data0_1 = REG_le_203;
-204: le_data0_1 = REG_le_204;
-205: le_data0_1 = REG_le_205;
-206: le_data0_1 = REG_le_206;
-207: le_data0_1 = REG_le_207;
-208: le_data0_1 = REG_le_208;
-209: le_data0_1 = REG_le_209;
-210: le_data0_1 = REG_le_210;
-211: le_data0_1 = REG_le_211;
-212: le_data0_1 = REG_le_212;
-213: le_data0_1 = REG_le_213;
-214: le_data0_1 = REG_le_214;
-215: le_data0_1 = REG_le_215;
-216: le_data0_1 = REG_le_216;
-217: le_data0_1 = REG_le_217;
-218: le_data0_1 = REG_le_218;
-219: le_data0_1 = REG_le_219;
-220: le_data0_1 = REG_le_220;
-221: le_data0_1 = REG_le_221;
-222: le_data0_1 = REG_le_222;
-223: le_data0_1 = REG_le_223;
-224: le_data0_1 = REG_le_224;
-225: le_data0_1 = REG_le_225;
-226: le_data0_1 = REG_le_226;
-227: le_data0_1 = REG_le_227;
-228: le_data0_1 = REG_le_228;
-229: le_data0_1 = REG_le_229;
-230: le_data0_1 = REG_le_230;
-231: le_data0_1 = REG_le_231;
-232: le_data0_1 = REG_le_232;
-233: le_data0_1 = REG_le_233;
-234: le_data0_1 = REG_le_234;
-235: le_data0_1 = REG_le_235;
-236: le_data0_1 = REG_le_236;
-237: le_data0_1 = REG_le_237;
-238: le_data0_1 = REG_le_238;
-239: le_data0_1 = REG_le_239;
-240: le_data0_1 = REG_le_240;
-241: le_data0_1 = REG_le_241;
-242: le_data0_1 = REG_le_242;
-243: le_data0_1 = REG_le_243;
-244: le_data0_1 = REG_le_244;
-245: le_data0_1 = REG_le_245;
-246: le_data0_1 = REG_le_246;
-247: le_data0_1 = REG_le_247;
-248: le_data0_1 = REG_le_248;
-249: le_data0_1 = REG_le_249;
-250: le_data0_1 = REG_le_250;
-251: le_data0_1 = REG_le_251;
-252: le_data0_1 = REG_le_252;
-253: le_data0_1 = REG_le_253;
-254: le_data0_1 = REG_le_254;
-255: le_data0_1 = REG_le_255;
-256: le_data0_1 = REG_le_256;
-//VCS coverage off
-default : begin 
-            le_data0_1[15:0] = {16{`x_or_0}};
-          end  
-//VCS coverage on
-endcase
-end
-
-always @(
-  lut_in_addr2_0
-  or REG_le_0
-  or REG_le_1
-  or REG_le_2
-  or REG_le_3
-  or REG_le_4
-  or REG_le_5
-  or REG_le_6
-  or REG_le_7
-  or REG_le_8
-  or REG_le_9
-  or REG_le_10
-  or REG_le_11
-  or REG_le_12
-  or REG_le_13
-  or REG_le_14
-  or REG_le_15
-  or REG_le_16
-  or REG_le_17
-  or REG_le_18
-  or REG_le_19
-  or REG_le_20
-  or REG_le_21
-  or REG_le_22
-  or REG_le_23
-  or REG_le_24
-  or REG_le_25
-  or REG_le_26
-  or REG_le_27
-  or REG_le_28
-  or REG_le_29
-  or REG_le_30
-  or REG_le_31
-  or REG_le_32
-  or REG_le_33
-  or REG_le_34
-  or REG_le_35
-  or REG_le_36
-  or REG_le_37
-  or REG_le_38
-  or REG_le_39
-  or REG_le_40
-  or REG_le_41
-  or REG_le_42
-  or REG_le_43
-  or REG_le_44
-  or REG_le_45
-  or REG_le_46
-  or REG_le_47
-  or REG_le_48
-  or REG_le_49
-  or REG_le_50
-  or REG_le_51
-  or REG_le_52
-  or REG_le_53
-  or REG_le_54
-  or REG_le_55
-  or REG_le_56
-  or REG_le_57
-  or REG_le_58
-  or REG_le_59
-  or REG_le_60
-  or REG_le_61
-  or REG_le_62
-  or REG_le_63
-  or REG_le_64
-  or REG_le_65
-  or REG_le_66
-  or REG_le_67
-  or REG_le_68
-  or REG_le_69
-  or REG_le_70
-  or REG_le_71
-  or REG_le_72
-  or REG_le_73
-  or REG_le_74
-  or REG_le_75
-  or REG_le_76
-  or REG_le_77
-  or REG_le_78
-  or REG_le_79
-  or REG_le_80
-  or REG_le_81
-  or REG_le_82
-  or REG_le_83
-  or REG_le_84
-  or REG_le_85
-  or REG_le_86
-  or REG_le_87
-  or REG_le_88
-  or REG_le_89
-  or REG_le_90
-  or REG_le_91
-  or REG_le_92
-  or REG_le_93
-  or REG_le_94
-  or REG_le_95
-  or REG_le_96
-  or REG_le_97
-  or REG_le_98
-  or REG_le_99
-  or REG_le_100
-  or REG_le_101
-  or REG_le_102
-  or REG_le_103
-  or REG_le_104
-  or REG_le_105
-  or REG_le_106
-  or REG_le_107
-  or REG_le_108
-  or REG_le_109
-  or REG_le_110
-  or REG_le_111
-  or REG_le_112
-  or REG_le_113
-  or REG_le_114
-  or REG_le_115
-  or REG_le_116
-  or REG_le_117
-  or REG_le_118
-  or REG_le_119
-  or REG_le_120
-  or REG_le_121
-  or REG_le_122
-  or REG_le_123
-  or REG_le_124
-  or REG_le_125
-  or REG_le_126
-  or REG_le_127
-  or REG_le_128
-  or REG_le_129
-  or REG_le_130
-  or REG_le_131
-  or REG_le_132
-  or REG_le_133
-  or REG_le_134
-  or REG_le_135
-  or REG_le_136
-  or REG_le_137
-  or REG_le_138
-  or REG_le_139
-  or REG_le_140
-  or REG_le_141
-  or REG_le_142
-  or REG_le_143
-  or REG_le_144
-  or REG_le_145
-  or REG_le_146
-  or REG_le_147
-  or REG_le_148
-  or REG_le_149
-  or REG_le_150
-  or REG_le_151
-  or REG_le_152
-  or REG_le_153
-  or REG_le_154
-  or REG_le_155
-  or REG_le_156
-  or REG_le_157
-  or REG_le_158
-  or REG_le_159
-  or REG_le_160
-  or REG_le_161
-  or REG_le_162
-  or REG_le_163
-  or REG_le_164
-  or REG_le_165
-  or REG_le_166
-  or REG_le_167
-  or REG_le_168
-  or REG_le_169
-  or REG_le_170
-  or REG_le_171
-  or REG_le_172
-  or REG_le_173
-  or REG_le_174
-  or REG_le_175
-  or REG_le_176
-  or REG_le_177
-  or REG_le_178
-  or REG_le_179
-  or REG_le_180
-  or REG_le_181
-  or REG_le_182
-  or REG_le_183
-  or REG_le_184
-  or REG_le_185
-  or REG_le_186
-  or REG_le_187
-  or REG_le_188
-  or REG_le_189
-  or REG_le_190
-  or REG_le_191
-  or REG_le_192
-  or REG_le_193
-  or REG_le_194
-  or REG_le_195
-  or REG_le_196
-  or REG_le_197
-  or REG_le_198
-  or REG_le_199
-  or REG_le_200
-  or REG_le_201
-  or REG_le_202
-  or REG_le_203
-  or REG_le_204
-  or REG_le_205
-  or REG_le_206
-  or REG_le_207
-  or REG_le_208
-  or REG_le_209
-  or REG_le_210
-  or REG_le_211
-  or REG_le_212
-  or REG_le_213
-  or REG_le_214
-  or REG_le_215
-  or REG_le_216
-  or REG_le_217
-  or REG_le_218
-  or REG_le_219
-  or REG_le_220
-  or REG_le_221
-  or REG_le_222
-  or REG_le_223
-  or REG_le_224
-  or REG_le_225
-  or REG_le_226
-  or REG_le_227
-  or REG_le_228
-  or REG_le_229
-  or REG_le_230
-  or REG_le_231
-  or REG_le_232
-  or REG_le_233
-  or REG_le_234
-  or REG_le_235
-  or REG_le_236
-  or REG_le_237
-  or REG_le_238
-  or REG_le_239
-  or REG_le_240
-  or REG_le_241
-  or REG_le_242
-  or REG_le_243
-  or REG_le_244
-  or REG_le_245
-  or REG_le_246
-  or REG_le_247
-  or REG_le_248
-  or REG_le_249
-  or REG_le_250
-  or REG_le_251
-  or REG_le_252
-  or REG_le_253
-  or REG_le_254
-  or REG_le_255
-  or REG_le_256
-  ) begin
-case (lut_in_addr2_0) 
-
-0: le_data0_2 = REG_le_0;
-1: le_data0_2 = REG_le_1;
-2: le_data0_2 = REG_le_2;
-3: le_data0_2 = REG_le_3;
-4: le_data0_2 = REG_le_4;
-5: le_data0_2 = REG_le_5;
-6: le_data0_2 = REG_le_6;
-7: le_data0_2 = REG_le_7;
-8: le_data0_2 = REG_le_8;
-9: le_data0_2 = REG_le_9;
-10: le_data0_2 = REG_le_10;
-11: le_data0_2 = REG_le_11;
-12: le_data0_2 = REG_le_12;
-13: le_data0_2 = REG_le_13;
-14: le_data0_2 = REG_le_14;
-15: le_data0_2 = REG_le_15;
-16: le_data0_2 = REG_le_16;
-17: le_data0_2 = REG_le_17;
-18: le_data0_2 = REG_le_18;
-19: le_data0_2 = REG_le_19;
-20: le_data0_2 = REG_le_20;
-21: le_data0_2 = REG_le_21;
-22: le_data0_2 = REG_le_22;
-23: le_data0_2 = REG_le_23;
-24: le_data0_2 = REG_le_24;
-25: le_data0_2 = REG_le_25;
-26: le_data0_2 = REG_le_26;
-27: le_data0_2 = REG_le_27;
-28: le_data0_2 = REG_le_28;
-29: le_data0_2 = REG_le_29;
-30: le_data0_2 = REG_le_30;
-31: le_data0_2 = REG_le_31;
-32: le_data0_2 = REG_le_32;
-33: le_data0_2 = REG_le_33;
-34: le_data0_2 = REG_le_34;
-35: le_data0_2 = REG_le_35;
-36: le_data0_2 = REG_le_36;
-37: le_data0_2 = REG_le_37;
-38: le_data0_2 = REG_le_38;
-39: le_data0_2 = REG_le_39;
-40: le_data0_2 = REG_le_40;
-41: le_data0_2 = REG_le_41;
-42: le_data0_2 = REG_le_42;
-43: le_data0_2 = REG_le_43;
-44: le_data0_2 = REG_le_44;
-45: le_data0_2 = REG_le_45;
-46: le_data0_2 = REG_le_46;
-47: le_data0_2 = REG_le_47;
-48: le_data0_2 = REG_le_48;
-49: le_data0_2 = REG_le_49;
-50: le_data0_2 = REG_le_50;
-51: le_data0_2 = REG_le_51;
-52: le_data0_2 = REG_le_52;
-53: le_data0_2 = REG_le_53;
-54: le_data0_2 = REG_le_54;
-55: le_data0_2 = REG_le_55;
-56: le_data0_2 = REG_le_56;
-57: le_data0_2 = REG_le_57;
-58: le_data0_2 = REG_le_58;
-59: le_data0_2 = REG_le_59;
-60: le_data0_2 = REG_le_60;
-61: le_data0_2 = REG_le_61;
-62: le_data0_2 = REG_le_62;
-63: le_data0_2 = REG_le_63;
-64: le_data0_2 = REG_le_64;
-65: le_data0_2 = REG_le_65;
-66: le_data0_2 = REG_le_66;
-67: le_data0_2 = REG_le_67;
-68: le_data0_2 = REG_le_68;
-69: le_data0_2 = REG_le_69;
-70: le_data0_2 = REG_le_70;
-71: le_data0_2 = REG_le_71;
-72: le_data0_2 = REG_le_72;
-73: le_data0_2 = REG_le_73;
-74: le_data0_2 = REG_le_74;
-75: le_data0_2 = REG_le_75;
-76: le_data0_2 = REG_le_76;
-77: le_data0_2 = REG_le_77;
-78: le_data0_2 = REG_le_78;
-79: le_data0_2 = REG_le_79;
-80: le_data0_2 = REG_le_80;
-81: le_data0_2 = REG_le_81;
-82: le_data0_2 = REG_le_82;
-83: le_data0_2 = REG_le_83;
-84: le_data0_2 = REG_le_84;
-85: le_data0_2 = REG_le_85;
-86: le_data0_2 = REG_le_86;
-87: le_data0_2 = REG_le_87;
-88: le_data0_2 = REG_le_88;
-89: le_data0_2 = REG_le_89;
-90: le_data0_2 = REG_le_90;
-91: le_data0_2 = REG_le_91;
-92: le_data0_2 = REG_le_92;
-93: le_data0_2 = REG_le_93;
-94: le_data0_2 = REG_le_94;
-95: le_data0_2 = REG_le_95;
-96: le_data0_2 = REG_le_96;
-97: le_data0_2 = REG_le_97;
-98: le_data0_2 = REG_le_98;
-99: le_data0_2 = REG_le_99;
-100: le_data0_2 = REG_le_100;
-101: le_data0_2 = REG_le_101;
-102: le_data0_2 = REG_le_102;
-103: le_data0_2 = REG_le_103;
-104: le_data0_2 = REG_le_104;
-105: le_data0_2 = REG_le_105;
-106: le_data0_2 = REG_le_106;
-107: le_data0_2 = REG_le_107;
-108: le_data0_2 = REG_le_108;
-109: le_data0_2 = REG_le_109;
-110: le_data0_2 = REG_le_110;
-111: le_data0_2 = REG_le_111;
-112: le_data0_2 = REG_le_112;
-113: le_data0_2 = REG_le_113;
-114: le_data0_2 = REG_le_114;
-115: le_data0_2 = REG_le_115;
-116: le_data0_2 = REG_le_116;
-117: le_data0_2 = REG_le_117;
-118: le_data0_2 = REG_le_118;
-119: le_data0_2 = REG_le_119;
-120: le_data0_2 = REG_le_120;
-121: le_data0_2 = REG_le_121;
-122: le_data0_2 = REG_le_122;
-123: le_data0_2 = REG_le_123;
-124: le_data0_2 = REG_le_124;
-125: le_data0_2 = REG_le_125;
-126: le_data0_2 = REG_le_126;
-127: le_data0_2 = REG_le_127;
-128: le_data0_2 = REG_le_128;
-129: le_data0_2 = REG_le_129;
-130: le_data0_2 = REG_le_130;
-131: le_data0_2 = REG_le_131;
-132: le_data0_2 = REG_le_132;
-133: le_data0_2 = REG_le_133;
-134: le_data0_2 = REG_le_134;
-135: le_data0_2 = REG_le_135;
-136: le_data0_2 = REG_le_136;
-137: le_data0_2 = REG_le_137;
-138: le_data0_2 = REG_le_138;
-139: le_data0_2 = REG_le_139;
-140: le_data0_2 = REG_le_140;
-141: le_data0_2 = REG_le_141;
-142: le_data0_2 = REG_le_142;
-143: le_data0_2 = REG_le_143;
-144: le_data0_2 = REG_le_144;
-145: le_data0_2 = REG_le_145;
-146: le_data0_2 = REG_le_146;
-147: le_data0_2 = REG_le_147;
-148: le_data0_2 = REG_le_148;
-149: le_data0_2 = REG_le_149;
-150: le_data0_2 = REG_le_150;
-151: le_data0_2 = REG_le_151;
-152: le_data0_2 = REG_le_152;
-153: le_data0_2 = REG_le_153;
-154: le_data0_2 = REG_le_154;
-155: le_data0_2 = REG_le_155;
-156: le_data0_2 = REG_le_156;
-157: le_data0_2 = REG_le_157;
-158: le_data0_2 = REG_le_158;
-159: le_data0_2 = REG_le_159;
-160: le_data0_2 = REG_le_160;
-161: le_data0_2 = REG_le_161;
-162: le_data0_2 = REG_le_162;
-163: le_data0_2 = REG_le_163;
-164: le_data0_2 = REG_le_164;
-165: le_data0_2 = REG_le_165;
-166: le_data0_2 = REG_le_166;
-167: le_data0_2 = REG_le_167;
-168: le_data0_2 = REG_le_168;
-169: le_data0_2 = REG_le_169;
-170: le_data0_2 = REG_le_170;
-171: le_data0_2 = REG_le_171;
-172: le_data0_2 = REG_le_172;
-173: le_data0_2 = REG_le_173;
-174: le_data0_2 = REG_le_174;
-175: le_data0_2 = REG_le_175;
-176: le_data0_2 = REG_le_176;
-177: le_data0_2 = REG_le_177;
-178: le_data0_2 = REG_le_178;
-179: le_data0_2 = REG_le_179;
-180: le_data0_2 = REG_le_180;
-181: le_data0_2 = REG_le_181;
-182: le_data0_2 = REG_le_182;
-183: le_data0_2 = REG_le_183;
-184: le_data0_2 = REG_le_184;
-185: le_data0_2 = REG_le_185;
-186: le_data0_2 = REG_le_186;
-187: le_data0_2 = REG_le_187;
-188: le_data0_2 = REG_le_188;
-189: le_data0_2 = REG_le_189;
-190: le_data0_2 = REG_le_190;
-191: le_data0_2 = REG_le_191;
-192: le_data0_2 = REG_le_192;
-193: le_data0_2 = REG_le_193;
-194: le_data0_2 = REG_le_194;
-195: le_data0_2 = REG_le_195;
-196: le_data0_2 = REG_le_196;
-197: le_data0_2 = REG_le_197;
-198: le_data0_2 = REG_le_198;
-199: le_data0_2 = REG_le_199;
-200: le_data0_2 = REG_le_200;
-201: le_data0_2 = REG_le_201;
-202: le_data0_2 = REG_le_202;
-203: le_data0_2 = REG_le_203;
-204: le_data0_2 = REG_le_204;
-205: le_data0_2 = REG_le_205;
-206: le_data0_2 = REG_le_206;
-207: le_data0_2 = REG_le_207;
-208: le_data0_2 = REG_le_208;
-209: le_data0_2 = REG_le_209;
-210: le_data0_2 = REG_le_210;
-211: le_data0_2 = REG_le_211;
-212: le_data0_2 = REG_le_212;
-213: le_data0_2 = REG_le_213;
-214: le_data0_2 = REG_le_214;
-215: le_data0_2 = REG_le_215;
-216: le_data0_2 = REG_le_216;
-217: le_data0_2 = REG_le_217;
-218: le_data0_2 = REG_le_218;
-219: le_data0_2 = REG_le_219;
-220: le_data0_2 = REG_le_220;
-221: le_data0_2 = REG_le_221;
-222: le_data0_2 = REG_le_222;
-223: le_data0_2 = REG_le_223;
-224: le_data0_2 = REG_le_224;
-225: le_data0_2 = REG_le_225;
-226: le_data0_2 = REG_le_226;
-227: le_data0_2 = REG_le_227;
-228: le_data0_2 = REG_le_228;
-229: le_data0_2 = REG_le_229;
-230: le_data0_2 = REG_le_230;
-231: le_data0_2 = REG_le_231;
-232: le_data0_2 = REG_le_232;
-233: le_data0_2 = REG_le_233;
-234: le_data0_2 = REG_le_234;
-235: le_data0_2 = REG_le_235;
-236: le_data0_2 = REG_le_236;
-237: le_data0_2 = REG_le_237;
-238: le_data0_2 = REG_le_238;
-239: le_data0_2 = REG_le_239;
-240: le_data0_2 = REG_le_240;
-241: le_data0_2 = REG_le_241;
-242: le_data0_2 = REG_le_242;
-243: le_data0_2 = REG_le_243;
-244: le_data0_2 = REG_le_244;
-245: le_data0_2 = REG_le_245;
-246: le_data0_2 = REG_le_246;
-247: le_data0_2 = REG_le_247;
-248: le_data0_2 = REG_le_248;
-249: le_data0_2 = REG_le_249;
-250: le_data0_2 = REG_le_250;
-251: le_data0_2 = REG_le_251;
-252: le_data0_2 = REG_le_252;
-253: le_data0_2 = REG_le_253;
-254: le_data0_2 = REG_le_254;
-255: le_data0_2 = REG_le_255;
-256: le_data0_2 = REG_le_256;
-//VCS coverage off
-default : begin 
-            le_data0_2[15:0] = {16{`x_or_0}};
-          end  
-//VCS coverage on
-endcase
-end
-
-always @(
-  lut_in_addr3_0
-  or REG_le_0
-  or REG_le_1
-  or REG_le_2
-  or REG_le_3
-  or REG_le_4
-  or REG_le_5
-  or REG_le_6
-  or REG_le_7
-  or REG_le_8
-  or REG_le_9
-  or REG_le_10
-  or REG_le_11
-  or REG_le_12
-  or REG_le_13
-  or REG_le_14
-  or REG_le_15
-  or REG_le_16
-  or REG_le_17
-  or REG_le_18
-  or REG_le_19
-  or REG_le_20
-  or REG_le_21
-  or REG_le_22
-  or REG_le_23
-  or REG_le_24
-  or REG_le_25
-  or REG_le_26
-  or REG_le_27
-  or REG_le_28
-  or REG_le_29
-  or REG_le_30
-  or REG_le_31
-  or REG_le_32
-  or REG_le_33
-  or REG_le_34
-  or REG_le_35
-  or REG_le_36
-  or REG_le_37
-  or REG_le_38
-  or REG_le_39
-  or REG_le_40
-  or REG_le_41
-  or REG_le_42
-  or REG_le_43
-  or REG_le_44
-  or REG_le_45
-  or REG_le_46
-  or REG_le_47
-  or REG_le_48
-  or REG_le_49
-  or REG_le_50
-  or REG_le_51
-  or REG_le_52
-  or REG_le_53
-  or REG_le_54
-  or REG_le_55
-  or REG_le_56
-  or REG_le_57
-  or REG_le_58
-  or REG_le_59
-  or REG_le_60
-  or REG_le_61
-  or REG_le_62
-  or REG_le_63
-  or REG_le_64
-  or REG_le_65
-  or REG_le_66
-  or REG_le_67
-  or REG_le_68
-  or REG_le_69
-  or REG_le_70
-  or REG_le_71
-  or REG_le_72
-  or REG_le_73
-  or REG_le_74
-  or REG_le_75
-  or REG_le_76
-  or REG_le_77
-  or REG_le_78
-  or REG_le_79
-  or REG_le_80
-  or REG_le_81
-  or REG_le_82
-  or REG_le_83
-  or REG_le_84
-  or REG_le_85
-  or REG_le_86
-  or REG_le_87
-  or REG_le_88
-  or REG_le_89
-  or REG_le_90
-  or REG_le_91
-  or REG_le_92
-  or REG_le_93
-  or REG_le_94
-  or REG_le_95
-  or REG_le_96
-  or REG_le_97
-  or REG_le_98
-  or REG_le_99
-  or REG_le_100
-  or REG_le_101
-  or REG_le_102
-  or REG_le_103
-  or REG_le_104
-  or REG_le_105
-  or REG_le_106
-  or REG_le_107
-  or REG_le_108
-  or REG_le_109
-  or REG_le_110
-  or REG_le_111
-  or REG_le_112
-  or REG_le_113
-  or REG_le_114
-  or REG_le_115
-  or REG_le_116
-  or REG_le_117
-  or REG_le_118
-  or REG_le_119
-  or REG_le_120
-  or REG_le_121
-  or REG_le_122
-  or REG_le_123
-  or REG_le_124
-  or REG_le_125
-  or REG_le_126
-  or REG_le_127
-  or REG_le_128
-  or REG_le_129
-  or REG_le_130
-  or REG_le_131
-  or REG_le_132
-  or REG_le_133
-  or REG_le_134
-  or REG_le_135
-  or REG_le_136
-  or REG_le_137
-  or REG_le_138
-  or REG_le_139
-  or REG_le_140
-  or REG_le_141
-  or REG_le_142
-  or REG_le_143
-  or REG_le_144
-  or REG_le_145
-  or REG_le_146
-  or REG_le_147
-  or REG_le_148
-  or REG_le_149
-  or REG_le_150
-  or REG_le_151
-  or REG_le_152
-  or REG_le_153
-  or REG_le_154
-  or REG_le_155
-  or REG_le_156
-  or REG_le_157
-  or REG_le_158
-  or REG_le_159
-  or REG_le_160
-  or REG_le_161
-  or REG_le_162
-  or REG_le_163
-  or REG_le_164
-  or REG_le_165
-  or REG_le_166
-  or REG_le_167
-  or REG_le_168
-  or REG_le_169
-  or REG_le_170
-  or REG_le_171
-  or REG_le_172
-  or REG_le_173
-  or REG_le_174
-  or REG_le_175
-  or REG_le_176
-  or REG_le_177
-  or REG_le_178
-  or REG_le_179
-  or REG_le_180
-  or REG_le_181
-  or REG_le_182
-  or REG_le_183
-  or REG_le_184
-  or REG_le_185
-  or REG_le_186
-  or REG_le_187
-  or REG_le_188
-  or REG_le_189
-  or REG_le_190
-  or REG_le_191
-  or REG_le_192
-  or REG_le_193
-  or REG_le_194
-  or REG_le_195
-  or REG_le_196
-  or REG_le_197
-  or REG_le_198
-  or REG_le_199
-  or REG_le_200
-  or REG_le_201
-  or REG_le_202
-  or REG_le_203
-  or REG_le_204
-  or REG_le_205
-  or REG_le_206
-  or REG_le_207
-  or REG_le_208
-  or REG_le_209
-  or REG_le_210
-  or REG_le_211
-  or REG_le_212
-  or REG_le_213
-  or REG_le_214
-  or REG_le_215
-  or REG_le_216
-  or REG_le_217
-  or REG_le_218
-  or REG_le_219
-  or REG_le_220
-  or REG_le_221
-  or REG_le_222
-  or REG_le_223
-  or REG_le_224
-  or REG_le_225
-  or REG_le_226
-  or REG_le_227
-  or REG_le_228
-  or REG_le_229
-  or REG_le_230
-  or REG_le_231
-  or REG_le_232
-  or REG_le_233
-  or REG_le_234
-  or REG_le_235
-  or REG_le_236
-  or REG_le_237
-  or REG_le_238
-  or REG_le_239
-  or REG_le_240
-  or REG_le_241
-  or REG_le_242
-  or REG_le_243
-  or REG_le_244
-  or REG_le_245
-  or REG_le_246
-  or REG_le_247
-  or REG_le_248
-  or REG_le_249
-  or REG_le_250
-  or REG_le_251
-  or REG_le_252
-  or REG_le_253
-  or REG_le_254
-  or REG_le_255
-  or REG_le_256
-  ) begin
-case (lut_in_addr3_0) 
-
-0: le_data0_3 = REG_le_0;
-1: le_data0_3 = REG_le_1;
-2: le_data0_3 = REG_le_2;
-3: le_data0_3 = REG_le_3;
-4: le_data0_3 = REG_le_4;
-5: le_data0_3 = REG_le_5;
-6: le_data0_3 = REG_le_6;
-7: le_data0_3 = REG_le_7;
-8: le_data0_3 = REG_le_8;
-9: le_data0_3 = REG_le_9;
-10: le_data0_3 = REG_le_10;
-11: le_data0_3 = REG_le_11;
-12: le_data0_3 = REG_le_12;
-13: le_data0_3 = REG_le_13;
-14: le_data0_3 = REG_le_14;
-15: le_data0_3 = REG_le_15;
-16: le_data0_3 = REG_le_16;
-17: le_data0_3 = REG_le_17;
-18: le_data0_3 = REG_le_18;
-19: le_data0_3 = REG_le_19;
-20: le_data0_3 = REG_le_20;
-21: le_data0_3 = REG_le_21;
-22: le_data0_3 = REG_le_22;
-23: le_data0_3 = REG_le_23;
-24: le_data0_3 = REG_le_24;
-25: le_data0_3 = REG_le_25;
-26: le_data0_3 = REG_le_26;
-27: le_data0_3 = REG_le_27;
-28: le_data0_3 = REG_le_28;
-29: le_data0_3 = REG_le_29;
-30: le_data0_3 = REG_le_30;
-31: le_data0_3 = REG_le_31;
-32: le_data0_3 = REG_le_32;
-33: le_data0_3 = REG_le_33;
-34: le_data0_3 = REG_le_34;
-35: le_data0_3 = REG_le_35;
-36: le_data0_3 = REG_le_36;
-37: le_data0_3 = REG_le_37;
-38: le_data0_3 = REG_le_38;
-39: le_data0_3 = REG_le_39;
-40: le_data0_3 = REG_le_40;
-41: le_data0_3 = REG_le_41;
-42: le_data0_3 = REG_le_42;
-43: le_data0_3 = REG_le_43;
-44: le_data0_3 = REG_le_44;
-45: le_data0_3 = REG_le_45;
-46: le_data0_3 = REG_le_46;
-47: le_data0_3 = REG_le_47;
-48: le_data0_3 = REG_le_48;
-49: le_data0_3 = REG_le_49;
-50: le_data0_3 = REG_le_50;
-51: le_data0_3 = REG_le_51;
-52: le_data0_3 = REG_le_52;
-53: le_data0_3 = REG_le_53;
-54: le_data0_3 = REG_le_54;
-55: le_data0_3 = REG_le_55;
-56: le_data0_3 = REG_le_56;
-57: le_data0_3 = REG_le_57;
-58: le_data0_3 = REG_le_58;
-59: le_data0_3 = REG_le_59;
-60: le_data0_3 = REG_le_60;
-61: le_data0_3 = REG_le_61;
-62: le_data0_3 = REG_le_62;
-63: le_data0_3 = REG_le_63;
-64: le_data0_3 = REG_le_64;
-65: le_data0_3 = REG_le_65;
-66: le_data0_3 = REG_le_66;
-67: le_data0_3 = REG_le_67;
-68: le_data0_3 = REG_le_68;
-69: le_data0_3 = REG_le_69;
-70: le_data0_3 = REG_le_70;
-71: le_data0_3 = REG_le_71;
-72: le_data0_3 = REG_le_72;
-73: le_data0_3 = REG_le_73;
-74: le_data0_3 = REG_le_74;
-75: le_data0_3 = REG_le_75;
-76: le_data0_3 = REG_le_76;
-77: le_data0_3 = REG_le_77;
-78: le_data0_3 = REG_le_78;
-79: le_data0_3 = REG_le_79;
-80: le_data0_3 = REG_le_80;
-81: le_data0_3 = REG_le_81;
-82: le_data0_3 = REG_le_82;
-83: le_data0_3 = REG_le_83;
-84: le_data0_3 = REG_le_84;
-85: le_data0_3 = REG_le_85;
-86: le_data0_3 = REG_le_86;
-87: le_data0_3 = REG_le_87;
-88: le_data0_3 = REG_le_88;
-89: le_data0_3 = REG_le_89;
-90: le_data0_3 = REG_le_90;
-91: le_data0_3 = REG_le_91;
-92: le_data0_3 = REG_le_92;
-93: le_data0_3 = REG_le_93;
-94: le_data0_3 = REG_le_94;
-95: le_data0_3 = REG_le_95;
-96: le_data0_3 = REG_le_96;
-97: le_data0_3 = REG_le_97;
-98: le_data0_3 = REG_le_98;
-99: le_data0_3 = REG_le_99;
-100: le_data0_3 = REG_le_100;
-101: le_data0_3 = REG_le_101;
-102: le_data0_3 = REG_le_102;
-103: le_data0_3 = REG_le_103;
-104: le_data0_3 = REG_le_104;
-105: le_data0_3 = REG_le_105;
-106: le_data0_3 = REG_le_106;
-107: le_data0_3 = REG_le_107;
-108: le_data0_3 = REG_le_108;
-109: le_data0_3 = REG_le_109;
-110: le_data0_3 = REG_le_110;
-111: le_data0_3 = REG_le_111;
-112: le_data0_3 = REG_le_112;
-113: le_data0_3 = REG_le_113;
-114: le_data0_3 = REG_le_114;
-115: le_data0_3 = REG_le_115;
-116: le_data0_3 = REG_le_116;
-117: le_data0_3 = REG_le_117;
-118: le_data0_3 = REG_le_118;
-119: le_data0_3 = REG_le_119;
-120: le_data0_3 = REG_le_120;
-121: le_data0_3 = REG_le_121;
-122: le_data0_3 = REG_le_122;
-123: le_data0_3 = REG_le_123;
-124: le_data0_3 = REG_le_124;
-125: le_data0_3 = REG_le_125;
-126: le_data0_3 = REG_le_126;
-127: le_data0_3 = REG_le_127;
-128: le_data0_3 = REG_le_128;
-129: le_data0_3 = REG_le_129;
-130: le_data0_3 = REG_le_130;
-131: le_data0_3 = REG_le_131;
-132: le_data0_3 = REG_le_132;
-133: le_data0_3 = REG_le_133;
-134: le_data0_3 = REG_le_134;
-135: le_data0_3 = REG_le_135;
-136: le_data0_3 = REG_le_136;
-137: le_data0_3 = REG_le_137;
-138: le_data0_3 = REG_le_138;
-139: le_data0_3 = REG_le_139;
-140: le_data0_3 = REG_le_140;
-141: le_data0_3 = REG_le_141;
-142: le_data0_3 = REG_le_142;
-143: le_data0_3 = REG_le_143;
-144: le_data0_3 = REG_le_144;
-145: le_data0_3 = REG_le_145;
-146: le_data0_3 = REG_le_146;
-147: le_data0_3 = REG_le_147;
-148: le_data0_3 = REG_le_148;
-149: le_data0_3 = REG_le_149;
-150: le_data0_3 = REG_le_150;
-151: le_data0_3 = REG_le_151;
-152: le_data0_3 = REG_le_152;
-153: le_data0_3 = REG_le_153;
-154: le_data0_3 = REG_le_154;
-155: le_data0_3 = REG_le_155;
-156: le_data0_3 = REG_le_156;
-157: le_data0_3 = REG_le_157;
-158: le_data0_3 = REG_le_158;
-159: le_data0_3 = REG_le_159;
-160: le_data0_3 = REG_le_160;
-161: le_data0_3 = REG_le_161;
-162: le_data0_3 = REG_le_162;
-163: le_data0_3 = REG_le_163;
-164: le_data0_3 = REG_le_164;
-165: le_data0_3 = REG_le_165;
-166: le_data0_3 = REG_le_166;
-167: le_data0_3 = REG_le_167;
-168: le_data0_3 = REG_le_168;
-169: le_data0_3 = REG_le_169;
-170: le_data0_3 = REG_le_170;
-171: le_data0_3 = REG_le_171;
-172: le_data0_3 = REG_le_172;
-173: le_data0_3 = REG_le_173;
-174: le_data0_3 = REG_le_174;
-175: le_data0_3 = REG_le_175;
-176: le_data0_3 = REG_le_176;
-177: le_data0_3 = REG_le_177;
-178: le_data0_3 = REG_le_178;
-179: le_data0_3 = REG_le_179;
-180: le_data0_3 = REG_le_180;
-181: le_data0_3 = REG_le_181;
-182: le_data0_3 = REG_le_182;
-183: le_data0_3 = REG_le_183;
-184: le_data0_3 = REG_le_184;
-185: le_data0_3 = REG_le_185;
-186: le_data0_3 = REG_le_186;
-187: le_data0_3 = REG_le_187;
-188: le_data0_3 = REG_le_188;
-189: le_data0_3 = REG_le_189;
-190: le_data0_3 = REG_le_190;
-191: le_data0_3 = REG_le_191;
-192: le_data0_3 = REG_le_192;
-193: le_data0_3 = REG_le_193;
-194: le_data0_3 = REG_le_194;
-195: le_data0_3 = REG_le_195;
-196: le_data0_3 = REG_le_196;
-197: le_data0_3 = REG_le_197;
-198: le_data0_3 = REG_le_198;
-199: le_data0_3 = REG_le_199;
-200: le_data0_3 = REG_le_200;
-201: le_data0_3 = REG_le_201;
-202: le_data0_3 = REG_le_202;
-203: le_data0_3 = REG_le_203;
-204: le_data0_3 = REG_le_204;
-205: le_data0_3 = REG_le_205;
-206: le_data0_3 = REG_le_206;
-207: le_data0_3 = REG_le_207;
-208: le_data0_3 = REG_le_208;
-209: le_data0_3 = REG_le_209;
-210: le_data0_3 = REG_le_210;
-211: le_data0_3 = REG_le_211;
-212: le_data0_3 = REG_le_212;
-213: le_data0_3 = REG_le_213;
-214: le_data0_3 = REG_le_214;
-215: le_data0_3 = REG_le_215;
-216: le_data0_3 = REG_le_216;
-217: le_data0_3 = REG_le_217;
-218: le_data0_3 = REG_le_218;
-219: le_data0_3 = REG_le_219;
-220: le_data0_3 = REG_le_220;
-221: le_data0_3 = REG_le_221;
-222: le_data0_3 = REG_le_222;
-223: le_data0_3 = REG_le_223;
-224: le_data0_3 = REG_le_224;
-225: le_data0_3 = REG_le_225;
-226: le_data0_3 = REG_le_226;
-227: le_data0_3 = REG_le_227;
-228: le_data0_3 = REG_le_228;
-229: le_data0_3 = REG_le_229;
-230: le_data0_3 = REG_le_230;
-231: le_data0_3 = REG_le_231;
-232: le_data0_3 = REG_le_232;
-233: le_data0_3 = REG_le_233;
-234: le_data0_3 = REG_le_234;
-235: le_data0_3 = REG_le_235;
-236: le_data0_3 = REG_le_236;
-237: le_data0_3 = REG_le_237;
-238: le_data0_3 = REG_le_238;
-239: le_data0_3 = REG_le_239;
-240: le_data0_3 = REG_le_240;
-241: le_data0_3 = REG_le_241;
-242: le_data0_3 = REG_le_242;
-243: le_data0_3 = REG_le_243;
-244: le_data0_3 = REG_le_244;
-245: le_data0_3 = REG_le_245;
-246: le_data0_3 = REG_le_246;
-247: le_data0_3 = REG_le_247;
-248: le_data0_3 = REG_le_248;
-249: le_data0_3 = REG_le_249;
-250: le_data0_3 = REG_le_250;
-251: le_data0_3 = REG_le_251;
-252: le_data0_3 = REG_le_252;
-253: le_data0_3 = REG_le_253;
-254: le_data0_3 = REG_le_254;
-255: le_data0_3 = REG_le_255;
-256: le_data0_3 = REG_le_256;
-//VCS coverage off
-default : begin 
-            le_data0_3[15:0] = {16{`x_or_0}};
-          end  
-//VCS coverage on
-endcase
-end
-
-always @(
-  lut_in_addr0_1
-  or REG_le_1
-  or REG_le_2
-  or REG_le_3
-  or REG_le_4
-  or REG_le_5
-  or REG_le_6
-  or REG_le_7
-  or REG_le_8
-  or REG_le_9
-  or REG_le_10
-  or REG_le_11
-  or REG_le_12
-  or REG_le_13
-  or REG_le_14
-  or REG_le_15
-  or REG_le_16
-  or REG_le_17
-  or REG_le_18
-  or REG_le_19
-  or REG_le_20
-  or REG_le_21
-  or REG_le_22
-  or REG_le_23
-  or REG_le_24
-  or REG_le_25
-  or REG_le_26
-  or REG_le_27
-  or REG_le_28
-  or REG_le_29
-  or REG_le_30
-  or REG_le_31
-  or REG_le_32
-  or REG_le_33
-  or REG_le_34
-  or REG_le_35
-  or REG_le_36
-  or REG_le_37
-  or REG_le_38
-  or REG_le_39
-  or REG_le_40
-  or REG_le_41
-  or REG_le_42
-  or REG_le_43
-  or REG_le_44
-  or REG_le_45
-  or REG_le_46
-  or REG_le_47
-  or REG_le_48
-  or REG_le_49
-  or REG_le_50
-  or REG_le_51
-  or REG_le_52
-  or REG_le_53
-  or REG_le_54
-  or REG_le_55
-  or REG_le_56
-  or REG_le_57
-  or REG_le_58
-  or REG_le_59
-  or REG_le_60
-  or REG_le_61
-  or REG_le_62
-  or REG_le_63
-  or REG_le_64
-  or REG_le_65
-  or REG_le_66
-  or REG_le_67
-  or REG_le_68
-  or REG_le_69
-  or REG_le_70
-  or REG_le_71
-  or REG_le_72
-  or REG_le_73
-  or REG_le_74
-  or REG_le_75
-  or REG_le_76
-  or REG_le_77
-  or REG_le_78
-  or REG_le_79
-  or REG_le_80
-  or REG_le_81
-  or REG_le_82
-  or REG_le_83
-  or REG_le_84
-  or REG_le_85
-  or REG_le_86
-  or REG_le_87
-  or REG_le_88
-  or REG_le_89
-  or REG_le_90
-  or REG_le_91
-  or REG_le_92
-  or REG_le_93
-  or REG_le_94
-  or REG_le_95
-  or REG_le_96
-  or REG_le_97
-  or REG_le_98
-  or REG_le_99
-  or REG_le_100
-  or REG_le_101
-  or REG_le_102
-  or REG_le_103
-  or REG_le_104
-  or REG_le_105
-  or REG_le_106
-  or REG_le_107
-  or REG_le_108
-  or REG_le_109
-  or REG_le_110
-  or REG_le_111
-  or REG_le_112
-  or REG_le_113
-  or REG_le_114
-  or REG_le_115
-  or REG_le_116
-  or REG_le_117
-  or REG_le_118
-  or REG_le_119
-  or REG_le_120
-  or REG_le_121
-  or REG_le_122
-  or REG_le_123
-  or REG_le_124
-  or REG_le_125
-  or REG_le_126
-  or REG_le_127
-  or REG_le_128
-  or REG_le_129
-  or REG_le_130
-  or REG_le_131
-  or REG_le_132
-  or REG_le_133
-  or REG_le_134
-  or REG_le_135
-  or REG_le_136
-  or REG_le_137
-  or REG_le_138
-  or REG_le_139
-  or REG_le_140
-  or REG_le_141
-  or REG_le_142
-  or REG_le_143
-  or REG_le_144
-  or REG_le_145
-  or REG_le_146
-  or REG_le_147
-  or REG_le_148
-  or REG_le_149
-  or REG_le_150
-  or REG_le_151
-  or REG_le_152
-  or REG_le_153
-  or REG_le_154
-  or REG_le_155
-  or REG_le_156
-  or REG_le_157
-  or REG_le_158
-  or REG_le_159
-  or REG_le_160
-  or REG_le_161
-  or REG_le_162
-  or REG_le_163
-  or REG_le_164
-  or REG_le_165
-  or REG_le_166
-  or REG_le_167
-  or REG_le_168
-  or REG_le_169
-  or REG_le_170
-  or REG_le_171
-  or REG_le_172
-  or REG_le_173
-  or REG_le_174
-  or REG_le_175
-  or REG_le_176
-  or REG_le_177
-  or REG_le_178
-  or REG_le_179
-  or REG_le_180
-  or REG_le_181
-  or REG_le_182
-  or REG_le_183
-  or REG_le_184
-  or REG_le_185
-  or REG_le_186
-  or REG_le_187
-  or REG_le_188
-  or REG_le_189
-  or REG_le_190
-  or REG_le_191
-  or REG_le_192
-  or REG_le_193
-  or REG_le_194
-  or REG_le_195
-  or REG_le_196
-  or REG_le_197
-  or REG_le_198
-  or REG_le_199
-  or REG_le_200
-  or REG_le_201
-  or REG_le_202
-  or REG_le_203
-  or REG_le_204
-  or REG_le_205
-  or REG_le_206
-  or REG_le_207
-  or REG_le_208
-  or REG_le_209
-  or REG_le_210
-  or REG_le_211
-  or REG_le_212
-  or REG_le_213
-  or REG_le_214
-  or REG_le_215
-  or REG_le_216
-  or REG_le_217
-  or REG_le_218
-  or REG_le_219
-  or REG_le_220
-  or REG_le_221
-  or REG_le_222
-  or REG_le_223
-  or REG_le_224
-  or REG_le_225
-  or REG_le_226
-  or REG_le_227
-  or REG_le_228
-  or REG_le_229
-  or REG_le_230
-  or REG_le_231
-  or REG_le_232
-  or REG_le_233
-  or REG_le_234
-  or REG_le_235
-  or REG_le_236
-  or REG_le_237
-  or REG_le_238
-  or REG_le_239
-  or REG_le_240
-  or REG_le_241
-  or REG_le_242
-  or REG_le_243
-  or REG_le_244
-  or REG_le_245
-  or REG_le_246
-  or REG_le_247
-  or REG_le_248
-  or REG_le_249
-  or REG_le_250
-  or REG_le_251
-  or REG_le_252
-  or REG_le_253
-  or REG_le_254
-  or REG_le_255
-  or REG_le_256
-  ) begin
-case (lut_in_addr0_1) 
-
-1: le_data1_0 = REG_le_1;
-2: le_data1_0 = REG_le_2;
-3: le_data1_0 = REG_le_3;
-4: le_data1_0 = REG_le_4;
-5: le_data1_0 = REG_le_5;
-6: le_data1_0 = REG_le_6;
-7: le_data1_0 = REG_le_7;
-8: le_data1_0 = REG_le_8;
-9: le_data1_0 = REG_le_9;
-10: le_data1_0 = REG_le_10;
-11: le_data1_0 = REG_le_11;
-12: le_data1_0 = REG_le_12;
-13: le_data1_0 = REG_le_13;
-14: le_data1_0 = REG_le_14;
-15: le_data1_0 = REG_le_15;
-16: le_data1_0 = REG_le_16;
-17: le_data1_0 = REG_le_17;
-18: le_data1_0 = REG_le_18;
-19: le_data1_0 = REG_le_19;
-20: le_data1_0 = REG_le_20;
-21: le_data1_0 = REG_le_21;
-22: le_data1_0 = REG_le_22;
-23: le_data1_0 = REG_le_23;
-24: le_data1_0 = REG_le_24;
-25: le_data1_0 = REG_le_25;
-26: le_data1_0 = REG_le_26;
-27: le_data1_0 = REG_le_27;
-28: le_data1_0 = REG_le_28;
-29: le_data1_0 = REG_le_29;
-30: le_data1_0 = REG_le_30;
-31: le_data1_0 = REG_le_31;
-32: le_data1_0 = REG_le_32;
-33: le_data1_0 = REG_le_33;
-34: le_data1_0 = REG_le_34;
-35: le_data1_0 = REG_le_35;
-36: le_data1_0 = REG_le_36;
-37: le_data1_0 = REG_le_37;
-38: le_data1_0 = REG_le_38;
-39: le_data1_0 = REG_le_39;
-40: le_data1_0 = REG_le_40;
-41: le_data1_0 = REG_le_41;
-42: le_data1_0 = REG_le_42;
-43: le_data1_0 = REG_le_43;
-44: le_data1_0 = REG_le_44;
-45: le_data1_0 = REG_le_45;
-46: le_data1_0 = REG_le_46;
-47: le_data1_0 = REG_le_47;
-48: le_data1_0 = REG_le_48;
-49: le_data1_0 = REG_le_49;
-50: le_data1_0 = REG_le_50;
-51: le_data1_0 = REG_le_51;
-52: le_data1_0 = REG_le_52;
-53: le_data1_0 = REG_le_53;
-54: le_data1_0 = REG_le_54;
-55: le_data1_0 = REG_le_55;
-56: le_data1_0 = REG_le_56;
-57: le_data1_0 = REG_le_57;
-58: le_data1_0 = REG_le_58;
-59: le_data1_0 = REG_le_59;
-60: le_data1_0 = REG_le_60;
-61: le_data1_0 = REG_le_61;
-62: le_data1_0 = REG_le_62;
-63: le_data1_0 = REG_le_63;
-64: le_data1_0 = REG_le_64;
-65: le_data1_0 = REG_le_65;
-66: le_data1_0 = REG_le_66;
-67: le_data1_0 = REG_le_67;
-68: le_data1_0 = REG_le_68;
-69: le_data1_0 = REG_le_69;
-70: le_data1_0 = REG_le_70;
-71: le_data1_0 = REG_le_71;
-72: le_data1_0 = REG_le_72;
-73: le_data1_0 = REG_le_73;
-74: le_data1_0 = REG_le_74;
-75: le_data1_0 = REG_le_75;
-76: le_data1_0 = REG_le_76;
-77: le_data1_0 = REG_le_77;
-78: le_data1_0 = REG_le_78;
-79: le_data1_0 = REG_le_79;
-80: le_data1_0 = REG_le_80;
-81: le_data1_0 = REG_le_81;
-82: le_data1_0 = REG_le_82;
-83: le_data1_0 = REG_le_83;
-84: le_data1_0 = REG_le_84;
-85: le_data1_0 = REG_le_85;
-86: le_data1_0 = REG_le_86;
-87: le_data1_0 = REG_le_87;
-88: le_data1_0 = REG_le_88;
-89: le_data1_0 = REG_le_89;
-90: le_data1_0 = REG_le_90;
-91: le_data1_0 = REG_le_91;
-92: le_data1_0 = REG_le_92;
-93: le_data1_0 = REG_le_93;
-94: le_data1_0 = REG_le_94;
-95: le_data1_0 = REG_le_95;
-96: le_data1_0 = REG_le_96;
-97: le_data1_0 = REG_le_97;
-98: le_data1_0 = REG_le_98;
-99: le_data1_0 = REG_le_99;
-100: le_data1_0 = REG_le_100;
-101: le_data1_0 = REG_le_101;
-102: le_data1_0 = REG_le_102;
-103: le_data1_0 = REG_le_103;
-104: le_data1_0 = REG_le_104;
-105: le_data1_0 = REG_le_105;
-106: le_data1_0 = REG_le_106;
-107: le_data1_0 = REG_le_107;
-108: le_data1_0 = REG_le_108;
-109: le_data1_0 = REG_le_109;
-110: le_data1_0 = REG_le_110;
-111: le_data1_0 = REG_le_111;
-112: le_data1_0 = REG_le_112;
-113: le_data1_0 = REG_le_113;
-114: le_data1_0 = REG_le_114;
-115: le_data1_0 = REG_le_115;
-116: le_data1_0 = REG_le_116;
-117: le_data1_0 = REG_le_117;
-118: le_data1_0 = REG_le_118;
-119: le_data1_0 = REG_le_119;
-120: le_data1_0 = REG_le_120;
-121: le_data1_0 = REG_le_121;
-122: le_data1_0 = REG_le_122;
-123: le_data1_0 = REG_le_123;
-124: le_data1_0 = REG_le_124;
-125: le_data1_0 = REG_le_125;
-126: le_data1_0 = REG_le_126;
-127: le_data1_0 = REG_le_127;
-128: le_data1_0 = REG_le_128;
-129: le_data1_0 = REG_le_129;
-130: le_data1_0 = REG_le_130;
-131: le_data1_0 = REG_le_131;
-132: le_data1_0 = REG_le_132;
-133: le_data1_0 = REG_le_133;
-134: le_data1_0 = REG_le_134;
-135: le_data1_0 = REG_le_135;
-136: le_data1_0 = REG_le_136;
-137: le_data1_0 = REG_le_137;
-138: le_data1_0 = REG_le_138;
-139: le_data1_0 = REG_le_139;
-140: le_data1_0 = REG_le_140;
-141: le_data1_0 = REG_le_141;
-142: le_data1_0 = REG_le_142;
-143: le_data1_0 = REG_le_143;
-144: le_data1_0 = REG_le_144;
-145: le_data1_0 = REG_le_145;
-146: le_data1_0 = REG_le_146;
-147: le_data1_0 = REG_le_147;
-148: le_data1_0 = REG_le_148;
-149: le_data1_0 = REG_le_149;
-150: le_data1_0 = REG_le_150;
-151: le_data1_0 = REG_le_151;
-152: le_data1_0 = REG_le_152;
-153: le_data1_0 = REG_le_153;
-154: le_data1_0 = REG_le_154;
-155: le_data1_0 = REG_le_155;
-156: le_data1_0 = REG_le_156;
-157: le_data1_0 = REG_le_157;
-158: le_data1_0 = REG_le_158;
-159: le_data1_0 = REG_le_159;
-160: le_data1_0 = REG_le_160;
-161: le_data1_0 = REG_le_161;
-162: le_data1_0 = REG_le_162;
-163: le_data1_0 = REG_le_163;
-164: le_data1_0 = REG_le_164;
-165: le_data1_0 = REG_le_165;
-166: le_data1_0 = REG_le_166;
-167: le_data1_0 = REG_le_167;
-168: le_data1_0 = REG_le_168;
-169: le_data1_0 = REG_le_169;
-170: le_data1_0 = REG_le_170;
-171: le_data1_0 = REG_le_171;
-172: le_data1_0 = REG_le_172;
-173: le_data1_0 = REG_le_173;
-174: le_data1_0 = REG_le_174;
-175: le_data1_0 = REG_le_175;
-176: le_data1_0 = REG_le_176;
-177: le_data1_0 = REG_le_177;
-178: le_data1_0 = REG_le_178;
-179: le_data1_0 = REG_le_179;
-180: le_data1_0 = REG_le_180;
-181: le_data1_0 = REG_le_181;
-182: le_data1_0 = REG_le_182;
-183: le_data1_0 = REG_le_183;
-184: le_data1_0 = REG_le_184;
-185: le_data1_0 = REG_le_185;
-186: le_data1_0 = REG_le_186;
-187: le_data1_0 = REG_le_187;
-188: le_data1_0 = REG_le_188;
-189: le_data1_0 = REG_le_189;
-190: le_data1_0 = REG_le_190;
-191: le_data1_0 = REG_le_191;
-192: le_data1_0 = REG_le_192;
-193: le_data1_0 = REG_le_193;
-194: le_data1_0 = REG_le_194;
-195: le_data1_0 = REG_le_195;
-196: le_data1_0 = REG_le_196;
-197: le_data1_0 = REG_le_197;
-198: le_data1_0 = REG_le_198;
-199: le_data1_0 = REG_le_199;
-200: le_data1_0 = REG_le_200;
-201: le_data1_0 = REG_le_201;
-202: le_data1_0 = REG_le_202;
-203: le_data1_0 = REG_le_203;
-204: le_data1_0 = REG_le_204;
-205: le_data1_0 = REG_le_205;
-206: le_data1_0 = REG_le_206;
-207: le_data1_0 = REG_le_207;
-208: le_data1_0 = REG_le_208;
-209: le_data1_0 = REG_le_209;
-210: le_data1_0 = REG_le_210;
-211: le_data1_0 = REG_le_211;
-212: le_data1_0 = REG_le_212;
-213: le_data1_0 = REG_le_213;
-214: le_data1_0 = REG_le_214;
-215: le_data1_0 = REG_le_215;
-216: le_data1_0 = REG_le_216;
-217: le_data1_0 = REG_le_217;
-218: le_data1_0 = REG_le_218;
-219: le_data1_0 = REG_le_219;
-220: le_data1_0 = REG_le_220;
-221: le_data1_0 = REG_le_221;
-222: le_data1_0 = REG_le_222;
-223: le_data1_0 = REG_le_223;
-224: le_data1_0 = REG_le_224;
-225: le_data1_0 = REG_le_225;
-226: le_data1_0 = REG_le_226;
-227: le_data1_0 = REG_le_227;
-228: le_data1_0 = REG_le_228;
-229: le_data1_0 = REG_le_229;
-230: le_data1_0 = REG_le_230;
-231: le_data1_0 = REG_le_231;
-232: le_data1_0 = REG_le_232;
-233: le_data1_0 = REG_le_233;
-234: le_data1_0 = REG_le_234;
-235: le_data1_0 = REG_le_235;
-236: le_data1_0 = REG_le_236;
-237: le_data1_0 = REG_le_237;
-238: le_data1_0 = REG_le_238;
-239: le_data1_0 = REG_le_239;
-240: le_data1_0 = REG_le_240;
-241: le_data1_0 = REG_le_241;
-242: le_data1_0 = REG_le_242;
-243: le_data1_0 = REG_le_243;
-244: le_data1_0 = REG_le_244;
-245: le_data1_0 = REG_le_245;
-246: le_data1_0 = REG_le_246;
-247: le_data1_0 = REG_le_247;
-248: le_data1_0 = REG_le_248;
-249: le_data1_0 = REG_le_249;
-250: le_data1_0 = REG_le_250;
-251: le_data1_0 = REG_le_251;
-252: le_data1_0 = REG_le_252;
-253: le_data1_0 = REG_le_253;
-254: le_data1_0 = REG_le_254;
-255: le_data1_0 = REG_le_255;
-256: le_data1_0 = REG_le_256;
-//VCS coverage off
-default : begin 
-            le_data1_0[15:0] = {16{`x_or_0}};
-          end  
-//VCS coverage on
-endcase
-end
-
-always @(
-  lut_in_addr1_1
-  or REG_le_1
-  or REG_le_2
-  or REG_le_3
-  or REG_le_4
-  or REG_le_5
-  or REG_le_6
-  or REG_le_7
-  or REG_le_8
-  or REG_le_9
-  or REG_le_10
-  or REG_le_11
-  or REG_le_12
-  or REG_le_13
-  or REG_le_14
-  or REG_le_15
-  or REG_le_16
-  or REG_le_17
-  or REG_le_18
-  or REG_le_19
-  or REG_le_20
-  or REG_le_21
-  or REG_le_22
-  or REG_le_23
-  or REG_le_24
-  or REG_le_25
-  or REG_le_26
-  or REG_le_27
-  or REG_le_28
-  or REG_le_29
-  or REG_le_30
-  or REG_le_31
-  or REG_le_32
-  or REG_le_33
-  or REG_le_34
-  or REG_le_35
-  or REG_le_36
-  or REG_le_37
-  or REG_le_38
-  or REG_le_39
-  or REG_le_40
-  or REG_le_41
-  or REG_le_42
-  or REG_le_43
-  or REG_le_44
-  or REG_le_45
-  or REG_le_46
-  or REG_le_47
-  or REG_le_48
-  or REG_le_49
-  or REG_le_50
-  or REG_le_51
-  or REG_le_52
-  or REG_le_53
-  or REG_le_54
-  or REG_le_55
-  or REG_le_56
-  or REG_le_57
-  or REG_le_58
-  or REG_le_59
-  or REG_le_60
-  or REG_le_61
-  or REG_le_62
-  or REG_le_63
-  or REG_le_64
-  or REG_le_65
-  or REG_le_66
-  or REG_le_67
-  or REG_le_68
-  or REG_le_69
-  or REG_le_70
-  or REG_le_71
-  or REG_le_72
-  or REG_le_73
-  or REG_le_74
-  or REG_le_75
-  or REG_le_76
-  or REG_le_77
-  or REG_le_78
-  or REG_le_79
-  or REG_le_80
-  or REG_le_81
-  or REG_le_82
-  or REG_le_83
-  or REG_le_84
-  or REG_le_85
-  or REG_le_86
-  or REG_le_87
-  or REG_le_88
-  or REG_le_89
-  or REG_le_90
-  or REG_le_91
-  or REG_le_92
-  or REG_le_93
-  or REG_le_94
-  or REG_le_95
-  or REG_le_96
-  or REG_le_97
-  or REG_le_98
-  or REG_le_99
-  or REG_le_100
-  or REG_le_101
-  or REG_le_102
-  or REG_le_103
-  or REG_le_104
-  or REG_le_105
-  or REG_le_106
-  or REG_le_107
-  or REG_le_108
-  or REG_le_109
-  or REG_le_110
-  or REG_le_111
-  or REG_le_112
-  or REG_le_113
-  or REG_le_114
-  or REG_le_115
-  or REG_le_116
-  or REG_le_117
-  or REG_le_118
-  or REG_le_119
-  or REG_le_120
-  or REG_le_121
-  or REG_le_122
-  or REG_le_123
-  or REG_le_124
-  or REG_le_125
-  or REG_le_126
-  or REG_le_127
-  or REG_le_128
-  or REG_le_129
-  or REG_le_130
-  or REG_le_131
-  or REG_le_132
-  or REG_le_133
-  or REG_le_134
-  or REG_le_135
-  or REG_le_136
-  or REG_le_137
-  or REG_le_138
-  or REG_le_139
-  or REG_le_140
-  or REG_le_141
-  or REG_le_142
-  or REG_le_143
-  or REG_le_144
-  or REG_le_145
-  or REG_le_146
-  or REG_le_147
-  or REG_le_148
-  or REG_le_149
-  or REG_le_150
-  or REG_le_151
-  or REG_le_152
-  or REG_le_153
-  or REG_le_154
-  or REG_le_155
-  or REG_le_156
-  or REG_le_157
-  or REG_le_158
-  or REG_le_159
-  or REG_le_160
-  or REG_le_161
-  or REG_le_162
-  or REG_le_163
-  or REG_le_164
-  or REG_le_165
-  or REG_le_166
-  or REG_le_167
-  or REG_le_168
-  or REG_le_169
-  or REG_le_170
-  or REG_le_171
-  or REG_le_172
-  or REG_le_173
-  or REG_le_174
-  or REG_le_175
-  or REG_le_176
-  or REG_le_177
-  or REG_le_178
-  or REG_le_179
-  or REG_le_180
-  or REG_le_181
-  or REG_le_182
-  or REG_le_183
-  or REG_le_184
-  or REG_le_185
-  or REG_le_186
-  or REG_le_187
-  or REG_le_188
-  or REG_le_189
-  or REG_le_190
-  or REG_le_191
-  or REG_le_192
-  or REG_le_193
-  or REG_le_194
-  or REG_le_195
-  or REG_le_196
-  or REG_le_197
-  or REG_le_198
-  or REG_le_199
-  or REG_le_200
-  or REG_le_201
-  or REG_le_202
-  or REG_le_203
-  or REG_le_204
-  or REG_le_205
-  or REG_le_206
-  or REG_le_207
-  or REG_le_208
-  or REG_le_209
-  or REG_le_210
-  or REG_le_211
-  or REG_le_212
-  or REG_le_213
-  or REG_le_214
-  or REG_le_215
-  or REG_le_216
-  or REG_le_217
-  or REG_le_218
-  or REG_le_219
-  or REG_le_220
-  or REG_le_221
-  or REG_le_222
-  or REG_le_223
-  or REG_le_224
-  or REG_le_225
-  or REG_le_226
-  or REG_le_227
-  or REG_le_228
-  or REG_le_229
-  or REG_le_230
-  or REG_le_231
-  or REG_le_232
-  or REG_le_233
-  or REG_le_234
-  or REG_le_235
-  or REG_le_236
-  or REG_le_237
-  or REG_le_238
-  or REG_le_239
-  or REG_le_240
-  or REG_le_241
-  or REG_le_242
-  or REG_le_243
-  or REG_le_244
-  or REG_le_245
-  or REG_le_246
-  or REG_le_247
-  or REG_le_248
-  or REG_le_249
-  or REG_le_250
-  or REG_le_251
-  or REG_le_252
-  or REG_le_253
-  or REG_le_254
-  or REG_le_255
-  or REG_le_256
-  ) begin
-case (lut_in_addr1_1) 
-
-1: le_data1_1 = REG_le_1;
-2: le_data1_1 = REG_le_2;
-3: le_data1_1 = REG_le_3;
-4: le_data1_1 = REG_le_4;
-5: le_data1_1 = REG_le_5;
-6: le_data1_1 = REG_le_6;
-7: le_data1_1 = REG_le_7;
-8: le_data1_1 = REG_le_8;
-9: le_data1_1 = REG_le_9;
-10: le_data1_1 = REG_le_10;
-11: le_data1_1 = REG_le_11;
-12: le_data1_1 = REG_le_12;
-13: le_data1_1 = REG_le_13;
-14: le_data1_1 = REG_le_14;
-15: le_data1_1 = REG_le_15;
-16: le_data1_1 = REG_le_16;
-17: le_data1_1 = REG_le_17;
-18: le_data1_1 = REG_le_18;
-19: le_data1_1 = REG_le_19;
-20: le_data1_1 = REG_le_20;
-21: le_data1_1 = REG_le_21;
-22: le_data1_1 = REG_le_22;
-23: le_data1_1 = REG_le_23;
-24: le_data1_1 = REG_le_24;
-25: le_data1_1 = REG_le_25;
-26: le_data1_1 = REG_le_26;
-27: le_data1_1 = REG_le_27;
-28: le_data1_1 = REG_le_28;
-29: le_data1_1 = REG_le_29;
-30: le_data1_1 = REG_le_30;
-31: le_data1_1 = REG_le_31;
-32: le_data1_1 = REG_le_32;
-33: le_data1_1 = REG_le_33;
-34: le_data1_1 = REG_le_34;
-35: le_data1_1 = REG_le_35;
-36: le_data1_1 = REG_le_36;
-37: le_data1_1 = REG_le_37;
-38: le_data1_1 = REG_le_38;
-39: le_data1_1 = REG_le_39;
-40: le_data1_1 = REG_le_40;
-41: le_data1_1 = REG_le_41;
-42: le_data1_1 = REG_le_42;
-43: le_data1_1 = REG_le_43;
-44: le_data1_1 = REG_le_44;
-45: le_data1_1 = REG_le_45;
-46: le_data1_1 = REG_le_46;
-47: le_data1_1 = REG_le_47;
-48: le_data1_1 = REG_le_48;
-49: le_data1_1 = REG_le_49;
-50: le_data1_1 = REG_le_50;
-51: le_data1_1 = REG_le_51;
-52: le_data1_1 = REG_le_52;
-53: le_data1_1 = REG_le_53;
-54: le_data1_1 = REG_le_54;
-55: le_data1_1 = REG_le_55;
-56: le_data1_1 = REG_le_56;
-57: le_data1_1 = REG_le_57;
-58: le_data1_1 = REG_le_58;
-59: le_data1_1 = REG_le_59;
-60: le_data1_1 = REG_le_60;
-61: le_data1_1 = REG_le_61;
-62: le_data1_1 = REG_le_62;
-63: le_data1_1 = REG_le_63;
-64: le_data1_1 = REG_le_64;
-65: le_data1_1 = REG_le_65;
-66: le_data1_1 = REG_le_66;
-67: le_data1_1 = REG_le_67;
-68: le_data1_1 = REG_le_68;
-69: le_data1_1 = REG_le_69;
-70: le_data1_1 = REG_le_70;
-71: le_data1_1 = REG_le_71;
-72: le_data1_1 = REG_le_72;
-73: le_data1_1 = REG_le_73;
-74: le_data1_1 = REG_le_74;
-75: le_data1_1 = REG_le_75;
-76: le_data1_1 = REG_le_76;
-77: le_data1_1 = REG_le_77;
-78: le_data1_1 = REG_le_78;
-79: le_data1_1 = REG_le_79;
-80: le_data1_1 = REG_le_80;
-81: le_data1_1 = REG_le_81;
-82: le_data1_1 = REG_le_82;
-83: le_data1_1 = REG_le_83;
-84: le_data1_1 = REG_le_84;
-85: le_data1_1 = REG_le_85;
-86: le_data1_1 = REG_le_86;
-87: le_data1_1 = REG_le_87;
-88: le_data1_1 = REG_le_88;
-89: le_data1_1 = REG_le_89;
-90: le_data1_1 = REG_le_90;
-91: le_data1_1 = REG_le_91;
-92: le_data1_1 = REG_le_92;
-93: le_data1_1 = REG_le_93;
-94: le_data1_1 = REG_le_94;
-95: le_data1_1 = REG_le_95;
-96: le_data1_1 = REG_le_96;
-97: le_data1_1 = REG_le_97;
-98: le_data1_1 = REG_le_98;
-99: le_data1_1 = REG_le_99;
-100: le_data1_1 = REG_le_100;
-101: le_data1_1 = REG_le_101;
-102: le_data1_1 = REG_le_102;
-103: le_data1_1 = REG_le_103;
-104: le_data1_1 = REG_le_104;
-105: le_data1_1 = REG_le_105;
-106: le_data1_1 = REG_le_106;
-107: le_data1_1 = REG_le_107;
-108: le_data1_1 = REG_le_108;
-109: le_data1_1 = REG_le_109;
-110: le_data1_1 = REG_le_110;
-111: le_data1_1 = REG_le_111;
-112: le_data1_1 = REG_le_112;
-113: le_data1_1 = REG_le_113;
-114: le_data1_1 = REG_le_114;
-115: le_data1_1 = REG_le_115;
-116: le_data1_1 = REG_le_116;
-117: le_data1_1 = REG_le_117;
-118: le_data1_1 = REG_le_118;
-119: le_data1_1 = REG_le_119;
-120: le_data1_1 = REG_le_120;
-121: le_data1_1 = REG_le_121;
-122: le_data1_1 = REG_le_122;
-123: le_data1_1 = REG_le_123;
-124: le_data1_1 = REG_le_124;
-125: le_data1_1 = REG_le_125;
-126: le_data1_1 = REG_le_126;
-127: le_data1_1 = REG_le_127;
-128: le_data1_1 = REG_le_128;
-129: le_data1_1 = REG_le_129;
-130: le_data1_1 = REG_le_130;
-131: le_data1_1 = REG_le_131;
-132: le_data1_1 = REG_le_132;
-133: le_data1_1 = REG_le_133;
-134: le_data1_1 = REG_le_134;
-135: le_data1_1 = REG_le_135;
-136: le_data1_1 = REG_le_136;
-137: le_data1_1 = REG_le_137;
-138: le_data1_1 = REG_le_138;
-139: le_data1_1 = REG_le_139;
-140: le_data1_1 = REG_le_140;
-141: le_data1_1 = REG_le_141;
-142: le_data1_1 = REG_le_142;
-143: le_data1_1 = REG_le_143;
-144: le_data1_1 = REG_le_144;
-145: le_data1_1 = REG_le_145;
-146: le_data1_1 = REG_le_146;
-147: le_data1_1 = REG_le_147;
-148: le_data1_1 = REG_le_148;
-149: le_data1_1 = REG_le_149;
-150: le_data1_1 = REG_le_150;
-151: le_data1_1 = REG_le_151;
-152: le_data1_1 = REG_le_152;
-153: le_data1_1 = REG_le_153;
-154: le_data1_1 = REG_le_154;
-155: le_data1_1 = REG_le_155;
-156: le_data1_1 = REG_le_156;
-157: le_data1_1 = REG_le_157;
-158: le_data1_1 = REG_le_158;
-159: le_data1_1 = REG_le_159;
-160: le_data1_1 = REG_le_160;
-161: le_data1_1 = REG_le_161;
-162: le_data1_1 = REG_le_162;
-163: le_data1_1 = REG_le_163;
-164: le_data1_1 = REG_le_164;
-165: le_data1_1 = REG_le_165;
-166: le_data1_1 = REG_le_166;
-167: le_data1_1 = REG_le_167;
-168: le_data1_1 = REG_le_168;
-169: le_data1_1 = REG_le_169;
-170: le_data1_1 = REG_le_170;
-171: le_data1_1 = REG_le_171;
-172: le_data1_1 = REG_le_172;
-173: le_data1_1 = REG_le_173;
-174: le_data1_1 = REG_le_174;
-175: le_data1_1 = REG_le_175;
-176: le_data1_1 = REG_le_176;
-177: le_data1_1 = REG_le_177;
-178: le_data1_1 = REG_le_178;
-179: le_data1_1 = REG_le_179;
-180: le_data1_1 = REG_le_180;
-181: le_data1_1 = REG_le_181;
-182: le_data1_1 = REG_le_182;
-183: le_data1_1 = REG_le_183;
-184: le_data1_1 = REG_le_184;
-185: le_data1_1 = REG_le_185;
-186: le_data1_1 = REG_le_186;
-187: le_data1_1 = REG_le_187;
-188: le_data1_1 = REG_le_188;
-189: le_data1_1 = REG_le_189;
-190: le_data1_1 = REG_le_190;
-191: le_data1_1 = REG_le_191;
-192: le_data1_1 = REG_le_192;
-193: le_data1_1 = REG_le_193;
-194: le_data1_1 = REG_le_194;
-195: le_data1_1 = REG_le_195;
-196: le_data1_1 = REG_le_196;
-197: le_data1_1 = REG_le_197;
-198: le_data1_1 = REG_le_198;
-199: le_data1_1 = REG_le_199;
-200: le_data1_1 = REG_le_200;
-201: le_data1_1 = REG_le_201;
-202: le_data1_1 = REG_le_202;
-203: le_data1_1 = REG_le_203;
-204: le_data1_1 = REG_le_204;
-205: le_data1_1 = REG_le_205;
-206: le_data1_1 = REG_le_206;
-207: le_data1_1 = REG_le_207;
-208: le_data1_1 = REG_le_208;
-209: le_data1_1 = REG_le_209;
-210: le_data1_1 = REG_le_210;
-211: le_data1_1 = REG_le_211;
-212: le_data1_1 = REG_le_212;
-213: le_data1_1 = REG_le_213;
-214: le_data1_1 = REG_le_214;
-215: le_data1_1 = REG_le_215;
-216: le_data1_1 = REG_le_216;
-217: le_data1_1 = REG_le_217;
-218: le_data1_1 = REG_le_218;
-219: le_data1_1 = REG_le_219;
-220: le_data1_1 = REG_le_220;
-221: le_data1_1 = REG_le_221;
-222: le_data1_1 = REG_le_222;
-223: le_data1_1 = REG_le_223;
-224: le_data1_1 = REG_le_224;
-225: le_data1_1 = REG_le_225;
-226: le_data1_1 = REG_le_226;
-227: le_data1_1 = REG_le_227;
-228: le_data1_1 = REG_le_228;
-229: le_data1_1 = REG_le_229;
-230: le_data1_1 = REG_le_230;
-231: le_data1_1 = REG_le_231;
-232: le_data1_1 = REG_le_232;
-233: le_data1_1 = REG_le_233;
-234: le_data1_1 = REG_le_234;
-235: le_data1_1 = REG_le_235;
-236: le_data1_1 = REG_le_236;
-237: le_data1_1 = REG_le_237;
-238: le_data1_1 = REG_le_238;
-239: le_data1_1 = REG_le_239;
-240: le_data1_1 = REG_le_240;
-241: le_data1_1 = REG_le_241;
-242: le_data1_1 = REG_le_242;
-243: le_data1_1 = REG_le_243;
-244: le_data1_1 = REG_le_244;
-245: le_data1_1 = REG_le_245;
-246: le_data1_1 = REG_le_246;
-247: le_data1_1 = REG_le_247;
-248: le_data1_1 = REG_le_248;
-249: le_data1_1 = REG_le_249;
-250: le_data1_1 = REG_le_250;
-251: le_data1_1 = REG_le_251;
-252: le_data1_1 = REG_le_252;
-253: le_data1_1 = REG_le_253;
-254: le_data1_1 = REG_le_254;
-255: le_data1_1 = REG_le_255;
-256: le_data1_1 = REG_le_256;
-//VCS coverage off
-default : begin 
-            le_data1_1[15:0] = {16{`x_or_0}};
-          end  
-//VCS coverage on
-endcase
-end
-
-always @(
-  lut_in_addr2_1
-  or REG_le_1
-  or REG_le_2
-  or REG_le_3
-  or REG_le_4
-  or REG_le_5
-  or REG_le_6
-  or REG_le_7
-  or REG_le_8
-  or REG_le_9
-  or REG_le_10
-  or REG_le_11
-  or REG_le_12
-  or REG_le_13
-  or REG_le_14
-  or REG_le_15
-  or REG_le_16
-  or REG_le_17
-  or REG_le_18
-  or REG_le_19
-  or REG_le_20
-  or REG_le_21
-  or REG_le_22
-  or REG_le_23
-  or REG_le_24
-  or REG_le_25
-  or REG_le_26
-  or REG_le_27
-  or REG_le_28
-  or REG_le_29
-  or REG_le_30
-  or REG_le_31
-  or REG_le_32
-  or REG_le_33
-  or REG_le_34
-  or REG_le_35
-  or REG_le_36
-  or REG_le_37
-  or REG_le_38
-  or REG_le_39
-  or REG_le_40
-  or REG_le_41
-  or REG_le_42
-  or REG_le_43
-  or REG_le_44
-  or REG_le_45
-  or REG_le_46
-  or REG_le_47
-  or REG_le_48
-  or REG_le_49
-  or REG_le_50
-  or REG_le_51
-  or REG_le_52
-  or REG_le_53
-  or REG_le_54
-  or REG_le_55
-  or REG_le_56
-  or REG_le_57
-  or REG_le_58
-  or REG_le_59
-  or REG_le_60
-  or REG_le_61
-  or REG_le_62
-  or REG_le_63
-  or REG_le_64
-  or REG_le_65
-  or REG_le_66
-  or REG_le_67
-  or REG_le_68
-  or REG_le_69
-  or REG_le_70
-  or REG_le_71
-  or REG_le_72
-  or REG_le_73
-  or REG_le_74
-  or REG_le_75
-  or REG_le_76
-  or REG_le_77
-  or REG_le_78
-  or REG_le_79
-  or REG_le_80
-  or REG_le_81
-  or REG_le_82
-  or REG_le_83
-  or REG_le_84
-  or REG_le_85
-  or REG_le_86
-  or REG_le_87
-  or REG_le_88
-  or REG_le_89
-  or REG_le_90
-  or REG_le_91
-  or REG_le_92
-  or REG_le_93
-  or REG_le_94
-  or REG_le_95
-  or REG_le_96
-  or REG_le_97
-  or REG_le_98
-  or REG_le_99
-  or REG_le_100
-  or REG_le_101
-  or REG_le_102
-  or REG_le_103
-  or REG_le_104
-  or REG_le_105
-  or REG_le_106
-  or REG_le_107
-  or REG_le_108
-  or REG_le_109
-  or REG_le_110
-  or REG_le_111
-  or REG_le_112
-  or REG_le_113
-  or REG_le_114
-  or REG_le_115
-  or REG_le_116
-  or REG_le_117
-  or REG_le_118
-  or REG_le_119
-  or REG_le_120
-  or REG_le_121
-  or REG_le_122
-  or REG_le_123
-  or REG_le_124
-  or REG_le_125
-  or REG_le_126
-  or REG_le_127
-  or REG_le_128
-  or REG_le_129
-  or REG_le_130
-  or REG_le_131
-  or REG_le_132
-  or REG_le_133
-  or REG_le_134
-  or REG_le_135
-  or REG_le_136
-  or REG_le_137
-  or REG_le_138
-  or REG_le_139
-  or REG_le_140
-  or REG_le_141
-  or REG_le_142
-  or REG_le_143
-  or REG_le_144
-  or REG_le_145
-  or REG_le_146
-  or REG_le_147
-  or REG_le_148
-  or REG_le_149
-  or REG_le_150
-  or REG_le_151
-  or REG_le_152
-  or REG_le_153
-  or REG_le_154
-  or REG_le_155
-  or REG_le_156
-  or REG_le_157
-  or REG_le_158
-  or REG_le_159
-  or REG_le_160
-  or REG_le_161
-  or REG_le_162
-  or REG_le_163
-  or REG_le_164
-  or REG_le_165
-  or REG_le_166
-  or REG_le_167
-  or REG_le_168
-  or REG_le_169
-  or REG_le_170
-  or REG_le_171
-  or REG_le_172
-  or REG_le_173
-  or REG_le_174
-  or REG_le_175
-  or REG_le_176
-  or REG_le_177
-  or REG_le_178
-  or REG_le_179
-  or REG_le_180
-  or REG_le_181
-  or REG_le_182
-  or REG_le_183
-  or REG_le_184
-  or REG_le_185
-  or REG_le_186
-  or REG_le_187
-  or REG_le_188
-  or REG_le_189
-  or REG_le_190
-  or REG_le_191
-  or REG_le_192
-  or REG_le_193
-  or REG_le_194
-  or REG_le_195
-  or REG_le_196
-  or REG_le_197
-  or REG_le_198
-  or REG_le_199
-  or REG_le_200
-  or REG_le_201
-  or REG_le_202
-  or REG_le_203
-  or REG_le_204
-  or REG_le_205
-  or REG_le_206
-  or REG_le_207
-  or REG_le_208
-  or REG_le_209
-  or REG_le_210
-  or REG_le_211
-  or REG_le_212
-  or REG_le_213
-  or REG_le_214
-  or REG_le_215
-  or REG_le_216
-  or REG_le_217
-  or REG_le_218
-  or REG_le_219
-  or REG_le_220
-  or REG_le_221
-  or REG_le_222
-  or REG_le_223
-  or REG_le_224
-  or REG_le_225
-  or REG_le_226
-  or REG_le_227
-  or REG_le_228
-  or REG_le_229
-  or REG_le_230
-  or REG_le_231
-  or REG_le_232
-  or REG_le_233
-  or REG_le_234
-  or REG_le_235
-  or REG_le_236
-  or REG_le_237
-  or REG_le_238
-  or REG_le_239
-  or REG_le_240
-  or REG_le_241
-  or REG_le_242
-  or REG_le_243
-  or REG_le_244
-  or REG_le_245
-  or REG_le_246
-  or REG_le_247
-  or REG_le_248
-  or REG_le_249
-  or REG_le_250
-  or REG_le_251
-  or REG_le_252
-  or REG_le_253
-  or REG_le_254
-  or REG_le_255
-  or REG_le_256
-  ) begin
-case (lut_in_addr2_1) 
-
-1: le_data1_2 = REG_le_1;
-2: le_data1_2 = REG_le_2;
-3: le_data1_2 = REG_le_3;
-4: le_data1_2 = REG_le_4;
-5: le_data1_2 = REG_le_5;
-6: le_data1_2 = REG_le_6;
-7: le_data1_2 = REG_le_7;
-8: le_data1_2 = REG_le_8;
-9: le_data1_2 = REG_le_9;
-10: le_data1_2 = REG_le_10;
-11: le_data1_2 = REG_le_11;
-12: le_data1_2 = REG_le_12;
-13: le_data1_2 = REG_le_13;
-14: le_data1_2 = REG_le_14;
-15: le_data1_2 = REG_le_15;
-16: le_data1_2 = REG_le_16;
-17: le_data1_2 = REG_le_17;
-18: le_data1_2 = REG_le_18;
-19: le_data1_2 = REG_le_19;
-20: le_data1_2 = REG_le_20;
-21: le_data1_2 = REG_le_21;
-22: le_data1_2 = REG_le_22;
-23: le_data1_2 = REG_le_23;
-24: le_data1_2 = REG_le_24;
-25: le_data1_2 = REG_le_25;
-26: le_data1_2 = REG_le_26;
-27: le_data1_2 = REG_le_27;
-28: le_data1_2 = REG_le_28;
-29: le_data1_2 = REG_le_29;
-30: le_data1_2 = REG_le_30;
-31: le_data1_2 = REG_le_31;
-32: le_data1_2 = REG_le_32;
-33: le_data1_2 = REG_le_33;
-34: le_data1_2 = REG_le_34;
-35: le_data1_2 = REG_le_35;
-36: le_data1_2 = REG_le_36;
-37: le_data1_2 = REG_le_37;
-38: le_data1_2 = REG_le_38;
-39: le_data1_2 = REG_le_39;
-40: le_data1_2 = REG_le_40;
-41: le_data1_2 = REG_le_41;
-42: le_data1_2 = REG_le_42;
-43: le_data1_2 = REG_le_43;
-44: le_data1_2 = REG_le_44;
-45: le_data1_2 = REG_le_45;
-46: le_data1_2 = REG_le_46;
-47: le_data1_2 = REG_le_47;
-48: le_data1_2 = REG_le_48;
-49: le_data1_2 = REG_le_49;
-50: le_data1_2 = REG_le_50;
-51: le_data1_2 = REG_le_51;
-52: le_data1_2 = REG_le_52;
-53: le_data1_2 = REG_le_53;
-54: le_data1_2 = REG_le_54;
-55: le_data1_2 = REG_le_55;
-56: le_data1_2 = REG_le_56;
-57: le_data1_2 = REG_le_57;
-58: le_data1_2 = REG_le_58;
-59: le_data1_2 = REG_le_59;
-60: le_data1_2 = REG_le_60;
-61: le_data1_2 = REG_le_61;
-62: le_data1_2 = REG_le_62;
-63: le_data1_2 = REG_le_63;
-64: le_data1_2 = REG_le_64;
-65: le_data1_2 = REG_le_65;
-66: le_data1_2 = REG_le_66;
-67: le_data1_2 = REG_le_67;
-68: le_data1_2 = REG_le_68;
-69: le_data1_2 = REG_le_69;
-70: le_data1_2 = REG_le_70;
-71: le_data1_2 = REG_le_71;
-72: le_data1_2 = REG_le_72;
-73: le_data1_2 = REG_le_73;
-74: le_data1_2 = REG_le_74;
-75: le_data1_2 = REG_le_75;
-76: le_data1_2 = REG_le_76;
-77: le_data1_2 = REG_le_77;
-78: le_data1_2 = REG_le_78;
-79: le_data1_2 = REG_le_79;
-80: le_data1_2 = REG_le_80;
-81: le_data1_2 = REG_le_81;
-82: le_data1_2 = REG_le_82;
-83: le_data1_2 = REG_le_83;
-84: le_data1_2 = REG_le_84;
-85: le_data1_2 = REG_le_85;
-86: le_data1_2 = REG_le_86;
-87: le_data1_2 = REG_le_87;
-88: le_data1_2 = REG_le_88;
-89: le_data1_2 = REG_le_89;
-90: le_data1_2 = REG_le_90;
-91: le_data1_2 = REG_le_91;
-92: le_data1_2 = REG_le_92;
-93: le_data1_2 = REG_le_93;
-94: le_data1_2 = REG_le_94;
-95: le_data1_2 = REG_le_95;
-96: le_data1_2 = REG_le_96;
-97: le_data1_2 = REG_le_97;
-98: le_data1_2 = REG_le_98;
-99: le_data1_2 = REG_le_99;
-100: le_data1_2 = REG_le_100;
-101: le_data1_2 = REG_le_101;
-102: le_data1_2 = REG_le_102;
-103: le_data1_2 = REG_le_103;
-104: le_data1_2 = REG_le_104;
-105: le_data1_2 = REG_le_105;
-106: le_data1_2 = REG_le_106;
-107: le_data1_2 = REG_le_107;
-108: le_data1_2 = REG_le_108;
-109: le_data1_2 = REG_le_109;
-110: le_data1_2 = REG_le_110;
-111: le_data1_2 = REG_le_111;
-112: le_data1_2 = REG_le_112;
-113: le_data1_2 = REG_le_113;
-114: le_data1_2 = REG_le_114;
-115: le_data1_2 = REG_le_115;
-116: le_data1_2 = REG_le_116;
-117: le_data1_2 = REG_le_117;
-118: le_data1_2 = REG_le_118;
-119: le_data1_2 = REG_le_119;
-120: le_data1_2 = REG_le_120;
-121: le_data1_2 = REG_le_121;
-122: le_data1_2 = REG_le_122;
-123: le_data1_2 = REG_le_123;
-124: le_data1_2 = REG_le_124;
-125: le_data1_2 = REG_le_125;
-126: le_data1_2 = REG_le_126;
-127: le_data1_2 = REG_le_127;
-128: le_data1_2 = REG_le_128;
-129: le_data1_2 = REG_le_129;
-130: le_data1_2 = REG_le_130;
-131: le_data1_2 = REG_le_131;
-132: le_data1_2 = REG_le_132;
-133: le_data1_2 = REG_le_133;
-134: le_data1_2 = REG_le_134;
-135: le_data1_2 = REG_le_135;
-136: le_data1_2 = REG_le_136;
-137: le_data1_2 = REG_le_137;
-138: le_data1_2 = REG_le_138;
-139: le_data1_2 = REG_le_139;
-140: le_data1_2 = REG_le_140;
-141: le_data1_2 = REG_le_141;
-142: le_data1_2 = REG_le_142;
-143: le_data1_2 = REG_le_143;
-144: le_data1_2 = REG_le_144;
-145: le_data1_2 = REG_le_145;
-146: le_data1_2 = REG_le_146;
-147: le_data1_2 = REG_le_147;
-148: le_data1_2 = REG_le_148;
-149: le_data1_2 = REG_le_149;
-150: le_data1_2 = REG_le_150;
-151: le_data1_2 = REG_le_151;
-152: le_data1_2 = REG_le_152;
-153: le_data1_2 = REG_le_153;
-154: le_data1_2 = REG_le_154;
-155: le_data1_2 = REG_le_155;
-156: le_data1_2 = REG_le_156;
-157: le_data1_2 = REG_le_157;
-158: le_data1_2 = REG_le_158;
-159: le_data1_2 = REG_le_159;
-160: le_data1_2 = REG_le_160;
-161: le_data1_2 = REG_le_161;
-162: le_data1_2 = REG_le_162;
-163: le_data1_2 = REG_le_163;
-164: le_data1_2 = REG_le_164;
-165: le_data1_2 = REG_le_165;
-166: le_data1_2 = REG_le_166;
-167: le_data1_2 = REG_le_167;
-168: le_data1_2 = REG_le_168;
-169: le_data1_2 = REG_le_169;
-170: le_data1_2 = REG_le_170;
-171: le_data1_2 = REG_le_171;
-172: le_data1_2 = REG_le_172;
-173: le_data1_2 = REG_le_173;
-174: le_data1_2 = REG_le_174;
-175: le_data1_2 = REG_le_175;
-176: le_data1_2 = REG_le_176;
-177: le_data1_2 = REG_le_177;
-178: le_data1_2 = REG_le_178;
-179: le_data1_2 = REG_le_179;
-180: le_data1_2 = REG_le_180;
-181: le_data1_2 = REG_le_181;
-182: le_data1_2 = REG_le_182;
-183: le_data1_2 = REG_le_183;
-184: le_data1_2 = REG_le_184;
-185: le_data1_2 = REG_le_185;
-186: le_data1_2 = REG_le_186;
-187: le_data1_2 = REG_le_187;
-188: le_data1_2 = REG_le_188;
-189: le_data1_2 = REG_le_189;
-190: le_data1_2 = REG_le_190;
-191: le_data1_2 = REG_le_191;
-192: le_data1_2 = REG_le_192;
-193: le_data1_2 = REG_le_193;
-194: le_data1_2 = REG_le_194;
-195: le_data1_2 = REG_le_195;
-196: le_data1_2 = REG_le_196;
-197: le_data1_2 = REG_le_197;
-198: le_data1_2 = REG_le_198;
-199: le_data1_2 = REG_le_199;
-200: le_data1_2 = REG_le_200;
-201: le_data1_2 = REG_le_201;
-202: le_data1_2 = REG_le_202;
-203: le_data1_2 = REG_le_203;
-204: le_data1_2 = REG_le_204;
-205: le_data1_2 = REG_le_205;
-206: le_data1_2 = REG_le_206;
-207: le_data1_2 = REG_le_207;
-208: le_data1_2 = REG_le_208;
-209: le_data1_2 = REG_le_209;
-210: le_data1_2 = REG_le_210;
-211: le_data1_2 = REG_le_211;
-212: le_data1_2 = REG_le_212;
-213: le_data1_2 = REG_le_213;
-214: le_data1_2 = REG_le_214;
-215: le_data1_2 = REG_le_215;
-216: le_data1_2 = REG_le_216;
-217: le_data1_2 = REG_le_217;
-218: le_data1_2 = REG_le_218;
-219: le_data1_2 = REG_le_219;
-220: le_data1_2 = REG_le_220;
-221: le_data1_2 = REG_le_221;
-222: le_data1_2 = REG_le_222;
-223: le_data1_2 = REG_le_223;
-224: le_data1_2 = REG_le_224;
-225: le_data1_2 = REG_le_225;
-226: le_data1_2 = REG_le_226;
-227: le_data1_2 = REG_le_227;
-228: le_data1_2 = REG_le_228;
-229: le_data1_2 = REG_le_229;
-230: le_data1_2 = REG_le_230;
-231: le_data1_2 = REG_le_231;
-232: le_data1_2 = REG_le_232;
-233: le_data1_2 = REG_le_233;
-234: le_data1_2 = REG_le_234;
-235: le_data1_2 = REG_le_235;
-236: le_data1_2 = REG_le_236;
-237: le_data1_2 = REG_le_237;
-238: le_data1_2 = REG_le_238;
-239: le_data1_2 = REG_le_239;
-240: le_data1_2 = REG_le_240;
-241: le_data1_2 = REG_le_241;
-242: le_data1_2 = REG_le_242;
-243: le_data1_2 = REG_le_243;
-244: le_data1_2 = REG_le_244;
-245: le_data1_2 = REG_le_245;
-246: le_data1_2 = REG_le_246;
-247: le_data1_2 = REG_le_247;
-248: le_data1_2 = REG_le_248;
-249: le_data1_2 = REG_le_249;
-250: le_data1_2 = REG_le_250;
-251: le_data1_2 = REG_le_251;
-252: le_data1_2 = REG_le_252;
-253: le_data1_2 = REG_le_253;
-254: le_data1_2 = REG_le_254;
-255: le_data1_2 = REG_le_255;
-256: le_data1_2 = REG_le_256;
-//VCS coverage off
-default : begin 
-            le_data1_2[15:0] = {16{`x_or_0}};
-          end  
-//VCS coverage on
-endcase
-end
-
-always @(
-  lut_in_addr3_1
-  or REG_le_1
-  or REG_le_2
-  or REG_le_3
-  or REG_le_4
-  or REG_le_5
-  or REG_le_6
-  or REG_le_7
-  or REG_le_8
-  or REG_le_9
-  or REG_le_10
-  or REG_le_11
-  or REG_le_12
-  or REG_le_13
-  or REG_le_14
-  or REG_le_15
-  or REG_le_16
-  or REG_le_17
-  or REG_le_18
-  or REG_le_19
-  or REG_le_20
-  or REG_le_21
-  or REG_le_22
-  or REG_le_23
-  or REG_le_24
-  or REG_le_25
-  or REG_le_26
-  or REG_le_27
-  or REG_le_28
-  or REG_le_29
-  or REG_le_30
-  or REG_le_31
-  or REG_le_32
-  or REG_le_33
-  or REG_le_34
-  or REG_le_35
-  or REG_le_36
-  or REG_le_37
-  or REG_le_38
-  or REG_le_39
-  or REG_le_40
-  or REG_le_41
-  or REG_le_42
-  or REG_le_43
-  or REG_le_44
-  or REG_le_45
-  or REG_le_46
-  or REG_le_47
-  or REG_le_48
-  or REG_le_49
-  or REG_le_50
-  or REG_le_51
-  or REG_le_52
-  or REG_le_53
-  or REG_le_54
-  or REG_le_55
-  or REG_le_56
-  or REG_le_57
-  or REG_le_58
-  or REG_le_59
-  or REG_le_60
-  or REG_le_61
-  or REG_le_62
-  or REG_le_63
-  or REG_le_64
-  or REG_le_65
-  or REG_le_66
-  or REG_le_67
-  or REG_le_68
-  or REG_le_69
-  or REG_le_70
-  or REG_le_71
-  or REG_le_72
-  or REG_le_73
-  or REG_le_74
-  or REG_le_75
-  or REG_le_76
-  or REG_le_77
-  or REG_le_78
-  or REG_le_79
-  or REG_le_80
-  or REG_le_81
-  or REG_le_82
-  or REG_le_83
-  or REG_le_84
-  or REG_le_85
-  or REG_le_86
-  or REG_le_87
-  or REG_le_88
-  or REG_le_89
-  or REG_le_90
-  or REG_le_91
-  or REG_le_92
-  or REG_le_93
-  or REG_le_94
-  or REG_le_95
-  or REG_le_96
-  or REG_le_97
-  or REG_le_98
-  or REG_le_99
-  or REG_le_100
-  or REG_le_101
-  or REG_le_102
-  or REG_le_103
-  or REG_le_104
-  or REG_le_105
-  or REG_le_106
-  or REG_le_107
-  or REG_le_108
-  or REG_le_109
-  or REG_le_110
-  or REG_le_111
-  or REG_le_112
-  or REG_le_113
-  or REG_le_114
-  or REG_le_115
-  or REG_le_116
-  or REG_le_117
-  or REG_le_118
-  or REG_le_119
-  or REG_le_120
-  or REG_le_121
-  or REG_le_122
-  or REG_le_123
-  or REG_le_124
-  or REG_le_125
-  or REG_le_126
-  or REG_le_127
-  or REG_le_128
-  or REG_le_129
-  or REG_le_130
-  or REG_le_131
-  or REG_le_132
-  or REG_le_133
-  or REG_le_134
-  or REG_le_135
-  or REG_le_136
-  or REG_le_137
-  or REG_le_138
-  or REG_le_139
-  or REG_le_140
-  or REG_le_141
-  or REG_le_142
-  or REG_le_143
-  or REG_le_144
-  or REG_le_145
-  or REG_le_146
-  or REG_le_147
-  or REG_le_148
-  or REG_le_149
-  or REG_le_150
-  or REG_le_151
-  or REG_le_152
-  or REG_le_153
-  or REG_le_154
-  or REG_le_155
-  or REG_le_156
-  or REG_le_157
-  or REG_le_158
-  or REG_le_159
-  or REG_le_160
-  or REG_le_161
-  or REG_le_162
-  or REG_le_163
-  or REG_le_164
-  or REG_le_165
-  or REG_le_166
-  or REG_le_167
-  or REG_le_168
-  or REG_le_169
-  or REG_le_170
-  or REG_le_171
-  or REG_le_172
-  or REG_le_173
-  or REG_le_174
-  or REG_le_175
-  or REG_le_176
-  or REG_le_177
-  or REG_le_178
-  or REG_le_179
-  or REG_le_180
-  or REG_le_181
-  or REG_le_182
-  or REG_le_183
-  or REG_le_184
-  or REG_le_185
-  or REG_le_186
-  or REG_le_187
-  or REG_le_188
-  or REG_le_189
-  or REG_le_190
-  or REG_le_191
-  or REG_le_192
-  or REG_le_193
-  or REG_le_194
-  or REG_le_195
-  or REG_le_196
-  or REG_le_197
-  or REG_le_198
-  or REG_le_199
-  or REG_le_200
-  or REG_le_201
-  or REG_le_202
-  or REG_le_203
-  or REG_le_204
-  or REG_le_205
-  or REG_le_206
-  or REG_le_207
-  or REG_le_208
-  or REG_le_209
-  or REG_le_210
-  or REG_le_211
-  or REG_le_212
-  or REG_le_213
-  or REG_le_214
-  or REG_le_215
-  or REG_le_216
-  or REG_le_217
-  or REG_le_218
-  or REG_le_219
-  or REG_le_220
-  or REG_le_221
-  or REG_le_222
-  or REG_le_223
-  or REG_le_224
-  or REG_le_225
-  or REG_le_226
-  or REG_le_227
-  or REG_le_228
-  or REG_le_229
-  or REG_le_230
-  or REG_le_231
-  or REG_le_232
-  or REG_le_233
-  or REG_le_234
-  or REG_le_235
-  or REG_le_236
-  or REG_le_237
-  or REG_le_238
-  or REG_le_239
-  or REG_le_240
-  or REG_le_241
-  or REG_le_242
-  or REG_le_243
-  or REG_le_244
-  or REG_le_245
-  or REG_le_246
-  or REG_le_247
-  or REG_le_248
-  or REG_le_249
-  or REG_le_250
-  or REG_le_251
-  or REG_le_252
-  or REG_le_253
-  or REG_le_254
-  or REG_le_255
-  or REG_le_256
-  ) begin
-case (lut_in_addr3_1) 
-
-1: le_data1_3 = REG_le_1;
-2: le_data1_3 = REG_le_2;
-3: le_data1_3 = REG_le_3;
-4: le_data1_3 = REG_le_4;
-5: le_data1_3 = REG_le_5;
-6: le_data1_3 = REG_le_6;
-7: le_data1_3 = REG_le_7;
-8: le_data1_3 = REG_le_8;
-9: le_data1_3 = REG_le_9;
-10: le_data1_3 = REG_le_10;
-11: le_data1_3 = REG_le_11;
-12: le_data1_3 = REG_le_12;
-13: le_data1_3 = REG_le_13;
-14: le_data1_3 = REG_le_14;
-15: le_data1_3 = REG_le_15;
-16: le_data1_3 = REG_le_16;
-17: le_data1_3 = REG_le_17;
-18: le_data1_3 = REG_le_18;
-19: le_data1_3 = REG_le_19;
-20: le_data1_3 = REG_le_20;
-21: le_data1_3 = REG_le_21;
-22: le_data1_3 = REG_le_22;
-23: le_data1_3 = REG_le_23;
-24: le_data1_3 = REG_le_24;
-25: le_data1_3 = REG_le_25;
-26: le_data1_3 = REG_le_26;
-27: le_data1_3 = REG_le_27;
-28: le_data1_3 = REG_le_28;
-29: le_data1_3 = REG_le_29;
-30: le_data1_3 = REG_le_30;
-31: le_data1_3 = REG_le_31;
-32: le_data1_3 = REG_le_32;
-33: le_data1_3 = REG_le_33;
-34: le_data1_3 = REG_le_34;
-35: le_data1_3 = REG_le_35;
-36: le_data1_3 = REG_le_36;
-37: le_data1_3 = REG_le_37;
-38: le_data1_3 = REG_le_38;
-39: le_data1_3 = REG_le_39;
-40: le_data1_3 = REG_le_40;
-41: le_data1_3 = REG_le_41;
-42: le_data1_3 = REG_le_42;
-43: le_data1_3 = REG_le_43;
-44: le_data1_3 = REG_le_44;
-45: le_data1_3 = REG_le_45;
-46: le_data1_3 = REG_le_46;
-47: le_data1_3 = REG_le_47;
-48: le_data1_3 = REG_le_48;
-49: le_data1_3 = REG_le_49;
-50: le_data1_3 = REG_le_50;
-51: le_data1_3 = REG_le_51;
-52: le_data1_3 = REG_le_52;
-53: le_data1_3 = REG_le_53;
-54: le_data1_3 = REG_le_54;
-55: le_data1_3 = REG_le_55;
-56: le_data1_3 = REG_le_56;
-57: le_data1_3 = REG_le_57;
-58: le_data1_3 = REG_le_58;
-59: le_data1_3 = REG_le_59;
-60: le_data1_3 = REG_le_60;
-61: le_data1_3 = REG_le_61;
-62: le_data1_3 = REG_le_62;
-63: le_data1_3 = REG_le_63;
-64: le_data1_3 = REG_le_64;
-65: le_data1_3 = REG_le_65;
-66: le_data1_3 = REG_le_66;
-67: le_data1_3 = REG_le_67;
-68: le_data1_3 = REG_le_68;
-69: le_data1_3 = REG_le_69;
-70: le_data1_3 = REG_le_70;
-71: le_data1_3 = REG_le_71;
-72: le_data1_3 = REG_le_72;
-73: le_data1_3 = REG_le_73;
-74: le_data1_3 = REG_le_74;
-75: le_data1_3 = REG_le_75;
-76: le_data1_3 = REG_le_76;
-77: le_data1_3 = REG_le_77;
-78: le_data1_3 = REG_le_78;
-79: le_data1_3 = REG_le_79;
-80: le_data1_3 = REG_le_80;
-81: le_data1_3 = REG_le_81;
-82: le_data1_3 = REG_le_82;
-83: le_data1_3 = REG_le_83;
-84: le_data1_3 = REG_le_84;
-85: le_data1_3 = REG_le_85;
-86: le_data1_3 = REG_le_86;
-87: le_data1_3 = REG_le_87;
-88: le_data1_3 = REG_le_88;
-89: le_data1_3 = REG_le_89;
-90: le_data1_3 = REG_le_90;
-91: le_data1_3 = REG_le_91;
-92: le_data1_3 = REG_le_92;
-93: le_data1_3 = REG_le_93;
-94: le_data1_3 = REG_le_94;
-95: le_data1_3 = REG_le_95;
-96: le_data1_3 = REG_le_96;
-97: le_data1_3 = REG_le_97;
-98: le_data1_3 = REG_le_98;
-99: le_data1_3 = REG_le_99;
-100: le_data1_3 = REG_le_100;
-101: le_data1_3 = REG_le_101;
-102: le_data1_3 = REG_le_102;
-103: le_data1_3 = REG_le_103;
-104: le_data1_3 = REG_le_104;
-105: le_data1_3 = REG_le_105;
-106: le_data1_3 = REG_le_106;
-107: le_data1_3 = REG_le_107;
-108: le_data1_3 = REG_le_108;
-109: le_data1_3 = REG_le_109;
-110: le_data1_3 = REG_le_110;
-111: le_data1_3 = REG_le_111;
-112: le_data1_3 = REG_le_112;
-113: le_data1_3 = REG_le_113;
-114: le_data1_3 = REG_le_114;
-115: le_data1_3 = REG_le_115;
-116: le_data1_3 = REG_le_116;
-117: le_data1_3 = REG_le_117;
-118: le_data1_3 = REG_le_118;
-119: le_data1_3 = REG_le_119;
-120: le_data1_3 = REG_le_120;
-121: le_data1_3 = REG_le_121;
-122: le_data1_3 = REG_le_122;
-123: le_data1_3 = REG_le_123;
-124: le_data1_3 = REG_le_124;
-125: le_data1_3 = REG_le_125;
-126: le_data1_3 = REG_le_126;
-127: le_data1_3 = REG_le_127;
-128: le_data1_3 = REG_le_128;
-129: le_data1_3 = REG_le_129;
-130: le_data1_3 = REG_le_130;
-131: le_data1_3 = REG_le_131;
-132: le_data1_3 = REG_le_132;
-133: le_data1_3 = REG_le_133;
-134: le_data1_3 = REG_le_134;
-135: le_data1_3 = REG_le_135;
-136: le_data1_3 = REG_le_136;
-137: le_data1_3 = REG_le_137;
-138: le_data1_3 = REG_le_138;
-139: le_data1_3 = REG_le_139;
-140: le_data1_3 = REG_le_140;
-141: le_data1_3 = REG_le_141;
-142: le_data1_3 = REG_le_142;
-143: le_data1_3 = REG_le_143;
-144: le_data1_3 = REG_le_144;
-145: le_data1_3 = REG_le_145;
-146: le_data1_3 = REG_le_146;
-147: le_data1_3 = REG_le_147;
-148: le_data1_3 = REG_le_148;
-149: le_data1_3 = REG_le_149;
-150: le_data1_3 = REG_le_150;
-151: le_data1_3 = REG_le_151;
-152: le_data1_3 = REG_le_152;
-153: le_data1_3 = REG_le_153;
-154: le_data1_3 = REG_le_154;
-155: le_data1_3 = REG_le_155;
-156: le_data1_3 = REG_le_156;
-157: le_data1_3 = REG_le_157;
-158: le_data1_3 = REG_le_158;
-159: le_data1_3 = REG_le_159;
-160: le_data1_3 = REG_le_160;
-161: le_data1_3 = REG_le_161;
-162: le_data1_3 = REG_le_162;
-163: le_data1_3 = REG_le_163;
-164: le_data1_3 = REG_le_164;
-165: le_data1_3 = REG_le_165;
-166: le_data1_3 = REG_le_166;
-167: le_data1_3 = REG_le_167;
-168: le_data1_3 = REG_le_168;
-169: le_data1_3 = REG_le_169;
-170: le_data1_3 = REG_le_170;
-171: le_data1_3 = REG_le_171;
-172: le_data1_3 = REG_le_172;
-173: le_data1_3 = REG_le_173;
-174: le_data1_3 = REG_le_174;
-175: le_data1_3 = REG_le_175;
-176: le_data1_3 = REG_le_176;
-177: le_data1_3 = REG_le_177;
-178: le_data1_3 = REG_le_178;
-179: le_data1_3 = REG_le_179;
-180: le_data1_3 = REG_le_180;
-181: le_data1_3 = REG_le_181;
-182: le_data1_3 = REG_le_182;
-183: le_data1_3 = REG_le_183;
-184: le_data1_3 = REG_le_184;
-185: le_data1_3 = REG_le_185;
-186: le_data1_3 = REG_le_186;
-187: le_data1_3 = REG_le_187;
-188: le_data1_3 = REG_le_188;
-189: le_data1_3 = REG_le_189;
-190: le_data1_3 = REG_le_190;
-191: le_data1_3 = REG_le_191;
-192: le_data1_3 = REG_le_192;
-193: le_data1_3 = REG_le_193;
-194: le_data1_3 = REG_le_194;
-195: le_data1_3 = REG_le_195;
-196: le_data1_3 = REG_le_196;
-197: le_data1_3 = REG_le_197;
-198: le_data1_3 = REG_le_198;
-199: le_data1_3 = REG_le_199;
-200: le_data1_3 = REG_le_200;
-201: le_data1_3 = REG_le_201;
-202: le_data1_3 = REG_le_202;
-203: le_data1_3 = REG_le_203;
-204: le_data1_3 = REG_le_204;
-205: le_data1_3 = REG_le_205;
-206: le_data1_3 = REG_le_206;
-207: le_data1_3 = REG_le_207;
-208: le_data1_3 = REG_le_208;
-209: le_data1_3 = REG_le_209;
-210: le_data1_3 = REG_le_210;
-211: le_data1_3 = REG_le_211;
-212: le_data1_3 = REG_le_212;
-213: le_data1_3 = REG_le_213;
-214: le_data1_3 = REG_le_214;
-215: le_data1_3 = REG_le_215;
-216: le_data1_3 = REG_le_216;
-217: le_data1_3 = REG_le_217;
-218: le_data1_3 = REG_le_218;
-219: le_data1_3 = REG_le_219;
-220: le_data1_3 = REG_le_220;
-221: le_data1_3 = REG_le_221;
-222: le_data1_3 = REG_le_222;
-223: le_data1_3 = REG_le_223;
-224: le_data1_3 = REG_le_224;
-225: le_data1_3 = REG_le_225;
-226: le_data1_3 = REG_le_226;
-227: le_data1_3 = REG_le_227;
-228: le_data1_3 = REG_le_228;
-229: le_data1_3 = REG_le_229;
-230: le_data1_3 = REG_le_230;
-231: le_data1_3 = REG_le_231;
-232: le_data1_3 = REG_le_232;
-233: le_data1_3 = REG_le_233;
-234: le_data1_3 = REG_le_234;
-235: le_data1_3 = REG_le_235;
-236: le_data1_3 = REG_le_236;
-237: le_data1_3 = REG_le_237;
-238: le_data1_3 = REG_le_238;
-239: le_data1_3 = REG_le_239;
-240: le_data1_3 = REG_le_240;
-241: le_data1_3 = REG_le_241;
-242: le_data1_3 = REG_le_242;
-243: le_data1_3 = REG_le_243;
-244: le_data1_3 = REG_le_244;
-245: le_data1_3 = REG_le_245;
-246: le_data1_3 = REG_le_246;
-247: le_data1_3 = REG_le_247;
-248: le_data1_3 = REG_le_248;
-249: le_data1_3 = REG_le_249;
-250: le_data1_3 = REG_le_250;
-251: le_data1_3 = REG_le_251;
-252: le_data1_3 = REG_le_252;
-253: le_data1_3 = REG_le_253;
-254: le_data1_3 = REG_le_254;
-255: le_data1_3 = REG_le_255;
-256: le_data1_3 = REG_le_256;
-//VCS coverage off
-default : begin 
-            le_data1_3[15:0] = {16{`x_or_0}};
-          end  
-//VCS coverage on
-endcase
-end
-
-always @(
-  lut_in_addr0_0
-  or REG_lo_0
-  or REG_lo_1
-  or REG_lo_2
-  or REG_lo_3
-  or REG_lo_4
-  or REG_lo_5
-  or REG_lo_6
-  or REG_lo_7
-  or REG_lo_8
-  or REG_lo_9
-  or REG_lo_10
-  or REG_lo_11
-  or REG_lo_12
-  or REG_lo_13
-  or REG_lo_14
-  or REG_lo_15
-  or REG_lo_16
-  or REG_lo_17
-  or REG_lo_18
-  or REG_lo_19
-  or REG_lo_20
-  or REG_lo_21
-  or REG_lo_22
-  or REG_lo_23
-  or REG_lo_24
-  or REG_lo_25
-  or REG_lo_26
-  or REG_lo_27
-  or REG_lo_28
-  or REG_lo_29
-  or REG_lo_30
-  or REG_lo_31
-  or REG_lo_32
-  or REG_lo_33
-  or REG_lo_34
-  or REG_lo_35
-  or REG_lo_36
-  or REG_lo_37
-  or REG_lo_38
-  or REG_lo_39
-  or REG_lo_40
-  or REG_lo_41
-  or REG_lo_42
-  or REG_lo_43
-  or REG_lo_44
-  or REG_lo_45
-  or REG_lo_46
-  or REG_lo_47
-  or REG_lo_48
-  or REG_lo_49
-  or REG_lo_50
-  or REG_lo_51
-  or REG_lo_52
-  or REG_lo_53
-  or REG_lo_54
-  or REG_lo_55
-  or REG_lo_56
-  or REG_lo_57
-  or REG_lo_58
-  or REG_lo_59
-  or REG_lo_60
-  or REG_lo_61
-  or REG_lo_62
-  or REG_lo_63
-  or REG_lo_64
-  or REG_lo_65
-  or REG_lo_66
-  or REG_lo_67
-  or REG_lo_68
-  or REG_lo_69
-  or REG_lo_70
-  or REG_lo_71
-  or REG_lo_72
-  or REG_lo_73
-  or REG_lo_74
-  or REG_lo_75
-  or REG_lo_76
-  or REG_lo_77
-  or REG_lo_78
-  or REG_lo_79
-  or REG_lo_80
-  or REG_lo_81
-  or REG_lo_82
-  or REG_lo_83
-  or REG_lo_84
-  or REG_lo_85
-  or REG_lo_86
-  or REG_lo_87
-  or REG_lo_88
-  or REG_lo_89
-  or REG_lo_90
-  or REG_lo_91
-  or REG_lo_92
-  or REG_lo_93
-  or REG_lo_94
-  or REG_lo_95
-  or REG_lo_96
-  or REG_lo_97
-  or REG_lo_98
-  or REG_lo_99
-  or REG_lo_100
-  or REG_lo_101
-  or REG_lo_102
-  or REG_lo_103
-  or REG_lo_104
-  or REG_lo_105
-  or REG_lo_106
-  or REG_lo_107
-  or REG_lo_108
-  or REG_lo_109
-  or REG_lo_110
-  or REG_lo_111
-  or REG_lo_112
-  or REG_lo_113
-  or REG_lo_114
-  or REG_lo_115
-  or REG_lo_116
-  or REG_lo_117
-  or REG_lo_118
-  or REG_lo_119
-  or REG_lo_120
-  or REG_lo_121
-  or REG_lo_122
-  or REG_lo_123
-  or REG_lo_124
-  or REG_lo_125
-  or REG_lo_126
-  or REG_lo_127
-  or REG_lo_128
-  or REG_lo_129
-  or REG_lo_130
-  or REG_lo_131
-  or REG_lo_132
-  or REG_lo_133
-  or REG_lo_134
-  or REG_lo_135
-  or REG_lo_136
-  or REG_lo_137
-  or REG_lo_138
-  or REG_lo_139
-  or REG_lo_140
-  or REG_lo_141
-  or REG_lo_142
-  or REG_lo_143
-  or REG_lo_144
-  or REG_lo_145
-  or REG_lo_146
-  or REG_lo_147
-  or REG_lo_148
-  or REG_lo_149
-  or REG_lo_150
-  or REG_lo_151
-  or REG_lo_152
-  or REG_lo_153
-  or REG_lo_154
-  or REG_lo_155
-  or REG_lo_156
-  or REG_lo_157
-  or REG_lo_158
-  or REG_lo_159
-  or REG_lo_160
-  or REG_lo_161
-  or REG_lo_162
-  or REG_lo_163
-  or REG_lo_164
-  or REG_lo_165
-  or REG_lo_166
-  or REG_lo_167
-  or REG_lo_168
-  or REG_lo_169
-  or REG_lo_170
-  or REG_lo_171
-  or REG_lo_172
-  or REG_lo_173
-  or REG_lo_174
-  or REG_lo_175
-  or REG_lo_176
-  or REG_lo_177
-  or REG_lo_178
-  or REG_lo_179
-  or REG_lo_180
-  or REG_lo_181
-  or REG_lo_182
-  or REG_lo_183
-  or REG_lo_184
-  or REG_lo_185
-  or REG_lo_186
-  or REG_lo_187
-  or REG_lo_188
-  or REG_lo_189
-  or REG_lo_190
-  or REG_lo_191
-  or REG_lo_192
-  or REG_lo_193
-  or REG_lo_194
-  or REG_lo_195
-  or REG_lo_196
-  or REG_lo_197
-  or REG_lo_198
-  or REG_lo_199
-  or REG_lo_200
-  or REG_lo_201
-  or REG_lo_202
-  or REG_lo_203
-  or REG_lo_204
-  or REG_lo_205
-  or REG_lo_206
-  or REG_lo_207
-  or REG_lo_208
-  or REG_lo_209
-  or REG_lo_210
-  or REG_lo_211
-  or REG_lo_212
-  or REG_lo_213
-  or REG_lo_214
-  or REG_lo_215
-  or REG_lo_216
-  or REG_lo_217
-  or REG_lo_218
-  or REG_lo_219
-  or REG_lo_220
-  or REG_lo_221
-  or REG_lo_222
-  or REG_lo_223
-  or REG_lo_224
-  or REG_lo_225
-  or REG_lo_226
-  or REG_lo_227
-  or REG_lo_228
-  or REG_lo_229
-  or REG_lo_230
-  or REG_lo_231
-  or REG_lo_232
-  or REG_lo_233
-  or REG_lo_234
-  or REG_lo_235
-  or REG_lo_236
-  or REG_lo_237
-  or REG_lo_238
-  or REG_lo_239
-  or REG_lo_240
-  or REG_lo_241
-  or REG_lo_242
-  or REG_lo_243
-  or REG_lo_244
-  or REG_lo_245
-  or REG_lo_246
-  or REG_lo_247
-  or REG_lo_248
-  or REG_lo_249
-  or REG_lo_250
-  or REG_lo_251
-  or REG_lo_252
-  or REG_lo_253
-  or REG_lo_254
-  or REG_lo_255
-  or REG_lo_256
-  ) begin
-case (lut_in_addr0_0) 
-
-0: lo_data0_0 = REG_lo_0;
-1: lo_data0_0 = REG_lo_1;
-2: lo_data0_0 = REG_lo_2;
-3: lo_data0_0 = REG_lo_3;
-4: lo_data0_0 = REG_lo_4;
-5: lo_data0_0 = REG_lo_5;
-6: lo_data0_0 = REG_lo_6;
-7: lo_data0_0 = REG_lo_7;
-8: lo_data0_0 = REG_lo_8;
-9: lo_data0_0 = REG_lo_9;
-10: lo_data0_0 = REG_lo_10;
-11: lo_data0_0 = REG_lo_11;
-12: lo_data0_0 = REG_lo_12;
-13: lo_data0_0 = REG_lo_13;
-14: lo_data0_0 = REG_lo_14;
-15: lo_data0_0 = REG_lo_15;
-16: lo_data0_0 = REG_lo_16;
-17: lo_data0_0 = REG_lo_17;
-18: lo_data0_0 = REG_lo_18;
-19: lo_data0_0 = REG_lo_19;
-20: lo_data0_0 = REG_lo_20;
-21: lo_data0_0 = REG_lo_21;
-22: lo_data0_0 = REG_lo_22;
-23: lo_data0_0 = REG_lo_23;
-24: lo_data0_0 = REG_lo_24;
-25: lo_data0_0 = REG_lo_25;
-26: lo_data0_0 = REG_lo_26;
-27: lo_data0_0 = REG_lo_27;
-28: lo_data0_0 = REG_lo_28;
-29: lo_data0_0 = REG_lo_29;
-30: lo_data0_0 = REG_lo_30;
-31: lo_data0_0 = REG_lo_31;
-32: lo_data0_0 = REG_lo_32;
-33: lo_data0_0 = REG_lo_33;
-34: lo_data0_0 = REG_lo_34;
-35: lo_data0_0 = REG_lo_35;
-36: lo_data0_0 = REG_lo_36;
-37: lo_data0_0 = REG_lo_37;
-38: lo_data0_0 = REG_lo_38;
-39: lo_data0_0 = REG_lo_39;
-40: lo_data0_0 = REG_lo_40;
-41: lo_data0_0 = REG_lo_41;
-42: lo_data0_0 = REG_lo_42;
-43: lo_data0_0 = REG_lo_43;
-44: lo_data0_0 = REG_lo_44;
-45: lo_data0_0 = REG_lo_45;
-46: lo_data0_0 = REG_lo_46;
-47: lo_data0_0 = REG_lo_47;
-48: lo_data0_0 = REG_lo_48;
-49: lo_data0_0 = REG_lo_49;
-50: lo_data0_0 = REG_lo_50;
-51: lo_data0_0 = REG_lo_51;
-52: lo_data0_0 = REG_lo_52;
-53: lo_data0_0 = REG_lo_53;
-54: lo_data0_0 = REG_lo_54;
-55: lo_data0_0 = REG_lo_55;
-56: lo_data0_0 = REG_lo_56;
-57: lo_data0_0 = REG_lo_57;
-58: lo_data0_0 = REG_lo_58;
-59: lo_data0_0 = REG_lo_59;
-60: lo_data0_0 = REG_lo_60;
-61: lo_data0_0 = REG_lo_61;
-62: lo_data0_0 = REG_lo_62;
-63: lo_data0_0 = REG_lo_63;
-64: lo_data0_0 = REG_lo_64;
-65: lo_data0_0 = REG_lo_65;
-66: lo_data0_0 = REG_lo_66;
-67: lo_data0_0 = REG_lo_67;
-68: lo_data0_0 = REG_lo_68;
-69: lo_data0_0 = REG_lo_69;
-70: lo_data0_0 = REG_lo_70;
-71: lo_data0_0 = REG_lo_71;
-72: lo_data0_0 = REG_lo_72;
-73: lo_data0_0 = REG_lo_73;
-74: lo_data0_0 = REG_lo_74;
-75: lo_data0_0 = REG_lo_75;
-76: lo_data0_0 = REG_lo_76;
-77: lo_data0_0 = REG_lo_77;
-78: lo_data0_0 = REG_lo_78;
-79: lo_data0_0 = REG_lo_79;
-80: lo_data0_0 = REG_lo_80;
-81: lo_data0_0 = REG_lo_81;
-82: lo_data0_0 = REG_lo_82;
-83: lo_data0_0 = REG_lo_83;
-84: lo_data0_0 = REG_lo_84;
-85: lo_data0_0 = REG_lo_85;
-86: lo_data0_0 = REG_lo_86;
-87: lo_data0_0 = REG_lo_87;
-88: lo_data0_0 = REG_lo_88;
-89: lo_data0_0 = REG_lo_89;
-90: lo_data0_0 = REG_lo_90;
-91: lo_data0_0 = REG_lo_91;
-92: lo_data0_0 = REG_lo_92;
-93: lo_data0_0 = REG_lo_93;
-94: lo_data0_0 = REG_lo_94;
-95: lo_data0_0 = REG_lo_95;
-96: lo_data0_0 = REG_lo_96;
-97: lo_data0_0 = REG_lo_97;
-98: lo_data0_0 = REG_lo_98;
-99: lo_data0_0 = REG_lo_99;
-100: lo_data0_0 = REG_lo_100;
-101: lo_data0_0 = REG_lo_101;
-102: lo_data0_0 = REG_lo_102;
-103: lo_data0_0 = REG_lo_103;
-104: lo_data0_0 = REG_lo_104;
-105: lo_data0_0 = REG_lo_105;
-106: lo_data0_0 = REG_lo_106;
-107: lo_data0_0 = REG_lo_107;
-108: lo_data0_0 = REG_lo_108;
-109: lo_data0_0 = REG_lo_109;
-110: lo_data0_0 = REG_lo_110;
-111: lo_data0_0 = REG_lo_111;
-112: lo_data0_0 = REG_lo_112;
-113: lo_data0_0 = REG_lo_113;
-114: lo_data0_0 = REG_lo_114;
-115: lo_data0_0 = REG_lo_115;
-116: lo_data0_0 = REG_lo_116;
-117: lo_data0_0 = REG_lo_117;
-118: lo_data0_0 = REG_lo_118;
-119: lo_data0_0 = REG_lo_119;
-120: lo_data0_0 = REG_lo_120;
-121: lo_data0_0 = REG_lo_121;
-122: lo_data0_0 = REG_lo_122;
-123: lo_data0_0 = REG_lo_123;
-124: lo_data0_0 = REG_lo_124;
-125: lo_data0_0 = REG_lo_125;
-126: lo_data0_0 = REG_lo_126;
-127: lo_data0_0 = REG_lo_127;
-128: lo_data0_0 = REG_lo_128;
-129: lo_data0_0 = REG_lo_129;
-130: lo_data0_0 = REG_lo_130;
-131: lo_data0_0 = REG_lo_131;
-132: lo_data0_0 = REG_lo_132;
-133: lo_data0_0 = REG_lo_133;
-134: lo_data0_0 = REG_lo_134;
-135: lo_data0_0 = REG_lo_135;
-136: lo_data0_0 = REG_lo_136;
-137: lo_data0_0 = REG_lo_137;
-138: lo_data0_0 = REG_lo_138;
-139: lo_data0_0 = REG_lo_139;
-140: lo_data0_0 = REG_lo_140;
-141: lo_data0_0 = REG_lo_141;
-142: lo_data0_0 = REG_lo_142;
-143: lo_data0_0 = REG_lo_143;
-144: lo_data0_0 = REG_lo_144;
-145: lo_data0_0 = REG_lo_145;
-146: lo_data0_0 = REG_lo_146;
-147: lo_data0_0 = REG_lo_147;
-148: lo_data0_0 = REG_lo_148;
-149: lo_data0_0 = REG_lo_149;
-150: lo_data0_0 = REG_lo_150;
-151: lo_data0_0 = REG_lo_151;
-152: lo_data0_0 = REG_lo_152;
-153: lo_data0_0 = REG_lo_153;
-154: lo_data0_0 = REG_lo_154;
-155: lo_data0_0 = REG_lo_155;
-156: lo_data0_0 = REG_lo_156;
-157: lo_data0_0 = REG_lo_157;
-158: lo_data0_0 = REG_lo_158;
-159: lo_data0_0 = REG_lo_159;
-160: lo_data0_0 = REG_lo_160;
-161: lo_data0_0 = REG_lo_161;
-162: lo_data0_0 = REG_lo_162;
-163: lo_data0_0 = REG_lo_163;
-164: lo_data0_0 = REG_lo_164;
-165: lo_data0_0 = REG_lo_165;
-166: lo_data0_0 = REG_lo_166;
-167: lo_data0_0 = REG_lo_167;
-168: lo_data0_0 = REG_lo_168;
-169: lo_data0_0 = REG_lo_169;
-170: lo_data0_0 = REG_lo_170;
-171: lo_data0_0 = REG_lo_171;
-172: lo_data0_0 = REG_lo_172;
-173: lo_data0_0 = REG_lo_173;
-174: lo_data0_0 = REG_lo_174;
-175: lo_data0_0 = REG_lo_175;
-176: lo_data0_0 = REG_lo_176;
-177: lo_data0_0 = REG_lo_177;
-178: lo_data0_0 = REG_lo_178;
-179: lo_data0_0 = REG_lo_179;
-180: lo_data0_0 = REG_lo_180;
-181: lo_data0_0 = REG_lo_181;
-182: lo_data0_0 = REG_lo_182;
-183: lo_data0_0 = REG_lo_183;
-184: lo_data0_0 = REG_lo_184;
-185: lo_data0_0 = REG_lo_185;
-186: lo_data0_0 = REG_lo_186;
-187: lo_data0_0 = REG_lo_187;
-188: lo_data0_0 = REG_lo_188;
-189: lo_data0_0 = REG_lo_189;
-190: lo_data0_0 = REG_lo_190;
-191: lo_data0_0 = REG_lo_191;
-192: lo_data0_0 = REG_lo_192;
-193: lo_data0_0 = REG_lo_193;
-194: lo_data0_0 = REG_lo_194;
-195: lo_data0_0 = REG_lo_195;
-196: lo_data0_0 = REG_lo_196;
-197: lo_data0_0 = REG_lo_197;
-198: lo_data0_0 = REG_lo_198;
-199: lo_data0_0 = REG_lo_199;
-200: lo_data0_0 = REG_lo_200;
-201: lo_data0_0 = REG_lo_201;
-202: lo_data0_0 = REG_lo_202;
-203: lo_data0_0 = REG_lo_203;
-204: lo_data0_0 = REG_lo_204;
-205: lo_data0_0 = REG_lo_205;
-206: lo_data0_0 = REG_lo_206;
-207: lo_data0_0 = REG_lo_207;
-208: lo_data0_0 = REG_lo_208;
-209: lo_data0_0 = REG_lo_209;
-210: lo_data0_0 = REG_lo_210;
-211: lo_data0_0 = REG_lo_211;
-212: lo_data0_0 = REG_lo_212;
-213: lo_data0_0 = REG_lo_213;
-214: lo_data0_0 = REG_lo_214;
-215: lo_data0_0 = REG_lo_215;
-216: lo_data0_0 = REG_lo_216;
-217: lo_data0_0 = REG_lo_217;
-218: lo_data0_0 = REG_lo_218;
-219: lo_data0_0 = REG_lo_219;
-220: lo_data0_0 = REG_lo_220;
-221: lo_data0_0 = REG_lo_221;
-222: lo_data0_0 = REG_lo_222;
-223: lo_data0_0 = REG_lo_223;
-224: lo_data0_0 = REG_lo_224;
-225: lo_data0_0 = REG_lo_225;
-226: lo_data0_0 = REG_lo_226;
-227: lo_data0_0 = REG_lo_227;
-228: lo_data0_0 = REG_lo_228;
-229: lo_data0_0 = REG_lo_229;
-230: lo_data0_0 = REG_lo_230;
-231: lo_data0_0 = REG_lo_231;
-232: lo_data0_0 = REG_lo_232;
-233: lo_data0_0 = REG_lo_233;
-234: lo_data0_0 = REG_lo_234;
-235: lo_data0_0 = REG_lo_235;
-236: lo_data0_0 = REG_lo_236;
-237: lo_data0_0 = REG_lo_237;
-238: lo_data0_0 = REG_lo_238;
-239: lo_data0_0 = REG_lo_239;
-240: lo_data0_0 = REG_lo_240;
-241: lo_data0_0 = REG_lo_241;
-242: lo_data0_0 = REG_lo_242;
-243: lo_data0_0 = REG_lo_243;
-244: lo_data0_0 = REG_lo_244;
-245: lo_data0_0 = REG_lo_245;
-246: lo_data0_0 = REG_lo_246;
-247: lo_data0_0 = REG_lo_247;
-248: lo_data0_0 = REG_lo_248;
-249: lo_data0_0 = REG_lo_249;
-250: lo_data0_0 = REG_lo_250;
-251: lo_data0_0 = REG_lo_251;
-252: lo_data0_0 = REG_lo_252;
-253: lo_data0_0 = REG_lo_253;
-254: lo_data0_0 = REG_lo_254;
-255: lo_data0_0 = REG_lo_255;
-256: lo_data0_0 = REG_lo_256;
-//VCS coverage off
-default : begin 
-            lo_data0_0[15:0] = {16{`x_or_0}};
-          end  
-//VCS coverage on
-endcase
-end
-
-always @(
-  lut_in_addr1_0
-  or REG_lo_0
-  or REG_lo_1
-  or REG_lo_2
-  or REG_lo_3
-  or REG_lo_4
-  or REG_lo_5
-  or REG_lo_6
-  or REG_lo_7
-  or REG_lo_8
-  or REG_lo_9
-  or REG_lo_10
-  or REG_lo_11
-  or REG_lo_12
-  or REG_lo_13
-  or REG_lo_14
-  or REG_lo_15
-  or REG_lo_16
-  or REG_lo_17
-  or REG_lo_18
-  or REG_lo_19
-  or REG_lo_20
-  or REG_lo_21
-  or REG_lo_22
-  or REG_lo_23
-  or REG_lo_24
-  or REG_lo_25
-  or REG_lo_26
-  or REG_lo_27
-  or REG_lo_28
-  or REG_lo_29
-  or REG_lo_30
-  or REG_lo_31
-  or REG_lo_32
-  or REG_lo_33
-  or REG_lo_34
-  or REG_lo_35
-  or REG_lo_36
-  or REG_lo_37
-  or REG_lo_38
-  or REG_lo_39
-  or REG_lo_40
-  or REG_lo_41
-  or REG_lo_42
-  or REG_lo_43
-  or REG_lo_44
-  or REG_lo_45
-  or REG_lo_46
-  or REG_lo_47
-  or REG_lo_48
-  or REG_lo_49
-  or REG_lo_50
-  or REG_lo_51
-  or REG_lo_52
-  or REG_lo_53
-  or REG_lo_54
-  or REG_lo_55
-  or REG_lo_56
-  or REG_lo_57
-  or REG_lo_58
-  or REG_lo_59
-  or REG_lo_60
-  or REG_lo_61
-  or REG_lo_62
-  or REG_lo_63
-  or REG_lo_64
-  or REG_lo_65
-  or REG_lo_66
-  or REG_lo_67
-  or REG_lo_68
-  or REG_lo_69
-  or REG_lo_70
-  or REG_lo_71
-  or REG_lo_72
-  or REG_lo_73
-  or REG_lo_74
-  or REG_lo_75
-  or REG_lo_76
-  or REG_lo_77
-  or REG_lo_78
-  or REG_lo_79
-  or REG_lo_80
-  or REG_lo_81
-  or REG_lo_82
-  or REG_lo_83
-  or REG_lo_84
-  or REG_lo_85
-  or REG_lo_86
-  or REG_lo_87
-  or REG_lo_88
-  or REG_lo_89
-  or REG_lo_90
-  or REG_lo_91
-  or REG_lo_92
-  or REG_lo_93
-  or REG_lo_94
-  or REG_lo_95
-  or REG_lo_96
-  or REG_lo_97
-  or REG_lo_98
-  or REG_lo_99
-  or REG_lo_100
-  or REG_lo_101
-  or REG_lo_102
-  or REG_lo_103
-  or REG_lo_104
-  or REG_lo_105
-  or REG_lo_106
-  or REG_lo_107
-  or REG_lo_108
-  or REG_lo_109
-  or REG_lo_110
-  or REG_lo_111
-  or REG_lo_112
-  or REG_lo_113
-  or REG_lo_114
-  or REG_lo_115
-  or REG_lo_116
-  or REG_lo_117
-  or REG_lo_118
-  or REG_lo_119
-  or REG_lo_120
-  or REG_lo_121
-  or REG_lo_122
-  or REG_lo_123
-  or REG_lo_124
-  or REG_lo_125
-  or REG_lo_126
-  or REG_lo_127
-  or REG_lo_128
-  or REG_lo_129
-  or REG_lo_130
-  or REG_lo_131
-  or REG_lo_132
-  or REG_lo_133
-  or REG_lo_134
-  or REG_lo_135
-  or REG_lo_136
-  or REG_lo_137
-  or REG_lo_138
-  or REG_lo_139
-  or REG_lo_140
-  or REG_lo_141
-  or REG_lo_142
-  or REG_lo_143
-  or REG_lo_144
-  or REG_lo_145
-  or REG_lo_146
-  or REG_lo_147
-  or REG_lo_148
-  or REG_lo_149
-  or REG_lo_150
-  or REG_lo_151
-  or REG_lo_152
-  or REG_lo_153
-  or REG_lo_154
-  or REG_lo_155
-  or REG_lo_156
-  or REG_lo_157
-  or REG_lo_158
-  or REG_lo_159
-  or REG_lo_160
-  or REG_lo_161
-  or REG_lo_162
-  or REG_lo_163
-  or REG_lo_164
-  or REG_lo_165
-  or REG_lo_166
-  or REG_lo_167
-  or REG_lo_168
-  or REG_lo_169
-  or REG_lo_170
-  or REG_lo_171
-  or REG_lo_172
-  or REG_lo_173
-  or REG_lo_174
-  or REG_lo_175
-  or REG_lo_176
-  or REG_lo_177
-  or REG_lo_178
-  or REG_lo_179
-  or REG_lo_180
-  or REG_lo_181
-  or REG_lo_182
-  or REG_lo_183
-  or REG_lo_184
-  or REG_lo_185
-  or REG_lo_186
-  or REG_lo_187
-  or REG_lo_188
-  or REG_lo_189
-  or REG_lo_190
-  or REG_lo_191
-  or REG_lo_192
-  or REG_lo_193
-  or REG_lo_194
-  or REG_lo_195
-  or REG_lo_196
-  or REG_lo_197
-  or REG_lo_198
-  or REG_lo_199
-  or REG_lo_200
-  or REG_lo_201
-  or REG_lo_202
-  or REG_lo_203
-  or REG_lo_204
-  or REG_lo_205
-  or REG_lo_206
-  or REG_lo_207
-  or REG_lo_208
-  or REG_lo_209
-  or REG_lo_210
-  or REG_lo_211
-  or REG_lo_212
-  or REG_lo_213
-  or REG_lo_214
-  or REG_lo_215
-  or REG_lo_216
-  or REG_lo_217
-  or REG_lo_218
-  or REG_lo_219
-  or REG_lo_220
-  or REG_lo_221
-  or REG_lo_222
-  or REG_lo_223
-  or REG_lo_224
-  or REG_lo_225
-  or REG_lo_226
-  or REG_lo_227
-  or REG_lo_228
-  or REG_lo_229
-  or REG_lo_230
-  or REG_lo_231
-  or REG_lo_232
-  or REG_lo_233
-  or REG_lo_234
-  or REG_lo_235
-  or REG_lo_236
-  or REG_lo_237
-  or REG_lo_238
-  or REG_lo_239
-  or REG_lo_240
-  or REG_lo_241
-  or REG_lo_242
-  or REG_lo_243
-  or REG_lo_244
-  or REG_lo_245
-  or REG_lo_246
-  or REG_lo_247
-  or REG_lo_248
-  or REG_lo_249
-  or REG_lo_250
-  or REG_lo_251
-  or REG_lo_252
-  or REG_lo_253
-  or REG_lo_254
-  or REG_lo_255
-  or REG_lo_256
-  ) begin
-case (lut_in_addr1_0) 
-
-0: lo_data0_1 = REG_lo_0;
-1: lo_data0_1 = REG_lo_1;
-2: lo_data0_1 = REG_lo_2;
-3: lo_data0_1 = REG_lo_3;
-4: lo_data0_1 = REG_lo_4;
-5: lo_data0_1 = REG_lo_5;
-6: lo_data0_1 = REG_lo_6;
-7: lo_data0_1 = REG_lo_7;
-8: lo_data0_1 = REG_lo_8;
-9: lo_data0_1 = REG_lo_9;
-10: lo_data0_1 = REG_lo_10;
-11: lo_data0_1 = REG_lo_11;
-12: lo_data0_1 = REG_lo_12;
-13: lo_data0_1 = REG_lo_13;
-14: lo_data0_1 = REG_lo_14;
-15: lo_data0_1 = REG_lo_15;
-16: lo_data0_1 = REG_lo_16;
-17: lo_data0_1 = REG_lo_17;
-18: lo_data0_1 = REG_lo_18;
-19: lo_data0_1 = REG_lo_19;
-20: lo_data0_1 = REG_lo_20;
-21: lo_data0_1 = REG_lo_21;
-22: lo_data0_1 = REG_lo_22;
-23: lo_data0_1 = REG_lo_23;
-24: lo_data0_1 = REG_lo_24;
-25: lo_data0_1 = REG_lo_25;
-26: lo_data0_1 = REG_lo_26;
-27: lo_data0_1 = REG_lo_27;
-28: lo_data0_1 = REG_lo_28;
-29: lo_data0_1 = REG_lo_29;
-30: lo_data0_1 = REG_lo_30;
-31: lo_data0_1 = REG_lo_31;
-32: lo_data0_1 = REG_lo_32;
-33: lo_data0_1 = REG_lo_33;
-34: lo_data0_1 = REG_lo_34;
-35: lo_data0_1 = REG_lo_35;
-36: lo_data0_1 = REG_lo_36;
-37: lo_data0_1 = REG_lo_37;
-38: lo_data0_1 = REG_lo_38;
-39: lo_data0_1 = REG_lo_39;
-40: lo_data0_1 = REG_lo_40;
-41: lo_data0_1 = REG_lo_41;
-42: lo_data0_1 = REG_lo_42;
-43: lo_data0_1 = REG_lo_43;
-44: lo_data0_1 = REG_lo_44;
-45: lo_data0_1 = REG_lo_45;
-46: lo_data0_1 = REG_lo_46;
-47: lo_data0_1 = REG_lo_47;
-48: lo_data0_1 = REG_lo_48;
-49: lo_data0_1 = REG_lo_49;
-50: lo_data0_1 = REG_lo_50;
-51: lo_data0_1 = REG_lo_51;
-52: lo_data0_1 = REG_lo_52;
-53: lo_data0_1 = REG_lo_53;
-54: lo_data0_1 = REG_lo_54;
-55: lo_data0_1 = REG_lo_55;
-56: lo_data0_1 = REG_lo_56;
-57: lo_data0_1 = REG_lo_57;
-58: lo_data0_1 = REG_lo_58;
-59: lo_data0_1 = REG_lo_59;
-60: lo_data0_1 = REG_lo_60;
-61: lo_data0_1 = REG_lo_61;
-62: lo_data0_1 = REG_lo_62;
-63: lo_data0_1 = REG_lo_63;
-64: lo_data0_1 = REG_lo_64;
-65: lo_data0_1 = REG_lo_65;
-66: lo_data0_1 = REG_lo_66;
-67: lo_data0_1 = REG_lo_67;
-68: lo_data0_1 = REG_lo_68;
-69: lo_data0_1 = REG_lo_69;
-70: lo_data0_1 = REG_lo_70;
-71: lo_data0_1 = REG_lo_71;
-72: lo_data0_1 = REG_lo_72;
-73: lo_data0_1 = REG_lo_73;
-74: lo_data0_1 = REG_lo_74;
-75: lo_data0_1 = REG_lo_75;
-76: lo_data0_1 = REG_lo_76;
-77: lo_data0_1 = REG_lo_77;
-78: lo_data0_1 = REG_lo_78;
-79: lo_data0_1 = REG_lo_79;
-80: lo_data0_1 = REG_lo_80;
-81: lo_data0_1 = REG_lo_81;
-82: lo_data0_1 = REG_lo_82;
-83: lo_data0_1 = REG_lo_83;
-84: lo_data0_1 = REG_lo_84;
-85: lo_data0_1 = REG_lo_85;
-86: lo_data0_1 = REG_lo_86;
-87: lo_data0_1 = REG_lo_87;
-88: lo_data0_1 = REG_lo_88;
-89: lo_data0_1 = REG_lo_89;
-90: lo_data0_1 = REG_lo_90;
-91: lo_data0_1 = REG_lo_91;
-92: lo_data0_1 = REG_lo_92;
-93: lo_data0_1 = REG_lo_93;
-94: lo_data0_1 = REG_lo_94;
-95: lo_data0_1 = REG_lo_95;
-96: lo_data0_1 = REG_lo_96;
-97: lo_data0_1 = REG_lo_97;
-98: lo_data0_1 = REG_lo_98;
-99: lo_data0_1 = REG_lo_99;
-100: lo_data0_1 = REG_lo_100;
-101: lo_data0_1 = REG_lo_101;
-102: lo_data0_1 = REG_lo_102;
-103: lo_data0_1 = REG_lo_103;
-104: lo_data0_1 = REG_lo_104;
-105: lo_data0_1 = REG_lo_105;
-106: lo_data0_1 = REG_lo_106;
-107: lo_data0_1 = REG_lo_107;
-108: lo_data0_1 = REG_lo_108;
-109: lo_data0_1 = REG_lo_109;
-110: lo_data0_1 = REG_lo_110;
-111: lo_data0_1 = REG_lo_111;
-112: lo_data0_1 = REG_lo_112;
-113: lo_data0_1 = REG_lo_113;
-114: lo_data0_1 = REG_lo_114;
-115: lo_data0_1 = REG_lo_115;
-116: lo_data0_1 = REG_lo_116;
-117: lo_data0_1 = REG_lo_117;
-118: lo_data0_1 = REG_lo_118;
-119: lo_data0_1 = REG_lo_119;
-120: lo_data0_1 = REG_lo_120;
-121: lo_data0_1 = REG_lo_121;
-122: lo_data0_1 = REG_lo_122;
-123: lo_data0_1 = REG_lo_123;
-124: lo_data0_1 = REG_lo_124;
-125: lo_data0_1 = REG_lo_125;
-126: lo_data0_1 = REG_lo_126;
-127: lo_data0_1 = REG_lo_127;
-128: lo_data0_1 = REG_lo_128;
-129: lo_data0_1 = REG_lo_129;
-130: lo_data0_1 = REG_lo_130;
-131: lo_data0_1 = REG_lo_131;
-132: lo_data0_1 = REG_lo_132;
-133: lo_data0_1 = REG_lo_133;
-134: lo_data0_1 = REG_lo_134;
-135: lo_data0_1 = REG_lo_135;
-136: lo_data0_1 = REG_lo_136;
-137: lo_data0_1 = REG_lo_137;
-138: lo_data0_1 = REG_lo_138;
-139: lo_data0_1 = REG_lo_139;
-140: lo_data0_1 = REG_lo_140;
-141: lo_data0_1 = REG_lo_141;
-142: lo_data0_1 = REG_lo_142;
-143: lo_data0_1 = REG_lo_143;
-144: lo_data0_1 = REG_lo_144;
-145: lo_data0_1 = REG_lo_145;
-146: lo_data0_1 = REG_lo_146;
-147: lo_data0_1 = REG_lo_147;
-148: lo_data0_1 = REG_lo_148;
-149: lo_data0_1 = REG_lo_149;
-150: lo_data0_1 = REG_lo_150;
-151: lo_data0_1 = REG_lo_151;
-152: lo_data0_1 = REG_lo_152;
-153: lo_data0_1 = REG_lo_153;
-154: lo_data0_1 = REG_lo_154;
-155: lo_data0_1 = REG_lo_155;
-156: lo_data0_1 = REG_lo_156;
-157: lo_data0_1 = REG_lo_157;
-158: lo_data0_1 = REG_lo_158;
-159: lo_data0_1 = REG_lo_159;
-160: lo_data0_1 = REG_lo_160;
-161: lo_data0_1 = REG_lo_161;
-162: lo_data0_1 = REG_lo_162;
-163: lo_data0_1 = REG_lo_163;
-164: lo_data0_1 = REG_lo_164;
-165: lo_data0_1 = REG_lo_165;
-166: lo_data0_1 = REG_lo_166;
-167: lo_data0_1 = REG_lo_167;
-168: lo_data0_1 = REG_lo_168;
-169: lo_data0_1 = REG_lo_169;
-170: lo_data0_1 = REG_lo_170;
-171: lo_data0_1 = REG_lo_171;
-172: lo_data0_1 = REG_lo_172;
-173: lo_data0_1 = REG_lo_173;
-174: lo_data0_1 = REG_lo_174;
-175: lo_data0_1 = REG_lo_175;
-176: lo_data0_1 = REG_lo_176;
-177: lo_data0_1 = REG_lo_177;
-178: lo_data0_1 = REG_lo_178;
-179: lo_data0_1 = REG_lo_179;
-180: lo_data0_1 = REG_lo_180;
-181: lo_data0_1 = REG_lo_181;
-182: lo_data0_1 = REG_lo_182;
-183: lo_data0_1 = REG_lo_183;
-184: lo_data0_1 = REG_lo_184;
-185: lo_data0_1 = REG_lo_185;
-186: lo_data0_1 = REG_lo_186;
-187: lo_data0_1 = REG_lo_187;
-188: lo_data0_1 = REG_lo_188;
-189: lo_data0_1 = REG_lo_189;
-190: lo_data0_1 = REG_lo_190;
-191: lo_data0_1 = REG_lo_191;
-192: lo_data0_1 = REG_lo_192;
-193: lo_data0_1 = REG_lo_193;
-194: lo_data0_1 = REG_lo_194;
-195: lo_data0_1 = REG_lo_195;
-196: lo_data0_1 = REG_lo_196;
-197: lo_data0_1 = REG_lo_197;
-198: lo_data0_1 = REG_lo_198;
-199: lo_data0_1 = REG_lo_199;
-200: lo_data0_1 = REG_lo_200;
-201: lo_data0_1 = REG_lo_201;
-202: lo_data0_1 = REG_lo_202;
-203: lo_data0_1 = REG_lo_203;
-204: lo_data0_1 = REG_lo_204;
-205: lo_data0_1 = REG_lo_205;
-206: lo_data0_1 = REG_lo_206;
-207: lo_data0_1 = REG_lo_207;
-208: lo_data0_1 = REG_lo_208;
-209: lo_data0_1 = REG_lo_209;
-210: lo_data0_1 = REG_lo_210;
-211: lo_data0_1 = REG_lo_211;
-212: lo_data0_1 = REG_lo_212;
-213: lo_data0_1 = REG_lo_213;
-214: lo_data0_1 = REG_lo_214;
-215: lo_data0_1 = REG_lo_215;
-216: lo_data0_1 = REG_lo_216;
-217: lo_data0_1 = REG_lo_217;
-218: lo_data0_1 = REG_lo_218;
-219: lo_data0_1 = REG_lo_219;
-220: lo_data0_1 = REG_lo_220;
-221: lo_data0_1 = REG_lo_221;
-222: lo_data0_1 = REG_lo_222;
-223: lo_data0_1 = REG_lo_223;
-224: lo_data0_1 = REG_lo_224;
-225: lo_data0_1 = REG_lo_225;
-226: lo_data0_1 = REG_lo_226;
-227: lo_data0_1 = REG_lo_227;
-228: lo_data0_1 = REG_lo_228;
-229: lo_data0_1 = REG_lo_229;
-230: lo_data0_1 = REG_lo_230;
-231: lo_data0_1 = REG_lo_231;
-232: lo_data0_1 = REG_lo_232;
-233: lo_data0_1 = REG_lo_233;
-234: lo_data0_1 = REG_lo_234;
-235: lo_data0_1 = REG_lo_235;
-236: lo_data0_1 = REG_lo_236;
-237: lo_data0_1 = REG_lo_237;
-238: lo_data0_1 = REG_lo_238;
-239: lo_data0_1 = REG_lo_239;
-240: lo_data0_1 = REG_lo_240;
-241: lo_data0_1 = REG_lo_241;
-242: lo_data0_1 = REG_lo_242;
-243: lo_data0_1 = REG_lo_243;
-244: lo_data0_1 = REG_lo_244;
-245: lo_data0_1 = REG_lo_245;
-246: lo_data0_1 = REG_lo_246;
-247: lo_data0_1 = REG_lo_247;
-248: lo_data0_1 = REG_lo_248;
-249: lo_data0_1 = REG_lo_249;
-250: lo_data0_1 = REG_lo_250;
-251: lo_data0_1 = REG_lo_251;
-252: lo_data0_1 = REG_lo_252;
-253: lo_data0_1 = REG_lo_253;
-254: lo_data0_1 = REG_lo_254;
-255: lo_data0_1 = REG_lo_255;
-256: lo_data0_1 = REG_lo_256;
-//VCS coverage off
-default : begin 
-            lo_data0_1[15:0] = {16{`x_or_0}};
-          end  
-//VCS coverage on
-endcase
-end
-
-always @(
-  lut_in_addr2_0
-  or REG_lo_0
-  or REG_lo_1
-  or REG_lo_2
-  or REG_lo_3
-  or REG_lo_4
-  or REG_lo_5
-  or REG_lo_6
-  or REG_lo_7
-  or REG_lo_8
-  or REG_lo_9
-  or REG_lo_10
-  or REG_lo_11
-  or REG_lo_12
-  or REG_lo_13
-  or REG_lo_14
-  or REG_lo_15
-  or REG_lo_16
-  or REG_lo_17
-  or REG_lo_18
-  or REG_lo_19
-  or REG_lo_20
-  or REG_lo_21
-  or REG_lo_22
-  or REG_lo_23
-  or REG_lo_24
-  or REG_lo_25
-  or REG_lo_26
-  or REG_lo_27
-  or REG_lo_28
-  or REG_lo_29
-  or REG_lo_30
-  or REG_lo_31
-  or REG_lo_32
-  or REG_lo_33
-  or REG_lo_34
-  or REG_lo_35
-  or REG_lo_36
-  or REG_lo_37
-  or REG_lo_38
-  or REG_lo_39
-  or REG_lo_40
-  or REG_lo_41
-  or REG_lo_42
-  or REG_lo_43
-  or REG_lo_44
-  or REG_lo_45
-  or REG_lo_46
-  or REG_lo_47
-  or REG_lo_48
-  or REG_lo_49
-  or REG_lo_50
-  or REG_lo_51
-  or REG_lo_52
-  or REG_lo_53
-  or REG_lo_54
-  or REG_lo_55
-  or REG_lo_56
-  or REG_lo_57
-  or REG_lo_58
-  or REG_lo_59
-  or REG_lo_60
-  or REG_lo_61
-  or REG_lo_62
-  or REG_lo_63
-  or REG_lo_64
-  or REG_lo_65
-  or REG_lo_66
-  or REG_lo_67
-  or REG_lo_68
-  or REG_lo_69
-  or REG_lo_70
-  or REG_lo_71
-  or REG_lo_72
-  or REG_lo_73
-  or REG_lo_74
-  or REG_lo_75
-  or REG_lo_76
-  or REG_lo_77
-  or REG_lo_78
-  or REG_lo_79
-  or REG_lo_80
-  or REG_lo_81
-  or REG_lo_82
-  or REG_lo_83
-  or REG_lo_84
-  or REG_lo_85
-  or REG_lo_86
-  or REG_lo_87
-  or REG_lo_88
-  or REG_lo_89
-  or REG_lo_90
-  or REG_lo_91
-  or REG_lo_92
-  or REG_lo_93
-  or REG_lo_94
-  or REG_lo_95
-  or REG_lo_96
-  or REG_lo_97
-  or REG_lo_98
-  or REG_lo_99
-  or REG_lo_100
-  or REG_lo_101
-  or REG_lo_102
-  or REG_lo_103
-  or REG_lo_104
-  or REG_lo_105
-  or REG_lo_106
-  or REG_lo_107
-  or REG_lo_108
-  or REG_lo_109
-  or REG_lo_110
-  or REG_lo_111
-  or REG_lo_112
-  or REG_lo_113
-  or REG_lo_114
-  or REG_lo_115
-  or REG_lo_116
-  or REG_lo_117
-  or REG_lo_118
-  or REG_lo_119
-  or REG_lo_120
-  or REG_lo_121
-  or REG_lo_122
-  or REG_lo_123
-  or REG_lo_124
-  or REG_lo_125
-  or REG_lo_126
-  or REG_lo_127
-  or REG_lo_128
-  or REG_lo_129
-  or REG_lo_130
-  or REG_lo_131
-  or REG_lo_132
-  or REG_lo_133
-  or REG_lo_134
-  or REG_lo_135
-  or REG_lo_136
-  or REG_lo_137
-  or REG_lo_138
-  or REG_lo_139
-  or REG_lo_140
-  or REG_lo_141
-  or REG_lo_142
-  or REG_lo_143
-  or REG_lo_144
-  or REG_lo_145
-  or REG_lo_146
-  or REG_lo_147
-  or REG_lo_148
-  or REG_lo_149
-  or REG_lo_150
-  or REG_lo_151
-  or REG_lo_152
-  or REG_lo_153
-  or REG_lo_154
-  or REG_lo_155
-  or REG_lo_156
-  or REG_lo_157
-  or REG_lo_158
-  or REG_lo_159
-  or REG_lo_160
-  or REG_lo_161
-  or REG_lo_162
-  or REG_lo_163
-  or REG_lo_164
-  or REG_lo_165
-  or REG_lo_166
-  or REG_lo_167
-  or REG_lo_168
-  or REG_lo_169
-  or REG_lo_170
-  or REG_lo_171
-  or REG_lo_172
-  or REG_lo_173
-  or REG_lo_174
-  or REG_lo_175
-  or REG_lo_176
-  or REG_lo_177
-  or REG_lo_178
-  or REG_lo_179
-  or REG_lo_180
-  or REG_lo_181
-  or REG_lo_182
-  or REG_lo_183
-  or REG_lo_184
-  or REG_lo_185
-  or REG_lo_186
-  or REG_lo_187
-  or REG_lo_188
-  or REG_lo_189
-  or REG_lo_190
-  or REG_lo_191
-  or REG_lo_192
-  or REG_lo_193
-  or REG_lo_194
-  or REG_lo_195
-  or REG_lo_196
-  or REG_lo_197
-  or REG_lo_198
-  or REG_lo_199
-  or REG_lo_200
-  or REG_lo_201
-  or REG_lo_202
-  or REG_lo_203
-  or REG_lo_204
-  or REG_lo_205
-  or REG_lo_206
-  or REG_lo_207
-  or REG_lo_208
-  or REG_lo_209
-  or REG_lo_210
-  or REG_lo_211
-  or REG_lo_212
-  or REG_lo_213
-  or REG_lo_214
-  or REG_lo_215
-  or REG_lo_216
-  or REG_lo_217
-  or REG_lo_218
-  or REG_lo_219
-  or REG_lo_220
-  or REG_lo_221
-  or REG_lo_222
-  or REG_lo_223
-  or REG_lo_224
-  or REG_lo_225
-  or REG_lo_226
-  or REG_lo_227
-  or REG_lo_228
-  or REG_lo_229
-  or REG_lo_230
-  or REG_lo_231
-  or REG_lo_232
-  or REG_lo_233
-  or REG_lo_234
-  or REG_lo_235
-  or REG_lo_236
-  or REG_lo_237
-  or REG_lo_238
-  or REG_lo_239
-  or REG_lo_240
-  or REG_lo_241
-  or REG_lo_242
-  or REG_lo_243
-  or REG_lo_244
-  or REG_lo_245
-  or REG_lo_246
-  or REG_lo_247
-  or REG_lo_248
-  or REG_lo_249
-  or REG_lo_250
-  or REG_lo_251
-  or REG_lo_252
-  or REG_lo_253
-  or REG_lo_254
-  or REG_lo_255
-  or REG_lo_256
-  ) begin
-case (lut_in_addr2_0) 
-
-0: lo_data0_2 = REG_lo_0;
-1: lo_data0_2 = REG_lo_1;
-2: lo_data0_2 = REG_lo_2;
-3: lo_data0_2 = REG_lo_3;
-4: lo_data0_2 = REG_lo_4;
-5: lo_data0_2 = REG_lo_5;
-6: lo_data0_2 = REG_lo_6;
-7: lo_data0_2 = REG_lo_7;
-8: lo_data0_2 = REG_lo_8;
-9: lo_data0_2 = REG_lo_9;
-10: lo_data0_2 = REG_lo_10;
-11: lo_data0_2 = REG_lo_11;
-12: lo_data0_2 = REG_lo_12;
-13: lo_data0_2 = REG_lo_13;
-14: lo_data0_2 = REG_lo_14;
-15: lo_data0_2 = REG_lo_15;
-16: lo_data0_2 = REG_lo_16;
-17: lo_data0_2 = REG_lo_17;
-18: lo_data0_2 = REG_lo_18;
-19: lo_data0_2 = REG_lo_19;
-20: lo_data0_2 = REG_lo_20;
-21: lo_data0_2 = REG_lo_21;
-22: lo_data0_2 = REG_lo_22;
-23: lo_data0_2 = REG_lo_23;
-24: lo_data0_2 = REG_lo_24;
-25: lo_data0_2 = REG_lo_25;
-26: lo_data0_2 = REG_lo_26;
-27: lo_data0_2 = REG_lo_27;
-28: lo_data0_2 = REG_lo_28;
-29: lo_data0_2 = REG_lo_29;
-30: lo_data0_2 = REG_lo_30;
-31: lo_data0_2 = REG_lo_31;
-32: lo_data0_2 = REG_lo_32;
-33: lo_data0_2 = REG_lo_33;
-34: lo_data0_2 = REG_lo_34;
-35: lo_data0_2 = REG_lo_35;
-36: lo_data0_2 = REG_lo_36;
-37: lo_data0_2 = REG_lo_37;
-38: lo_data0_2 = REG_lo_38;
-39: lo_data0_2 = REG_lo_39;
-40: lo_data0_2 = REG_lo_40;
-41: lo_data0_2 = REG_lo_41;
-42: lo_data0_2 = REG_lo_42;
-43: lo_data0_2 = REG_lo_43;
-44: lo_data0_2 = REG_lo_44;
-45: lo_data0_2 = REG_lo_45;
-46: lo_data0_2 = REG_lo_46;
-47: lo_data0_2 = REG_lo_47;
-48: lo_data0_2 = REG_lo_48;
-49: lo_data0_2 = REG_lo_49;
-50: lo_data0_2 = REG_lo_50;
-51: lo_data0_2 = REG_lo_51;
-52: lo_data0_2 = REG_lo_52;
-53: lo_data0_2 = REG_lo_53;
-54: lo_data0_2 = REG_lo_54;
-55: lo_data0_2 = REG_lo_55;
-56: lo_data0_2 = REG_lo_56;
-57: lo_data0_2 = REG_lo_57;
-58: lo_data0_2 = REG_lo_58;
-59: lo_data0_2 = REG_lo_59;
-60: lo_data0_2 = REG_lo_60;
-61: lo_data0_2 = REG_lo_61;
-62: lo_data0_2 = REG_lo_62;
-63: lo_data0_2 = REG_lo_63;
-64: lo_data0_2 = REG_lo_64;
-65: lo_data0_2 = REG_lo_65;
-66: lo_data0_2 = REG_lo_66;
-67: lo_data0_2 = REG_lo_67;
-68: lo_data0_2 = REG_lo_68;
-69: lo_data0_2 = REG_lo_69;
-70: lo_data0_2 = REG_lo_70;
-71: lo_data0_2 = REG_lo_71;
-72: lo_data0_2 = REG_lo_72;
-73: lo_data0_2 = REG_lo_73;
-74: lo_data0_2 = REG_lo_74;
-75: lo_data0_2 = REG_lo_75;
-76: lo_data0_2 = REG_lo_76;
-77: lo_data0_2 = REG_lo_77;
-78: lo_data0_2 = REG_lo_78;
-79: lo_data0_2 = REG_lo_79;
-80: lo_data0_2 = REG_lo_80;
-81: lo_data0_2 = REG_lo_81;
-82: lo_data0_2 = REG_lo_82;
-83: lo_data0_2 = REG_lo_83;
-84: lo_data0_2 = REG_lo_84;
-85: lo_data0_2 = REG_lo_85;
-86: lo_data0_2 = REG_lo_86;
-87: lo_data0_2 = REG_lo_87;
-88: lo_data0_2 = REG_lo_88;
-89: lo_data0_2 = REG_lo_89;
-90: lo_data0_2 = REG_lo_90;
-91: lo_data0_2 = REG_lo_91;
-92: lo_data0_2 = REG_lo_92;
-93: lo_data0_2 = REG_lo_93;
-94: lo_data0_2 = REG_lo_94;
-95: lo_data0_2 = REG_lo_95;
-96: lo_data0_2 = REG_lo_96;
-97: lo_data0_2 = REG_lo_97;
-98: lo_data0_2 = REG_lo_98;
-99: lo_data0_2 = REG_lo_99;
-100: lo_data0_2 = REG_lo_100;
-101: lo_data0_2 = REG_lo_101;
-102: lo_data0_2 = REG_lo_102;
-103: lo_data0_2 = REG_lo_103;
-104: lo_data0_2 = REG_lo_104;
-105: lo_data0_2 = REG_lo_105;
-106: lo_data0_2 = REG_lo_106;
-107: lo_data0_2 = REG_lo_107;
-108: lo_data0_2 = REG_lo_108;
-109: lo_data0_2 = REG_lo_109;
-110: lo_data0_2 = REG_lo_110;
-111: lo_data0_2 = REG_lo_111;
-112: lo_data0_2 = REG_lo_112;
-113: lo_data0_2 = REG_lo_113;
-114: lo_data0_2 = REG_lo_114;
-115: lo_data0_2 = REG_lo_115;
-116: lo_data0_2 = REG_lo_116;
-117: lo_data0_2 = REG_lo_117;
-118: lo_data0_2 = REG_lo_118;
-119: lo_data0_2 = REG_lo_119;
-120: lo_data0_2 = REG_lo_120;
-121: lo_data0_2 = REG_lo_121;
-122: lo_data0_2 = REG_lo_122;
-123: lo_data0_2 = REG_lo_123;
-124: lo_data0_2 = REG_lo_124;
-125: lo_data0_2 = REG_lo_125;
-126: lo_data0_2 = REG_lo_126;
-127: lo_data0_2 = REG_lo_127;
-128: lo_data0_2 = REG_lo_128;
-129: lo_data0_2 = REG_lo_129;
-130: lo_data0_2 = REG_lo_130;
-131: lo_data0_2 = REG_lo_131;
-132: lo_data0_2 = REG_lo_132;
-133: lo_data0_2 = REG_lo_133;
-134: lo_data0_2 = REG_lo_134;
-135: lo_data0_2 = REG_lo_135;
-136: lo_data0_2 = REG_lo_136;
-137: lo_data0_2 = REG_lo_137;
-138: lo_data0_2 = REG_lo_138;
-139: lo_data0_2 = REG_lo_139;
-140: lo_data0_2 = REG_lo_140;
-141: lo_data0_2 = REG_lo_141;
-142: lo_data0_2 = REG_lo_142;
-143: lo_data0_2 = REG_lo_143;
-144: lo_data0_2 = REG_lo_144;
-145: lo_data0_2 = REG_lo_145;
-146: lo_data0_2 = REG_lo_146;
-147: lo_data0_2 = REG_lo_147;
-148: lo_data0_2 = REG_lo_148;
-149: lo_data0_2 = REG_lo_149;
-150: lo_data0_2 = REG_lo_150;
-151: lo_data0_2 = REG_lo_151;
-152: lo_data0_2 = REG_lo_152;
-153: lo_data0_2 = REG_lo_153;
-154: lo_data0_2 = REG_lo_154;
-155: lo_data0_2 = REG_lo_155;
-156: lo_data0_2 = REG_lo_156;
-157: lo_data0_2 = REG_lo_157;
-158: lo_data0_2 = REG_lo_158;
-159: lo_data0_2 = REG_lo_159;
-160: lo_data0_2 = REG_lo_160;
-161: lo_data0_2 = REG_lo_161;
-162: lo_data0_2 = REG_lo_162;
-163: lo_data0_2 = REG_lo_163;
-164: lo_data0_2 = REG_lo_164;
-165: lo_data0_2 = REG_lo_165;
-166: lo_data0_2 = REG_lo_166;
-167: lo_data0_2 = REG_lo_167;
-168: lo_data0_2 = REG_lo_168;
-169: lo_data0_2 = REG_lo_169;
-170: lo_data0_2 = REG_lo_170;
-171: lo_data0_2 = REG_lo_171;
-172: lo_data0_2 = REG_lo_172;
-173: lo_data0_2 = REG_lo_173;
-174: lo_data0_2 = REG_lo_174;
-175: lo_data0_2 = REG_lo_175;
-176: lo_data0_2 = REG_lo_176;
-177: lo_data0_2 = REG_lo_177;
-178: lo_data0_2 = REG_lo_178;
-179: lo_data0_2 = REG_lo_179;
-180: lo_data0_2 = REG_lo_180;
-181: lo_data0_2 = REG_lo_181;
-182: lo_data0_2 = REG_lo_182;
-183: lo_data0_2 = REG_lo_183;
-184: lo_data0_2 = REG_lo_184;
-185: lo_data0_2 = REG_lo_185;
-186: lo_data0_2 = REG_lo_186;
-187: lo_data0_2 = REG_lo_187;
-188: lo_data0_2 = REG_lo_188;
-189: lo_data0_2 = REG_lo_189;
-190: lo_data0_2 = REG_lo_190;
-191: lo_data0_2 = REG_lo_191;
-192: lo_data0_2 = REG_lo_192;
-193: lo_data0_2 = REG_lo_193;
-194: lo_data0_2 = REG_lo_194;
-195: lo_data0_2 = REG_lo_195;
-196: lo_data0_2 = REG_lo_196;
-197: lo_data0_2 = REG_lo_197;
-198: lo_data0_2 = REG_lo_198;
-199: lo_data0_2 = REG_lo_199;
-200: lo_data0_2 = REG_lo_200;
-201: lo_data0_2 = REG_lo_201;
-202: lo_data0_2 = REG_lo_202;
-203: lo_data0_2 = REG_lo_203;
-204: lo_data0_2 = REG_lo_204;
-205: lo_data0_2 = REG_lo_205;
-206: lo_data0_2 = REG_lo_206;
-207: lo_data0_2 = REG_lo_207;
-208: lo_data0_2 = REG_lo_208;
-209: lo_data0_2 = REG_lo_209;
-210: lo_data0_2 = REG_lo_210;
-211: lo_data0_2 = REG_lo_211;
-212: lo_data0_2 = REG_lo_212;
-213: lo_data0_2 = REG_lo_213;
-214: lo_data0_2 = REG_lo_214;
-215: lo_data0_2 = REG_lo_215;
-216: lo_data0_2 = REG_lo_216;
-217: lo_data0_2 = REG_lo_217;
-218: lo_data0_2 = REG_lo_218;
-219: lo_data0_2 = REG_lo_219;
-220: lo_data0_2 = REG_lo_220;
-221: lo_data0_2 = REG_lo_221;
-222: lo_data0_2 = REG_lo_222;
-223: lo_data0_2 = REG_lo_223;
-224: lo_data0_2 = REG_lo_224;
-225: lo_data0_2 = REG_lo_225;
-226: lo_data0_2 = REG_lo_226;
-227: lo_data0_2 = REG_lo_227;
-228: lo_data0_2 = REG_lo_228;
-229: lo_data0_2 = REG_lo_229;
-230: lo_data0_2 = REG_lo_230;
-231: lo_data0_2 = REG_lo_231;
-232: lo_data0_2 = REG_lo_232;
-233: lo_data0_2 = REG_lo_233;
-234: lo_data0_2 = REG_lo_234;
-235: lo_data0_2 = REG_lo_235;
-236: lo_data0_2 = REG_lo_236;
-237: lo_data0_2 = REG_lo_237;
-238: lo_data0_2 = REG_lo_238;
-239: lo_data0_2 = REG_lo_239;
-240: lo_data0_2 = REG_lo_240;
-241: lo_data0_2 = REG_lo_241;
-242: lo_data0_2 = REG_lo_242;
-243: lo_data0_2 = REG_lo_243;
-244: lo_data0_2 = REG_lo_244;
-245: lo_data0_2 = REG_lo_245;
-246: lo_data0_2 = REG_lo_246;
-247: lo_data0_2 = REG_lo_247;
-248: lo_data0_2 = REG_lo_248;
-249: lo_data0_2 = REG_lo_249;
-250: lo_data0_2 = REG_lo_250;
-251: lo_data0_2 = REG_lo_251;
-252: lo_data0_2 = REG_lo_252;
-253: lo_data0_2 = REG_lo_253;
-254: lo_data0_2 = REG_lo_254;
-255: lo_data0_2 = REG_lo_255;
-256: lo_data0_2 = REG_lo_256;
-//VCS coverage off
-default : begin 
-            lo_data0_2[15:0] = {16{`x_or_0}};
-          end  
-//VCS coverage on
-endcase
-end
-
-always @(
-  lut_in_addr3_0
-  or REG_lo_0
-  or REG_lo_1
-  or REG_lo_2
-  or REG_lo_3
-  or REG_lo_4
-  or REG_lo_5
-  or REG_lo_6
-  or REG_lo_7
-  or REG_lo_8
-  or REG_lo_9
-  or REG_lo_10
-  or REG_lo_11
-  or REG_lo_12
-  or REG_lo_13
-  or REG_lo_14
-  or REG_lo_15
-  or REG_lo_16
-  or REG_lo_17
-  or REG_lo_18
-  or REG_lo_19
-  or REG_lo_20
-  or REG_lo_21
-  or REG_lo_22
-  or REG_lo_23
-  or REG_lo_24
-  or REG_lo_25
-  or REG_lo_26
-  or REG_lo_27
-  or REG_lo_28
-  or REG_lo_29
-  or REG_lo_30
-  or REG_lo_31
-  or REG_lo_32
-  or REG_lo_33
-  or REG_lo_34
-  or REG_lo_35
-  or REG_lo_36
-  or REG_lo_37
-  or REG_lo_38
-  or REG_lo_39
-  or REG_lo_40
-  or REG_lo_41
-  or REG_lo_42
-  or REG_lo_43
-  or REG_lo_44
-  or REG_lo_45
-  or REG_lo_46
-  or REG_lo_47
-  or REG_lo_48
-  or REG_lo_49
-  or REG_lo_50
-  or REG_lo_51
-  or REG_lo_52
-  or REG_lo_53
-  or REG_lo_54
-  or REG_lo_55
-  or REG_lo_56
-  or REG_lo_57
-  or REG_lo_58
-  or REG_lo_59
-  or REG_lo_60
-  or REG_lo_61
-  or REG_lo_62
-  or REG_lo_63
-  or REG_lo_64
-  or REG_lo_65
-  or REG_lo_66
-  or REG_lo_67
-  or REG_lo_68
-  or REG_lo_69
-  or REG_lo_70
-  or REG_lo_71
-  or REG_lo_72
-  or REG_lo_73
-  or REG_lo_74
-  or REG_lo_75
-  or REG_lo_76
-  or REG_lo_77
-  or REG_lo_78
-  or REG_lo_79
-  or REG_lo_80
-  or REG_lo_81
-  or REG_lo_82
-  or REG_lo_83
-  or REG_lo_84
-  or REG_lo_85
-  or REG_lo_86
-  or REG_lo_87
-  or REG_lo_88
-  or REG_lo_89
-  or REG_lo_90
-  or REG_lo_91
-  or REG_lo_92
-  or REG_lo_93
-  or REG_lo_94
-  or REG_lo_95
-  or REG_lo_96
-  or REG_lo_97
-  or REG_lo_98
-  or REG_lo_99
-  or REG_lo_100
-  or REG_lo_101
-  or REG_lo_102
-  or REG_lo_103
-  or REG_lo_104
-  or REG_lo_105
-  or REG_lo_106
-  or REG_lo_107
-  or REG_lo_108
-  or REG_lo_109
-  or REG_lo_110
-  or REG_lo_111
-  or REG_lo_112
-  or REG_lo_113
-  or REG_lo_114
-  or REG_lo_115
-  or REG_lo_116
-  or REG_lo_117
-  or REG_lo_118
-  or REG_lo_119
-  or REG_lo_120
-  or REG_lo_121
-  or REG_lo_122
-  or REG_lo_123
-  or REG_lo_124
-  or REG_lo_125
-  or REG_lo_126
-  or REG_lo_127
-  or REG_lo_128
-  or REG_lo_129
-  or REG_lo_130
-  or REG_lo_131
-  or REG_lo_132
-  or REG_lo_133
-  or REG_lo_134
-  or REG_lo_135
-  or REG_lo_136
-  or REG_lo_137
-  or REG_lo_138
-  or REG_lo_139
-  or REG_lo_140
-  or REG_lo_141
-  or REG_lo_142
-  or REG_lo_143
-  or REG_lo_144
-  or REG_lo_145
-  or REG_lo_146
-  or REG_lo_147
-  or REG_lo_148
-  or REG_lo_149
-  or REG_lo_150
-  or REG_lo_151
-  or REG_lo_152
-  or REG_lo_153
-  or REG_lo_154
-  or REG_lo_155
-  or REG_lo_156
-  or REG_lo_157
-  or REG_lo_158
-  or REG_lo_159
-  or REG_lo_160
-  or REG_lo_161
-  or REG_lo_162
-  or REG_lo_163
-  or REG_lo_164
-  or REG_lo_165
-  or REG_lo_166
-  or REG_lo_167
-  or REG_lo_168
-  or REG_lo_169
-  or REG_lo_170
-  or REG_lo_171
-  or REG_lo_172
-  or REG_lo_173
-  or REG_lo_174
-  or REG_lo_175
-  or REG_lo_176
-  or REG_lo_177
-  or REG_lo_178
-  or REG_lo_179
-  or REG_lo_180
-  or REG_lo_181
-  or REG_lo_182
-  or REG_lo_183
-  or REG_lo_184
-  or REG_lo_185
-  or REG_lo_186
-  or REG_lo_187
-  or REG_lo_188
-  or REG_lo_189
-  or REG_lo_190
-  or REG_lo_191
-  or REG_lo_192
-  or REG_lo_193
-  or REG_lo_194
-  or REG_lo_195
-  or REG_lo_196
-  or REG_lo_197
-  or REG_lo_198
-  or REG_lo_199
-  or REG_lo_200
-  or REG_lo_201
-  or REG_lo_202
-  or REG_lo_203
-  or REG_lo_204
-  or REG_lo_205
-  or REG_lo_206
-  or REG_lo_207
-  or REG_lo_208
-  or REG_lo_209
-  or REG_lo_210
-  or REG_lo_211
-  or REG_lo_212
-  or REG_lo_213
-  or REG_lo_214
-  or REG_lo_215
-  or REG_lo_216
-  or REG_lo_217
-  or REG_lo_218
-  or REG_lo_219
-  or REG_lo_220
-  or REG_lo_221
-  or REG_lo_222
-  or REG_lo_223
-  or REG_lo_224
-  or REG_lo_225
-  or REG_lo_226
-  or REG_lo_227
-  or REG_lo_228
-  or REG_lo_229
-  or REG_lo_230
-  or REG_lo_231
-  or REG_lo_232
-  or REG_lo_233
-  or REG_lo_234
-  or REG_lo_235
-  or REG_lo_236
-  or REG_lo_237
-  or REG_lo_238
-  or REG_lo_239
-  or REG_lo_240
-  or REG_lo_241
-  or REG_lo_242
-  or REG_lo_243
-  or REG_lo_244
-  or REG_lo_245
-  or REG_lo_246
-  or REG_lo_247
-  or REG_lo_248
-  or REG_lo_249
-  or REG_lo_250
-  or REG_lo_251
-  or REG_lo_252
-  or REG_lo_253
-  or REG_lo_254
-  or REG_lo_255
-  or REG_lo_256
-  ) begin
-case (lut_in_addr3_0) 
-
-0: lo_data0_3 = REG_lo_0;
-1: lo_data0_3 = REG_lo_1;
-2: lo_data0_3 = REG_lo_2;
-3: lo_data0_3 = REG_lo_3;
-4: lo_data0_3 = REG_lo_4;
-5: lo_data0_3 = REG_lo_5;
-6: lo_data0_3 = REG_lo_6;
-7: lo_data0_3 = REG_lo_7;
-8: lo_data0_3 = REG_lo_8;
-9: lo_data0_3 = REG_lo_9;
-10: lo_data0_3 = REG_lo_10;
-11: lo_data0_3 = REG_lo_11;
-12: lo_data0_3 = REG_lo_12;
-13: lo_data0_3 = REG_lo_13;
-14: lo_data0_3 = REG_lo_14;
-15: lo_data0_3 = REG_lo_15;
-16: lo_data0_3 = REG_lo_16;
-17: lo_data0_3 = REG_lo_17;
-18: lo_data0_3 = REG_lo_18;
-19: lo_data0_3 = REG_lo_19;
-20: lo_data0_3 = REG_lo_20;
-21: lo_data0_3 = REG_lo_21;
-22: lo_data0_3 = REG_lo_22;
-23: lo_data0_3 = REG_lo_23;
-24: lo_data0_3 = REG_lo_24;
-25: lo_data0_3 = REG_lo_25;
-26: lo_data0_3 = REG_lo_26;
-27: lo_data0_3 = REG_lo_27;
-28: lo_data0_3 = REG_lo_28;
-29: lo_data0_3 = REG_lo_29;
-30: lo_data0_3 = REG_lo_30;
-31: lo_data0_3 = REG_lo_31;
-32: lo_data0_3 = REG_lo_32;
-33: lo_data0_3 = REG_lo_33;
-34: lo_data0_3 = REG_lo_34;
-35: lo_data0_3 = REG_lo_35;
-36: lo_data0_3 = REG_lo_36;
-37: lo_data0_3 = REG_lo_37;
-38: lo_data0_3 = REG_lo_38;
-39: lo_data0_3 = REG_lo_39;
-40: lo_data0_3 = REG_lo_40;
-41: lo_data0_3 = REG_lo_41;
-42: lo_data0_3 = REG_lo_42;
-43: lo_data0_3 = REG_lo_43;
-44: lo_data0_3 = REG_lo_44;
-45: lo_data0_3 = REG_lo_45;
-46: lo_data0_3 = REG_lo_46;
-47: lo_data0_3 = REG_lo_47;
-48: lo_data0_3 = REG_lo_48;
-49: lo_data0_3 = REG_lo_49;
-50: lo_data0_3 = REG_lo_50;
-51: lo_data0_3 = REG_lo_51;
-52: lo_data0_3 = REG_lo_52;
-53: lo_data0_3 = REG_lo_53;
-54: lo_data0_3 = REG_lo_54;
-55: lo_data0_3 = REG_lo_55;
-56: lo_data0_3 = REG_lo_56;
-57: lo_data0_3 = REG_lo_57;
-58: lo_data0_3 = REG_lo_58;
-59: lo_data0_3 = REG_lo_59;
-60: lo_data0_3 = REG_lo_60;
-61: lo_data0_3 = REG_lo_61;
-62: lo_data0_3 = REG_lo_62;
-63: lo_data0_3 = REG_lo_63;
-64: lo_data0_3 = REG_lo_64;
-65: lo_data0_3 = REG_lo_65;
-66: lo_data0_3 = REG_lo_66;
-67: lo_data0_3 = REG_lo_67;
-68: lo_data0_3 = REG_lo_68;
-69: lo_data0_3 = REG_lo_69;
-70: lo_data0_3 = REG_lo_70;
-71: lo_data0_3 = REG_lo_71;
-72: lo_data0_3 = REG_lo_72;
-73: lo_data0_3 = REG_lo_73;
-74: lo_data0_3 = REG_lo_74;
-75: lo_data0_3 = REG_lo_75;
-76: lo_data0_3 = REG_lo_76;
-77: lo_data0_3 = REG_lo_77;
-78: lo_data0_3 = REG_lo_78;
-79: lo_data0_3 = REG_lo_79;
-80: lo_data0_3 = REG_lo_80;
-81: lo_data0_3 = REG_lo_81;
-82: lo_data0_3 = REG_lo_82;
-83: lo_data0_3 = REG_lo_83;
-84: lo_data0_3 = REG_lo_84;
-85: lo_data0_3 = REG_lo_85;
-86: lo_data0_3 = REG_lo_86;
-87: lo_data0_3 = REG_lo_87;
-88: lo_data0_3 = REG_lo_88;
-89: lo_data0_3 = REG_lo_89;
-90: lo_data0_3 = REG_lo_90;
-91: lo_data0_3 = REG_lo_91;
-92: lo_data0_3 = REG_lo_92;
-93: lo_data0_3 = REG_lo_93;
-94: lo_data0_3 = REG_lo_94;
-95: lo_data0_3 = REG_lo_95;
-96: lo_data0_3 = REG_lo_96;
-97: lo_data0_3 = REG_lo_97;
-98: lo_data0_3 = REG_lo_98;
-99: lo_data0_3 = REG_lo_99;
-100: lo_data0_3 = REG_lo_100;
-101: lo_data0_3 = REG_lo_101;
-102: lo_data0_3 = REG_lo_102;
-103: lo_data0_3 = REG_lo_103;
-104: lo_data0_3 = REG_lo_104;
-105: lo_data0_3 = REG_lo_105;
-106: lo_data0_3 = REG_lo_106;
-107: lo_data0_3 = REG_lo_107;
-108: lo_data0_3 = REG_lo_108;
-109: lo_data0_3 = REG_lo_109;
-110: lo_data0_3 = REG_lo_110;
-111: lo_data0_3 = REG_lo_111;
-112: lo_data0_3 = REG_lo_112;
-113: lo_data0_3 = REG_lo_113;
-114: lo_data0_3 = REG_lo_114;
-115: lo_data0_3 = REG_lo_115;
-116: lo_data0_3 = REG_lo_116;
-117: lo_data0_3 = REG_lo_117;
-118: lo_data0_3 = REG_lo_118;
-119: lo_data0_3 = REG_lo_119;
-120: lo_data0_3 = REG_lo_120;
-121: lo_data0_3 = REG_lo_121;
-122: lo_data0_3 = REG_lo_122;
-123: lo_data0_3 = REG_lo_123;
-124: lo_data0_3 = REG_lo_124;
-125: lo_data0_3 = REG_lo_125;
-126: lo_data0_3 = REG_lo_126;
-127: lo_data0_3 = REG_lo_127;
-128: lo_data0_3 = REG_lo_128;
-129: lo_data0_3 = REG_lo_129;
-130: lo_data0_3 = REG_lo_130;
-131: lo_data0_3 = REG_lo_131;
-132: lo_data0_3 = REG_lo_132;
-133: lo_data0_3 = REG_lo_133;
-134: lo_data0_3 = REG_lo_134;
-135: lo_data0_3 = REG_lo_135;
-136: lo_data0_3 = REG_lo_136;
-137: lo_data0_3 = REG_lo_137;
-138: lo_data0_3 = REG_lo_138;
-139: lo_data0_3 = REG_lo_139;
-140: lo_data0_3 = REG_lo_140;
-141: lo_data0_3 = REG_lo_141;
-142: lo_data0_3 = REG_lo_142;
-143: lo_data0_3 = REG_lo_143;
-144: lo_data0_3 = REG_lo_144;
-145: lo_data0_3 = REG_lo_145;
-146: lo_data0_3 = REG_lo_146;
-147: lo_data0_3 = REG_lo_147;
-148: lo_data0_3 = REG_lo_148;
-149: lo_data0_3 = REG_lo_149;
-150: lo_data0_3 = REG_lo_150;
-151: lo_data0_3 = REG_lo_151;
-152: lo_data0_3 = REG_lo_152;
-153: lo_data0_3 = REG_lo_153;
-154: lo_data0_3 = REG_lo_154;
-155: lo_data0_3 = REG_lo_155;
-156: lo_data0_3 = REG_lo_156;
-157: lo_data0_3 = REG_lo_157;
-158: lo_data0_3 = REG_lo_158;
-159: lo_data0_3 = REG_lo_159;
-160: lo_data0_3 = REG_lo_160;
-161: lo_data0_3 = REG_lo_161;
-162: lo_data0_3 = REG_lo_162;
-163: lo_data0_3 = REG_lo_163;
-164: lo_data0_3 = REG_lo_164;
-165: lo_data0_3 = REG_lo_165;
-166: lo_data0_3 = REG_lo_166;
-167: lo_data0_3 = REG_lo_167;
-168: lo_data0_3 = REG_lo_168;
-169: lo_data0_3 = REG_lo_169;
-170: lo_data0_3 = REG_lo_170;
-171: lo_data0_3 = REG_lo_171;
-172: lo_data0_3 = REG_lo_172;
-173: lo_data0_3 = REG_lo_173;
-174: lo_data0_3 = REG_lo_174;
-175: lo_data0_3 = REG_lo_175;
-176: lo_data0_3 = REG_lo_176;
-177: lo_data0_3 = REG_lo_177;
-178: lo_data0_3 = REG_lo_178;
-179: lo_data0_3 = REG_lo_179;
-180: lo_data0_3 = REG_lo_180;
-181: lo_data0_3 = REG_lo_181;
-182: lo_data0_3 = REG_lo_182;
-183: lo_data0_3 = REG_lo_183;
-184: lo_data0_3 = REG_lo_184;
-185: lo_data0_3 = REG_lo_185;
-186: lo_data0_3 = REG_lo_186;
-187: lo_data0_3 = REG_lo_187;
-188: lo_data0_3 = REG_lo_188;
-189: lo_data0_3 = REG_lo_189;
-190: lo_data0_3 = REG_lo_190;
-191: lo_data0_3 = REG_lo_191;
-192: lo_data0_3 = REG_lo_192;
-193: lo_data0_3 = REG_lo_193;
-194: lo_data0_3 = REG_lo_194;
-195: lo_data0_3 = REG_lo_195;
-196: lo_data0_3 = REG_lo_196;
-197: lo_data0_3 = REG_lo_197;
-198: lo_data0_3 = REG_lo_198;
-199: lo_data0_3 = REG_lo_199;
-200: lo_data0_3 = REG_lo_200;
-201: lo_data0_3 = REG_lo_201;
-202: lo_data0_3 = REG_lo_202;
-203: lo_data0_3 = REG_lo_203;
-204: lo_data0_3 = REG_lo_204;
-205: lo_data0_3 = REG_lo_205;
-206: lo_data0_3 = REG_lo_206;
-207: lo_data0_3 = REG_lo_207;
-208: lo_data0_3 = REG_lo_208;
-209: lo_data0_3 = REG_lo_209;
-210: lo_data0_3 = REG_lo_210;
-211: lo_data0_3 = REG_lo_211;
-212: lo_data0_3 = REG_lo_212;
-213: lo_data0_3 = REG_lo_213;
-214: lo_data0_3 = REG_lo_214;
-215: lo_data0_3 = REG_lo_215;
-216: lo_data0_3 = REG_lo_216;
-217: lo_data0_3 = REG_lo_217;
-218: lo_data0_3 = REG_lo_218;
-219: lo_data0_3 = REG_lo_219;
-220: lo_data0_3 = REG_lo_220;
-221: lo_data0_3 = REG_lo_221;
-222: lo_data0_3 = REG_lo_222;
-223: lo_data0_3 = REG_lo_223;
-224: lo_data0_3 = REG_lo_224;
-225: lo_data0_3 = REG_lo_225;
-226: lo_data0_3 = REG_lo_226;
-227: lo_data0_3 = REG_lo_227;
-228: lo_data0_3 = REG_lo_228;
-229: lo_data0_3 = REG_lo_229;
-230: lo_data0_3 = REG_lo_230;
-231: lo_data0_3 = REG_lo_231;
-232: lo_data0_3 = REG_lo_232;
-233: lo_data0_3 = REG_lo_233;
-234: lo_data0_3 = REG_lo_234;
-235: lo_data0_3 = REG_lo_235;
-236: lo_data0_3 = REG_lo_236;
-237: lo_data0_3 = REG_lo_237;
-238: lo_data0_3 = REG_lo_238;
-239: lo_data0_3 = REG_lo_239;
-240: lo_data0_3 = REG_lo_240;
-241: lo_data0_3 = REG_lo_241;
-242: lo_data0_3 = REG_lo_242;
-243: lo_data0_3 = REG_lo_243;
-244: lo_data0_3 = REG_lo_244;
-245: lo_data0_3 = REG_lo_245;
-246: lo_data0_3 = REG_lo_246;
-247: lo_data0_3 = REG_lo_247;
-248: lo_data0_3 = REG_lo_248;
-249: lo_data0_3 = REG_lo_249;
-250: lo_data0_3 = REG_lo_250;
-251: lo_data0_3 = REG_lo_251;
-252: lo_data0_3 = REG_lo_252;
-253: lo_data0_3 = REG_lo_253;
-254: lo_data0_3 = REG_lo_254;
-255: lo_data0_3 = REG_lo_255;
-256: lo_data0_3 = REG_lo_256;
-//VCS coverage off
-default : begin 
-            lo_data0_3[15:0] = {16{`x_or_0}};
-          end  
-//VCS coverage on
-endcase
-end
-
-always @(
-  lut_in_addr0_1
-  or REG_lo_1
-  or REG_lo_2
-  or REG_lo_3
-  or REG_lo_4
-  or REG_lo_5
-  or REG_lo_6
-  or REG_lo_7
-  or REG_lo_8
-  or REG_lo_9
-  or REG_lo_10
-  or REG_lo_11
-  or REG_lo_12
-  or REG_lo_13
-  or REG_lo_14
-  or REG_lo_15
-  or REG_lo_16
-  or REG_lo_17
-  or REG_lo_18
-  or REG_lo_19
-  or REG_lo_20
-  or REG_lo_21
-  or REG_lo_22
-  or REG_lo_23
-  or REG_lo_24
-  or REG_lo_25
-  or REG_lo_26
-  or REG_lo_27
-  or REG_lo_28
-  or REG_lo_29
-  or REG_lo_30
-  or REG_lo_31
-  or REG_lo_32
-  or REG_lo_33
-  or REG_lo_34
-  or REG_lo_35
-  or REG_lo_36
-  or REG_lo_37
-  or REG_lo_38
-  or REG_lo_39
-  or REG_lo_40
-  or REG_lo_41
-  or REG_lo_42
-  or REG_lo_43
-  or REG_lo_44
-  or REG_lo_45
-  or REG_lo_46
-  or REG_lo_47
-  or REG_lo_48
-  or REG_lo_49
-  or REG_lo_50
-  or REG_lo_51
-  or REG_lo_52
-  or REG_lo_53
-  or REG_lo_54
-  or REG_lo_55
-  or REG_lo_56
-  or REG_lo_57
-  or REG_lo_58
-  or REG_lo_59
-  or REG_lo_60
-  or REG_lo_61
-  or REG_lo_62
-  or REG_lo_63
-  or REG_lo_64
-  or REG_lo_65
-  or REG_lo_66
-  or REG_lo_67
-  or REG_lo_68
-  or REG_lo_69
-  or REG_lo_70
-  or REG_lo_71
-  or REG_lo_72
-  or REG_lo_73
-  or REG_lo_74
-  or REG_lo_75
-  or REG_lo_76
-  or REG_lo_77
-  or REG_lo_78
-  or REG_lo_79
-  or REG_lo_80
-  or REG_lo_81
-  or REG_lo_82
-  or REG_lo_83
-  or REG_lo_84
-  or REG_lo_85
-  or REG_lo_86
-  or REG_lo_87
-  or REG_lo_88
-  or REG_lo_89
-  or REG_lo_90
-  or REG_lo_91
-  or REG_lo_92
-  or REG_lo_93
-  or REG_lo_94
-  or REG_lo_95
-  or REG_lo_96
-  or REG_lo_97
-  or REG_lo_98
-  or REG_lo_99
-  or REG_lo_100
-  or REG_lo_101
-  or REG_lo_102
-  or REG_lo_103
-  or REG_lo_104
-  or REG_lo_105
-  or REG_lo_106
-  or REG_lo_107
-  or REG_lo_108
-  or REG_lo_109
-  or REG_lo_110
-  or REG_lo_111
-  or REG_lo_112
-  or REG_lo_113
-  or REG_lo_114
-  or REG_lo_115
-  or REG_lo_116
-  or REG_lo_117
-  or REG_lo_118
-  or REG_lo_119
-  or REG_lo_120
-  or REG_lo_121
-  or REG_lo_122
-  or REG_lo_123
-  or REG_lo_124
-  or REG_lo_125
-  or REG_lo_126
-  or REG_lo_127
-  or REG_lo_128
-  or REG_lo_129
-  or REG_lo_130
-  or REG_lo_131
-  or REG_lo_132
-  or REG_lo_133
-  or REG_lo_134
-  or REG_lo_135
-  or REG_lo_136
-  or REG_lo_137
-  or REG_lo_138
-  or REG_lo_139
-  or REG_lo_140
-  or REG_lo_141
-  or REG_lo_142
-  or REG_lo_143
-  or REG_lo_144
-  or REG_lo_145
-  or REG_lo_146
-  or REG_lo_147
-  or REG_lo_148
-  or REG_lo_149
-  or REG_lo_150
-  or REG_lo_151
-  or REG_lo_152
-  or REG_lo_153
-  or REG_lo_154
-  or REG_lo_155
-  or REG_lo_156
-  or REG_lo_157
-  or REG_lo_158
-  or REG_lo_159
-  or REG_lo_160
-  or REG_lo_161
-  or REG_lo_162
-  or REG_lo_163
-  or REG_lo_164
-  or REG_lo_165
-  or REG_lo_166
-  or REG_lo_167
-  or REG_lo_168
-  or REG_lo_169
-  or REG_lo_170
-  or REG_lo_171
-  or REG_lo_172
-  or REG_lo_173
-  or REG_lo_174
-  or REG_lo_175
-  or REG_lo_176
-  or REG_lo_177
-  or REG_lo_178
-  or REG_lo_179
-  or REG_lo_180
-  or REG_lo_181
-  or REG_lo_182
-  or REG_lo_183
-  or REG_lo_184
-  or REG_lo_185
-  or REG_lo_186
-  or REG_lo_187
-  or REG_lo_188
-  or REG_lo_189
-  or REG_lo_190
-  or REG_lo_191
-  or REG_lo_192
-  or REG_lo_193
-  or REG_lo_194
-  or REG_lo_195
-  or REG_lo_196
-  or REG_lo_197
-  or REG_lo_198
-  or REG_lo_199
-  or REG_lo_200
-  or REG_lo_201
-  or REG_lo_202
-  or REG_lo_203
-  or REG_lo_204
-  or REG_lo_205
-  or REG_lo_206
-  or REG_lo_207
-  or REG_lo_208
-  or REG_lo_209
-  or REG_lo_210
-  or REG_lo_211
-  or REG_lo_212
-  or REG_lo_213
-  or REG_lo_214
-  or REG_lo_215
-  or REG_lo_216
-  or REG_lo_217
-  or REG_lo_218
-  or REG_lo_219
-  or REG_lo_220
-  or REG_lo_221
-  or REG_lo_222
-  or REG_lo_223
-  or REG_lo_224
-  or REG_lo_225
-  or REG_lo_226
-  or REG_lo_227
-  or REG_lo_228
-  or REG_lo_229
-  or REG_lo_230
-  or REG_lo_231
-  or REG_lo_232
-  or REG_lo_233
-  or REG_lo_234
-  or REG_lo_235
-  or REG_lo_236
-  or REG_lo_237
-  or REG_lo_238
-  or REG_lo_239
-  or REG_lo_240
-  or REG_lo_241
-  or REG_lo_242
-  or REG_lo_243
-  or REG_lo_244
-  or REG_lo_245
-  or REG_lo_246
-  or REG_lo_247
-  or REG_lo_248
-  or REG_lo_249
-  or REG_lo_250
-  or REG_lo_251
-  or REG_lo_252
-  or REG_lo_253
-  or REG_lo_254
-  or REG_lo_255
-  or REG_lo_256
-  ) begin
-case (lut_in_addr0_1) 
-
-1: lo_data1_0 = REG_lo_1;
-2: lo_data1_0 = REG_lo_2;
-3: lo_data1_0 = REG_lo_3;
-4: lo_data1_0 = REG_lo_4;
-5: lo_data1_0 = REG_lo_5;
-6: lo_data1_0 = REG_lo_6;
-7: lo_data1_0 = REG_lo_7;
-8: lo_data1_0 = REG_lo_8;
-9: lo_data1_0 = REG_lo_9;
-10: lo_data1_0 = REG_lo_10;
-11: lo_data1_0 = REG_lo_11;
-12: lo_data1_0 = REG_lo_12;
-13: lo_data1_0 = REG_lo_13;
-14: lo_data1_0 = REG_lo_14;
-15: lo_data1_0 = REG_lo_15;
-16: lo_data1_0 = REG_lo_16;
-17: lo_data1_0 = REG_lo_17;
-18: lo_data1_0 = REG_lo_18;
-19: lo_data1_0 = REG_lo_19;
-20: lo_data1_0 = REG_lo_20;
-21: lo_data1_0 = REG_lo_21;
-22: lo_data1_0 = REG_lo_22;
-23: lo_data1_0 = REG_lo_23;
-24: lo_data1_0 = REG_lo_24;
-25: lo_data1_0 = REG_lo_25;
-26: lo_data1_0 = REG_lo_26;
-27: lo_data1_0 = REG_lo_27;
-28: lo_data1_0 = REG_lo_28;
-29: lo_data1_0 = REG_lo_29;
-30: lo_data1_0 = REG_lo_30;
-31: lo_data1_0 = REG_lo_31;
-32: lo_data1_0 = REG_lo_32;
-33: lo_data1_0 = REG_lo_33;
-34: lo_data1_0 = REG_lo_34;
-35: lo_data1_0 = REG_lo_35;
-36: lo_data1_0 = REG_lo_36;
-37: lo_data1_0 = REG_lo_37;
-38: lo_data1_0 = REG_lo_38;
-39: lo_data1_0 = REG_lo_39;
-40: lo_data1_0 = REG_lo_40;
-41: lo_data1_0 = REG_lo_41;
-42: lo_data1_0 = REG_lo_42;
-43: lo_data1_0 = REG_lo_43;
-44: lo_data1_0 = REG_lo_44;
-45: lo_data1_0 = REG_lo_45;
-46: lo_data1_0 = REG_lo_46;
-47: lo_data1_0 = REG_lo_47;
-48: lo_data1_0 = REG_lo_48;
-49: lo_data1_0 = REG_lo_49;
-50: lo_data1_0 = REG_lo_50;
-51: lo_data1_0 = REG_lo_51;
-52: lo_data1_0 = REG_lo_52;
-53: lo_data1_0 = REG_lo_53;
-54: lo_data1_0 = REG_lo_54;
-55: lo_data1_0 = REG_lo_55;
-56: lo_data1_0 = REG_lo_56;
-57: lo_data1_0 = REG_lo_57;
-58: lo_data1_0 = REG_lo_58;
-59: lo_data1_0 = REG_lo_59;
-60: lo_data1_0 = REG_lo_60;
-61: lo_data1_0 = REG_lo_61;
-62: lo_data1_0 = REG_lo_62;
-63: lo_data1_0 = REG_lo_63;
-64: lo_data1_0 = REG_lo_64;
-65: lo_data1_0 = REG_lo_65;
-66: lo_data1_0 = REG_lo_66;
-67: lo_data1_0 = REG_lo_67;
-68: lo_data1_0 = REG_lo_68;
-69: lo_data1_0 = REG_lo_69;
-70: lo_data1_0 = REG_lo_70;
-71: lo_data1_0 = REG_lo_71;
-72: lo_data1_0 = REG_lo_72;
-73: lo_data1_0 = REG_lo_73;
-74: lo_data1_0 = REG_lo_74;
-75: lo_data1_0 = REG_lo_75;
-76: lo_data1_0 = REG_lo_76;
-77: lo_data1_0 = REG_lo_77;
-78: lo_data1_0 = REG_lo_78;
-79: lo_data1_0 = REG_lo_79;
-80: lo_data1_0 = REG_lo_80;
-81: lo_data1_0 = REG_lo_81;
-82: lo_data1_0 = REG_lo_82;
-83: lo_data1_0 = REG_lo_83;
-84: lo_data1_0 = REG_lo_84;
-85: lo_data1_0 = REG_lo_85;
-86: lo_data1_0 = REG_lo_86;
-87: lo_data1_0 = REG_lo_87;
-88: lo_data1_0 = REG_lo_88;
-89: lo_data1_0 = REG_lo_89;
-90: lo_data1_0 = REG_lo_90;
-91: lo_data1_0 = REG_lo_91;
-92: lo_data1_0 = REG_lo_92;
-93: lo_data1_0 = REG_lo_93;
-94: lo_data1_0 = REG_lo_94;
-95: lo_data1_0 = REG_lo_95;
-96: lo_data1_0 = REG_lo_96;
-97: lo_data1_0 = REG_lo_97;
-98: lo_data1_0 = REG_lo_98;
-99: lo_data1_0 = REG_lo_99;
-100: lo_data1_0 = REG_lo_100;
-101: lo_data1_0 = REG_lo_101;
-102: lo_data1_0 = REG_lo_102;
-103: lo_data1_0 = REG_lo_103;
-104: lo_data1_0 = REG_lo_104;
-105: lo_data1_0 = REG_lo_105;
-106: lo_data1_0 = REG_lo_106;
-107: lo_data1_0 = REG_lo_107;
-108: lo_data1_0 = REG_lo_108;
-109: lo_data1_0 = REG_lo_109;
-110: lo_data1_0 = REG_lo_110;
-111: lo_data1_0 = REG_lo_111;
-112: lo_data1_0 = REG_lo_112;
-113: lo_data1_0 = REG_lo_113;
-114: lo_data1_0 = REG_lo_114;
-115: lo_data1_0 = REG_lo_115;
-116: lo_data1_0 = REG_lo_116;
-117: lo_data1_0 = REG_lo_117;
-118: lo_data1_0 = REG_lo_118;
-119: lo_data1_0 = REG_lo_119;
-120: lo_data1_0 = REG_lo_120;
-121: lo_data1_0 = REG_lo_121;
-122: lo_data1_0 = REG_lo_122;
-123: lo_data1_0 = REG_lo_123;
-124: lo_data1_0 = REG_lo_124;
-125: lo_data1_0 = REG_lo_125;
-126: lo_data1_0 = REG_lo_126;
-127: lo_data1_0 = REG_lo_127;
-128: lo_data1_0 = REG_lo_128;
-129: lo_data1_0 = REG_lo_129;
-130: lo_data1_0 = REG_lo_130;
-131: lo_data1_0 = REG_lo_131;
-132: lo_data1_0 = REG_lo_132;
-133: lo_data1_0 = REG_lo_133;
-134: lo_data1_0 = REG_lo_134;
-135: lo_data1_0 = REG_lo_135;
-136: lo_data1_0 = REG_lo_136;
-137: lo_data1_0 = REG_lo_137;
-138: lo_data1_0 = REG_lo_138;
-139: lo_data1_0 = REG_lo_139;
-140: lo_data1_0 = REG_lo_140;
-141: lo_data1_0 = REG_lo_141;
-142: lo_data1_0 = REG_lo_142;
-143: lo_data1_0 = REG_lo_143;
-144: lo_data1_0 = REG_lo_144;
-145: lo_data1_0 = REG_lo_145;
-146: lo_data1_0 = REG_lo_146;
-147: lo_data1_0 = REG_lo_147;
-148: lo_data1_0 = REG_lo_148;
-149: lo_data1_0 = REG_lo_149;
-150: lo_data1_0 = REG_lo_150;
-151: lo_data1_0 = REG_lo_151;
-152: lo_data1_0 = REG_lo_152;
-153: lo_data1_0 = REG_lo_153;
-154: lo_data1_0 = REG_lo_154;
-155: lo_data1_0 = REG_lo_155;
-156: lo_data1_0 = REG_lo_156;
-157: lo_data1_0 = REG_lo_157;
-158: lo_data1_0 = REG_lo_158;
-159: lo_data1_0 = REG_lo_159;
-160: lo_data1_0 = REG_lo_160;
-161: lo_data1_0 = REG_lo_161;
-162: lo_data1_0 = REG_lo_162;
-163: lo_data1_0 = REG_lo_163;
-164: lo_data1_0 = REG_lo_164;
-165: lo_data1_0 = REG_lo_165;
-166: lo_data1_0 = REG_lo_166;
-167: lo_data1_0 = REG_lo_167;
-168: lo_data1_0 = REG_lo_168;
-169: lo_data1_0 = REG_lo_169;
-170: lo_data1_0 = REG_lo_170;
-171: lo_data1_0 = REG_lo_171;
-172: lo_data1_0 = REG_lo_172;
-173: lo_data1_0 = REG_lo_173;
-174: lo_data1_0 = REG_lo_174;
-175: lo_data1_0 = REG_lo_175;
-176: lo_data1_0 = REG_lo_176;
-177: lo_data1_0 = REG_lo_177;
-178: lo_data1_0 = REG_lo_178;
-179: lo_data1_0 = REG_lo_179;
-180: lo_data1_0 = REG_lo_180;
-181: lo_data1_0 = REG_lo_181;
-182: lo_data1_0 = REG_lo_182;
-183: lo_data1_0 = REG_lo_183;
-184: lo_data1_0 = REG_lo_184;
-185: lo_data1_0 = REG_lo_185;
-186: lo_data1_0 = REG_lo_186;
-187: lo_data1_0 = REG_lo_187;
-188: lo_data1_0 = REG_lo_188;
-189: lo_data1_0 = REG_lo_189;
-190: lo_data1_0 = REG_lo_190;
-191: lo_data1_0 = REG_lo_191;
-192: lo_data1_0 = REG_lo_192;
-193: lo_data1_0 = REG_lo_193;
-194: lo_data1_0 = REG_lo_194;
-195: lo_data1_0 = REG_lo_195;
-196: lo_data1_0 = REG_lo_196;
-197: lo_data1_0 = REG_lo_197;
-198: lo_data1_0 = REG_lo_198;
-199: lo_data1_0 = REG_lo_199;
-200: lo_data1_0 = REG_lo_200;
-201: lo_data1_0 = REG_lo_201;
-202: lo_data1_0 = REG_lo_202;
-203: lo_data1_0 = REG_lo_203;
-204: lo_data1_0 = REG_lo_204;
-205: lo_data1_0 = REG_lo_205;
-206: lo_data1_0 = REG_lo_206;
-207: lo_data1_0 = REG_lo_207;
-208: lo_data1_0 = REG_lo_208;
-209: lo_data1_0 = REG_lo_209;
-210: lo_data1_0 = REG_lo_210;
-211: lo_data1_0 = REG_lo_211;
-212: lo_data1_0 = REG_lo_212;
-213: lo_data1_0 = REG_lo_213;
-214: lo_data1_0 = REG_lo_214;
-215: lo_data1_0 = REG_lo_215;
-216: lo_data1_0 = REG_lo_216;
-217: lo_data1_0 = REG_lo_217;
-218: lo_data1_0 = REG_lo_218;
-219: lo_data1_0 = REG_lo_219;
-220: lo_data1_0 = REG_lo_220;
-221: lo_data1_0 = REG_lo_221;
-222: lo_data1_0 = REG_lo_222;
-223: lo_data1_0 = REG_lo_223;
-224: lo_data1_0 = REG_lo_224;
-225: lo_data1_0 = REG_lo_225;
-226: lo_data1_0 = REG_lo_226;
-227: lo_data1_0 = REG_lo_227;
-228: lo_data1_0 = REG_lo_228;
-229: lo_data1_0 = REG_lo_229;
-230: lo_data1_0 = REG_lo_230;
-231: lo_data1_0 = REG_lo_231;
-232: lo_data1_0 = REG_lo_232;
-233: lo_data1_0 = REG_lo_233;
-234: lo_data1_0 = REG_lo_234;
-235: lo_data1_0 = REG_lo_235;
-236: lo_data1_0 = REG_lo_236;
-237: lo_data1_0 = REG_lo_237;
-238: lo_data1_0 = REG_lo_238;
-239: lo_data1_0 = REG_lo_239;
-240: lo_data1_0 = REG_lo_240;
-241: lo_data1_0 = REG_lo_241;
-242: lo_data1_0 = REG_lo_242;
-243: lo_data1_0 = REG_lo_243;
-244: lo_data1_0 = REG_lo_244;
-245: lo_data1_0 = REG_lo_245;
-246: lo_data1_0 = REG_lo_246;
-247: lo_data1_0 = REG_lo_247;
-248: lo_data1_0 = REG_lo_248;
-249: lo_data1_0 = REG_lo_249;
-250: lo_data1_0 = REG_lo_250;
-251: lo_data1_0 = REG_lo_251;
-252: lo_data1_0 = REG_lo_252;
-253: lo_data1_0 = REG_lo_253;
-254: lo_data1_0 = REG_lo_254;
-255: lo_data1_0 = REG_lo_255;
-256: lo_data1_0 = REG_lo_256;
-//VCS coverage off
-default : begin 
-            lo_data1_0[15:0] = {16{`x_or_0}};
-          end  
-//VCS coverage on
-endcase
-end
-
-always @(
-  lut_in_addr1_1
-  or REG_lo_1
-  or REG_lo_2
-  or REG_lo_3
-  or REG_lo_4
-  or REG_lo_5
-  or REG_lo_6
-  or REG_lo_7
-  or REG_lo_8
-  or REG_lo_9
-  or REG_lo_10
-  or REG_lo_11
-  or REG_lo_12
-  or REG_lo_13
-  or REG_lo_14
-  or REG_lo_15
-  or REG_lo_16
-  or REG_lo_17
-  or REG_lo_18
-  or REG_lo_19
-  or REG_lo_20
-  or REG_lo_21
-  or REG_lo_22
-  or REG_lo_23
-  or REG_lo_24
-  or REG_lo_25
-  or REG_lo_26
-  or REG_lo_27
-  or REG_lo_28
-  or REG_lo_29
-  or REG_lo_30
-  or REG_lo_31
-  or REG_lo_32
-  or REG_lo_33
-  or REG_lo_34
-  or REG_lo_35
-  or REG_lo_36
-  or REG_lo_37
-  or REG_lo_38
-  or REG_lo_39
-  or REG_lo_40
-  or REG_lo_41
-  or REG_lo_42
-  or REG_lo_43
-  or REG_lo_44
-  or REG_lo_45
-  or REG_lo_46
-  or REG_lo_47
-  or REG_lo_48
-  or REG_lo_49
-  or REG_lo_50
-  or REG_lo_51
-  or REG_lo_52
-  or REG_lo_53
-  or REG_lo_54
-  or REG_lo_55
-  or REG_lo_56
-  or REG_lo_57
-  or REG_lo_58
-  or REG_lo_59
-  or REG_lo_60
-  or REG_lo_61
-  or REG_lo_62
-  or REG_lo_63
-  or REG_lo_64
-  or REG_lo_65
-  or REG_lo_66
-  or REG_lo_67
-  or REG_lo_68
-  or REG_lo_69
-  or REG_lo_70
-  or REG_lo_71
-  or REG_lo_72
-  or REG_lo_73
-  or REG_lo_74
-  or REG_lo_75
-  or REG_lo_76
-  or REG_lo_77
-  or REG_lo_78
-  or REG_lo_79
-  or REG_lo_80
-  or REG_lo_81
-  or REG_lo_82
-  or REG_lo_83
-  or REG_lo_84
-  or REG_lo_85
-  or REG_lo_86
-  or REG_lo_87
-  or REG_lo_88
-  or REG_lo_89
-  or REG_lo_90
-  or REG_lo_91
-  or REG_lo_92
-  or REG_lo_93
-  or REG_lo_94
-  or REG_lo_95
-  or REG_lo_96
-  or REG_lo_97
-  or REG_lo_98
-  or REG_lo_99
-  or REG_lo_100
-  or REG_lo_101
-  or REG_lo_102
-  or REG_lo_103
-  or REG_lo_104
-  or REG_lo_105
-  or REG_lo_106
-  or REG_lo_107
-  or REG_lo_108
-  or REG_lo_109
-  or REG_lo_110
-  or REG_lo_111
-  or REG_lo_112
-  or REG_lo_113
-  or REG_lo_114
-  or REG_lo_115
-  or REG_lo_116
-  or REG_lo_117
-  or REG_lo_118
-  or REG_lo_119
-  or REG_lo_120
-  or REG_lo_121
-  or REG_lo_122
-  or REG_lo_123
-  or REG_lo_124
-  or REG_lo_125
-  or REG_lo_126
-  or REG_lo_127
-  or REG_lo_128
-  or REG_lo_129
-  or REG_lo_130
-  or REG_lo_131
-  or REG_lo_132
-  or REG_lo_133
-  or REG_lo_134
-  or REG_lo_135
-  or REG_lo_136
-  or REG_lo_137
-  or REG_lo_138
-  or REG_lo_139
-  or REG_lo_140
-  or REG_lo_141
-  or REG_lo_142
-  or REG_lo_143
-  or REG_lo_144
-  or REG_lo_145
-  or REG_lo_146
-  or REG_lo_147
-  or REG_lo_148
-  or REG_lo_149
-  or REG_lo_150
-  or REG_lo_151
-  or REG_lo_152
-  or REG_lo_153
-  or REG_lo_154
-  or REG_lo_155
-  or REG_lo_156
-  or REG_lo_157
-  or REG_lo_158
-  or REG_lo_159
-  or REG_lo_160
-  or REG_lo_161
-  or REG_lo_162
-  or REG_lo_163
-  or REG_lo_164
-  or REG_lo_165
-  or REG_lo_166
-  or REG_lo_167
-  or REG_lo_168
-  or REG_lo_169
-  or REG_lo_170
-  or REG_lo_171
-  or REG_lo_172
-  or REG_lo_173
-  or REG_lo_174
-  or REG_lo_175
-  or REG_lo_176
-  or REG_lo_177
-  or REG_lo_178
-  or REG_lo_179
-  or REG_lo_180
-  or REG_lo_181
-  or REG_lo_182
-  or REG_lo_183
-  or REG_lo_184
-  or REG_lo_185
-  or REG_lo_186
-  or REG_lo_187
-  or REG_lo_188
-  or REG_lo_189
-  or REG_lo_190
-  or REG_lo_191
-  or REG_lo_192
-  or REG_lo_193
-  or REG_lo_194
-  or REG_lo_195
-  or REG_lo_196
-  or REG_lo_197
-  or REG_lo_198
-  or REG_lo_199
-  or REG_lo_200
-  or REG_lo_201
-  or REG_lo_202
-  or REG_lo_203
-  or REG_lo_204
-  or REG_lo_205
-  or REG_lo_206
-  or REG_lo_207
-  or REG_lo_208
-  or REG_lo_209
-  or REG_lo_210
-  or REG_lo_211
-  or REG_lo_212
-  or REG_lo_213
-  or REG_lo_214
-  or REG_lo_215
-  or REG_lo_216
-  or REG_lo_217
-  or REG_lo_218
-  or REG_lo_219
-  or REG_lo_220
-  or REG_lo_221
-  or REG_lo_222
-  or REG_lo_223
-  or REG_lo_224
-  or REG_lo_225
-  or REG_lo_226
-  or REG_lo_227
-  or REG_lo_228
-  or REG_lo_229
-  or REG_lo_230
-  or REG_lo_231
-  or REG_lo_232
-  or REG_lo_233
-  or REG_lo_234
-  or REG_lo_235
-  or REG_lo_236
-  or REG_lo_237
-  or REG_lo_238
-  or REG_lo_239
-  or REG_lo_240
-  or REG_lo_241
-  or REG_lo_242
-  or REG_lo_243
-  or REG_lo_244
-  or REG_lo_245
-  or REG_lo_246
-  or REG_lo_247
-  or REG_lo_248
-  or REG_lo_249
-  or REG_lo_250
-  or REG_lo_251
-  or REG_lo_252
-  or REG_lo_253
-  or REG_lo_254
-  or REG_lo_255
-  or REG_lo_256
-  ) begin
-case (lut_in_addr1_1) 
-
-1: lo_data1_1 = REG_lo_1;
-2: lo_data1_1 = REG_lo_2;
-3: lo_data1_1 = REG_lo_3;
-4: lo_data1_1 = REG_lo_4;
-5: lo_data1_1 = REG_lo_5;
-6: lo_data1_1 = REG_lo_6;
-7: lo_data1_1 = REG_lo_7;
-8: lo_data1_1 = REG_lo_8;
-9: lo_data1_1 = REG_lo_9;
-10: lo_data1_1 = REG_lo_10;
-11: lo_data1_1 = REG_lo_11;
-12: lo_data1_1 = REG_lo_12;
-13: lo_data1_1 = REG_lo_13;
-14: lo_data1_1 = REG_lo_14;
-15: lo_data1_1 = REG_lo_15;
-16: lo_data1_1 = REG_lo_16;
-17: lo_data1_1 = REG_lo_17;
-18: lo_data1_1 = REG_lo_18;
-19: lo_data1_1 = REG_lo_19;
-20: lo_data1_1 = REG_lo_20;
-21: lo_data1_1 = REG_lo_21;
-22: lo_data1_1 = REG_lo_22;
-23: lo_data1_1 = REG_lo_23;
-24: lo_data1_1 = REG_lo_24;
-25: lo_data1_1 = REG_lo_25;
-26: lo_data1_1 = REG_lo_26;
-27: lo_data1_1 = REG_lo_27;
-28: lo_data1_1 = REG_lo_28;
-29: lo_data1_1 = REG_lo_29;
-30: lo_data1_1 = REG_lo_30;
-31: lo_data1_1 = REG_lo_31;
-32: lo_data1_1 = REG_lo_32;
-33: lo_data1_1 = REG_lo_33;
-34: lo_data1_1 = REG_lo_34;
-35: lo_data1_1 = REG_lo_35;
-36: lo_data1_1 = REG_lo_36;
-37: lo_data1_1 = REG_lo_37;
-38: lo_data1_1 = REG_lo_38;
-39: lo_data1_1 = REG_lo_39;
-40: lo_data1_1 = REG_lo_40;
-41: lo_data1_1 = REG_lo_41;
-42: lo_data1_1 = REG_lo_42;
-43: lo_data1_1 = REG_lo_43;
-44: lo_data1_1 = REG_lo_44;
-45: lo_data1_1 = REG_lo_45;
-46: lo_data1_1 = REG_lo_46;
-47: lo_data1_1 = REG_lo_47;
-48: lo_data1_1 = REG_lo_48;
-49: lo_data1_1 = REG_lo_49;
-50: lo_data1_1 = REG_lo_50;
-51: lo_data1_1 = REG_lo_51;
-52: lo_data1_1 = REG_lo_52;
-53: lo_data1_1 = REG_lo_53;
-54: lo_data1_1 = REG_lo_54;
-55: lo_data1_1 = REG_lo_55;
-56: lo_data1_1 = REG_lo_56;
-57: lo_data1_1 = REG_lo_57;
-58: lo_data1_1 = REG_lo_58;
-59: lo_data1_1 = REG_lo_59;
-60: lo_data1_1 = REG_lo_60;
-61: lo_data1_1 = REG_lo_61;
-62: lo_data1_1 = REG_lo_62;
-63: lo_data1_1 = REG_lo_63;
-64: lo_data1_1 = REG_lo_64;
-65: lo_data1_1 = REG_lo_65;
-66: lo_data1_1 = REG_lo_66;
-67: lo_data1_1 = REG_lo_67;
-68: lo_data1_1 = REG_lo_68;
-69: lo_data1_1 = REG_lo_69;
-70: lo_data1_1 = REG_lo_70;
-71: lo_data1_1 = REG_lo_71;
-72: lo_data1_1 = REG_lo_72;
-73: lo_data1_1 = REG_lo_73;
-74: lo_data1_1 = REG_lo_74;
-75: lo_data1_1 = REG_lo_75;
-76: lo_data1_1 = REG_lo_76;
-77: lo_data1_1 = REG_lo_77;
-78: lo_data1_1 = REG_lo_78;
-79: lo_data1_1 = REG_lo_79;
-80: lo_data1_1 = REG_lo_80;
-81: lo_data1_1 = REG_lo_81;
-82: lo_data1_1 = REG_lo_82;
-83: lo_data1_1 = REG_lo_83;
-84: lo_data1_1 = REG_lo_84;
-85: lo_data1_1 = REG_lo_85;
-86: lo_data1_1 = REG_lo_86;
-87: lo_data1_1 = REG_lo_87;
-88: lo_data1_1 = REG_lo_88;
-89: lo_data1_1 = REG_lo_89;
-90: lo_data1_1 = REG_lo_90;
-91: lo_data1_1 = REG_lo_91;
-92: lo_data1_1 = REG_lo_92;
-93: lo_data1_1 = REG_lo_93;
-94: lo_data1_1 = REG_lo_94;
-95: lo_data1_1 = REG_lo_95;
-96: lo_data1_1 = REG_lo_96;
-97: lo_data1_1 = REG_lo_97;
-98: lo_data1_1 = REG_lo_98;
-99: lo_data1_1 = REG_lo_99;
-100: lo_data1_1 = REG_lo_100;
-101: lo_data1_1 = REG_lo_101;
-102: lo_data1_1 = REG_lo_102;
-103: lo_data1_1 = REG_lo_103;
-104: lo_data1_1 = REG_lo_104;
-105: lo_data1_1 = REG_lo_105;
-106: lo_data1_1 = REG_lo_106;
-107: lo_data1_1 = REG_lo_107;
-108: lo_data1_1 = REG_lo_108;
-109: lo_data1_1 = REG_lo_109;
-110: lo_data1_1 = REG_lo_110;
-111: lo_data1_1 = REG_lo_111;
-112: lo_data1_1 = REG_lo_112;
-113: lo_data1_1 = REG_lo_113;
-114: lo_data1_1 = REG_lo_114;
-115: lo_data1_1 = REG_lo_115;
-116: lo_data1_1 = REG_lo_116;
-117: lo_data1_1 = REG_lo_117;
-118: lo_data1_1 = REG_lo_118;
-119: lo_data1_1 = REG_lo_119;
-120: lo_data1_1 = REG_lo_120;
-121: lo_data1_1 = REG_lo_121;
-122: lo_data1_1 = REG_lo_122;
-123: lo_data1_1 = REG_lo_123;
-124: lo_data1_1 = REG_lo_124;
-125: lo_data1_1 = REG_lo_125;
-126: lo_data1_1 = REG_lo_126;
-127: lo_data1_1 = REG_lo_127;
-128: lo_data1_1 = REG_lo_128;
-129: lo_data1_1 = REG_lo_129;
-130: lo_data1_1 = REG_lo_130;
-131: lo_data1_1 = REG_lo_131;
-132: lo_data1_1 = REG_lo_132;
-133: lo_data1_1 = REG_lo_133;
-134: lo_data1_1 = REG_lo_134;
-135: lo_data1_1 = REG_lo_135;
-136: lo_data1_1 = REG_lo_136;
-137: lo_data1_1 = REG_lo_137;
-138: lo_data1_1 = REG_lo_138;
-139: lo_data1_1 = REG_lo_139;
-140: lo_data1_1 = REG_lo_140;
-141: lo_data1_1 = REG_lo_141;
-142: lo_data1_1 = REG_lo_142;
-143: lo_data1_1 = REG_lo_143;
-144: lo_data1_1 = REG_lo_144;
-145: lo_data1_1 = REG_lo_145;
-146: lo_data1_1 = REG_lo_146;
-147: lo_data1_1 = REG_lo_147;
-148: lo_data1_1 = REG_lo_148;
-149: lo_data1_1 = REG_lo_149;
-150: lo_data1_1 = REG_lo_150;
-151: lo_data1_1 = REG_lo_151;
-152: lo_data1_1 = REG_lo_152;
-153: lo_data1_1 = REG_lo_153;
-154: lo_data1_1 = REG_lo_154;
-155: lo_data1_1 = REG_lo_155;
-156: lo_data1_1 = REG_lo_156;
-157: lo_data1_1 = REG_lo_157;
-158: lo_data1_1 = REG_lo_158;
-159: lo_data1_1 = REG_lo_159;
-160: lo_data1_1 = REG_lo_160;
-161: lo_data1_1 = REG_lo_161;
-162: lo_data1_1 = REG_lo_162;
-163: lo_data1_1 = REG_lo_163;
-164: lo_data1_1 = REG_lo_164;
-165: lo_data1_1 = REG_lo_165;
-166: lo_data1_1 = REG_lo_166;
-167: lo_data1_1 = REG_lo_167;
-168: lo_data1_1 = REG_lo_168;
-169: lo_data1_1 = REG_lo_169;
-170: lo_data1_1 = REG_lo_170;
-171: lo_data1_1 = REG_lo_171;
-172: lo_data1_1 = REG_lo_172;
-173: lo_data1_1 = REG_lo_173;
-174: lo_data1_1 = REG_lo_174;
-175: lo_data1_1 = REG_lo_175;
-176: lo_data1_1 = REG_lo_176;
-177: lo_data1_1 = REG_lo_177;
-178: lo_data1_1 = REG_lo_178;
-179: lo_data1_1 = REG_lo_179;
-180: lo_data1_1 = REG_lo_180;
-181: lo_data1_1 = REG_lo_181;
-182: lo_data1_1 = REG_lo_182;
-183: lo_data1_1 = REG_lo_183;
-184: lo_data1_1 = REG_lo_184;
-185: lo_data1_1 = REG_lo_185;
-186: lo_data1_1 = REG_lo_186;
-187: lo_data1_1 = REG_lo_187;
-188: lo_data1_1 = REG_lo_188;
-189: lo_data1_1 = REG_lo_189;
-190: lo_data1_1 = REG_lo_190;
-191: lo_data1_1 = REG_lo_191;
-192: lo_data1_1 = REG_lo_192;
-193: lo_data1_1 = REG_lo_193;
-194: lo_data1_1 = REG_lo_194;
-195: lo_data1_1 = REG_lo_195;
-196: lo_data1_1 = REG_lo_196;
-197: lo_data1_1 = REG_lo_197;
-198: lo_data1_1 = REG_lo_198;
-199: lo_data1_1 = REG_lo_199;
-200: lo_data1_1 = REG_lo_200;
-201: lo_data1_1 = REG_lo_201;
-202: lo_data1_1 = REG_lo_202;
-203: lo_data1_1 = REG_lo_203;
-204: lo_data1_1 = REG_lo_204;
-205: lo_data1_1 = REG_lo_205;
-206: lo_data1_1 = REG_lo_206;
-207: lo_data1_1 = REG_lo_207;
-208: lo_data1_1 = REG_lo_208;
-209: lo_data1_1 = REG_lo_209;
-210: lo_data1_1 = REG_lo_210;
-211: lo_data1_1 = REG_lo_211;
-212: lo_data1_1 = REG_lo_212;
-213: lo_data1_1 = REG_lo_213;
-214: lo_data1_1 = REG_lo_214;
-215: lo_data1_1 = REG_lo_215;
-216: lo_data1_1 = REG_lo_216;
-217: lo_data1_1 = REG_lo_217;
-218: lo_data1_1 = REG_lo_218;
-219: lo_data1_1 = REG_lo_219;
-220: lo_data1_1 = REG_lo_220;
-221: lo_data1_1 = REG_lo_221;
-222: lo_data1_1 = REG_lo_222;
-223: lo_data1_1 = REG_lo_223;
-224: lo_data1_1 = REG_lo_224;
-225: lo_data1_1 = REG_lo_225;
-226: lo_data1_1 = REG_lo_226;
-227: lo_data1_1 = REG_lo_227;
-228: lo_data1_1 = REG_lo_228;
-229: lo_data1_1 = REG_lo_229;
-230: lo_data1_1 = REG_lo_230;
-231: lo_data1_1 = REG_lo_231;
-232: lo_data1_1 = REG_lo_232;
-233: lo_data1_1 = REG_lo_233;
-234: lo_data1_1 = REG_lo_234;
-235: lo_data1_1 = REG_lo_235;
-236: lo_data1_1 = REG_lo_236;
-237: lo_data1_1 = REG_lo_237;
-238: lo_data1_1 = REG_lo_238;
-239: lo_data1_1 = REG_lo_239;
-240: lo_data1_1 = REG_lo_240;
-241: lo_data1_1 = REG_lo_241;
-242: lo_data1_1 = REG_lo_242;
-243: lo_data1_1 = REG_lo_243;
-244: lo_data1_1 = REG_lo_244;
-245: lo_data1_1 = REG_lo_245;
-246: lo_data1_1 = REG_lo_246;
-247: lo_data1_1 = REG_lo_247;
-248: lo_data1_1 = REG_lo_248;
-249: lo_data1_1 = REG_lo_249;
-250: lo_data1_1 = REG_lo_250;
-251: lo_data1_1 = REG_lo_251;
-252: lo_data1_1 = REG_lo_252;
-253: lo_data1_1 = REG_lo_253;
-254: lo_data1_1 = REG_lo_254;
-255: lo_data1_1 = REG_lo_255;
-256: lo_data1_1 = REG_lo_256;
-//VCS coverage off
-default : begin 
-            lo_data1_1[15:0] = {16{`x_or_0}};
-          end  
-//VCS coverage on
-endcase
-end
-
-always @(
-  lut_in_addr2_1
-  or REG_lo_1
-  or REG_lo_2
-  or REG_lo_3
-  or REG_lo_4
-  or REG_lo_5
-  or REG_lo_6
-  or REG_lo_7
-  or REG_lo_8
-  or REG_lo_9
-  or REG_lo_10
-  or REG_lo_11
-  or REG_lo_12
-  or REG_lo_13
-  or REG_lo_14
-  or REG_lo_15
-  or REG_lo_16
-  or REG_lo_17
-  or REG_lo_18
-  or REG_lo_19
-  or REG_lo_20
-  or REG_lo_21
-  or REG_lo_22
-  or REG_lo_23
-  or REG_lo_24
-  or REG_lo_25
-  or REG_lo_26
-  or REG_lo_27
-  or REG_lo_28
-  or REG_lo_29
-  or REG_lo_30
-  or REG_lo_31
-  or REG_lo_32
-  or REG_lo_33
-  or REG_lo_34
-  or REG_lo_35
-  or REG_lo_36
-  or REG_lo_37
-  or REG_lo_38
-  or REG_lo_39
-  or REG_lo_40
-  or REG_lo_41
-  or REG_lo_42
-  or REG_lo_43
-  or REG_lo_44
-  or REG_lo_45
-  or REG_lo_46
-  or REG_lo_47
-  or REG_lo_48
-  or REG_lo_49
-  or REG_lo_50
-  or REG_lo_51
-  or REG_lo_52
-  or REG_lo_53
-  or REG_lo_54
-  or REG_lo_55
-  or REG_lo_56
-  or REG_lo_57
-  or REG_lo_58
-  or REG_lo_59
-  or REG_lo_60
-  or REG_lo_61
-  or REG_lo_62
-  or REG_lo_63
-  or REG_lo_64
-  or REG_lo_65
-  or REG_lo_66
-  or REG_lo_67
-  or REG_lo_68
-  or REG_lo_69
-  or REG_lo_70
-  or REG_lo_71
-  or REG_lo_72
-  or REG_lo_73
-  or REG_lo_74
-  or REG_lo_75
-  or REG_lo_76
-  or REG_lo_77
-  or REG_lo_78
-  or REG_lo_79
-  or REG_lo_80
-  or REG_lo_81
-  or REG_lo_82
-  or REG_lo_83
-  or REG_lo_84
-  or REG_lo_85
-  or REG_lo_86
-  or REG_lo_87
-  or REG_lo_88
-  or REG_lo_89
-  or REG_lo_90
-  or REG_lo_91
-  or REG_lo_92
-  or REG_lo_93
-  or REG_lo_94
-  or REG_lo_95
-  or REG_lo_96
-  or REG_lo_97
-  or REG_lo_98
-  or REG_lo_99
-  or REG_lo_100
-  or REG_lo_101
-  or REG_lo_102
-  or REG_lo_103
-  or REG_lo_104
-  or REG_lo_105
-  or REG_lo_106
-  or REG_lo_107
-  or REG_lo_108
-  or REG_lo_109
-  or REG_lo_110
-  or REG_lo_111
-  or REG_lo_112
-  or REG_lo_113
-  or REG_lo_114
-  or REG_lo_115
-  or REG_lo_116
-  or REG_lo_117
-  or REG_lo_118
-  or REG_lo_119
-  or REG_lo_120
-  or REG_lo_121
-  or REG_lo_122
-  or REG_lo_123
-  or REG_lo_124
-  or REG_lo_125
-  or REG_lo_126
-  or REG_lo_127
-  or REG_lo_128
-  or REG_lo_129
-  or REG_lo_130
-  or REG_lo_131
-  or REG_lo_132
-  or REG_lo_133
-  or REG_lo_134
-  or REG_lo_135
-  or REG_lo_136
-  or REG_lo_137
-  or REG_lo_138
-  or REG_lo_139
-  or REG_lo_140
-  or REG_lo_141
-  or REG_lo_142
-  or REG_lo_143
-  or REG_lo_144
-  or REG_lo_145
-  or REG_lo_146
-  or REG_lo_147
-  or REG_lo_148
-  or REG_lo_149
-  or REG_lo_150
-  or REG_lo_151
-  or REG_lo_152
-  or REG_lo_153
-  or REG_lo_154
-  or REG_lo_155
-  or REG_lo_156
-  or REG_lo_157
-  or REG_lo_158
-  or REG_lo_159
-  or REG_lo_160
-  or REG_lo_161
-  or REG_lo_162
-  or REG_lo_163
-  or REG_lo_164
-  or REG_lo_165
-  or REG_lo_166
-  or REG_lo_167
-  or REG_lo_168
-  or REG_lo_169
-  or REG_lo_170
-  or REG_lo_171
-  or REG_lo_172
-  or REG_lo_173
-  or REG_lo_174
-  or REG_lo_175
-  or REG_lo_176
-  or REG_lo_177
-  or REG_lo_178
-  or REG_lo_179
-  or REG_lo_180
-  or REG_lo_181
-  or REG_lo_182
-  or REG_lo_183
-  or REG_lo_184
-  or REG_lo_185
-  or REG_lo_186
-  or REG_lo_187
-  or REG_lo_188
-  or REG_lo_189
-  or REG_lo_190
-  or REG_lo_191
-  or REG_lo_192
-  or REG_lo_193
-  or REG_lo_194
-  or REG_lo_195
-  or REG_lo_196
-  or REG_lo_197
-  or REG_lo_198
-  or REG_lo_199
-  or REG_lo_200
-  or REG_lo_201
-  or REG_lo_202
-  or REG_lo_203
-  or REG_lo_204
-  or REG_lo_205
-  or REG_lo_206
-  or REG_lo_207
-  or REG_lo_208
-  or REG_lo_209
-  or REG_lo_210
-  or REG_lo_211
-  or REG_lo_212
-  or REG_lo_213
-  or REG_lo_214
-  or REG_lo_215
-  or REG_lo_216
-  or REG_lo_217
-  or REG_lo_218
-  or REG_lo_219
-  or REG_lo_220
-  or REG_lo_221
-  or REG_lo_222
-  or REG_lo_223
-  or REG_lo_224
-  or REG_lo_225
-  or REG_lo_226
-  or REG_lo_227
-  or REG_lo_228
-  or REG_lo_229
-  or REG_lo_230
-  or REG_lo_231
-  or REG_lo_232
-  or REG_lo_233
-  or REG_lo_234
-  or REG_lo_235
-  or REG_lo_236
-  or REG_lo_237
-  or REG_lo_238
-  or REG_lo_239
-  or REG_lo_240
-  or REG_lo_241
-  or REG_lo_242
-  or REG_lo_243
-  or REG_lo_244
-  or REG_lo_245
-  or REG_lo_246
-  or REG_lo_247
-  or REG_lo_248
-  or REG_lo_249
-  or REG_lo_250
-  or REG_lo_251
-  or REG_lo_252
-  or REG_lo_253
-  or REG_lo_254
-  or REG_lo_255
-  or REG_lo_256
-  ) begin
-case (lut_in_addr2_1) 
-
-1: lo_data1_2 = REG_lo_1;
-2: lo_data1_2 = REG_lo_2;
-3: lo_data1_2 = REG_lo_3;
-4: lo_data1_2 = REG_lo_4;
-5: lo_data1_2 = REG_lo_5;
-6: lo_data1_2 = REG_lo_6;
-7: lo_data1_2 = REG_lo_7;
-8: lo_data1_2 = REG_lo_8;
-9: lo_data1_2 = REG_lo_9;
-10: lo_data1_2 = REG_lo_10;
-11: lo_data1_2 = REG_lo_11;
-12: lo_data1_2 = REG_lo_12;
-13: lo_data1_2 = REG_lo_13;
-14: lo_data1_2 = REG_lo_14;
-15: lo_data1_2 = REG_lo_15;
-16: lo_data1_2 = REG_lo_16;
-17: lo_data1_2 = REG_lo_17;
-18: lo_data1_2 = REG_lo_18;
-19: lo_data1_2 = REG_lo_19;
-20: lo_data1_2 = REG_lo_20;
-21: lo_data1_2 = REG_lo_21;
-22: lo_data1_2 = REG_lo_22;
-23: lo_data1_2 = REG_lo_23;
-24: lo_data1_2 = REG_lo_24;
-25: lo_data1_2 = REG_lo_25;
-26: lo_data1_2 = REG_lo_26;
-27: lo_data1_2 = REG_lo_27;
-28: lo_data1_2 = REG_lo_28;
-29: lo_data1_2 = REG_lo_29;
-30: lo_data1_2 = REG_lo_30;
-31: lo_data1_2 = REG_lo_31;
-32: lo_data1_2 = REG_lo_32;
-33: lo_data1_2 = REG_lo_33;
-34: lo_data1_2 = REG_lo_34;
-35: lo_data1_2 = REG_lo_35;
-36: lo_data1_2 = REG_lo_36;
-37: lo_data1_2 = REG_lo_37;
-38: lo_data1_2 = REG_lo_38;
-39: lo_data1_2 = REG_lo_39;
-40: lo_data1_2 = REG_lo_40;
-41: lo_data1_2 = REG_lo_41;
-42: lo_data1_2 = REG_lo_42;
-43: lo_data1_2 = REG_lo_43;
-44: lo_data1_2 = REG_lo_44;
-45: lo_data1_2 = REG_lo_45;
-46: lo_data1_2 = REG_lo_46;
-47: lo_data1_2 = REG_lo_47;
-48: lo_data1_2 = REG_lo_48;
-49: lo_data1_2 = REG_lo_49;
-50: lo_data1_2 = REG_lo_50;
-51: lo_data1_2 = REG_lo_51;
-52: lo_data1_2 = REG_lo_52;
-53: lo_data1_2 = REG_lo_53;
-54: lo_data1_2 = REG_lo_54;
-55: lo_data1_2 = REG_lo_55;
-56: lo_data1_2 = REG_lo_56;
-57: lo_data1_2 = REG_lo_57;
-58: lo_data1_2 = REG_lo_58;
-59: lo_data1_2 = REG_lo_59;
-60: lo_data1_2 = REG_lo_60;
-61: lo_data1_2 = REG_lo_61;
-62: lo_data1_2 = REG_lo_62;
-63: lo_data1_2 = REG_lo_63;
-64: lo_data1_2 = REG_lo_64;
-65: lo_data1_2 = REG_lo_65;
-66: lo_data1_2 = REG_lo_66;
-67: lo_data1_2 = REG_lo_67;
-68: lo_data1_2 = REG_lo_68;
-69: lo_data1_2 = REG_lo_69;
-70: lo_data1_2 = REG_lo_70;
-71: lo_data1_2 = REG_lo_71;
-72: lo_data1_2 = REG_lo_72;
-73: lo_data1_2 = REG_lo_73;
-74: lo_data1_2 = REG_lo_74;
-75: lo_data1_2 = REG_lo_75;
-76: lo_data1_2 = REG_lo_76;
-77: lo_data1_2 = REG_lo_77;
-78: lo_data1_2 = REG_lo_78;
-79: lo_data1_2 = REG_lo_79;
-80: lo_data1_2 = REG_lo_80;
-81: lo_data1_2 = REG_lo_81;
-82: lo_data1_2 = REG_lo_82;
-83: lo_data1_2 = REG_lo_83;
-84: lo_data1_2 = REG_lo_84;
-85: lo_data1_2 = REG_lo_85;
-86: lo_data1_2 = REG_lo_86;
-87: lo_data1_2 = REG_lo_87;
-88: lo_data1_2 = REG_lo_88;
-89: lo_data1_2 = REG_lo_89;
-90: lo_data1_2 = REG_lo_90;
-91: lo_data1_2 = REG_lo_91;
-92: lo_data1_2 = REG_lo_92;
-93: lo_data1_2 = REG_lo_93;
-94: lo_data1_2 = REG_lo_94;
-95: lo_data1_2 = REG_lo_95;
-96: lo_data1_2 = REG_lo_96;
-97: lo_data1_2 = REG_lo_97;
-98: lo_data1_2 = REG_lo_98;
-99: lo_data1_2 = REG_lo_99;
-100: lo_data1_2 = REG_lo_100;
-101: lo_data1_2 = REG_lo_101;
-102: lo_data1_2 = REG_lo_102;
-103: lo_data1_2 = REG_lo_103;
-104: lo_data1_2 = REG_lo_104;
-105: lo_data1_2 = REG_lo_105;
-106: lo_data1_2 = REG_lo_106;
-107: lo_data1_2 = REG_lo_107;
-108: lo_data1_2 = REG_lo_108;
-109: lo_data1_2 = REG_lo_109;
-110: lo_data1_2 = REG_lo_110;
-111: lo_data1_2 = REG_lo_111;
-112: lo_data1_2 = REG_lo_112;
-113: lo_data1_2 = REG_lo_113;
-114: lo_data1_2 = REG_lo_114;
-115: lo_data1_2 = REG_lo_115;
-116: lo_data1_2 = REG_lo_116;
-117: lo_data1_2 = REG_lo_117;
-118: lo_data1_2 = REG_lo_118;
-119: lo_data1_2 = REG_lo_119;
-120: lo_data1_2 = REG_lo_120;
-121: lo_data1_2 = REG_lo_121;
-122: lo_data1_2 = REG_lo_122;
-123: lo_data1_2 = REG_lo_123;
-124: lo_data1_2 = REG_lo_124;
-125: lo_data1_2 = REG_lo_125;
-126: lo_data1_2 = REG_lo_126;
-127: lo_data1_2 = REG_lo_127;
-128: lo_data1_2 = REG_lo_128;
-129: lo_data1_2 = REG_lo_129;
-130: lo_data1_2 = REG_lo_130;
-131: lo_data1_2 = REG_lo_131;
-132: lo_data1_2 = REG_lo_132;
-133: lo_data1_2 = REG_lo_133;
-134: lo_data1_2 = REG_lo_134;
-135: lo_data1_2 = REG_lo_135;
-136: lo_data1_2 = REG_lo_136;
-137: lo_data1_2 = REG_lo_137;
-138: lo_data1_2 = REG_lo_138;
-139: lo_data1_2 = REG_lo_139;
-140: lo_data1_2 = REG_lo_140;
-141: lo_data1_2 = REG_lo_141;
-142: lo_data1_2 = REG_lo_142;
-143: lo_data1_2 = REG_lo_143;
-144: lo_data1_2 = REG_lo_144;
-145: lo_data1_2 = REG_lo_145;
-146: lo_data1_2 = REG_lo_146;
-147: lo_data1_2 = REG_lo_147;
-148: lo_data1_2 = REG_lo_148;
-149: lo_data1_2 = REG_lo_149;
-150: lo_data1_2 = REG_lo_150;
-151: lo_data1_2 = REG_lo_151;
-152: lo_data1_2 = REG_lo_152;
-153: lo_data1_2 = REG_lo_153;
-154: lo_data1_2 = REG_lo_154;
-155: lo_data1_2 = REG_lo_155;
-156: lo_data1_2 = REG_lo_156;
-157: lo_data1_2 = REG_lo_157;
-158: lo_data1_2 = REG_lo_158;
-159: lo_data1_2 = REG_lo_159;
-160: lo_data1_2 = REG_lo_160;
-161: lo_data1_2 = REG_lo_161;
-162: lo_data1_2 = REG_lo_162;
-163: lo_data1_2 = REG_lo_163;
-164: lo_data1_2 = REG_lo_164;
-165: lo_data1_2 = REG_lo_165;
-166: lo_data1_2 = REG_lo_166;
-167: lo_data1_2 = REG_lo_167;
-168: lo_data1_2 = REG_lo_168;
-169: lo_data1_2 = REG_lo_169;
-170: lo_data1_2 = REG_lo_170;
-171: lo_data1_2 = REG_lo_171;
-172: lo_data1_2 = REG_lo_172;
-173: lo_data1_2 = REG_lo_173;
-174: lo_data1_2 = REG_lo_174;
-175: lo_data1_2 = REG_lo_175;
-176: lo_data1_2 = REG_lo_176;
-177: lo_data1_2 = REG_lo_177;
-178: lo_data1_2 = REG_lo_178;
-179: lo_data1_2 = REG_lo_179;
-180: lo_data1_2 = REG_lo_180;
-181: lo_data1_2 = REG_lo_181;
-182: lo_data1_2 = REG_lo_182;
-183: lo_data1_2 = REG_lo_183;
-184: lo_data1_2 = REG_lo_184;
-185: lo_data1_2 = REG_lo_185;
-186: lo_data1_2 = REG_lo_186;
-187: lo_data1_2 = REG_lo_187;
-188: lo_data1_2 = REG_lo_188;
-189: lo_data1_2 = REG_lo_189;
-190: lo_data1_2 = REG_lo_190;
-191: lo_data1_2 = REG_lo_191;
-192: lo_data1_2 = REG_lo_192;
-193: lo_data1_2 = REG_lo_193;
-194: lo_data1_2 = REG_lo_194;
-195: lo_data1_2 = REG_lo_195;
-196: lo_data1_2 = REG_lo_196;
-197: lo_data1_2 = REG_lo_197;
-198: lo_data1_2 = REG_lo_198;
-199: lo_data1_2 = REG_lo_199;
-200: lo_data1_2 = REG_lo_200;
-201: lo_data1_2 = REG_lo_201;
-202: lo_data1_2 = REG_lo_202;
-203: lo_data1_2 = REG_lo_203;
-204: lo_data1_2 = REG_lo_204;
-205: lo_data1_2 = REG_lo_205;
-206: lo_data1_2 = REG_lo_206;
-207: lo_data1_2 = REG_lo_207;
-208: lo_data1_2 = REG_lo_208;
-209: lo_data1_2 = REG_lo_209;
-210: lo_data1_2 = REG_lo_210;
-211: lo_data1_2 = REG_lo_211;
-212: lo_data1_2 = REG_lo_212;
-213: lo_data1_2 = REG_lo_213;
-214: lo_data1_2 = REG_lo_214;
-215: lo_data1_2 = REG_lo_215;
-216: lo_data1_2 = REG_lo_216;
-217: lo_data1_2 = REG_lo_217;
-218: lo_data1_2 = REG_lo_218;
-219: lo_data1_2 = REG_lo_219;
-220: lo_data1_2 = REG_lo_220;
-221: lo_data1_2 = REG_lo_221;
-222: lo_data1_2 = REG_lo_222;
-223: lo_data1_2 = REG_lo_223;
-224: lo_data1_2 = REG_lo_224;
-225: lo_data1_2 = REG_lo_225;
-226: lo_data1_2 = REG_lo_226;
-227: lo_data1_2 = REG_lo_227;
-228: lo_data1_2 = REG_lo_228;
-229: lo_data1_2 = REG_lo_229;
-230: lo_data1_2 = REG_lo_230;
-231: lo_data1_2 = REG_lo_231;
-232: lo_data1_2 = REG_lo_232;
-233: lo_data1_2 = REG_lo_233;
-234: lo_data1_2 = REG_lo_234;
-235: lo_data1_2 = REG_lo_235;
-236: lo_data1_2 = REG_lo_236;
-237: lo_data1_2 = REG_lo_237;
-238: lo_data1_2 = REG_lo_238;
-239: lo_data1_2 = REG_lo_239;
-240: lo_data1_2 = REG_lo_240;
-241: lo_data1_2 = REG_lo_241;
-242: lo_data1_2 = REG_lo_242;
-243: lo_data1_2 = REG_lo_243;
-244: lo_data1_2 = REG_lo_244;
-245: lo_data1_2 = REG_lo_245;
-246: lo_data1_2 = REG_lo_246;
-247: lo_data1_2 = REG_lo_247;
-248: lo_data1_2 = REG_lo_248;
-249: lo_data1_2 = REG_lo_249;
-250: lo_data1_2 = REG_lo_250;
-251: lo_data1_2 = REG_lo_251;
-252: lo_data1_2 = REG_lo_252;
-253: lo_data1_2 = REG_lo_253;
-254: lo_data1_2 = REG_lo_254;
-255: lo_data1_2 = REG_lo_255;
-256: lo_data1_2 = REG_lo_256;
-//VCS coverage off
-default : begin 
-            lo_data1_2[15:0] = {16{`x_or_0}};
-          end  
-//VCS coverage on
-endcase
-end
-
-always @(
-  lut_in_addr3_1
-  or REG_lo_1
-  or REG_lo_2
-  or REG_lo_3
-  or REG_lo_4
-  or REG_lo_5
-  or REG_lo_6
-  or REG_lo_7
-  or REG_lo_8
-  or REG_lo_9
-  or REG_lo_10
-  or REG_lo_11
-  or REG_lo_12
-  or REG_lo_13
-  or REG_lo_14
-  or REG_lo_15
-  or REG_lo_16
-  or REG_lo_17
-  or REG_lo_18
-  or REG_lo_19
-  or REG_lo_20
-  or REG_lo_21
-  or REG_lo_22
-  or REG_lo_23
-  or REG_lo_24
-  or REG_lo_25
-  or REG_lo_26
-  or REG_lo_27
-  or REG_lo_28
-  or REG_lo_29
-  or REG_lo_30
-  or REG_lo_31
-  or REG_lo_32
-  or REG_lo_33
-  or REG_lo_34
-  or REG_lo_35
-  or REG_lo_36
-  or REG_lo_37
-  or REG_lo_38
-  or REG_lo_39
-  or REG_lo_40
-  or REG_lo_41
-  or REG_lo_42
-  or REG_lo_43
-  or REG_lo_44
-  or REG_lo_45
-  or REG_lo_46
-  or REG_lo_47
-  or REG_lo_48
-  or REG_lo_49
-  or REG_lo_50
-  or REG_lo_51
-  or REG_lo_52
-  or REG_lo_53
-  or REG_lo_54
-  or REG_lo_55
-  or REG_lo_56
-  or REG_lo_57
-  or REG_lo_58
-  or REG_lo_59
-  or REG_lo_60
-  or REG_lo_61
-  or REG_lo_62
-  or REG_lo_63
-  or REG_lo_64
-  or REG_lo_65
-  or REG_lo_66
-  or REG_lo_67
-  or REG_lo_68
-  or REG_lo_69
-  or REG_lo_70
-  or REG_lo_71
-  or REG_lo_72
-  or REG_lo_73
-  or REG_lo_74
-  or REG_lo_75
-  or REG_lo_76
-  or REG_lo_77
-  or REG_lo_78
-  or REG_lo_79
-  or REG_lo_80
-  or REG_lo_81
-  or REG_lo_82
-  or REG_lo_83
-  or REG_lo_84
-  or REG_lo_85
-  or REG_lo_86
-  or REG_lo_87
-  or REG_lo_88
-  or REG_lo_89
-  or REG_lo_90
-  or REG_lo_91
-  or REG_lo_92
-  or REG_lo_93
-  or REG_lo_94
-  or REG_lo_95
-  or REG_lo_96
-  or REG_lo_97
-  or REG_lo_98
-  or REG_lo_99
-  or REG_lo_100
-  or REG_lo_101
-  or REG_lo_102
-  or REG_lo_103
-  or REG_lo_104
-  or REG_lo_105
-  or REG_lo_106
-  or REG_lo_107
-  or REG_lo_108
-  or REG_lo_109
-  or REG_lo_110
-  or REG_lo_111
-  or REG_lo_112
-  or REG_lo_113
-  or REG_lo_114
-  or REG_lo_115
-  or REG_lo_116
-  or REG_lo_117
-  or REG_lo_118
-  or REG_lo_119
-  or REG_lo_120
-  or REG_lo_121
-  or REG_lo_122
-  or REG_lo_123
-  or REG_lo_124
-  or REG_lo_125
-  or REG_lo_126
-  or REG_lo_127
-  or REG_lo_128
-  or REG_lo_129
-  or REG_lo_130
-  or REG_lo_131
-  or REG_lo_132
-  or REG_lo_133
-  or REG_lo_134
-  or REG_lo_135
-  or REG_lo_136
-  or REG_lo_137
-  or REG_lo_138
-  or REG_lo_139
-  or REG_lo_140
-  or REG_lo_141
-  or REG_lo_142
-  or REG_lo_143
-  or REG_lo_144
-  or REG_lo_145
-  or REG_lo_146
-  or REG_lo_147
-  or REG_lo_148
-  or REG_lo_149
-  or REG_lo_150
-  or REG_lo_151
-  or REG_lo_152
-  or REG_lo_153
-  or REG_lo_154
-  or REG_lo_155
-  or REG_lo_156
-  or REG_lo_157
-  or REG_lo_158
-  or REG_lo_159
-  or REG_lo_160
-  or REG_lo_161
-  or REG_lo_162
-  or REG_lo_163
-  or REG_lo_164
-  or REG_lo_165
-  or REG_lo_166
-  or REG_lo_167
-  or REG_lo_168
-  or REG_lo_169
-  or REG_lo_170
-  or REG_lo_171
-  or REG_lo_172
-  or REG_lo_173
-  or REG_lo_174
-  or REG_lo_175
-  or REG_lo_176
-  or REG_lo_177
-  or REG_lo_178
-  or REG_lo_179
-  or REG_lo_180
-  or REG_lo_181
-  or REG_lo_182
-  or REG_lo_183
-  or REG_lo_184
-  or REG_lo_185
-  or REG_lo_186
-  or REG_lo_187
-  or REG_lo_188
-  or REG_lo_189
-  or REG_lo_190
-  or REG_lo_191
-  or REG_lo_192
-  or REG_lo_193
-  or REG_lo_194
-  or REG_lo_195
-  or REG_lo_196
-  or REG_lo_197
-  or REG_lo_198
-  or REG_lo_199
-  or REG_lo_200
-  or REG_lo_201
-  or REG_lo_202
-  or REG_lo_203
-  or REG_lo_204
-  or REG_lo_205
-  or REG_lo_206
-  or REG_lo_207
-  or REG_lo_208
-  or REG_lo_209
-  or REG_lo_210
-  or REG_lo_211
-  or REG_lo_212
-  or REG_lo_213
-  or REG_lo_214
-  or REG_lo_215
-  or REG_lo_216
-  or REG_lo_217
-  or REG_lo_218
-  or REG_lo_219
-  or REG_lo_220
-  or REG_lo_221
-  or REG_lo_222
-  or REG_lo_223
-  or REG_lo_224
-  or REG_lo_225
-  or REG_lo_226
-  or REG_lo_227
-  or REG_lo_228
-  or REG_lo_229
-  or REG_lo_230
-  or REG_lo_231
-  or REG_lo_232
-  or REG_lo_233
-  or REG_lo_234
-  or REG_lo_235
-  or REG_lo_236
-  or REG_lo_237
-  or REG_lo_238
-  or REG_lo_239
-  or REG_lo_240
-  or REG_lo_241
-  or REG_lo_242
-  or REG_lo_243
-  or REG_lo_244
-  or REG_lo_245
-  or REG_lo_246
-  or REG_lo_247
-  or REG_lo_248
-  or REG_lo_249
-  or REG_lo_250
-  or REG_lo_251
-  or REG_lo_252
-  or REG_lo_253
-  or REG_lo_254
-  or REG_lo_255
-  or REG_lo_256
-  ) begin
-case (lut_in_addr3_1) 
-
-1: lo_data1_3 = REG_lo_1;
-2: lo_data1_3 = REG_lo_2;
-3: lo_data1_3 = REG_lo_3;
-4: lo_data1_3 = REG_lo_4;
-5: lo_data1_3 = REG_lo_5;
-6: lo_data1_3 = REG_lo_6;
-7: lo_data1_3 = REG_lo_7;
-8: lo_data1_3 = REG_lo_8;
-9: lo_data1_3 = REG_lo_9;
-10: lo_data1_3 = REG_lo_10;
-11: lo_data1_3 = REG_lo_11;
-12: lo_data1_3 = REG_lo_12;
-13: lo_data1_3 = REG_lo_13;
-14: lo_data1_3 = REG_lo_14;
-15: lo_data1_3 = REG_lo_15;
-16: lo_data1_3 = REG_lo_16;
-17: lo_data1_3 = REG_lo_17;
-18: lo_data1_3 = REG_lo_18;
-19: lo_data1_3 = REG_lo_19;
-20: lo_data1_3 = REG_lo_20;
-21: lo_data1_3 = REG_lo_21;
-22: lo_data1_3 = REG_lo_22;
-23: lo_data1_3 = REG_lo_23;
-24: lo_data1_3 = REG_lo_24;
-25: lo_data1_3 = REG_lo_25;
-26: lo_data1_3 = REG_lo_26;
-27: lo_data1_3 = REG_lo_27;
-28: lo_data1_3 = REG_lo_28;
-29: lo_data1_3 = REG_lo_29;
-30: lo_data1_3 = REG_lo_30;
-31: lo_data1_3 = REG_lo_31;
-32: lo_data1_3 = REG_lo_32;
-33: lo_data1_3 = REG_lo_33;
-34: lo_data1_3 = REG_lo_34;
-35: lo_data1_3 = REG_lo_35;
-36: lo_data1_3 = REG_lo_36;
-37: lo_data1_3 = REG_lo_37;
-38: lo_data1_3 = REG_lo_38;
-39: lo_data1_3 = REG_lo_39;
-40: lo_data1_3 = REG_lo_40;
-41: lo_data1_3 = REG_lo_41;
-42: lo_data1_3 = REG_lo_42;
-43: lo_data1_3 = REG_lo_43;
-44: lo_data1_3 = REG_lo_44;
-45: lo_data1_3 = REG_lo_45;
-46: lo_data1_3 = REG_lo_46;
-47: lo_data1_3 = REG_lo_47;
-48: lo_data1_3 = REG_lo_48;
-49: lo_data1_3 = REG_lo_49;
-50: lo_data1_3 = REG_lo_50;
-51: lo_data1_3 = REG_lo_51;
-52: lo_data1_3 = REG_lo_52;
-53: lo_data1_3 = REG_lo_53;
-54: lo_data1_3 = REG_lo_54;
-55: lo_data1_3 = REG_lo_55;
-56: lo_data1_3 = REG_lo_56;
-57: lo_data1_3 = REG_lo_57;
-58: lo_data1_3 = REG_lo_58;
-59: lo_data1_3 = REG_lo_59;
-60: lo_data1_3 = REG_lo_60;
-61: lo_data1_3 = REG_lo_61;
-62: lo_data1_3 = REG_lo_62;
-63: lo_data1_3 = REG_lo_63;
-64: lo_data1_3 = REG_lo_64;
-65: lo_data1_3 = REG_lo_65;
-66: lo_data1_3 = REG_lo_66;
-67: lo_data1_3 = REG_lo_67;
-68: lo_data1_3 = REG_lo_68;
-69: lo_data1_3 = REG_lo_69;
-70: lo_data1_3 = REG_lo_70;
-71: lo_data1_3 = REG_lo_71;
-72: lo_data1_3 = REG_lo_72;
-73: lo_data1_3 = REG_lo_73;
-74: lo_data1_3 = REG_lo_74;
-75: lo_data1_3 = REG_lo_75;
-76: lo_data1_3 = REG_lo_76;
-77: lo_data1_3 = REG_lo_77;
-78: lo_data1_3 = REG_lo_78;
-79: lo_data1_3 = REG_lo_79;
-80: lo_data1_3 = REG_lo_80;
-81: lo_data1_3 = REG_lo_81;
-82: lo_data1_3 = REG_lo_82;
-83: lo_data1_3 = REG_lo_83;
-84: lo_data1_3 = REG_lo_84;
-85: lo_data1_3 = REG_lo_85;
-86: lo_data1_3 = REG_lo_86;
-87: lo_data1_3 = REG_lo_87;
-88: lo_data1_3 = REG_lo_88;
-89: lo_data1_3 = REG_lo_89;
-90: lo_data1_3 = REG_lo_90;
-91: lo_data1_3 = REG_lo_91;
-92: lo_data1_3 = REG_lo_92;
-93: lo_data1_3 = REG_lo_93;
-94: lo_data1_3 = REG_lo_94;
-95: lo_data1_3 = REG_lo_95;
-96: lo_data1_3 = REG_lo_96;
-97: lo_data1_3 = REG_lo_97;
-98: lo_data1_3 = REG_lo_98;
-99: lo_data1_3 = REG_lo_99;
-100: lo_data1_3 = REG_lo_100;
-101: lo_data1_3 = REG_lo_101;
-102: lo_data1_3 = REG_lo_102;
-103: lo_data1_3 = REG_lo_103;
-104: lo_data1_3 = REG_lo_104;
-105: lo_data1_3 = REG_lo_105;
-106: lo_data1_3 = REG_lo_106;
-107: lo_data1_3 = REG_lo_107;
-108: lo_data1_3 = REG_lo_108;
-109: lo_data1_3 = REG_lo_109;
-110: lo_data1_3 = REG_lo_110;
-111: lo_data1_3 = REG_lo_111;
-112: lo_data1_3 = REG_lo_112;
-113: lo_data1_3 = REG_lo_113;
-114: lo_data1_3 = REG_lo_114;
-115: lo_data1_3 = REG_lo_115;
-116: lo_data1_3 = REG_lo_116;
-117: lo_data1_3 = REG_lo_117;
-118: lo_data1_3 = REG_lo_118;
-119: lo_data1_3 = REG_lo_119;
-120: lo_data1_3 = REG_lo_120;
-121: lo_data1_3 = REG_lo_121;
-122: lo_data1_3 = REG_lo_122;
-123: lo_data1_3 = REG_lo_123;
-124: lo_data1_3 = REG_lo_124;
-125: lo_data1_3 = REG_lo_125;
-126: lo_data1_3 = REG_lo_126;
-127: lo_data1_3 = REG_lo_127;
-128: lo_data1_3 = REG_lo_128;
-129: lo_data1_3 = REG_lo_129;
-130: lo_data1_3 = REG_lo_130;
-131: lo_data1_3 = REG_lo_131;
-132: lo_data1_3 = REG_lo_132;
-133: lo_data1_3 = REG_lo_133;
-134: lo_data1_3 = REG_lo_134;
-135: lo_data1_3 = REG_lo_135;
-136: lo_data1_3 = REG_lo_136;
-137: lo_data1_3 = REG_lo_137;
-138: lo_data1_3 = REG_lo_138;
-139: lo_data1_3 = REG_lo_139;
-140: lo_data1_3 = REG_lo_140;
-141: lo_data1_3 = REG_lo_141;
-142: lo_data1_3 = REG_lo_142;
-143: lo_data1_3 = REG_lo_143;
-144: lo_data1_3 = REG_lo_144;
-145: lo_data1_3 = REG_lo_145;
-146: lo_data1_3 = REG_lo_146;
-147: lo_data1_3 = REG_lo_147;
-148: lo_data1_3 = REG_lo_148;
-149: lo_data1_3 = REG_lo_149;
-150: lo_data1_3 = REG_lo_150;
-151: lo_data1_3 = REG_lo_151;
-152: lo_data1_3 = REG_lo_152;
-153: lo_data1_3 = REG_lo_153;
-154: lo_data1_3 = REG_lo_154;
-155: lo_data1_3 = REG_lo_155;
-156: lo_data1_3 = REG_lo_156;
-157: lo_data1_3 = REG_lo_157;
-158: lo_data1_3 = REG_lo_158;
-159: lo_data1_3 = REG_lo_159;
-160: lo_data1_3 = REG_lo_160;
-161: lo_data1_3 = REG_lo_161;
-162: lo_data1_3 = REG_lo_162;
-163: lo_data1_3 = REG_lo_163;
-164: lo_data1_3 = REG_lo_164;
-165: lo_data1_3 = REG_lo_165;
-166: lo_data1_3 = REG_lo_166;
-167: lo_data1_3 = REG_lo_167;
-168: lo_data1_3 = REG_lo_168;
-169: lo_data1_3 = REG_lo_169;
-170: lo_data1_3 = REG_lo_170;
-171: lo_data1_3 = REG_lo_171;
-172: lo_data1_3 = REG_lo_172;
-173: lo_data1_3 = REG_lo_173;
-174: lo_data1_3 = REG_lo_174;
-175: lo_data1_3 = REG_lo_175;
-176: lo_data1_3 = REG_lo_176;
-177: lo_data1_3 = REG_lo_177;
-178: lo_data1_3 = REG_lo_178;
-179: lo_data1_3 = REG_lo_179;
-180: lo_data1_3 = REG_lo_180;
-181: lo_data1_3 = REG_lo_181;
-182: lo_data1_3 = REG_lo_182;
-183: lo_data1_3 = REG_lo_183;
-184: lo_data1_3 = REG_lo_184;
-185: lo_data1_3 = REG_lo_185;
-186: lo_data1_3 = REG_lo_186;
-187: lo_data1_3 = REG_lo_187;
-188: lo_data1_3 = REG_lo_188;
-189: lo_data1_3 = REG_lo_189;
-190: lo_data1_3 = REG_lo_190;
-191: lo_data1_3 = REG_lo_191;
-192: lo_data1_3 = REG_lo_192;
-193: lo_data1_3 = REG_lo_193;
-194: lo_data1_3 = REG_lo_194;
-195: lo_data1_3 = REG_lo_195;
-196: lo_data1_3 = REG_lo_196;
-197: lo_data1_3 = REG_lo_197;
-198: lo_data1_3 = REG_lo_198;
-199: lo_data1_3 = REG_lo_199;
-200: lo_data1_3 = REG_lo_200;
-201: lo_data1_3 = REG_lo_201;
-202: lo_data1_3 = REG_lo_202;
-203: lo_data1_3 = REG_lo_203;
-204: lo_data1_3 = REG_lo_204;
-205: lo_data1_3 = REG_lo_205;
-206: lo_data1_3 = REG_lo_206;
-207: lo_data1_3 = REG_lo_207;
-208: lo_data1_3 = REG_lo_208;
-209: lo_data1_3 = REG_lo_209;
-210: lo_data1_3 = REG_lo_210;
-211: lo_data1_3 = REG_lo_211;
-212: lo_data1_3 = REG_lo_212;
-213: lo_data1_3 = REG_lo_213;
-214: lo_data1_3 = REG_lo_214;
-215: lo_data1_3 = REG_lo_215;
-216: lo_data1_3 = REG_lo_216;
-217: lo_data1_3 = REG_lo_217;
-218: lo_data1_3 = REG_lo_218;
-219: lo_data1_3 = REG_lo_219;
-220: lo_data1_3 = REG_lo_220;
-221: lo_data1_3 = REG_lo_221;
-222: lo_data1_3 = REG_lo_222;
-223: lo_data1_3 = REG_lo_223;
-224: lo_data1_3 = REG_lo_224;
-225: lo_data1_3 = REG_lo_225;
-226: lo_data1_3 = REG_lo_226;
-227: lo_data1_3 = REG_lo_227;
-228: lo_data1_3 = REG_lo_228;
-229: lo_data1_3 = REG_lo_229;
-230: lo_data1_3 = REG_lo_230;
-231: lo_data1_3 = REG_lo_231;
-232: lo_data1_3 = REG_lo_232;
-233: lo_data1_3 = REG_lo_233;
-234: lo_data1_3 = REG_lo_234;
-235: lo_data1_3 = REG_lo_235;
-236: lo_data1_3 = REG_lo_236;
-237: lo_data1_3 = REG_lo_237;
-238: lo_data1_3 = REG_lo_238;
-239: lo_data1_3 = REG_lo_239;
-240: lo_data1_3 = REG_lo_240;
-241: lo_data1_3 = REG_lo_241;
-242: lo_data1_3 = REG_lo_242;
-243: lo_data1_3 = REG_lo_243;
-244: lo_data1_3 = REG_lo_244;
-245: lo_data1_3 = REG_lo_245;
-246: lo_data1_3 = REG_lo_246;
-247: lo_data1_3 = REG_lo_247;
-248: lo_data1_3 = REG_lo_248;
-249: lo_data1_3 = REG_lo_249;
-250: lo_data1_3 = REG_lo_250;
-251: lo_data1_3 = REG_lo_251;
-252: lo_data1_3 = REG_lo_252;
-253: lo_data1_3 = REG_lo_253;
-254: lo_data1_3 = REG_lo_254;
-255: lo_data1_3 = REG_lo_255;
-256: lo_data1_3 = REG_lo_256;
-//VCS coverage off
-default : begin 
-            lo_data1_3[15:0] = {16{`x_or_0}};
-          end  
-//VCS coverage on
-endcase
-end
-
-
-  assign dat_in_y0_0 = (lut_in_sel0== 1'h0 ) ? le_data0_0 : lo_data0_0;
-  assign dat_in_y0_1 = (lut_in_sel1== 1'h0 ) ? le_data0_1 : lo_data0_1;
-  assign dat_in_y0_2 = (lut_in_sel2== 1'h0 ) ? le_data0_2 : lo_data0_2;
-  assign dat_in_y0_3 = (lut_in_sel3== 1'h0 ) ? le_data0_3 : lo_data0_3;
-  assign dat_in_y1_0 = (lut_in_sel0== 1'h0 ) ? le_data1_0 : lo_data1_0;
-  assign dat_in_y1_1 = (lut_in_sel1== 1'h0 ) ? le_data1_1 : lo_data1_1;
-  assign dat_in_y1_2 = (lut_in_sel2== 1'h0 ) ? le_data1_2 : lo_data1_2;
-  assign dat_in_y1_3 = (lut_in_sel3== 1'h0 ) ? le_data1_3 : lo_data1_3;
+//: my $k=NVDLA_SDP_EW_THROUGHPUT;
+//: foreach my $i  (0..${k}-1) {
+//: print qq(
+//: assign lut_in_addr${i}_0 = lut_in_addr${i};
+//: assign lut_in_addr${i}_1 = lut_in_addr${i} + 1;
+//: );
+//: }
+//: 
+//: my $lut_depth = LUT_TABLE_MAX_DEPTH;
+//: foreach my $lut (qw(le lo)) {
+//:     foreach my $x (0..1) {
+//:         foreach my $i (0.. ${k}-1) {
+//:             print qq(
+//:              always @ ( * ) begin
+//:              case (lut_in_addr${i}_${x})
+//:             );
+//:             foreach my $idx ($x .. ${lut_depth}-1) {
+//:                 print" $idx: ${lut}_data${x}_${i} = REG_${lut}_$idx; \n";
+//:             }
+//:             print qq(
+//:              default: ${lut}_data${x}_${i}= {16{`x_or_0}};
+//:              endcase
+//:              end
+//:             );
+//:         }
+//:     }
+//: }
+//: 
+//: foreach my $i  (0..${k}-1) {
+//: print qq(
+//: assign dat_in_y0_$i = (lut_in_sel${i}==1'b0) ? le_data0_$i : lo_data0_$i;
+//: assign dat_in_y1_$i = (lut_in_sel${i}==1'b0) ? le_data1_$i : lo_data1_$i;
+//: );
+//: }
+  
 
 //=======================================
 // dat fifo wr
@@ -31627,22 +21995,31 @@ assign rd_lut_en = lut_in_pvld & lut_in_prdy;
 assign dat_fifo_wr_pvld = rd_lut_en;
 
 // PKT_PACK_WIRE( sdp_y_lut_dat ,  dat_in_ ,  dat_fifo_wr_pd )
-assign       dat_fifo_wr_pd[15:0] =     dat_in_y0_0[15:0];
-assign       dat_fifo_wr_pd[31:16] =     dat_in_y0_1[15:0];
-assign       dat_fifo_wr_pd[47:32] =     dat_in_y0_2[15:0];
-assign       dat_fifo_wr_pd[63:48] =     dat_in_y0_3[15:0];
-assign       dat_fifo_wr_pd[79:64] =     dat_in_y1_0[15:0];
-assign       dat_fifo_wr_pd[95:80] =     dat_in_y1_1[15:0];
-assign       dat_fifo_wr_pd[111:96] =     dat_in_y1_2[15:0];
-assign       dat_fifo_wr_pd[127:112] =     dat_in_y1_3[15:0];
+//: my $k=NVDLA_SDP_EW_THROUGHPUT;
+//: my $b=NVDLA_SDP_EW_THROUGHPUT*16;
+//: foreach my $i  (0..${k}-1) {
+//: print "assign       dat_fifo_wr_pd[16*${i}+15:16*${i}]  =  dat_in_y0_${i}[15:0]; \n";
+//: }
+//: foreach my $i  (0..${k}-1) {
+//: print "assign       dat_fifo_wr_pd[16*${i}+${b}+15:16*${i}+${b}] =  dat_in_y1_${i}[15:0]; \n";
+//: }
+//: 
+//: foreach my $i  (0..${k}-1) {
+//: print "assign       out_y0_${i}[15:0] = dat_fifo_rd_pd[16*${i}+15:16*${i}]; \n";
+//: }
+//: foreach my $i  (0..${k}-1) {
+//: print "assign       out_y1_${i}[15:0] = dat_fifo_rd_pd[16*${i}+${b}+15:16*${i}+${b}]; \n";
+//: }
+
+
 NV_NVDLA_SDP_CORE_Y_LUT_dat u_dat (
    .nvdla_core_clk   (nvdla_core_clk)        //|< i
   ,.nvdla_core_rstn  (nvdla_core_rstn)       //|< i
   ,.dat_fifo_wr_pvld (dat_fifo_wr_pvld)      //|< w
-  ,.dat_fifo_wr_pd   (dat_fifo_wr_pd[127:0]) //|< w
+  ,.dat_fifo_wr_pd   (dat_fifo_wr_pd[32*NVDLA_SDP_EW_THROUGHPUT-1:0]) //|< w
   ,.dat_fifo_rd_prdy (dat_fifo_rd_prdy)      //|< w
   ,.dat_fifo_rd_pvld (dat_fifo_rd_pvld)      //|> w
-  ,.dat_fifo_rd_pd   (dat_fifo_rd_pd[127:0]) //|> w
+  ,.dat_fifo_rd_pd   (dat_fifo_rd_pd[32*NVDLA_SDP_EW_THROUGHPUT-1:0]) //|> w
   ,.pwrbus_ram_pd    (pwrbus_ram_pd[31:0])   //|< i
   );
 
@@ -31653,26 +22030,44 @@ assign dat_fifo_rd_prdy = lut_out_prdy;
 // cmd fifo wr:
 
 // PKT_PACK_WIRE( sdp_y_lut_cmd ,  lut_in_ ,  cmd_fifo_wr_pd )
-assign       cmd_fifo_wr_pd[34:0] =     lut_in_fraction0[34:0];
-assign       cmd_fifo_wr_pd[69:35] =     lut_in_fraction1[34:0];
-assign       cmd_fifo_wr_pd[104:70] =     lut_in_fraction2[34:0];
-assign       cmd_fifo_wr_pd[139:105] =     lut_in_fraction3[34:0];
-assign       cmd_fifo_wr_pd[171:140] =     lut_in_x0[31:0];
-assign       cmd_fifo_wr_pd[203:172] =     lut_in_x1[31:0];
-assign       cmd_fifo_wr_pd[235:204] =     lut_in_x2[31:0];
-assign       cmd_fifo_wr_pd[267:236] =     lut_in_x3[31:0];
-assign       cmd_fifo_wr_pd[268] =     lut_in_oflow0 ;
-assign       cmd_fifo_wr_pd[269] =     lut_in_oflow1 ;
-assign       cmd_fifo_wr_pd[270] =     lut_in_oflow2 ;
-assign       cmd_fifo_wr_pd[271] =     lut_in_oflow3 ;
-assign       cmd_fifo_wr_pd[272] =     lut_in_uflow0 ;
-assign       cmd_fifo_wr_pd[273] =     lut_in_uflow1 ;
-assign       cmd_fifo_wr_pd[274] =     lut_in_uflow2 ;
-assign       cmd_fifo_wr_pd[275] =     lut_in_uflow3 ;
-assign       cmd_fifo_wr_pd[276] =     lut_in_sel0 ;
-assign       cmd_fifo_wr_pd[277] =     lut_in_sel1 ;
-assign       cmd_fifo_wr_pd[278] =     lut_in_sel2 ;
-assign       cmd_fifo_wr_pd[279] =     lut_in_sel3 ;
+//: my $k=NVDLA_SDP_EW_THROUGHPUT;
+//: my $bx =NVDLA_SDP_EW_THROUGHPUT*35;
+//: my $bof=NVDLA_SDP_EW_THROUGHPUT*(35+32);
+//: my $buf=NVDLA_SDP_EW_THROUGHPUT*(35+32+1);
+//: my $bsl=NVDLA_SDP_EW_THROUGHPUT*(35+32+2);
+//: foreach my $i  (0..${k}-1) {
+//: print "assign       cmd_fifo_wr_pd[35*${i}+34:35*${i}] =      lut_in_fraction${i}[34:0]; \n";
+//: }
+//: foreach my $i  (0..${k}-1) {
+//: print "assign       cmd_fifo_wr_pd[32*${i}+31+${bx}:32*${i}+${bx}] =   lut_in_x${i}[31:0]; \n";
+//: }
+//: foreach my $i  (0..${k}-1) {
+//: print "assign       cmd_fifo_wr_pd[${i}+${bof}] =       lut_in_oflow${i} ; \n";
+//: }
+//: foreach my $i  (0..${k}-1) {
+//: print "assign       cmd_fifo_wr_pd[${i}+${buf}] =       lut_in_uflow${i} ; \n";
+//: }
+//: foreach my $i  (0..${k}-1) {
+//: print "assign       cmd_fifo_wr_pd[${i}+${bsl}] =       lut_in_sel${i} ; \n"; 
+//: }
+//: 
+//: foreach my $i  (0..${k}-1) {
+//: print "assign       out_fraction${i}[34:0] =  cmd_fifo_rd_pd[35*${i}+34:35*${i}]; \n";
+//: }
+//: foreach my $i  (0..${k}-1) {
+//: print "assign       out_x${i}[31:0]        =  cmd_fifo_rd_pd[32*${i}+31+${bx}:32*${i}+${bx}]; \n";
+//: }
+//: foreach my $i  (0..${k}-1) {
+//: print "assign       out_oflow${i}          =  cmd_fifo_rd_pd[${i}+${bof}]; \n";
+//: }
+//: foreach my $i  (0..${k}-1) {
+//: print "assign       out_uflow${i}          =  cmd_fifo_rd_pd[${i}+${buf}]; \n";
+//: }
+//: foreach my $i  (0..${k}-1) {
+//: print "assign       out_sel${i}            =  cmd_fifo_rd_pd[${i}+${bsl}]; \n";
+//: }
+
+
 assign cmd_fifo_wr_pvld = lut_in_pvld;
 assign lut_in_prdy = cmd_fifo_wr_prdy;
 
@@ -31682,10 +22077,10 @@ NV_NVDLA_SDP_CORE_Y_LUT_cmd u_cmd (
   ,.nvdla_core_rstn  (nvdla_core_rstn)       //|< i
   ,.cmd_fifo_wr_prdy (cmd_fifo_wr_prdy)      //|> w
   ,.cmd_fifo_wr_pvld (cmd_fifo_wr_pvld)      //|< w
-  ,.cmd_fifo_wr_pd   (cmd_fifo_wr_pd[279:0]) //|< w
+  ,.cmd_fifo_wr_pd   (cmd_fifo_wr_pd[70*NVDLA_SDP_EW_THROUGHPUT-1:0]) //|< w
   ,.cmd_fifo_rd_prdy (cmd_fifo_rd_prdy)      //|< w
   ,.cmd_fifo_rd_pvld (cmd_fifo_rd_pvld)      //|> w
-  ,.cmd_fifo_rd_pd   (cmd_fifo_rd_pd[279:0]) //|> w
+  ,.cmd_fifo_rd_pd   (cmd_fifo_rd_pd[70*NVDLA_SDP_EW_THROUGHPUT-1:0]) //|> w
   ,.pwrbus_ram_pd    (pwrbus_ram_pd[31:0])   //|< i
   );
 
@@ -31695,293 +22090,72 @@ assign cmd_fifo_rd_prdy = lut_out_prdy & dat_fifo_rd_pvld;
 //=======================================
 // output mux when oflow/uflow
 
-// PKT_UNPACK_WIRE( sdp_y_lut_dat ,  out_ ,  dat_fifo_rd_pd )
-assign        out_y0_0[15:0] =     dat_fifo_rd_pd[15:0];
-assign        out_y0_1[15:0] =     dat_fifo_rd_pd[31:16];
-assign        out_y0_2[15:0] =     dat_fifo_rd_pd[47:32];
-assign        out_y0_3[15:0] =     dat_fifo_rd_pd[63:48];
-assign        out_y1_0[15:0] =     dat_fifo_rd_pd[79:64];
-assign        out_y1_1[15:0] =     dat_fifo_rd_pd[95:80];
-assign        out_y1_2[15:0] =     dat_fifo_rd_pd[111:96];
-assign        out_y1_3[15:0] =     dat_fifo_rd_pd[127:112];
 
-// PKT_UNPACK_WIRE( sdp_y_lut_cmd ,  out_ ,  cmd_fifo_rd_pd )
-assign        out_fraction0[34:0] =     cmd_fifo_rd_pd[34:0];
-assign        out_fraction1[34:0] =     cmd_fifo_rd_pd[69:35];
-assign        out_fraction2[34:0] =     cmd_fifo_rd_pd[104:70];
-assign        out_fraction3[34:0] =     cmd_fifo_rd_pd[139:105];
-assign        out_x0[31:0] =     cmd_fifo_rd_pd[171:140];
-assign        out_x1[31:0] =     cmd_fifo_rd_pd[203:172];
-assign        out_x2[31:0] =     cmd_fifo_rd_pd[235:204];
-assign        out_x3[31:0] =     cmd_fifo_rd_pd[267:236];
-assign         out_oflow0  =     cmd_fifo_rd_pd[268];
-assign         out_oflow1  =     cmd_fifo_rd_pd[269];
-assign         out_oflow2  =     cmd_fifo_rd_pd[270];
-assign         out_oflow3  =     cmd_fifo_rd_pd[271];
-assign         out_uflow0  =     cmd_fifo_rd_pd[272];
-assign         out_uflow1  =     cmd_fifo_rd_pd[273];
-assign         out_uflow2  =     cmd_fifo_rd_pd[274];
-assign         out_uflow3  =     cmd_fifo_rd_pd[275];
-assign         out_sel0  =     cmd_fifo_rd_pd[276];
-assign         out_sel1  =     cmd_fifo_rd_pd[277];
-assign         out_sel2  =     cmd_fifo_rd_pd[278];
-assign         out_sel3  =     cmd_fifo_rd_pd[279];
 
-  assign out_flow0 = out_uflow0 | out_oflow0;
-  assign out_flow1 = out_uflow1 | out_oflow1;
-  assign out_flow2 = out_uflow2 | out_oflow2;
-  assign out_flow3 = out_uflow3 | out_oflow3;
-always @(
-  out_uflow0
-  or out_sel0
-  or reg2dp_lut_le_slope_uflow_scale
-  or reg2dp_lut_le_slope_uflow_shift
-  or reg2dp_lut_le_start
-  or reg2dp_lut_le_function
-  or reg2dp_proc_precision
-  or reg2dp_lut_le_index_offset
-  or reg2dp_lut_lo_slope_uflow_scale
-  or reg2dp_lut_lo_slope_uflow_shift
-  or reg2dp_lut_lo_start
-  or out_oflow0
-  or reg2dp_lut_le_slope_oflow_scale
-  or reg2dp_lut_le_slope_oflow_shift
-  or reg2dp_lut_le_end
-  or reg2dp_lut_lo_slope_oflow_scale
-  or reg2dp_lut_lo_slope_oflow_shift
-  or reg2dp_lut_lo_end
-  ) begin
-   if (out_uflow0) begin
-       if (out_sel0== 1'h0 ) begin
-           out_scale0  = reg2dp_lut_le_slope_uflow_scale;
-           out_shift0  = reg2dp_lut_le_slope_uflow_shift;
-           out_offset0 = reg2dp_lut_le_start;
-           if (reg2dp_lut_le_function== 1'h0 ) begin
-               if (reg2dp_proc_precision== 2 ) begin
-                   out_bias0_sign = 1'b0;
-                   out_bias0_mant = 23'h0;
-                   out_bias0_expo[7:0] = $signed(reg2dp_lut_le_index_offset) + 127;
-                   out_bias0 = {out_bias0_sign,out_bias0_expo,out_bias0_mant};
-               end else begin
-                   out_bias0 = reg2dp_lut_le_index_offset[8 -1] ? 0 : (1 << reg2dp_lut_le_index_offset);
-               end
-           end else begin
-               out_bias0 = 0;
-           end
-       end else begin
-           out_scale0  = reg2dp_lut_lo_slope_uflow_scale;
-           out_shift0  = reg2dp_lut_lo_slope_uflow_shift;
-           out_offset0 = reg2dp_lut_lo_start;
-           out_bias0   = 0;
-       end
-   end else if (out_oflow0) begin
-       if (out_sel0== 1'h0 ) begin
-           out_scale0  = reg2dp_lut_le_slope_oflow_scale;
-           out_shift0  = reg2dp_lut_le_slope_oflow_shift;
-           out_offset0 = reg2dp_lut_le_end;
-           out_bias0   = 0;
-       end else begin
-           out_scale0  = reg2dp_lut_lo_slope_oflow_scale;
-           out_shift0  = reg2dp_lut_lo_slope_oflow_shift;
-           out_offset0 = reg2dp_lut_lo_end;
-           out_bias0   = 0;
-       end
-   end else begin
-       out_scale0 = 0;
-       out_shift0 = 0;
-       out_offset0 = 0;
-       out_bias0   = 0;
-   end
-end
-
-always @(
-  out_uflow1
-  or out_sel1
-  or reg2dp_lut_le_slope_uflow_scale
-  or reg2dp_lut_le_slope_uflow_shift
-  or reg2dp_lut_le_start
-  or reg2dp_lut_le_function
-  or reg2dp_proc_precision
-  or reg2dp_lut_le_index_offset
-  or reg2dp_lut_lo_slope_uflow_scale
-  or reg2dp_lut_lo_slope_uflow_shift
-  or reg2dp_lut_lo_start
-  or out_oflow1
-  or reg2dp_lut_le_slope_oflow_scale
-  or reg2dp_lut_le_slope_oflow_shift
-  or reg2dp_lut_le_end
-  or reg2dp_lut_lo_slope_oflow_scale
-  or reg2dp_lut_lo_slope_oflow_shift
-  or reg2dp_lut_lo_end
-  ) begin
-   if (out_uflow1) begin
-       if (out_sel1== 1'h0 ) begin
-           out_scale1  = reg2dp_lut_le_slope_uflow_scale;
-           out_shift1  = reg2dp_lut_le_slope_uflow_shift;
-           out_offset1 = reg2dp_lut_le_start;
-           if (reg2dp_lut_le_function== 1'h0 ) begin
-               if (reg2dp_proc_precision== 2 ) begin
-                   out_bias1_sign = 1'b0;
-                   out_bias1_mant = 23'h0;
-                   out_bias1_expo[7:0] = $signed(reg2dp_lut_le_index_offset) + 127;
-                   out_bias1 = {out_bias1_sign,out_bias1_expo,out_bias1_mant};
-               end else begin
-                   out_bias1 = reg2dp_lut_le_index_offset[8 -1] ? 0 : (1 << reg2dp_lut_le_index_offset);
-               end
-           end else begin
-               out_bias1 = 0;
-           end
-       end else begin
-           out_scale1  = reg2dp_lut_lo_slope_uflow_scale;
-           out_shift1  = reg2dp_lut_lo_slope_uflow_shift;
-           out_offset1 = reg2dp_lut_lo_start;
-           out_bias1   = 0;
-       end
-   end else if (out_oflow1) begin
-       if (out_sel1== 1'h0 ) begin
-           out_scale1  = reg2dp_lut_le_slope_oflow_scale;
-           out_shift1  = reg2dp_lut_le_slope_oflow_shift;
-           out_offset1 = reg2dp_lut_le_end;
-           out_bias1   = 0;
-       end else begin
-           out_scale1  = reg2dp_lut_lo_slope_oflow_scale;
-           out_shift1  = reg2dp_lut_lo_slope_oflow_shift;
-           out_offset1 = reg2dp_lut_lo_end;
-           out_bias1   = 0;
-       end
-   end else begin
-       out_scale1 = 0;
-       out_shift1 = 0;
-       out_offset1 = 0;
-       out_bias1   = 0;
-   end
-end
-
-always @(
-  out_uflow2
-  or out_sel2
-  or reg2dp_lut_le_slope_uflow_scale
-  or reg2dp_lut_le_slope_uflow_shift
-  or reg2dp_lut_le_start
-  or reg2dp_lut_le_function
-  or reg2dp_proc_precision
-  or reg2dp_lut_le_index_offset
-  or reg2dp_lut_lo_slope_uflow_scale
-  or reg2dp_lut_lo_slope_uflow_shift
-  or reg2dp_lut_lo_start
-  or out_oflow2
-  or reg2dp_lut_le_slope_oflow_scale
-  or reg2dp_lut_le_slope_oflow_shift
-  or reg2dp_lut_le_end
-  or reg2dp_lut_lo_slope_oflow_scale
-  or reg2dp_lut_lo_slope_oflow_shift
-  or reg2dp_lut_lo_end
-  ) begin
-   if (out_uflow2) begin
-       if (out_sel2== 1'h0 ) begin
-           out_scale2  = reg2dp_lut_le_slope_uflow_scale;
-           out_shift2  = reg2dp_lut_le_slope_uflow_shift;
-           out_offset2 = reg2dp_lut_le_start;
-           if (reg2dp_lut_le_function== 1'h0 ) begin
-               if (reg2dp_proc_precision== 2 ) begin
-                   out_bias2_sign = 1'b0;
-                   out_bias2_mant = 23'h0;
-                   out_bias2_expo[7:0] = $signed(reg2dp_lut_le_index_offset) + 127;
-                   out_bias2 = {out_bias2_sign,out_bias2_expo,out_bias2_mant};
-               end else begin
-                   out_bias2 = reg2dp_lut_le_index_offset[8 -1] ? 0 : (1 << reg2dp_lut_le_index_offset);
-               end
-           end else begin
-               out_bias2 = 0;
-           end
-       end else begin
-           out_scale2  = reg2dp_lut_lo_slope_uflow_scale;
-           out_shift2  = reg2dp_lut_lo_slope_uflow_shift;
-           out_offset2 = reg2dp_lut_lo_start;
-           out_bias2   = 0;
-       end
-   end else if (out_oflow2) begin
-       if (out_sel2== 1'h0 ) begin
-           out_scale2  = reg2dp_lut_le_slope_oflow_scale;
-           out_shift2  = reg2dp_lut_le_slope_oflow_shift;
-           out_offset2 = reg2dp_lut_le_end;
-           out_bias2   = 0;
-       end else begin
-           out_scale2  = reg2dp_lut_lo_slope_oflow_scale;
-           out_shift2  = reg2dp_lut_lo_slope_oflow_shift;
-           out_offset2 = reg2dp_lut_lo_end;
-           out_bias2   = 0;
-       end
-   end else begin
-       out_scale2 = 0;
-       out_shift2 = 0;
-       out_offset2 = 0;
-       out_bias2   = 0;
-   end
-end
-
-always @(
-  out_uflow3
-  or out_sel3
-  or reg2dp_lut_le_slope_uflow_scale
-  or reg2dp_lut_le_slope_uflow_shift
-  or reg2dp_lut_le_start
-  or reg2dp_lut_le_function
-  or reg2dp_proc_precision
-  or reg2dp_lut_le_index_offset
-  or reg2dp_lut_lo_slope_uflow_scale
-  or reg2dp_lut_lo_slope_uflow_shift
-  or reg2dp_lut_lo_start
-  or out_oflow3
-  or reg2dp_lut_le_slope_oflow_scale
-  or reg2dp_lut_le_slope_oflow_shift
-  or reg2dp_lut_le_end
-  or reg2dp_lut_lo_slope_oflow_scale
-  or reg2dp_lut_lo_slope_oflow_shift
-  or reg2dp_lut_lo_end
-  ) begin
-   if (out_uflow3) begin
-       if (out_sel3== 1'h0 ) begin
-           out_scale3  = reg2dp_lut_le_slope_uflow_scale;
-           out_shift3  = reg2dp_lut_le_slope_uflow_shift;
-           out_offset3 = reg2dp_lut_le_start;
-           if (reg2dp_lut_le_function== 1'h0 ) begin
-               if (reg2dp_proc_precision== 2 ) begin
-                   out_bias3_sign = 1'b0;
-                   out_bias3_mant = 23'h0;
-                   out_bias3_expo[7:0] = $signed(reg2dp_lut_le_index_offset) + 127;
-                   out_bias3 = {out_bias3_sign,out_bias3_expo,out_bias3_mant};
-               end else begin
-                   out_bias3 = reg2dp_lut_le_index_offset[8 -1] ? 0 : (1 << reg2dp_lut_le_index_offset);
-               end
-           end else begin
-               out_bias3 = 0;
-           end
-       end else begin
-           out_scale3  = reg2dp_lut_lo_slope_uflow_scale;
-           out_shift3  = reg2dp_lut_lo_slope_uflow_shift;
-           out_offset3 = reg2dp_lut_lo_start;
-           out_bias3   = 0;
-       end
-   end else if (out_oflow3) begin
-       if (out_sel3== 1'h0 ) begin
-           out_scale3  = reg2dp_lut_le_slope_oflow_scale;
-           out_shift3  = reg2dp_lut_le_slope_oflow_shift;
-           out_offset3 = reg2dp_lut_le_end;
-           out_bias3   = 0;
-       end else begin
-           out_scale3  = reg2dp_lut_lo_slope_oflow_scale;
-           out_shift3  = reg2dp_lut_lo_slope_oflow_shift;
-           out_offset3 = reg2dp_lut_lo_end;
-           out_bias3   = 0;
-       end
-   end else begin
-       out_scale3 = 0;
-       out_shift3 = 0;
-       out_offset3 = 0;
-       out_bias3   = 0;
-   end
-end
+//: my $k=NVDLA_SDP_EW_THROUGHPUT;
+//: foreach my $i  (0..${k}-1) {
+//: print "assign out_flow${i} = out_uflow${i} | out_oflow${i}; \n";
+//: }
+//:         
+//: foreach my $i (0.. ${k}-1) {
+//: print qq(
+//:     always @(
+//:       out_uflow$i
+//:       or out_sel$i
+//:       or reg2dp_lut_le_slope_uflow_scale
+//:       or reg2dp_lut_le_slope_uflow_shift
+//:       or reg2dp_lut_le_start
+//:       or reg2dp_lut_le_function
+//:       or reg2dp_proc_precision
+//:       or reg2dp_lut_le_index_offset
+//:       or reg2dp_lut_lo_slope_uflow_scale
+//:       or reg2dp_lut_lo_slope_uflow_shift
+//:       or reg2dp_lut_lo_start
+//:       or out_oflow$i
+//:       or reg2dp_lut_le_slope_oflow_scale
+//:       or reg2dp_lut_le_slope_oflow_shift
+//:       or reg2dp_lut_le_end
+//:       or reg2dp_lut_lo_slope_oflow_scale
+//:       or reg2dp_lut_lo_slope_oflow_shift
+//:       or reg2dp_lut_lo_end
+//:       ) begin
+//:        if (out_uflow${i}) begin
+//:                if (out_sel${i}==1'b0) begin
+//:                    out_scale${i}  = reg2dp_lut_le_slope_uflow_scale;
+//:                    out_shift${i}  = reg2dp_lut_le_slope_uflow_shift;
+//:                    out_offset${i} = reg2dp_lut_le_start;
+//:                    if (reg2dp_lut_le_function==1'b0) begin
+//:                        out_bias${i} = reg2dp_lut_le_index_offset[8 -1] ? 0 : (1 << reg2dp_lut_le_index_offset);
+//:                    end else begin
+//:                        out_bias${i} = 0;
+//:                    end
+//:                end else begin
+//:                    out_scale${i}  = reg2dp_lut_lo_slope_uflow_scale;
+//:                    out_shift${i}  = reg2dp_lut_lo_slope_uflow_shift;
+//:                    out_offset${i} = reg2dp_lut_lo_start;
+//:                    out_bias${i}   = 0;
+//:                end
+//:          end else if (out_oflow${i}) begin
+//:              if (out_sel${i}==1'b0) begin
+//:                  out_scale${i}  = reg2dp_lut_le_slope_oflow_scale;
+//:                  out_shift${i}  = reg2dp_lut_le_slope_oflow_shift;
+//:                  out_offset${i} = reg2dp_lut_le_end;
+//:                  out_bias${i}   = 0;
+//:              end else begin
+//:                  out_scale${i}  = reg2dp_lut_lo_slope_oflow_scale;
+//:                  out_shift${i}  = reg2dp_lut_lo_slope_oflow_shift;
+//:                  out_offset${i} = reg2dp_lut_lo_end;
+//:                  out_bias${i}   = 0;
+//:              end
+//:          end else begin
+//:              out_scale${i} = 0;
+//:              out_shift${i} = 0;
+//:              out_offset${i} = 0;
+//:              out_bias${i}   = 0;
+//:          end
+//:     end
+//: );
+//: }
 
 
 //=======================================
@@ -31989,412 +22163,60 @@ end
 assign lut_out_pvld = dat_fifo_rd_pvld;
 
 // PKT_PACK_WIRE( sdp_y_lut_out ,  out_ ,  lut_out_pd )
-assign       lut_out_pd[31:0] =     out_x0[31:0];
-assign       lut_out_pd[63:32] =     out_x1[31:0];
-assign       lut_out_pd[95:64] =     out_x2[31:0];
-assign       lut_out_pd[127:96] =     out_x3[31:0];
-assign       lut_out_pd[162:128] =     out_fraction0[34:0];
-assign       lut_out_pd[197:163] =     out_fraction1[34:0];
-assign       lut_out_pd[232:198] =     out_fraction2[34:0];
-assign       lut_out_pd[267:233] =     out_fraction3[34:0];
-assign       lut_out_pd[283:268] =     out_y0_0[15:0];
-assign       lut_out_pd[299:284] =     out_y0_1[15:0];
-assign       lut_out_pd[315:300] =     out_y0_2[15:0];
-assign       lut_out_pd[331:316] =     out_y0_3[15:0];
-assign       lut_out_pd[347:332] =     out_y1_0[15:0];
-assign       lut_out_pd[363:348] =     out_y1_1[15:0];
-assign       lut_out_pd[379:364] =     out_y1_2[15:0];
-assign       lut_out_pd[395:380] =     out_y1_3[15:0];
-assign       lut_out_pd[411:396] =     out_scale0[15:0];
-assign       lut_out_pd[427:412] =     out_scale1[15:0];
-assign       lut_out_pd[443:428] =     out_scale2[15:0];
-assign       lut_out_pd[459:444] =     out_scale3[15:0];
-assign       lut_out_pd[464:460] =     out_shift0[4:0];
-assign       lut_out_pd[469:465] =     out_shift1[4:0];
-assign       lut_out_pd[474:470] =     out_shift2[4:0];
-assign       lut_out_pd[479:475] =     out_shift3[4:0];
-assign       lut_out_pd[511:480] =     out_offset0[31:0];
-assign       lut_out_pd[543:512] =     out_offset1[31:0];
-assign       lut_out_pd[575:544] =     out_offset2[31:0];
-assign       lut_out_pd[607:576] =     out_offset3[31:0];
-assign       lut_out_pd[639:608] =     out_bias0[31:0];
-assign       lut_out_pd[671:640] =     out_bias1[31:0];
-assign       lut_out_pd[703:672] =     out_bias2[31:0];
-assign       lut_out_pd[735:704] =     out_bias3[31:0];
-assign       lut_out_pd[736] =     out_flow0 ;
-assign       lut_out_pd[737] =     out_flow1 ;
-assign       lut_out_pd[738] =     out_flow2 ;
-assign       lut_out_pd[739] =     out_flow3 ;
-//## pipe (2) randomizer
-`ifndef SYNTHESIS
-reg p2_pipe_rand_active;
-`endif
-always @(
-  `ifndef SYNTHESIS
-  p2_pipe_rand_active
-  or 
-     `endif
-     lut_out_pvld
-  or p2_pipe_rand_ready
-  or lut_out_pd
-  ) begin
-  `ifdef SYNTHESIS
-  p2_pipe_rand_valid = lut_out_pvld;
-  lut_out_prdy = p2_pipe_rand_ready;
-  p2_pipe_rand_data = lut_out_pd;
-  `else
-  // VCS coverage off
-  p2_pipe_rand_valid = (p2_pipe_rand_active)? 1'b0 : lut_out_pvld;
-  lut_out_prdy = (p2_pipe_rand_active)? 1'b0 : p2_pipe_rand_ready;
-  p2_pipe_rand_data = (p2_pipe_rand_active)?  'bx : lut_out_pd;
-  // VCS coverage on
-  `endif
-end
-`ifndef SYNTHESIS
-// VCS coverage off
-//// randomization init   
-integer p2_pipe_stall_cycles;
-integer p2_pipe_stall_probability;
-integer p2_pipe_stall_cycles_min;
-integer p2_pipe_stall_cycles_max;
-initial begin
-  p2_pipe_stall_cycles = 0;
-  p2_pipe_stall_probability = 0;
-  p2_pipe_stall_cycles_min = 1;
-  p2_pipe_stall_cycles_max = 10;
-`ifndef SYNTH_LEVEL1_COMPILE
-  if      ( $value$plusargs( "NV_NVDLA_SDP_CORE_Y_lut_pipe_rand_probability=%d",  p2_pipe_stall_probability ) ) ; // deprecated
-  else if ( $value$plusargs(    "default_pipe_rand_probability=%d",  p2_pipe_stall_probability ) ) ; // deprecated
-  if      ( $value$plusargs( "NV_NVDLA_SDP_CORE_Y_lut_pipe_stall_probability=%d", p2_pipe_stall_probability ) ) ; 
-  else if ( $value$plusargs(    "default_pipe_stall_probability=%d", p2_pipe_stall_probability ) ) ; 
-  if      ( $value$plusargs( "NV_NVDLA_SDP_CORE_Y_lut_pipe_stall_cycles_min=%d",  p2_pipe_stall_cycles_min  ) ) ;
-  else if ( $value$plusargs(    "default_pipe_stall_cycles_min=%d",  p2_pipe_stall_cycles_min  ) ) ;
-  if      ( $value$plusargs( "NV_NVDLA_SDP_CORE_Y_lut_pipe_stall_cycles_max=%d",  p2_pipe_stall_cycles_max  ) ) ;
-  else if ( $value$plusargs(    "default_pipe_stall_cycles_max=%d",  p2_pipe_stall_cycles_max  ) ) ;
-`endif
-end
-// randomization globals
-`ifndef SYNTH_LEVEL1_COMPILE
-`ifdef SIMTOP_RANDOMIZE_STALLS
-always @( `SIMTOP_RANDOMIZE_STALLS.global_stall_event ) begin
-  if ( ! $test$plusargs( "NV_NVDLA_SDP_CORE_Y_lut_pipe_stall_probability" ) ) p2_pipe_stall_probability = `SIMTOP_RANDOMIZE_STALLS.global_stall_pipe_probability;
-  if ( ! $test$plusargs( "NV_NVDLA_SDP_CORE_Y_lut_pipe_stall_cycles_min"  ) ) p2_pipe_stall_cycles_min  = `SIMTOP_RANDOMIZE_STALLS.global_stall_pipe_cycles_min;
-  if ( ! $test$plusargs( "NV_NVDLA_SDP_CORE_Y_lut_pipe_stall_cycles_max"  ) ) p2_pipe_stall_cycles_max  = `SIMTOP_RANDOMIZE_STALLS.global_stall_pipe_cycles_max;
-end
-`endif
-`endif
-//// randomization active
-reg p2_pipe_rand_enable;
-reg p2_pipe_rand_poised;
-always @(
-  p2_pipe_stall_cycles
-  or p2_pipe_stall_probability
-  or lut_out_pvld
-  ) begin
-  p2_pipe_rand_active = p2_pipe_stall_cycles != 0;
-  p2_pipe_rand_enable = p2_pipe_stall_probability != 0;
-  p2_pipe_rand_poised = p2_pipe_rand_enable && !p2_pipe_rand_active && lut_out_pvld === 1'b1;
-end
-//// randomization cycles
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-  if (!nvdla_core_rstn) begin
-    p2_pipe_stall_cycles <= 1'b0;
-  end else begin
-  if (p2_pipe_rand_poised) begin
-    if (p2_pipe_stall_probability >= prand_inst2(1, 100)) begin
-      p2_pipe_stall_cycles <= prand_inst3(p2_pipe_stall_cycles_min, p2_pipe_stall_cycles_max);
-    end
-  end else if (p2_pipe_rand_active) begin
-    p2_pipe_stall_cycles <= p2_pipe_stall_cycles - 1;
-  end else begin
-    p2_pipe_stall_cycles <= 0;
-  end
-  end
-end
+//: my $k=NVDLA_SDP_EW_THROUGHPUT;
+//: my $bf =NVDLA_SDP_EW_THROUGHPUT*32;
+//: my $by0=NVDLA_SDP_EW_THROUGHPUT*(32+35);
+//: my $by1=NVDLA_SDP_EW_THROUGHPUT*(32+35+16);
+//: my $bsc=NVDLA_SDP_EW_THROUGHPUT*(32+35+32);
+//: my $bsf=NVDLA_SDP_EW_THROUGHPUT*(32+35+48);
+//: my $bof=NVDLA_SDP_EW_THROUGHPUT*(32+35+48+5);
+//: my $bbs=NVDLA_SDP_EW_THROUGHPUT*(32+35+85);
+//: my $bfw=NVDLA_SDP_EW_THROUGHPUT*(32+35+85+32);
+//: foreach my $i  (0..${k}-1) {
+//: print "assign       lut_out_pd[32*${i}+31:32*${i}]                 = out_x${i}[31:0]; \n";
+//: }
+//: foreach my $i  (0..${k}-1) {
+//: print "assign       lut_out_pd[35*${i}+${bf}+34:35*${i}+${bf}]     = out_fraction${i}[34:0]; \n";
+//: }
+//: foreach my $i  (0..${k}-1) {
+//: print "assign       lut_out_pd[16*${i}+${by0}+15:16*${i}+${by0}]   = out_y0_${i}[15:0]; \n";
+//: }
+//: foreach my $i  (0..${k}-1) {
+//: print "assign       lut_out_pd[16*${i}+${by1}+15:16*${i}+${by1}]   = out_y1_${i}[15:0]; \n";
+//: }
+//: foreach my $i  (0..${k}-1) {
+//: print "assign       lut_out_pd[16*${i}+${bsc}+15:16*${i}+${bsc}]   = out_scale${i}[15:0]; \n";
+//: }
+//: foreach my $i  (0..${k}-1) {
+//: print "assign       lut_out_pd[5*${i}+${bsf}+4:5*${i}+${bsf}]      = out_shift${i}[4:0]; \n";
+//: }
+//: foreach my $i  (0..${k}-1) {
+//: print "assign       lut_out_pd[32*${i}+${bof}+31:32*${i}+${bof}]   = out_offset${i}[31:0]; \n";
+//: }
+//: foreach my $i  (0..${k}-1) {
+//: print "assign       lut_out_pd[32*${i}+${bbs}+31:32*${i}+${bbs}]   = out_bias${i}[31:0]; \n";
+//: }
+//: foreach my $i  (0..${k}-1) {
+//: print "assign       lut_out_pd[${i}+${bfw}]     = out_flow${i}; \n"; 
+//: }
 
-`ifdef SYNTH_LEVEL1_COMPILE
-`else
-`ifdef SYNTHESIS
-`else
-`ifdef PRAND_VERILOG
-// Only verilog needs any local variables
-reg [47:0] prand_local_seed2;
-reg prand_initialized2;
-reg prand_no_rollpli2;
-`endif
-`endif
-`endif
+//viva_pipe -bc -os lut2inp_pd (lut2inp_pvld,lut2inp_prdy) <= lut_out_pd (lut_out_pvld,lut_out_prdy);
+NV_NVDLA_SDP_CORE_Y_lut_pipe_p2  pipe_p2 (
+   .nvdla_core_clk  (nvdla_core_clk)              
+  ,.nvdla_core_rstn (nvdla_core_rstn)             
+  ,.lut_out_pvld    (lut_out_pvld)               
+  ,.lut_out_prdy    (lut_out_prdy)               
+  ,.lut_out_pd      (lut_out_pd[EW_LUT_OUT_DW-1:0])         
+  ,.lut2inp_pvld    (lut2inp_pvld)              
+  ,.lut2inp_prdy    (lut2inp_prdy)              
+  ,.lut2inp_pd      (lut2inp_pd[EW_LUT_OUT_DW-1:0])          
+  );
 
-function [31:0] prand_inst2;
-//VCS coverage off
-    input [31:0] min;
-    input [31:0] max;
-    reg [32:0] diff;
-    
-    begin
-`ifdef SYNTH_LEVEL1_COMPILE
-        prand_inst2 = min;
-`else
-`ifdef SYNTHESIS
-        prand_inst2 = min;
-`else
-`ifdef PRAND_VERILOG
-        if (prand_initialized2 !== 1'b1) begin
-            prand_no_rollpli2 = $test$plusargs("NO_ROLLPLI");
-            if (!prand_no_rollpli2)
-                prand_local_seed2 = {$prand_get_seed(2), 16'b0};
-            prand_initialized2 = 1'b1;
-        end
-        if (prand_no_rollpli2) begin
-            prand_inst2 = min;
-        end else begin
-            diff = max - min + 1;
-            prand_inst2 = min + prand_local_seed2[47:16] % diff;
-            // magic numbers taken from Java's random class (same as lrand48)
-            prand_local_seed2 = prand_local_seed2 * 48'h5deece66d + 48'd11;
-        end
-`else
-`ifdef PRAND_OFF
-        prand_inst2 = min;
-`else
-        prand_inst2 = $RollPLI(min, max, "auto");
-`endif
-`endif
-`endif
-`endif
-    end
-//VCS coverage on
-endfunction
-
-
-`ifdef SYNTH_LEVEL1_COMPILE
-`else
-`ifdef SYNTHESIS
-`else
-`ifdef PRAND_VERILOG
-// Only verilog needs any local variables
-reg [47:0] prand_local_seed3;
-reg prand_initialized3;
-reg prand_no_rollpli3;
-`endif
-`endif
-`endif
-
-function [31:0] prand_inst3;
-//VCS coverage off
-    input [31:0] min;
-    input [31:0] max;
-    reg [32:0] diff;
-    
-    begin
-`ifdef SYNTH_LEVEL1_COMPILE
-        prand_inst3 = min;
-`else
-`ifdef SYNTHESIS
-        prand_inst3 = min;
-`else
-`ifdef PRAND_VERILOG
-        if (prand_initialized3 !== 1'b1) begin
-            prand_no_rollpli3 = $test$plusargs("NO_ROLLPLI");
-            if (!prand_no_rollpli3)
-                prand_local_seed3 = {$prand_get_seed(3), 16'b0};
-            prand_initialized3 = 1'b1;
-        end
-        if (prand_no_rollpli3) begin
-            prand_inst3 = min;
-        end else begin
-            diff = max - min + 1;
-            prand_inst3 = min + prand_local_seed3[47:16] % diff;
-            // magic numbers taken from Java's random class (same as lrand48)
-            prand_local_seed3 = prand_local_seed3 * 48'h5deece66d + 48'd11;
-        end
-`else
-`ifdef PRAND_OFF
-        prand_inst3 = min;
-`else
-        prand_inst3 = $RollPLI(min, max, "auto");
-`endif
-`endif
-`endif
-`endif
-    end
-//VCS coverage on
-endfunction
-
-`endif
-// VCS coverage on
-//## pipe (2) valid-ready-bubble-collapse
-always @(
-  p2_pipe_ready
-  or p2_pipe_valid
-  ) begin
-  p2_pipe_ready_bc = p2_pipe_ready || !p2_pipe_valid;
-end
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-  if (!nvdla_core_rstn) begin
-    p2_pipe_valid <= 1'b0;
-  end else begin
-  p2_pipe_valid <= (p2_pipe_ready_bc)? p2_pipe_rand_valid : 1'd1;
-  end
-end
-always @(posedge nvdla_core_clk) begin
-  // VCS sop_coverage_off start
-  p2_pipe_data <= (p2_pipe_ready_bc && p2_pipe_rand_valid)? p2_pipe_rand_data : p2_pipe_data;
-  // VCS sop_coverage_off end
-end
-always @(
-  p2_pipe_ready_bc
-  ) begin
-  p2_pipe_rand_ready = p2_pipe_ready_bc;
-end
-//## pipe (2) skid buffer
-always @(
-  p2_pipe_valid
-  or p2_skid_ready_flop
-  or p2_pipe_skid_ready
-  or p2_skid_valid
-  ) begin
-  p2_skid_catch = p2_pipe_valid && p2_skid_ready_flop && !p2_pipe_skid_ready;  
-  p2_skid_ready = (p2_skid_valid)? p2_pipe_skid_ready : !p2_skid_catch;
-end
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-  if (!nvdla_core_rstn) begin
-    p2_skid_valid <= 1'b0;
-    p2_skid_ready_flop <= 1'b1;
-    p2_pipe_ready <= 1'b1;
-  end else begin
-  p2_skid_valid <= (p2_skid_valid)? !p2_pipe_skid_ready : p2_skid_catch;
-  p2_skid_ready_flop <= p2_skid_ready;
-  p2_pipe_ready <= p2_skid_ready;
-  end
-end
-always @(posedge nvdla_core_clk) begin
-  // VCS sop_coverage_off start
-  p2_skid_data <= (p2_skid_catch)? p2_pipe_data : p2_skid_data;
-  // VCS sop_coverage_off end
-end
-always @(
-  p2_skid_ready_flop
-  or p2_pipe_valid
-  or p2_skid_valid
-  or p2_pipe_data
-  or p2_skid_data
-  ) begin
-  p2_pipe_skid_valid = (p2_skid_ready_flop)? p2_pipe_valid : p2_skid_valid; 
-  // VCS sop_coverage_off start
-  p2_pipe_skid_data = (p2_skid_ready_flop)? p2_pipe_data : p2_skid_data;
-  // VCS sop_coverage_off end
-end
-//## pipe (2) output
-always @(
-  p2_pipe_skid_valid
-  or lut2inp_prdy
-  or p2_pipe_skid_data
-  ) begin
-  lut2inp_pvld = p2_pipe_skid_valid;
-  p2_pipe_skid_ready = lut2inp_prdy;
-  lut2inp_pd = p2_pipe_skid_data;
-end
-//## pipe (2) assertions/testpoints
-`ifndef VIVA_PLUGIN_PIPE_DISABLE_ASSERTIONS
-wire p2_assert_clk = nvdla_core_clk;
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-`ifndef SYNTHESIS
-  // VCS coverage off 
-  nv_assert_no_x #(0,1,0,"No X's allowed on control signals")      zzz_assert_no_x_325x (nvdla_core_clk, `ASSERT_RESET, nvdla_core_rstn, (lut2inp_pvld^lut2inp_prdy^lut_out_pvld^lut_out_prdy)); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`endif
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-  // VCS coverage off 
-  nv_assert_hold_throughout_event_interval #(0,1,0,"valid removed before ready")      zzz_assert_hold_throughout_event_interval_326x (nvdla_core_clk, `ASSERT_RESET, (lut_out_pvld && !lut_out_prdy), (lut_out_pvld), (lut_out_prdy)); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`endif
 
 //=======================================
 // Assertions
 assign mon_cmd_fifo_rd_pvld = cmd_fifo_rd_pvld;
+
 `ifdef SPYGLASS_ASSERT_ON
 `else
 // spyglass disable_block NoWidthInBasedNum-ML 
@@ -32535,15 +22357,66 @@ assign mon_cmd_fifo_rd_pvld = cmd_fifo_rd_pvld;
 `endif // SPYGLASS_ASSERT_ON
 endmodule // NV_NVDLA_SDP_CORE_Y_lut
 
-//
-// AUTOMATICALLY GENERATED -- DO NOT EDIT OR CHECK IN
-//
-// /home/nvtools/engr/2017/03/11_05_00_06/nvtools/scripts/fifogen
-// fifogen -input_config_yaml ../../../../../../../socd/ip_chip_tools/1.0/defs/public/fifogen/golden/tlit5/fifogen.yml -no_make_ram -no_make_ram -stdout -m NV_NVDLA_SDP_CORE_Y_LUT_dat -clk_name nvdla_core_clk -reset_name nvdla_core_rstn -wr_pipebus dat_fifo_wr -rd_pipebus dat_fifo_rd -rd_reg -rand_none -ram_bypass -d 2 -w 128 -no_wr_busy -ram ff [Chosen ram type: ff - fifogen_flops (user specified, thus no other ram type is allowed)]
-// chip config vars: assertion_module_prefix=nv_  strict_synchronizers=1  strict_synchronizers_use_lib_cells=1  strict_synchronizers_use_tm_lib_cells=1  strict_sync_randomizer=1  assertion_message_prefix=FIFOGEN_ASSERTION  allow_async_fifola=0  ignore_ramgen_fifola_variant=1  uses_p_SSYNC=0  uses_prand=1  uses_rammake_inc=1  use_x_or_0=1  force_wr_reg_gated=1  no_force_reset=1  no_timescale=1  no_pli_ifdef=1  requires_full_throughput=1  ram_auto_ff_bits_cutoff=16  ram_auto_ff_width_cutoff=2  ram_auto_ff_width_cutoff_max_depth=32  ram_auto_ff_depth_cutoff=-1  ram_auto_ff_no_la2_depth_cutoff=5  ram_auto_la2_width_cutoff=8  ram_auto_la2_width_cutoff_max_depth=56  ram_auto_la2_depth_cutoff=16  flopram_emu_model=1  dslp_single_clamp_port=1  dslp_clamp_port=1  slp_single_clamp_port=1  slp_clamp_port=1  master_clk_gated=1  clk_gate_module=NV_CLK_gate_power  redundant_timing_flops=0  hot_reset_async_force_ports_and_loopback=1  ram_sleep_en_width=1  async_cdc_reg_id=NV_AFIFO_  rd_reg_default_for_async=1  async_ram_instance_prefix=NV_ASYNC_RAM_  allow_rd_busy_reg_warning=0  do_dft_xelim_gating=1  add_dft_xelim_wr_clkgate=1  add_dft_xelim_rd_clkgate=1 
-//
-// leda B_3208_NV OFF -- Unequal length LHS and RHS in assignment
-// leda B_1405 OFF -- 2 asynchronous resets in this unit detected
+
+
+module  NV_NVDLA_SDP_CORE_Y_lut_pipe_p1 (
+   nvdla_core_clk
+  ,nvdla_core_rstn
+  ,idx2lut_pvld
+  ,idx2lut_prdy
+  ,idx2lut_pd
+  ,lut_in_pvld
+  ,lut_in_prdy
+  ,lut_in_pd
+  );
+
+input         nvdla_core_clk;
+input         nvdla_core_rstn;
+input         idx2lut_pvld;
+output        idx2lut_prdy;
+input  [EW_IDX_OUT_DW-1:0] idx2lut_pd;
+output        lut_in_pvld;
+input         lut_in_prdy;
+output [EW_IDX_OUT_DW-1:0] lut_in_pd;
+
+//: my $dw = EW_IDX_OUT_DW;
+//: &eperl::pipe("-is -wid $dw -do lut_in_pd -vo lut_in_pvld -ri lut_in_prdy -di idx2lut_pd -vi idx2lut_pvld -ro idx2lut_prdy");
+
+
+endmodule
+
+
+module  NV_NVDLA_SDP_CORE_Y_lut_pipe_p2 (
+   nvdla_core_clk
+  ,nvdla_core_rstn
+  ,lut_out_pvld
+  ,lut_out_prdy
+  ,lut_out_pd
+  ,lut2inp_pvld
+  ,lut2inp_prdy
+  ,lut2inp_pd
+  );
+
+input         nvdla_core_clk;
+input         nvdla_core_rstn;
+input         lut_out_pvld;
+output        lut_out_prdy;
+input  [EW_LUT_OUT_DW-1:0] lut_out_pd;
+output        lut2inp_pvld;
+input         lut2inp_prdy;
+output [EW_LUT_OUT_DW-1:0] lut2inp_pd;
+
+
+//: my $dw = EW_LUT_OUT_DW;
+//: &eperl::pipe("-os -wid $dw -do lut2inp_pd -vo lut2inp_pvld -ri lut2inp_prdy -di lut_out_pd -vi lut_out_pvld -ro lut_out_prdy");
+
+
+endmodule
+
+
+#if (NVDLA_SDP_EW_THROUGHPUT==4) 
+
+
 `define FORCE_CONTENTION_ASSERTION_RESET_ACTIVE 1'b1
 `include "simulate_x_tick.vh"
 
@@ -32891,6 +22764,7 @@ input  [0:0] wa;
 input  [1:0] ra;
 output [127:0] dout;
 
+`ifndef FPGA
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_0 (.A(pwrbus_ram_pd[0]));
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_1 (.A(pwrbus_ram_pd[1]));
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_2 (.A(pwrbus_ram_pd[2]));
@@ -32923,6 +22797,7 @@ NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_28 (.A(pwrbus_ram_pd[28]));
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_29 (.A(pwrbus_ram_pd[29]));
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_30 (.A(pwrbus_ram_pd[30]));
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_31 (.A(pwrbus_ram_pd[31]));
+`endif
 
 
 `ifdef EMU
@@ -33063,15 +22938,8 @@ endmodule // vmw_NV_NVDLA_SDP_CORE_Y_LUT_dat_flopram_rwsa_2x128
 
 `endif // EMU
 
-//
-// AUTOMATICALLY GENERATED -- DO NOT EDIT OR CHECK IN
-//
-// /home/nvtools/engr/2017/03/11_05_00_06/nvtools/scripts/fifogen
-// fifogen -input_config_yaml ../../../../../../../socd/ip_chip_tools/1.0/defs/public/fifogen/golden/tlit5/fifogen.yml -no_make_ram -no_make_ram -stdout -m NV_NVDLA_SDP_CORE_Y_LUT_cmd -clk_name nvdla_core_clk -reset_name nvdla_core_rstn -wr_pipebus cmd_fifo_wr -rd_pipebus cmd_fifo_rd -rd_reg -rand_none -ram_bypass -d 2 -w 280 -ram ff [Chosen ram type: ff - fifogen_flops (user specified, thus no other ram type is allowed)]
-// chip config vars: assertion_module_prefix=nv_  strict_synchronizers=1  strict_synchronizers_use_lib_cells=1  strict_synchronizers_use_tm_lib_cells=1  strict_sync_randomizer=1  assertion_message_prefix=FIFOGEN_ASSERTION  allow_async_fifola=0  ignore_ramgen_fifola_variant=1  uses_p_SSYNC=0  uses_prand=1  uses_rammake_inc=1  use_x_or_0=1  force_wr_reg_gated=1  no_force_reset=1  no_timescale=1  no_pli_ifdef=1  requires_full_throughput=1  ram_auto_ff_bits_cutoff=16  ram_auto_ff_width_cutoff=2  ram_auto_ff_width_cutoff_max_depth=32  ram_auto_ff_depth_cutoff=-1  ram_auto_ff_no_la2_depth_cutoff=5  ram_auto_la2_width_cutoff=8  ram_auto_la2_width_cutoff_max_depth=56  ram_auto_la2_depth_cutoff=16  flopram_emu_model=1  dslp_single_clamp_port=1  dslp_clamp_port=1  slp_single_clamp_port=1  slp_clamp_port=1  master_clk_gated=1  clk_gate_module=NV_CLK_gate_power  redundant_timing_flops=0  hot_reset_async_force_ports_and_loopback=1  ram_sleep_en_width=1  async_cdc_reg_id=NV_AFIFO_  rd_reg_default_for_async=1  async_ram_instance_prefix=NV_ASYNC_RAM_  allow_rd_busy_reg_warning=0  do_dft_xelim_gating=1  add_dft_xelim_wr_clkgate=1  add_dft_xelim_rd_clkgate=1 
-//
-// leda B_3208_NV OFF -- Unequal length LHS and RHS in assignment
-// leda B_1405 OFF -- 2 asynchronous resets in this unit detected
+
+
 `define FORCE_CONTENTION_ASSERTION_RESET_ACTIVE 1'b1
 `include "simulate_x_tick.vh"
 
@@ -33497,6 +23365,7 @@ input  [0:0] wa;
 input  [1:0] ra;
 output [279:0] dout;
 
+`ifndef FPGA
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_0 (.A(pwrbus_ram_pd[0]));
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_1 (.A(pwrbus_ram_pd[1]));
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_2 (.A(pwrbus_ram_pd[2]));
@@ -33529,7 +23398,7 @@ NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_28 (.A(pwrbus_ram_pd[28]));
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_29 (.A(pwrbus_ram_pd[29]));
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_30 (.A(pwrbus_ram_pd[30]));
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_31 (.A(pwrbus_ram_pd[31]));
-
+`endif
 
 `ifdef EMU
 
@@ -33644,21 +23513,524 @@ assign Do0 = mem[Ra0];
 // g2c if { [find / -null_ok -subdesign vmw_NV_NVDLA_SDP_CORE_Y_LUT_cmd_flopram_rwsa_2x280] != {} } { set_attr preserve 1 [find / -subdesign vmw_NV_NVDLA_SDP_CORE_Y_LUT_cmd_flopram_rwsa_2x280] }
 endmodule // vmw_NV_NVDLA_SDP_CORE_Y_LUT_cmd_flopram_rwsa_2x280
 
-//vmw: Memory vmw_NV_NVDLA_SDP_CORE_Y_LUT_cmd_flopram_rwsa_2x280
+
+`endif // EMU
+
+
+
+#elif (NVDLA_SDP_EW_THROUGHPUT==1) 
+
+
+`define FORCE_CONTENTION_ASSERTION_RESET_ACTIVE 1'b1
+`include "simulate_x_tick.vh"
+
+
+module NV_NVDLA_SDP_CORE_Y_LUT_dat (
+      nvdla_core_clk
+    , nvdla_core_rstn
+    , dat_fifo_wr_pvld
+    , dat_fifo_wr_pd
+    , dat_fifo_rd_prdy
+    , dat_fifo_rd_pvld
+    , dat_fifo_rd_pd
+    , pwrbus_ram_pd
+    );
+
+// spyglass disable_block W401 -- clock is not input to module
+input         nvdla_core_clk;
+input         nvdla_core_rstn;
+input         dat_fifo_wr_pvld;
+input  [31:0] dat_fifo_wr_pd;
+input         dat_fifo_rd_prdy;
+output        dat_fifo_rd_pvld;
+output [31:0] dat_fifo_rd_pd;
+input  [31:0] pwrbus_ram_pd;
+
+// Master Clock Gating (SLCG)
+//
+// We gate the clock(s) when idle or stalled.
+// This allows us to turn off numerous miscellaneous flops
+// that don't get gated during synthesis for one reason or another.
+//
+// We gate write side and read side separately. 
+// If the fifo is synchronous, we also gate the ram separately, but if
+// -master_clk_gated_unified or -status_reg/-status_logic_reg is specified, 
+// then we use one clk gate for write, ram, and read.
+//
+wire nvdla_core_clk_mgated_enable;   // assigned by code at end of this module
+wire nvdla_core_clk_mgated;               // used only in synchronous fifos
+NV_CLK_gate_power nvdla_core_clk_mgate( .clk(nvdla_core_clk), .reset_(nvdla_core_rstn), .clk_en(nvdla_core_clk_mgated_enable), .clk_gated(nvdla_core_clk_mgated) );
+
+// 
+// WRITE SIDE
+//
+wire wr_reserving;
+assign       wr_reserving = dat_fifo_wr_pvld;
+
+
+wire       wr_popping;                          // fwd: write side sees pop?
+
+reg  [1:0] dat_fifo_wr_count;			// write-side count
+
+wire [1:0] wr_count_next_wr_popping = wr_reserving ? dat_fifo_wr_count : (dat_fifo_wr_count - 1'd1); // spyglass disable W164a W484
+wire [1:0] wr_count_next_no_wr_popping = wr_reserving ? (dat_fifo_wr_count + 1'd1) : dat_fifo_wr_count; // spyglass disable W164a W484
+wire [1:0] wr_count_next = wr_popping ? wr_count_next_wr_popping : 
+                                               wr_count_next_no_wr_popping;
+
+always @( posedge nvdla_core_clk_mgated or negedge nvdla_core_rstn ) begin
+    if ( !nvdla_core_rstn ) begin
+        dat_fifo_wr_count <=  2'd0;
+    end else begin
+	if ( wr_reserving ^ wr_popping ) begin
+	    dat_fifo_wr_count <=  wr_count_next;
+        end 
+        //synopsys translate_off
+            else if ( !(wr_reserving ^ wr_popping) ) begin
+        end else begin
+            dat_fifo_wr_count <=  {2{`x_or_0}};
+        end
+        //synopsys translate_on
+
+    end
+end
+
+wire       wr_pushing = wr_reserving;   // data pushed same cycle as dat_fifo_wr_pvld
+
+//
+// RAM
+//
+
+reg   dat_fifo_wr_adr;			// current write address
+
+// spyglass disable_block W484
+always @( posedge nvdla_core_clk_mgated or negedge nvdla_core_rstn ) begin
+    if ( !nvdla_core_rstn ) begin
+        dat_fifo_wr_adr <=  1'd0;
+    end else begin
+        if ( wr_pushing ) begin
+	    dat_fifo_wr_adr <=  dat_fifo_wr_adr + 1'd1;
+        end
+    end
+end
+// spyglass enable_block W484
+
+wire rd_popping;
+
+reg  dat_fifo_rd_adr;          // read address this cycle
+wire ram_we = wr_pushing && (dat_fifo_wr_count > 2'd0 || !rd_popping);   // note: write occurs next cycle
+wire [31:0] dat_fifo_rd_pd_p;                    // read data out of ram
+
+wire [31 : 0] pwrbus_ram_pd;
+
+// Adding parameter for fifogen to disable wr/rd contention assertion in ramgen.
+// Fifogen handles this by ignoring the data on the ram data out for that cycle.
+
+
+NV_NVDLA_SDP_CORE_Y_LUT_dat_flopram_rwsa_2x32 ram (
+      .clk( nvdla_core_clk_mgated )
+    , .pwrbus_ram_pd ( pwrbus_ram_pd )
+    , .di        ( dat_fifo_wr_pd )
+    , .we        ( ram_we )
+    , .wa        ( dat_fifo_wr_adr )
+    , .ra        ( (dat_fifo_wr_count == 0) ? 2'd2 : {1'b0,dat_fifo_rd_adr} )
+    , .dout        ( dat_fifo_rd_pd_p )
+    );
+
+
+wire [0:0] rd_adr_next_popping = dat_fifo_rd_adr + 1'd1; // spyglass disable W484
+always @( posedge nvdla_core_clk_mgated or negedge nvdla_core_rstn ) begin
+    if ( !nvdla_core_rstn ) begin
+        dat_fifo_rd_adr <=  1'd0;
+    end else begin
+        if ( rd_popping ) begin
+	    dat_fifo_rd_adr <=  rd_adr_next_popping;
+        end 
+        //synopsys translate_off
+            else if ( !rd_popping ) begin
+        end else begin
+            dat_fifo_rd_adr <=  {1{`x_or_0}};
+        end
+        //synopsys translate_on
+
+    end
+end
+
+//
+// SYNCHRONOUS BOUNDARY
+//
+
+
+assign wr_popping = rd_popping;		// let it be seen immediately
+
+wire   rd_pushing = wr_pushing;		// let it be seen immediately
+
+//
+// READ SIDE
+//
+
+wire       dat_fifo_rd_pvld_p; 		// data out of fifo is valid
+
+reg        dat_fifo_rd_pvld_int;	// internal copy of dat_fifo_rd_pvld
+assign     dat_fifo_rd_pvld = dat_fifo_rd_pvld_int;
+assign     rd_popping = dat_fifo_rd_pvld_p && !(dat_fifo_rd_pvld_int && !dat_fifo_rd_prdy);
+
+reg  [1:0] dat_fifo_rd_count_p;			// read-side fifo count
+// spyglass disable_block W164a W484
+wire [1:0] rd_count_p_next_rd_popping = rd_pushing ? dat_fifo_rd_count_p : 
+                                                                (dat_fifo_rd_count_p - 1'd1);
+wire [1:0] rd_count_p_next_no_rd_popping =  rd_pushing ? (dat_fifo_rd_count_p + 1'd1) : 
+                                                                    dat_fifo_rd_count_p;
+// spyglass enable_block W164a W484
+wire [1:0] rd_count_p_next = rd_popping ? rd_count_p_next_rd_popping :
+                                                     rd_count_p_next_no_rd_popping; 
+assign     dat_fifo_rd_pvld_p = dat_fifo_rd_count_p != 0 || rd_pushing;
+always @( posedge nvdla_core_clk_mgated or negedge nvdla_core_rstn ) begin
+    if ( !nvdla_core_rstn ) begin
+        dat_fifo_rd_count_p <=  2'd0;
+    end else begin
+        if ( rd_pushing || rd_popping  ) begin
+	    dat_fifo_rd_count_p <=  rd_count_p_next;
+        end 
+        //synopsys translate_off
+            else if ( !(rd_pushing || rd_popping ) ) begin
+        end else begin
+            dat_fifo_rd_count_p <=  {2{`x_or_0}};
+        end
+        //synopsys translate_on
+
+    end
+end
+reg [31:0]  dat_fifo_rd_pd;         // output data register
+wire        rd_req_next = (dat_fifo_rd_pvld_p || (dat_fifo_rd_pvld_int && !dat_fifo_rd_prdy)) ;
+
+always @( posedge nvdla_core_clk_mgated or negedge nvdla_core_rstn ) begin
+    if ( !nvdla_core_rstn ) begin
+        dat_fifo_rd_pvld_int <=  1'b0;
+    end else begin
+        dat_fifo_rd_pvld_int <=  rd_req_next;
+    end
+end
+always @( posedge nvdla_core_clk_mgated ) begin
+    if ( (rd_popping) ) begin
+        dat_fifo_rd_pd <=  dat_fifo_rd_pd_p;
+    end 
+    //synopsys translate_off
+        else if ( !((rd_popping)) ) begin
+    end else begin
+        dat_fifo_rd_pd <=  {32{`x_or_0}};
+    end
+    //synopsys translate_on
+
+end
+
+// Master Clock Gating (SLCG) Enables
+//
+
+// plusarg for disabling this stuff:
+
+// synopsys translate_off
+`ifndef SYNTH_LEVEL1_COMPILE
+`ifndef SYNTHESIS
+reg master_clk_gating_disabled;  initial master_clk_gating_disabled = $test$plusargs( "fifogen_disable_master_clk_gating" ) != 0;
+`endif
+`endif
+// synopsys translate_on
+assign nvdla_core_clk_mgated_enable = ((wr_reserving || wr_pushing || wr_popping || dat_fifo_wr_pvld) || (rd_pushing || rd_popping || (dat_fifo_rd_pvld_int && dat_fifo_rd_prdy)) || (wr_pushing))
+                               `ifdef FIFOGEN_MASTER_CLK_GATING_DISABLED
+                               || 1'b1
+                               `endif
+                               // synopsys translate_off
+			       `ifndef SYNTH_LEVEL1_COMPILE
+			       `ifndef SYNTHESIS
+                               || master_clk_gating_disabled
+			       `endif
+			       `endif
+                               // synopsys translate_on
+                               ;
+
+//
+// Histogram of fifo depth (from write side's perspective)
+//
+// NOTE: it will reference `SIMTOP.perfmon_enabled, so that
+//       has to at least be defined, though not initialized.
+//	 tbgen testbenches have it already and various
+//	 ways to turn it on and off.
+//
+`ifdef PERFMON_HISTOGRAM 
+// synopsys translate_off
+`ifndef SYNTH_LEVEL1_COMPILE
+`ifndef SYNTHESIS
+perfmon_histogram perfmon (
+      .clk	( nvdla_core_clk ) 
+    , .max      ( 32'd2 )
+    , .curr	( {30'd0, dat_fifo_wr_count} )
+    );
+`endif
+`endif
+// synopsys translate_on
+`endif
+
+// spyglass disable_block W164a W164b W116 W484 W504
+
+`ifdef SPYGLASS
+`else
+
+`ifdef FV_ASSERT_ON
+`else
+// synopsys translate_off
+`endif
+
+`ifdef ASSERT_ON
+
+`ifdef SPYGLASS
+wire disable_assert_plusarg = 1'b0;
+`else
+
+`ifdef FV_ASSERT_ON
+wire disable_assert_plusarg = 1'b0;
+`else
+wire disable_assert_plusarg = $test$plusargs("DISABLE_NESS_FLOW_ASSERTIONS");
+`endif
+
+`endif
+wire assert_enabled = 1'b1 && !disable_assert_plusarg;
+
+
+nv_assert_fifo #(0, 2, 0, 0, "FIFOGEN_ASSERTION Fifo overflow or underflow") 
+    fifogen_rd_fifo_check ( .clk    ( nvdla_core_clk ), 
+                            .reset_ ( ( ( nvdla_core_rstn === 1'bx ? 1'b0 : nvdla_core_rstn ) & assert_enabled === 1'bx ? 1'b0 : ( nvdla_core_rstn === 1'bx ? 1'b0 : nvdla_core_rstn ) & assert_enabled ) ), 
+                            .push   ( rd_pushing ), 
+                            .pop    ( rd_popping )
+                          );
+
+`endif
+
+`ifdef FV_ASSERT_ON
+`else
+// synopsys translate_on
+`endif
+
+`ifdef ASSERT_ON
+
+//synopsys translate_off
+`ifndef SYNTH_LEVEL1_COMPILE
+`ifndef SYNTHESIS
+always @(assert_enabled) begin
+    if ( assert_enabled === 1'b0 ) begin
+        $display("Asserts are disabled for %m");
+    end
+end
+`endif
+`endif
+//synopsys translate_on
+
+`endif
+
+`endif
+
+// spyglass enable_block W164a W164b W116 W484 W504
+
+
+//The NV_BLKBOX_SRC0 module is only present when the FIFOGEN_MODULE_SEARCH
+// define is set.  This is to aid fifogen team search for fifogen fifo
+// instance and module names in a given design.
+`ifdef FIFOGEN_MODULE_SEARCH
+NV_BLKBOX_SRC0 dummy_breadcrumb_fifogen_blkbox (.Y());
+`endif
+
+// spyglass enable_block W401 -- clock is not input to module
+
+// synopsys dc_script_begin
+//   set_boundary_optimization find(design, "NV_NVDLA_SDP_CORE_Y_LUT_dat") true
+// synopsys dc_script_end
+
+
+endmodule // NV_NVDLA_SDP_CORE_Y_LUT_dat
+
+// 
+// Flop-Based RAM 
+//
+module NV_NVDLA_SDP_CORE_Y_LUT_dat_flopram_rwsa_2x32 (
+      clk
+    , pwrbus_ram_pd
+    , di
+    , we
+    , wa
+    , ra
+    , dout
+    );
+
+input  clk;  // write clock
+input [31 : 0] pwrbus_ram_pd;
+input  [31:0] di;
+input  we;
+input  [0:0] wa;
+input  [1:0] ra;
+output [31:0] dout;
+
+`ifndef FPGA
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_0 (.A(pwrbus_ram_pd[0]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_1 (.A(pwrbus_ram_pd[1]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_2 (.A(pwrbus_ram_pd[2]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_3 (.A(pwrbus_ram_pd[3]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_4 (.A(pwrbus_ram_pd[4]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_5 (.A(pwrbus_ram_pd[5]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_6 (.A(pwrbus_ram_pd[6]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_7 (.A(pwrbus_ram_pd[7]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_8 (.A(pwrbus_ram_pd[8]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_9 (.A(pwrbus_ram_pd[9]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_10 (.A(pwrbus_ram_pd[10]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_11 (.A(pwrbus_ram_pd[11]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_12 (.A(pwrbus_ram_pd[12]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_13 (.A(pwrbus_ram_pd[13]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_14 (.A(pwrbus_ram_pd[14]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_15 (.A(pwrbus_ram_pd[15]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_16 (.A(pwrbus_ram_pd[16]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_17 (.A(pwrbus_ram_pd[17]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_18 (.A(pwrbus_ram_pd[18]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_19 (.A(pwrbus_ram_pd[19]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_20 (.A(pwrbus_ram_pd[20]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_21 (.A(pwrbus_ram_pd[21]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_22 (.A(pwrbus_ram_pd[22]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_23 (.A(pwrbus_ram_pd[23]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_24 (.A(pwrbus_ram_pd[24]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_25 (.A(pwrbus_ram_pd[25]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_26 (.A(pwrbus_ram_pd[26]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_27 (.A(pwrbus_ram_pd[27]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_28 (.A(pwrbus_ram_pd[28]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_29 (.A(pwrbus_ram_pd[29]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_30 (.A(pwrbus_ram_pd[30]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_31 (.A(pwrbus_ram_pd[31]));
+`endif
+
+`ifdef EMU
+
+
+wire [31:0] dout_p;
+
+// we use an emulation ram here to save flops on the emulation board
+// so that the monstrous chip can fit :-)
+//
+reg [0:0] Wa0_vmw;
+reg we0_vmw;
+reg [31:0] Di0_vmw;
+
+always @( posedge clk ) begin
+    Wa0_vmw <=  wa;
+    we0_vmw <=  we;
+    Di0_vmw <=  di;
+end
+
+vmw_NV_NVDLA_SDP_CORE_Y_LUT_dat_flopram_rwsa_2x32 emu_ram (
+     .Wa0( Wa0_vmw ) 
+   , .we0( we0_vmw ) 
+   , .Di0( Di0_vmw )
+   , .Ra0( ra[0:0] ) 
+   , .Do0( dout_p )
+   );
+
+assign dout = (ra == 2) ? di : dout_p;
+
+`else
+
+reg [31:0] ram_ff0;
+reg [31:0] ram_ff1;
+
+always @( posedge clk ) begin
+    if ( we && wa == 1'd0 ) begin
+	ram_ff0 <=  di;
+    end
+    if ( we && wa == 1'd1 ) begin
+	ram_ff1 <=  di;
+    end
+end
+
+reg [31:0] dout;
+
+always @(*) begin
+    case( ra ) 
+    2'd0:       dout = ram_ff0;
+    2'd1:       dout = ram_ff1;
+    2'd2:       dout = di;
+    //VCS coverage off
+    default:    dout = {32{`x_or_0}};
+    //VCS coverage on
+    endcase
+end
+
+`endif // EMU
+
+endmodule // NV_NVDLA_SDP_CORE_Y_LUT_dat_flopram_rwsa_2x32
+
+// emulation model of flopram guts
+//
+`ifdef EMU
+
+
+module vmw_NV_NVDLA_SDP_CORE_Y_LUT_dat_flopram_rwsa_2x32 (
+   Wa0, we0, Di0,
+   Ra0, Do0
+   );
+
+input  [0:0] Wa0;
+input            we0;
+input  [31:0] Di0;
+input  [0:0] Ra0;
+output [31:0] Do0;
+
+// Only visible during Spyglass to avoid blackboxes.
+`ifdef SPYGLASS_FLOPRAM
+
+assign Do0 = 32'd0;
+wire dummy = 1'b0 | (|Wa0) | (|we0) | (|Di0) | (|Ra0);
+
+`endif
+
+// synopsys translate_off
+`ifndef SYNTH_LEVEL1_COMPILE
+`ifndef SYNTHESIS
+reg [31:0] mem[1:0];
+
+// expand mem for debug ease
+`ifdef EMU_EXPAND_FLOPRAM_MEM
+wire [31:0] Q0 = mem[0];
+wire [31:0] Q1 = mem[1];
+`endif
+
+// asynchronous ram writes
+always @(*) begin
+  if ( we0 == 1'b1 ) begin
+    #0.1;
+    mem[Wa0] = Di0;
+  end
+end
+
+assign Do0 = mem[Ra0];
+`endif
+`endif
+// synopsys translate_on
+
+// synopsys dc_script_begin
+// synopsys dc_script_end
+
+// g2c if { [find / -null_ok -subdesign vmw_NV_NVDLA_SDP_CORE_Y_LUT_dat_flopram_rwsa_2x32] != {} } { set_attr preserve 1 [find / -subdesign vmw_NV_NVDLA_SDP_CORE_Y_LUT_dat_flopram_rwsa_2x32] }
+endmodule // vmw_NV_NVDLA_SDP_CORE_Y_LUT_dat_flopram_rwsa_2x32
+
+//vmw: Memory vmw_NV_NVDLA_SDP_CORE_Y_LUT_dat_flopram_rwsa_2x32
 //vmw: Address-size 1
-//vmw: Data-size 280
+//vmw: Data-size 32
 //vmw: Sensitivity level 1
 //vmw: Ports W R
 
 //vmw: terminal we0 WriteEnable0
 //vmw: terminal Wa0 address0
-//vmw: terminal Di0[279:0] data0[279:0]
+//vmw: terminal Di0[31:0] data0[31:0]
 //vmw: 
 //vmw: terminal Ra0 address1
-//vmw: terminal Do0[279:0] data1[279:0]
+//vmw: terminal Do0[31:0] data1[31:0]
 //vmw: 
 
-//qt: CELL vmw_NV_NVDLA_SDP_CORE_Y_LUT_cmd_flopram_rwsa_2x280
+//qt: CELL vmw_NV_NVDLA_SDP_CORE_Y_LUT_dat_flopram_rwsa_2x32
 //qt: TERMINAL we0 TYPE=WE POLARITY=H PORT=1
 //qt: TERMINAL Wa0[%d] TYPE=ADDRESS DIR=W BIT=%1 PORT=1
 //qt: TERMINAL Di0[%d] TYPE=DATA DIR=I BIT=%1 PORT=1
@@ -33670,3 +24042,606 @@ endmodule // vmw_NV_NVDLA_SDP_CORE_Y_LUT_cmd_flopram_rwsa_2x280
 `endif // EMU
 
 
+`define FORCE_CONTENTION_ASSERTION_RESET_ACTIVE 1'b1
+`include "simulate_x_tick.vh"
+
+
+module NV_NVDLA_SDP_CORE_Y_LUT_cmd (
+      nvdla_core_clk
+    , nvdla_core_rstn
+    , cmd_fifo_wr_prdy
+    , cmd_fifo_wr_pvld
+    , cmd_fifo_wr_pd
+    , cmd_fifo_rd_prdy
+    , cmd_fifo_rd_pvld
+    , cmd_fifo_rd_pd
+    , pwrbus_ram_pd
+    );
+
+// spyglass disable_block W401 -- clock is not input to module
+input         nvdla_core_clk;
+input         nvdla_core_rstn;
+output        cmd_fifo_wr_prdy;
+input         cmd_fifo_wr_pvld;
+input  [69:0] cmd_fifo_wr_pd;
+input         cmd_fifo_rd_prdy;
+output        cmd_fifo_rd_pvld;
+output [69:0] cmd_fifo_rd_pd;
+input  [31:0] pwrbus_ram_pd;
+
+// Master Clock Gating (SLCG)
+//
+// We gate the clock(s) when idle or stalled.
+// This allows us to turn off numerous miscellaneous flops
+// that don't get gated during synthesis for one reason or another.
+//
+// We gate write side and read side separately. 
+// If the fifo is synchronous, we also gate the ram separately, but if
+// -master_clk_gated_unified or -status_reg/-status_logic_reg is specified, 
+// then we use one clk gate for write, ram, and read.
+//
+wire nvdla_core_clk_mgated_enable;   // assigned by code at end of this module
+wire nvdla_core_clk_mgated;               // used only in synchronous fifos
+NV_CLK_gate_power nvdla_core_clk_mgate( .clk(nvdla_core_clk), .reset_(nvdla_core_rstn), .clk_en(nvdla_core_clk_mgated_enable), .clk_gated(nvdla_core_clk_mgated) );
+
+// 
+// WRITE SIDE
+//
+wire wr_reserving;
+reg        cmd_fifo_wr_busy_int;		        	// copy for internal use
+assign     cmd_fifo_wr_prdy = !cmd_fifo_wr_busy_int;
+assign       wr_reserving = cmd_fifo_wr_pvld && !cmd_fifo_wr_busy_int; // reserving write space?
+
+
+wire       wr_popping;                          // fwd: write side sees pop?
+
+reg  [1:0] cmd_fifo_wr_count;			// write-side count
+
+wire [1:0] wr_count_next_wr_popping = wr_reserving ? cmd_fifo_wr_count : (cmd_fifo_wr_count - 1'd1); // spyglass disable W164a W484
+wire [1:0] wr_count_next_no_wr_popping = wr_reserving ? (cmd_fifo_wr_count + 1'd1) : cmd_fifo_wr_count; // spyglass disable W164a W484
+wire [1:0] wr_count_next = wr_popping ? wr_count_next_wr_popping : 
+                                               wr_count_next_no_wr_popping;
+
+wire wr_count_next_no_wr_popping_is_2 = ( wr_count_next_no_wr_popping == 2'd2 );
+wire wr_count_next_is_2 = wr_popping ? 1'b0 :
+                                          wr_count_next_no_wr_popping_is_2;
+wire [1:0] wr_limit_muxed;  // muxed with simulation/emulation overrides
+wire [1:0] wr_limit_reg = wr_limit_muxed;
+                          // VCS coverage off
+wire       cmd_fifo_wr_busy_next = wr_count_next_is_2 || // busy next cycle?
+                          (wr_limit_reg != 2'd0 &&      // check cmd_fifo_wr_limit if != 0
+                           wr_count_next >= wr_limit_reg)  ;
+                          // VCS coverage on
+always @( posedge nvdla_core_clk_mgated or negedge nvdla_core_rstn ) begin
+    if ( !nvdla_core_rstn ) begin
+        cmd_fifo_wr_busy_int <=  1'b0;
+        cmd_fifo_wr_count <=  2'd0;
+    end else begin
+	cmd_fifo_wr_busy_int <=  cmd_fifo_wr_busy_next;
+	if ( wr_reserving ^ wr_popping ) begin
+	    cmd_fifo_wr_count <=  wr_count_next;
+        end 
+        //synopsys translate_off
+            else if ( !(wr_reserving ^ wr_popping) ) begin
+        end else begin
+            cmd_fifo_wr_count <=  {2{`x_or_0}};
+        end
+        //synopsys translate_on
+
+    end
+end
+
+wire       wr_pushing = wr_reserving;   // data pushed same cycle as cmd_fifo_wr_pvld
+
+//
+// RAM
+//
+
+reg   cmd_fifo_wr_adr;			// current write address
+
+// spyglass disable_block W484
+always @( posedge nvdla_core_clk_mgated or negedge nvdla_core_rstn ) begin
+    if ( !nvdla_core_rstn ) begin
+        cmd_fifo_wr_adr <=  1'd0;
+    end else begin
+        if ( wr_pushing ) begin
+	    cmd_fifo_wr_adr <=  cmd_fifo_wr_adr + 1'd1;
+        end
+    end
+end
+// spyglass enable_block W484
+
+wire rd_popping;
+
+reg  cmd_fifo_rd_adr;          // read address this cycle
+wire ram_we = wr_pushing && (cmd_fifo_wr_count > 2'd0 || !rd_popping);   // note: write occurs next cycle
+wire [69:0] cmd_fifo_rd_pd_p;                    // read data out of ram
+
+wire [31 : 0] pwrbus_ram_pd;
+
+// Adding parameter for fifogen to disable wr/rd contention assertion in ramgen.
+// Fifogen handles this by ignoring the data on the ram data out for that cycle.
+
+
+NV_NVDLA_SDP_CORE_Y_LUT_cmd_flopram_rwsa_2x70 ram (
+      .clk( nvdla_core_clk_mgated )
+    , .pwrbus_ram_pd ( pwrbus_ram_pd )
+    , .di        ( cmd_fifo_wr_pd )
+    , .we        ( ram_we )
+    , .wa        ( cmd_fifo_wr_adr )
+    , .ra        ( (cmd_fifo_wr_count == 0) ? 2'd2 : {1'b0,cmd_fifo_rd_adr} )
+    , .dout        ( cmd_fifo_rd_pd_p )
+    );
+
+
+wire [0:0] rd_adr_next_popping = cmd_fifo_rd_adr + 1'd1; // spyglass disable W484
+always @( posedge nvdla_core_clk_mgated or negedge nvdla_core_rstn ) begin
+    if ( !nvdla_core_rstn ) begin
+        cmd_fifo_rd_adr <=  1'd0;
+    end else begin
+        if ( rd_popping ) begin
+	    cmd_fifo_rd_adr <=  rd_adr_next_popping;
+        end 
+        //synopsys translate_off
+            else if ( !rd_popping ) begin
+        end else begin
+            cmd_fifo_rd_adr <=  {1{`x_or_0}};
+        end
+        //synopsys translate_on
+
+    end
+end
+
+//
+// SYNCHRONOUS BOUNDARY
+//
+
+
+assign wr_popping = rd_popping;		// let it be seen immediately
+
+wire   rd_pushing = wr_pushing;		// let it be seen immediately
+
+//
+// READ SIDE
+//
+
+wire       cmd_fifo_rd_pvld_p; 		// data out of fifo is valid
+
+reg        cmd_fifo_rd_pvld_int;	// internal copy of cmd_fifo_rd_pvld
+assign     cmd_fifo_rd_pvld = cmd_fifo_rd_pvld_int;
+assign     rd_popping = cmd_fifo_rd_pvld_p && !(cmd_fifo_rd_pvld_int && !cmd_fifo_rd_prdy);
+
+reg  [1:0] cmd_fifo_rd_count_p;			// read-side fifo count
+// spyglass disable_block W164a W484
+wire [1:0] rd_count_p_next_rd_popping = rd_pushing ? cmd_fifo_rd_count_p : 
+                                                                (cmd_fifo_rd_count_p - 1'd1);
+wire [1:0] rd_count_p_next_no_rd_popping =  rd_pushing ? (cmd_fifo_rd_count_p + 1'd1) : 
+                                                                    cmd_fifo_rd_count_p;
+// spyglass enable_block W164a W484
+wire [1:0] rd_count_p_next = rd_popping ? rd_count_p_next_rd_popping :
+                                                     rd_count_p_next_no_rd_popping; 
+assign     cmd_fifo_rd_pvld_p = cmd_fifo_rd_count_p != 0 || rd_pushing;
+always @( posedge nvdla_core_clk_mgated or negedge nvdla_core_rstn ) begin
+    if ( !nvdla_core_rstn ) begin
+        cmd_fifo_rd_count_p <=  2'd0;
+    end else begin
+        if ( rd_pushing || rd_popping  ) begin
+	    cmd_fifo_rd_count_p <=  rd_count_p_next;
+        end 
+        //synopsys translate_off
+            else if ( !(rd_pushing || rd_popping ) ) begin
+        end else begin
+            cmd_fifo_rd_count_p <=  {2{`x_or_0}};
+        end
+        //synopsys translate_on
+
+    end
+end
+reg [69:0]  cmd_fifo_rd_pd;         // output data register
+wire        rd_req_next = (cmd_fifo_rd_pvld_p || (cmd_fifo_rd_pvld_int && !cmd_fifo_rd_prdy)) ;
+
+always @( posedge nvdla_core_clk_mgated or negedge nvdla_core_rstn ) begin
+    if ( !nvdla_core_rstn ) begin
+        cmd_fifo_rd_pvld_int <=  1'b0;
+    end else begin
+        cmd_fifo_rd_pvld_int <=  rd_req_next;
+    end
+end
+always @( posedge nvdla_core_clk_mgated ) begin
+    if ( (rd_popping) ) begin
+        cmd_fifo_rd_pd <=  cmd_fifo_rd_pd_p;
+    end 
+    //synopsys translate_off
+        else if ( !((rd_popping)) ) begin
+    end else begin
+        cmd_fifo_rd_pd <=  {70{`x_or_0}};
+    end
+    //synopsys translate_on
+
+end
+
+// Master Clock Gating (SLCG) Enables
+//
+
+// plusarg for disabling this stuff:
+
+// synopsys translate_off
+`ifndef SYNTH_LEVEL1_COMPILE
+`ifndef SYNTHESIS
+reg master_clk_gating_disabled;  initial master_clk_gating_disabled = $test$plusargs( "fifogen_disable_master_clk_gating" ) != 0;
+`endif
+`endif
+// synopsys translate_on
+assign nvdla_core_clk_mgated_enable = ((wr_reserving || wr_pushing || wr_popping || (cmd_fifo_wr_pvld && !cmd_fifo_wr_busy_int) || (cmd_fifo_wr_busy_int != cmd_fifo_wr_busy_next)) || (rd_pushing || rd_popping || (cmd_fifo_rd_pvld_int && cmd_fifo_rd_prdy)) || (wr_pushing))
+                               `ifdef FIFOGEN_MASTER_CLK_GATING_DISABLED
+                               || 1'b1
+                               `endif
+                               // synopsys translate_off
+			       `ifndef SYNTH_LEVEL1_COMPILE
+			       `ifndef SYNTHESIS
+                               || master_clk_gating_disabled
+			       `endif
+			       `endif
+                               // synopsys translate_on
+                               ;
+
+
+// Simulation and Emulation Overrides of wr_limit(s)
+//
+
+`ifdef EMU
+
+`ifdef EMU_FIFO_CFG
+// Emulation Global Config Override
+//
+assign wr_limit_muxed = `EMU_FIFO_CFG.NV_NVDLA_SDP_CORE_Y_LUT_cmd_wr_limit_override ? `EMU_FIFO_CFG.NV_NVDLA_SDP_CORE_Y_LUT_cmd_wr_limit : 2'd0;
+`else
+// No Global Override for Emulation 
+//
+assign wr_limit_muxed = 2'd0;
+`endif // EMU_FIFO_CFG
+
+`else // !EMU
+`ifdef SYNTH_LEVEL1_COMPILE
+
+// No Override for GCS Compiles
+//
+assign wr_limit_muxed = 2'd0;
+`else
+`ifdef SYNTHESIS
+
+// No Override for RTL Synthesis
+//
+
+assign wr_limit_muxed = 2'd0;
+
+`else  
+
+// RTL Simulation Plusarg Override
+
+
+// VCS coverage off
+
+reg wr_limit_override;
+reg [1:0] wr_limit_override_value; 
+assign wr_limit_muxed = wr_limit_override ? wr_limit_override_value : 2'd0;
+`ifdef NV_ARCHPRO
+event reinit;
+
+initial begin
+    $display("fifogen reinit initial block %m");
+    -> reinit;
+end
+`endif
+
+`ifdef NV_ARCHPRO
+always @( reinit ) begin
+`else 
+initial begin
+`endif
+    wr_limit_override = 0;
+    wr_limit_override_value = 0;  // to keep viva happy with dangles
+    if ( $test$plusargs( "NV_NVDLA_SDP_CORE_Y_LUT_cmd_wr_limit" ) ) begin
+        wr_limit_override = 1;
+        $value$plusargs( "NV_NVDLA_SDP_CORE_Y_LUT_cmd_wr_limit=%d", wr_limit_override_value);
+    end
+end
+
+// VCS coverage on
+
+
+`endif 
+`endif
+`endif
+
+//
+// Histogram of fifo depth (from write side's perspective)
+//
+// NOTE: it will reference `SIMTOP.perfmon_enabled, so that
+//       has to at least be defined, though not initialized.
+//	 tbgen testbenches have it already and various
+//	 ways to turn it on and off.
+//
+`ifdef PERFMON_HISTOGRAM 
+// synopsys translate_off
+`ifndef SYNTH_LEVEL1_COMPILE
+`ifndef SYNTHESIS
+perfmon_histogram perfmon (
+      .clk	( nvdla_core_clk ) 
+    , .max      ( {30'd0, (wr_limit_reg == 2'd0) ? 2'd2 : wr_limit_reg} )
+    , .curr	( {30'd0, cmd_fifo_wr_count} )
+    );
+`endif
+`endif
+// synopsys translate_on
+`endif
+
+// spyglass disable_block W164a W164b W116 W484 W504
+
+`ifdef SPYGLASS
+`else
+
+`ifdef FV_ASSERT_ON
+`else
+// synopsys translate_off
+`endif
+
+`ifdef ASSERT_ON
+
+`ifdef SPYGLASS
+wire disable_assert_plusarg = 1'b0;
+`else
+
+`ifdef FV_ASSERT_ON
+wire disable_assert_plusarg = 1'b0;
+`else
+wire disable_assert_plusarg = $test$plusargs("DISABLE_NESS_FLOW_ASSERTIONS");
+`endif
+
+`endif
+wire assert_enabled = 1'b1 && !disable_assert_plusarg;
+
+
+`endif
+
+`ifdef FV_ASSERT_ON
+`else
+// synopsys translate_on
+`endif
+
+`ifdef ASSERT_ON
+
+//synopsys translate_off
+`ifndef SYNTH_LEVEL1_COMPILE
+`ifndef SYNTHESIS
+always @(assert_enabled) begin
+    if ( assert_enabled === 1'b0 ) begin
+        $display("Asserts are disabled for %m");
+    end
+end
+`endif
+`endif
+//synopsys translate_on
+
+`endif
+
+`endif
+
+// spyglass enable_block W164a W164b W116 W484 W504
+
+
+//The NV_BLKBOX_SRC0 module is only present when the FIFOGEN_MODULE_SEARCH
+// define is set.  This is to aid fifogen team search for fifogen fifo
+// instance and module names in a given design.
+`ifdef FIFOGEN_MODULE_SEARCH
+NV_BLKBOX_SRC0 dummy_breadcrumb_fifogen_blkbox (.Y());
+`endif
+
+// spyglass enable_block W401 -- clock is not input to module
+
+// synopsys dc_script_begin
+//   set_boundary_optimization find(design, "NV_NVDLA_SDP_CORE_Y_LUT_cmd") true
+// synopsys dc_script_end
+
+
+endmodule // NV_NVDLA_SDP_CORE_Y_LUT_cmd
+
+// 
+// Flop-Based RAM 
+//
+module NV_NVDLA_SDP_CORE_Y_LUT_cmd_flopram_rwsa_2x70 (
+      clk
+    , pwrbus_ram_pd
+    , di
+    , we
+    , wa
+    , ra
+    , dout
+    );
+
+input  clk;  // write clock
+input [31 : 0] pwrbus_ram_pd;
+input  [69:0] di;
+input  we;
+input  [0:0] wa;
+input  [1:0] ra;
+output [69:0] dout;
+
+`ifndef FPGA
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_0 (.A(pwrbus_ram_pd[0]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_1 (.A(pwrbus_ram_pd[1]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_2 (.A(pwrbus_ram_pd[2]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_3 (.A(pwrbus_ram_pd[3]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_4 (.A(pwrbus_ram_pd[4]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_5 (.A(pwrbus_ram_pd[5]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_6 (.A(pwrbus_ram_pd[6]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_7 (.A(pwrbus_ram_pd[7]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_8 (.A(pwrbus_ram_pd[8]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_9 (.A(pwrbus_ram_pd[9]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_10 (.A(pwrbus_ram_pd[10]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_11 (.A(pwrbus_ram_pd[11]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_12 (.A(pwrbus_ram_pd[12]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_13 (.A(pwrbus_ram_pd[13]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_14 (.A(pwrbus_ram_pd[14]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_15 (.A(pwrbus_ram_pd[15]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_16 (.A(pwrbus_ram_pd[16]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_17 (.A(pwrbus_ram_pd[17]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_18 (.A(pwrbus_ram_pd[18]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_19 (.A(pwrbus_ram_pd[19]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_20 (.A(pwrbus_ram_pd[20]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_21 (.A(pwrbus_ram_pd[21]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_22 (.A(pwrbus_ram_pd[22]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_23 (.A(pwrbus_ram_pd[23]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_24 (.A(pwrbus_ram_pd[24]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_25 (.A(pwrbus_ram_pd[25]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_26 (.A(pwrbus_ram_pd[26]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_27 (.A(pwrbus_ram_pd[27]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_28 (.A(pwrbus_ram_pd[28]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_29 (.A(pwrbus_ram_pd[29]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_30 (.A(pwrbus_ram_pd[30]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_31 (.A(pwrbus_ram_pd[31]));
+`endif
+
+`ifdef EMU
+
+
+wire [69:0] dout_p;
+
+// we use an emulation ram here to save flops on the emulation board
+// so that the monstrous chip can fit :-)
+//
+reg [0:0] Wa0_vmw;
+reg we0_vmw;
+reg [69:0] Di0_vmw;
+
+always @( posedge clk ) begin
+    Wa0_vmw <=  wa;
+    we0_vmw <=  we;
+    Di0_vmw <=  di;
+end
+
+vmw_NV_NVDLA_SDP_CORE_Y_LUT_cmd_flopram_rwsa_2x70 emu_ram (
+     .Wa0( Wa0_vmw ) 
+   , .we0( we0_vmw ) 
+   , .Di0( Di0_vmw )
+   , .Ra0( ra[0:0] ) 
+   , .Do0( dout_p )
+   );
+
+assign dout = (ra == 2) ? di : dout_p;
+
+`else
+
+reg [69:0] ram_ff0;
+reg [69:0] ram_ff1;
+
+always @( posedge clk ) begin
+    if ( we && wa == 1'd0 ) begin
+	ram_ff0 <=  di;
+    end
+    if ( we && wa == 1'd1 ) begin
+	ram_ff1 <=  di;
+    end
+end
+
+reg [69:0] dout;
+
+always @(*) begin
+    case( ra ) 
+    2'd0:       dout = ram_ff0;
+    2'd1:       dout = ram_ff1;
+    2'd2:       dout = di;
+    //VCS coverage off
+    default:    dout = {70{`x_or_0}};
+    //VCS coverage on
+    endcase
+end
+
+`endif // EMU
+
+endmodule // NV_NVDLA_SDP_CORE_Y_LUT_cmd_flopram_rwsa_2x70
+
+// emulation model of flopram guts
+//
+`ifdef EMU
+
+
+module vmw_NV_NVDLA_SDP_CORE_Y_LUT_cmd_flopram_rwsa_2x70 (
+   Wa0, we0, Di0,
+   Ra0, Do0
+   );
+
+input  [0:0] Wa0;
+input            we0;
+input  [69:0] Di0;
+input  [0:0] Ra0;
+output [69:0] Do0;
+
+// Only visible during Spyglass to avoid blackboxes.
+`ifdef SPYGLASS_FLOPRAM
+
+assign Do0 = 70'd0;
+wire dummy = 1'b0 | (|Wa0) | (|we0) | (|Di0) | (|Ra0);
+
+`endif
+
+// synopsys translate_off
+`ifndef SYNTH_LEVEL1_COMPILE
+`ifndef SYNTHESIS
+reg [69:0] mem[1:0];
+
+// expand mem for debug ease
+`ifdef EMU_EXPAND_FLOPRAM_MEM
+wire [69:0] Q0 = mem[0];
+wire [69:0] Q1 = mem[1];
+`endif
+
+// asynchronous ram writes
+always @(*) begin
+  if ( we0 == 1'b1 ) begin
+    #0.1;
+    mem[Wa0] = Di0;
+  end
+end
+
+assign Do0 = mem[Ra0];
+`endif
+`endif
+// synopsys translate_on
+
+// synopsys dc_script_begin
+// synopsys dc_script_end
+
+// g2c if { [find / -null_ok -subdesign vmw_NV_NVDLA_SDP_CORE_Y_LUT_cmd_flopram_rwsa_2x70] != {} } { set_attr preserve 1 [find / -subdesign vmw_NV_NVDLA_SDP_CORE_Y_LUT_cmd_flopram_rwsa_2x70] }
+endmodule // vmw_NV_NVDLA_SDP_CORE_Y_LUT_cmd_flopram_rwsa_2x70
+
+//vmw: Memory vmw_NV_NVDLA_SDP_CORE_Y_LUT_cmd_flopram_rwsa_2x70
+//vmw: Address-size 1
+//vmw: Data-size 70
+//vmw: Sensitivity level 1
+//vmw: Ports W R
+
+//vmw: terminal we0 WriteEnable0
+//vmw: terminal Wa0 address0
+//vmw: terminal Di0[69:0] data0[69:0]
+//vmw: 
+//vmw: terminal Ra0 address1
+//vmw: terminal Do0[69:0] data1[69:0]
+//vmw: 
+
+//qt: CELL vmw_NV_NVDLA_SDP_CORE_Y_LUT_cmd_flopram_rwsa_2x70
+//qt: TERMINAL we0 TYPE=WE POLARITY=H PORT=1
+//qt: TERMINAL Wa0[%d] TYPE=ADDRESS DIR=W BIT=%1 PORT=1
+//qt: TERMINAL Di0[%d] TYPE=DATA DIR=I BIT=%1 PORT=1
+//qt: 
+//qt: TERMINAL Ra0[%d] TYPE=ADDRESS DIR=R BIT=%1 PORT=1
+//qt: TERMINAL Do0[%d] TYPE=DATA DIR=O BIT=%1 PORT=1
+//qt:
+
+`endif // EMU
+
+
+
+
+
+#endif

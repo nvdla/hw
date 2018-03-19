@@ -134,7 +134,7 @@ output        csb2cdma_req_prdy;
 output        dp2reg_consumer;
 output  [3:0] reg2dp_arb_weight;
 output  [3:0] reg2dp_arb_wmb;
-output [26:0] reg2dp_batch_stride;
+output [31:0] reg2dp_batch_stride;
 output  [4:0] reg2dp_batches;
 output [17:0] reg2dp_byte_per_kernel;
 output        reg2dp_conv_mode;
@@ -145,12 +145,12 @@ output [15:0] reg2dp_cvt_offset;
 output [15:0] reg2dp_cvt_scale;
 output  [5:0] reg2dp_cvt_truncate;
 output [31:0] reg2dp_cya;
-output  [3:0] reg2dp_data_bank;
+output  [4:0] reg2dp_data_bank;
 output        reg2dp_data_reuse;
 output [31:0] reg2dp_datain_addr_high_0;
 output [31:0] reg2dp_datain_addr_high_1;
-output [26:0] reg2dp_datain_addr_low_0;
-output [26:0] reg2dp_datain_addr_low_1;
+output [31:0] reg2dp_datain_addr_low_0;
+output [31:0] reg2dp_datain_addr_low_1;
 output [12:0] reg2dp_datain_channel;
 output        reg2dp_datain_format;
 output [12:0] reg2dp_datain_height;
@@ -159,11 +159,11 @@ output        reg2dp_datain_ram_type;
 output [12:0] reg2dp_datain_width;
 output [12:0] reg2dp_datain_width_ext;
 output        reg2dp_dma_en;
-output [11:0] reg2dp_entries;
+output [13:0] reg2dp_entries;
 output [11:0] reg2dp_grains;
 output  [1:0] reg2dp_in_precision;
 output        reg2dp_line_packed;
-output [26:0] reg2dp_line_stride;
+output [31:0] reg2dp_line_stride;
 output [15:0] reg2dp_mean_ax;
 output [15:0] reg2dp_mean_bv;
 output        reg2dp_mean_format;
@@ -189,21 +189,21 @@ output  [4:0] reg2dp_rsv_y_index;
 output        reg2dp_skip_data_rls;
 output        reg2dp_skip_weight_rls;
 output        reg2dp_surf_packed;
-output [26:0] reg2dp_surf_stride;
-output [26:0] reg2dp_uv_line_stride;
+output [31:0] reg2dp_surf_stride;
+output [31:0] reg2dp_uv_line_stride;
 output [31:0] reg2dp_weight_addr_high;
-output [26:0] reg2dp_weight_addr_low;
-output  [3:0] reg2dp_weight_bank;
-output [24:0] reg2dp_weight_bytes;
+output [31:0] reg2dp_weight_addr_low;
+output  [4:0] reg2dp_weight_bank;
+output [31:0] reg2dp_weight_bytes;
 output        reg2dp_weight_format;
 output [12:0] reg2dp_weight_kernel;
 output        reg2dp_weight_ram_type;
 output        reg2dp_weight_reuse;
 output [31:0] reg2dp_wgs_addr_high;
-output [26:0] reg2dp_wgs_addr_low;
+output [31:0] reg2dp_wgs_addr_low;
 output [31:0] reg2dp_wmb_addr_high;
-output [26:0] reg2dp_wmb_addr_low;
-output [20:0] reg2dp_wmb_bytes;
+output [31:0] reg2dp_wmb_addr_low;
+output [27:0] reg2dp_wmb_bytes;
 output  [7:0] slcg_op_en;
 wire          csb_rresp_error;
 wire   [33:0] csb_rresp_pd_w;
@@ -220,7 +220,7 @@ wire   [31:0] d1_reg_rd_data;
 wire   [31:0] d1_reg_wr_data;
 wire          d1_reg_wr_en;
 wire          dp2reg_consumer_w;
-wire   [26:0] reg2dp_d0_batch_stride;
+wire   [31:0] reg2dp_d0_batch_stride;
 wire    [4:0] reg2dp_d0_batches;
 wire   [17:0] reg2dp_d0_byte_per_kernel;
 wire          reg2dp_d0_conv_mode;
@@ -231,12 +231,12 @@ wire   [15:0] reg2dp_d0_cvt_offset;
 wire   [15:0] reg2dp_d0_cvt_scale;
 wire    [5:0] reg2dp_d0_cvt_truncate;
 wire   [31:0] reg2dp_d0_cya;
-wire    [3:0] reg2dp_d0_data_bank;
+wire    [4:0] reg2dp_d0_data_bank;
 wire          reg2dp_d0_data_reuse;
 wire   [31:0] reg2dp_d0_datain_addr_high_0;
 wire   [31:0] reg2dp_d0_datain_addr_high_1;
-wire   [26:0] reg2dp_d0_datain_addr_low_0;
-wire   [26:0] reg2dp_d0_datain_addr_low_1;
+wire   [31:0] reg2dp_d0_datain_addr_low_0;
+wire   [31:0] reg2dp_d0_datain_addr_low_1;
 wire   [12:0] reg2dp_d0_datain_channel;
 wire          reg2dp_d0_datain_format;
 wire   [12:0] reg2dp_d0_datain_height;
@@ -245,11 +245,11 @@ wire          reg2dp_d0_datain_ram_type;
 wire   [12:0] reg2dp_d0_datain_width;
 wire   [12:0] reg2dp_d0_datain_width_ext;
 wire          reg2dp_d0_dma_en;
-wire   [11:0] reg2dp_d0_entries;
+wire   [13:0] reg2dp_d0_entries;
 wire   [11:0] reg2dp_d0_grains;
 wire    [1:0] reg2dp_d0_in_precision;
 wire          reg2dp_d0_line_packed;
-wire   [26:0] reg2dp_d0_line_stride;
+wire   [31:0] reg2dp_d0_line_stride;
 wire   [15:0] reg2dp_d0_mean_ax;
 wire   [15:0] reg2dp_d0_mean_bv;
 wire          reg2dp_d0_mean_format;
@@ -275,22 +275,22 @@ wire    [4:0] reg2dp_d0_rsv_y_index;
 wire          reg2dp_d0_skip_data_rls;
 wire          reg2dp_d0_skip_weight_rls;
 wire          reg2dp_d0_surf_packed;
-wire   [26:0] reg2dp_d0_surf_stride;
-wire   [26:0] reg2dp_d0_uv_line_stride;
+wire   [31:0] reg2dp_d0_surf_stride;
+wire   [31:0] reg2dp_d0_uv_line_stride;
 wire   [31:0] reg2dp_d0_weight_addr_high;
-wire   [26:0] reg2dp_d0_weight_addr_low;
-wire    [3:0] reg2dp_d0_weight_bank;
-wire   [24:0] reg2dp_d0_weight_bytes;
+wire   [31:0] reg2dp_d0_weight_addr_low;
+wire    [4:0] reg2dp_d0_weight_bank;
+wire   [31:0] reg2dp_d0_weight_bytes;
 wire          reg2dp_d0_weight_format;
 wire   [12:0] reg2dp_d0_weight_kernel;
 wire          reg2dp_d0_weight_ram_type;
 wire          reg2dp_d0_weight_reuse;
 wire   [31:0] reg2dp_d0_wgs_addr_high;
-wire   [26:0] reg2dp_d0_wgs_addr_low;
+wire   [31:0] reg2dp_d0_wgs_addr_low;
 wire   [31:0] reg2dp_d0_wmb_addr_high;
-wire   [26:0] reg2dp_d0_wmb_addr_low;
-wire   [20:0] reg2dp_d0_wmb_bytes;
-wire   [26:0] reg2dp_d1_batch_stride;
+wire   [31:0] reg2dp_d0_wmb_addr_low;
+wire   [27:0] reg2dp_d0_wmb_bytes;
+wire   [31:0] reg2dp_d1_batch_stride;
 wire    [4:0] reg2dp_d1_batches;
 wire   [17:0] reg2dp_d1_byte_per_kernel;
 wire          reg2dp_d1_conv_mode;
@@ -301,12 +301,12 @@ wire   [15:0] reg2dp_d1_cvt_offset;
 wire   [15:0] reg2dp_d1_cvt_scale;
 wire    [5:0] reg2dp_d1_cvt_truncate;
 wire   [31:0] reg2dp_d1_cya;
-wire    [3:0] reg2dp_d1_data_bank;
+wire    [4:0] reg2dp_d1_data_bank;
 wire          reg2dp_d1_data_reuse;
 wire   [31:0] reg2dp_d1_datain_addr_high_0;
 wire   [31:0] reg2dp_d1_datain_addr_high_1;
-wire   [26:0] reg2dp_d1_datain_addr_low_0;
-wire   [26:0] reg2dp_d1_datain_addr_low_1;
+wire   [31:0] reg2dp_d1_datain_addr_low_0;
+wire   [31:0] reg2dp_d1_datain_addr_low_1;
 wire   [12:0] reg2dp_d1_datain_channel;
 wire          reg2dp_d1_datain_format;
 wire   [12:0] reg2dp_d1_datain_height;
@@ -315,11 +315,11 @@ wire          reg2dp_d1_datain_ram_type;
 wire   [12:0] reg2dp_d1_datain_width;
 wire   [12:0] reg2dp_d1_datain_width_ext;
 wire          reg2dp_d1_dma_en;
-wire   [11:0] reg2dp_d1_entries;
+wire   [13:0] reg2dp_d1_entries;
 wire   [11:0] reg2dp_d1_grains;
 wire    [1:0] reg2dp_d1_in_precision;
 wire          reg2dp_d1_line_packed;
-wire   [26:0] reg2dp_d1_line_stride;
+wire   [31:0] reg2dp_d1_line_stride;
 wire   [15:0] reg2dp_d1_mean_ax;
 wire   [15:0] reg2dp_d1_mean_bv;
 wire          reg2dp_d1_mean_format;
@@ -345,21 +345,21 @@ wire    [4:0] reg2dp_d1_rsv_y_index;
 wire          reg2dp_d1_skip_data_rls;
 wire          reg2dp_d1_skip_weight_rls;
 wire          reg2dp_d1_surf_packed;
-wire   [26:0] reg2dp_d1_surf_stride;
-wire   [26:0] reg2dp_d1_uv_line_stride;
+wire   [31:0] reg2dp_d1_surf_stride;
+wire   [31:0] reg2dp_d1_uv_line_stride;
 wire   [31:0] reg2dp_d1_weight_addr_high;
-wire   [26:0] reg2dp_d1_weight_addr_low;
-wire    [3:0] reg2dp_d1_weight_bank;
-wire   [24:0] reg2dp_d1_weight_bytes;
+wire   [31:0] reg2dp_d1_weight_addr_low;
+wire    [4:0] reg2dp_d1_weight_bank;
+wire   [31:0] reg2dp_d1_weight_bytes;
 wire          reg2dp_d1_weight_format;
 wire   [12:0] reg2dp_d1_weight_kernel;
 wire          reg2dp_d1_weight_ram_type;
 wire          reg2dp_d1_weight_reuse;
 wire   [31:0] reg2dp_d1_wgs_addr_high;
-wire   [26:0] reg2dp_d1_wgs_addr_low;
+wire   [31:0] reg2dp_d1_wgs_addr_low;
 wire   [31:0] reg2dp_d1_wmb_addr_high;
-wire   [26:0] reg2dp_d1_wmb_addr_low;
-wire   [20:0] reg2dp_d1_wmb_bytes;
+wire   [31:0] reg2dp_d1_wmb_addr_low;
+wire   [27:0] reg2dp_d1_wmb_bytes;
 wire    [2:0] reg2dp_op_en_reg_w;
 wire          reg2dp_producer;
 wire   [23:0] reg_offset;
@@ -426,7 +426,7 @@ reg    [31:0] dp2reg_d1_wt_rd_stall_w;
 reg           dp2reg_flush_done;
 reg     [1:0] dp2reg_status_0;
 reg     [1:0] dp2reg_status_1;
-reg    [26:0] reg2dp_batch_stride;
+reg    [31:0] reg2dp_batch_stride;
 reg     [4:0] reg2dp_batches;
 reg    [17:0] reg2dp_byte_per_kernel;
 reg           reg2dp_conv_mode;
@@ -441,12 +441,12 @@ reg           reg2dp_d0_op_en;
 reg           reg2dp_d0_op_en_w;
 reg           reg2dp_d1_op_en;
 reg           reg2dp_d1_op_en_w;
-reg     [3:0] reg2dp_data_bank;
+reg     [4:0] reg2dp_data_bank;
 reg           reg2dp_data_reuse;
 reg    [31:0] reg2dp_datain_addr_high_0;
 reg    [31:0] reg2dp_datain_addr_high_1;
-reg    [26:0] reg2dp_datain_addr_low_0;
-reg    [26:0] reg2dp_datain_addr_low_1;
+reg    [31:0] reg2dp_datain_addr_low_0;
+reg    [31:0] reg2dp_datain_addr_low_1;
 reg    [12:0] reg2dp_datain_channel;
 reg           reg2dp_datain_format;
 reg    [12:0] reg2dp_datain_height;
@@ -455,11 +455,11 @@ reg           reg2dp_datain_ram_type;
 reg    [12:0] reg2dp_datain_width;
 reg    [12:0] reg2dp_datain_width_ext;
 reg           reg2dp_dma_en;
-reg    [11:0] reg2dp_entries;
+reg    [13:0] reg2dp_entries;
 reg    [11:0] reg2dp_grains;
 reg     [1:0] reg2dp_in_precision;
 reg           reg2dp_line_packed;
-reg    [26:0] reg2dp_line_stride;
+reg    [31:0] reg2dp_line_stride;
 reg    [15:0] reg2dp_mean_ax;
 reg    [15:0] reg2dp_mean_bv;
 reg           reg2dp_mean_format;
@@ -486,21 +486,21 @@ reg     [4:0] reg2dp_rsv_y_index;
 reg           reg2dp_skip_data_rls;
 reg           reg2dp_skip_weight_rls;
 reg           reg2dp_surf_packed;
-reg    [26:0] reg2dp_surf_stride;
-reg    [26:0] reg2dp_uv_line_stride;
+reg    [31:0] reg2dp_surf_stride;
+reg    [31:0] reg2dp_uv_line_stride;
 reg    [31:0] reg2dp_weight_addr_high;
-reg    [26:0] reg2dp_weight_addr_low;
-reg     [3:0] reg2dp_weight_bank;
-reg    [24:0] reg2dp_weight_bytes;
+reg    [31:0] reg2dp_weight_addr_low;
+reg     [4:0] reg2dp_weight_bank;
+reg    [31:0] reg2dp_weight_bytes;
 reg           reg2dp_weight_format;
 reg    [12:0] reg2dp_weight_kernel;
 reg           reg2dp_weight_ram_type;
 reg           reg2dp_weight_reuse;
 reg    [31:0] reg2dp_wgs_addr_high;
-reg    [26:0] reg2dp_wgs_addr_low;
+reg    [31:0] reg2dp_wgs_addr_low;
 reg    [31:0] reg2dp_wmb_addr_high;
-reg    [26:0] reg2dp_wmb_addr_low;
-reg    [20:0] reg2dp_wmb_bytes;
+reg    [31:0] reg2dp_wmb_addr_low;
+reg    [27:0] reg2dp_wmb_bytes;
 reg    [62:0] req_pd;
 reg           req_pvld;
 reg     [7:0] slcg_op_en_d1;
@@ -534,10 +534,10 @@ NV_NVDLA_CDMA_dual_reg u_dual_reg_d0 (
   ,.reg_wr_en           (d0_reg_wr_en)                       //|< w
   ,.nvdla_core_clk      (nvdla_core_clk)                     //|< i
   ,.nvdla_core_rstn     (nvdla_core_rstn)                    //|< i
-  ,.data_bank           (reg2dp_d0_data_bank[3:0])           //|> w
-  ,.weight_bank         (reg2dp_d0_weight_bank[3:0])         //|> w
+  ,.data_bank           (reg2dp_d0_data_bank[4:0])           //|> w
+  ,.weight_bank         (reg2dp_d0_weight_bank[4:0])         //|> w
   ,.batches             (reg2dp_d0_batches[4:0])             //|> w
-  ,.batch_stride        (reg2dp_d0_batch_stride[26:0])       //|> w
+  ,.batch_stride        (reg2dp_d0_batch_stride[31:0])       //|> w
   ,.conv_x_stride       (reg2dp_d0_conv_x_stride[2:0])       //|> w
   ,.conv_y_stride       (reg2dp_d0_conv_y_stride[2:0])       //|> w
   ,.cvt_en              (reg2dp_d0_cvt_en)                   //|> w
@@ -547,8 +547,8 @@ NV_NVDLA_CDMA_dual_reg u_dual_reg_d0 (
   ,.cya                 (reg2dp_d0_cya[31:0])                //|> w
   ,.datain_addr_high_0  (reg2dp_d0_datain_addr_high_0[31:0]) //|> w
   ,.datain_addr_high_1  (reg2dp_d0_datain_addr_high_1[31:0]) //|> w
-  ,.datain_addr_low_0   (reg2dp_d0_datain_addr_low_0[26:0])  //|> w
-  ,.datain_addr_low_1   (reg2dp_d0_datain_addr_low_1[26:0])  //|> w
+  ,.datain_addr_low_0   (reg2dp_d0_datain_addr_low_0[31:0])  //|> w
+  ,.datain_addr_low_1   (reg2dp_d0_datain_addr_low_1[31:0])  //|> w
   ,.line_packed         (reg2dp_d0_line_packed)              //|> w
   ,.surf_packed         (reg2dp_d0_surf_packed)              //|> w
   ,.datain_ram_type     (reg2dp_d0_datain_ram_type)          //|> w
@@ -561,10 +561,10 @@ NV_NVDLA_CDMA_dual_reg u_dual_reg_d0 (
   ,.datain_channel      (reg2dp_d0_datain_channel[12:0])     //|> w
   ,.datain_height_ext   (reg2dp_d0_datain_height_ext[12:0])  //|> w
   ,.datain_width_ext    (reg2dp_d0_datain_width_ext[12:0])   //|> w
-  ,.entries             (reg2dp_d0_entries[11:0])            //|> w
+  ,.entries             (reg2dp_d0_entries[13:0])            //|> w
   ,.grains              (reg2dp_d0_grains[11:0])             //|> w
-  ,.line_stride         (reg2dp_d0_line_stride[26:0])        //|> w
-  ,.uv_line_stride      (reg2dp_d0_uv_line_stride[26:0])     //|> w
+  ,.line_stride         (reg2dp_d0_line_stride[31:0])        //|> w
+  ,.uv_line_stride      (reg2dp_d0_uv_line_stride[31:0])     //|> w
   ,.mean_format         (reg2dp_d0_mean_format)              //|> w
   ,.mean_gu             (reg2dp_d0_mean_gu[15:0])            //|> w
   ,.mean_ry             (reg2dp_d0_mean_ry[15:0])            //|> w
@@ -586,19 +586,19 @@ NV_NVDLA_CDMA_dual_reg u_dual_reg_d0 (
   ,.rsv_per_uv_line     (reg2dp_d0_rsv_per_uv_line[9:0])     //|> w
   ,.rsv_height          (reg2dp_d0_rsv_height[2:0])          //|> w
   ,.rsv_y_index         (reg2dp_d0_rsv_y_index[4:0])         //|> w
-  ,.surf_stride         (reg2dp_d0_surf_stride[26:0])        //|> w
+  ,.surf_stride         (reg2dp_d0_surf_stride[31:0])        //|> w
   ,.weight_addr_high    (reg2dp_d0_weight_addr_high[31:0])   //|> w
-  ,.weight_addr_low     (reg2dp_d0_weight_addr_low[26:0])    //|> w
-  ,.weight_bytes        (reg2dp_d0_weight_bytes[24:0])       //|> w
+  ,.weight_addr_low     (reg2dp_d0_weight_addr_low[31:0])    //|> w
+  ,.weight_bytes        (reg2dp_d0_weight_bytes[31:0])       //|> w
   ,.weight_format       (reg2dp_d0_weight_format)            //|> w
   ,.weight_ram_type     (reg2dp_d0_weight_ram_type)          //|> w
   ,.byte_per_kernel     (reg2dp_d0_byte_per_kernel[17:0])    //|> w
   ,.weight_kernel       (reg2dp_d0_weight_kernel[12:0])      //|> w
   ,.wgs_addr_high       (reg2dp_d0_wgs_addr_high[31:0])      //|> w
-  ,.wgs_addr_low        (reg2dp_d0_wgs_addr_low[26:0])       //|> w
+  ,.wgs_addr_low        (reg2dp_d0_wgs_addr_low[31:0])       //|> w
   ,.wmb_addr_high       (reg2dp_d0_wmb_addr_high[31:0])      //|> w
-  ,.wmb_addr_low        (reg2dp_d0_wmb_addr_low[26:0])       //|> w
-  ,.wmb_bytes           (reg2dp_d0_wmb_bytes[20:0])          //|> w
+  ,.wmb_addr_low        (reg2dp_d0_wmb_addr_low[31:0])       //|> w
+  ,.wmb_bytes           (reg2dp_d0_wmb_bytes[27:0])          //|> w
   ,.pad_bottom          (reg2dp_d0_pad_bottom[5:0])          //|> w
   ,.pad_left            (reg2dp_d0_pad_left[4:0])            //|> w
   ,.pad_right           (reg2dp_d0_pad_right[5:0])           //|> w
@@ -622,10 +622,10 @@ NV_NVDLA_CDMA_dual_reg u_dual_reg_d1 (
   ,.reg_wr_en           (d1_reg_wr_en)                       //|< w
   ,.nvdla_core_clk      (nvdla_core_clk)                     //|< i
   ,.nvdla_core_rstn     (nvdla_core_rstn)                    //|< i
-  ,.data_bank           (reg2dp_d1_data_bank[3:0])           //|> w
-  ,.weight_bank         (reg2dp_d1_weight_bank[3:0])         //|> w
+  ,.data_bank           (reg2dp_d1_data_bank[4:0])           //|> w
+  ,.weight_bank         (reg2dp_d1_weight_bank[4:0])         //|> w
   ,.batches             (reg2dp_d1_batches[4:0])             //|> w
-  ,.batch_stride        (reg2dp_d1_batch_stride[26:0])       //|> w
+  ,.batch_stride        (reg2dp_d1_batch_stride[31:0])       //|> w
   ,.conv_x_stride       (reg2dp_d1_conv_x_stride[2:0])       //|> w
   ,.conv_y_stride       (reg2dp_d1_conv_y_stride[2:0])       //|> w
   ,.cvt_en              (reg2dp_d1_cvt_en)                   //|> w
@@ -635,8 +635,8 @@ NV_NVDLA_CDMA_dual_reg u_dual_reg_d1 (
   ,.cya                 (reg2dp_d1_cya[31:0])                //|> w
   ,.datain_addr_high_0  (reg2dp_d1_datain_addr_high_0[31:0]) //|> w
   ,.datain_addr_high_1  (reg2dp_d1_datain_addr_high_1[31:0]) //|> w
-  ,.datain_addr_low_0   (reg2dp_d1_datain_addr_low_0[26:0])  //|> w
-  ,.datain_addr_low_1   (reg2dp_d1_datain_addr_low_1[26:0])  //|> w
+  ,.datain_addr_low_0   (reg2dp_d1_datain_addr_low_0[31:0])  //|> w
+  ,.datain_addr_low_1   (reg2dp_d1_datain_addr_low_1[31:0])  //|> w
   ,.line_packed         (reg2dp_d1_line_packed)              //|> w
   ,.surf_packed         (reg2dp_d1_surf_packed)              //|> w
   ,.datain_ram_type     (reg2dp_d1_datain_ram_type)          //|> w
@@ -649,10 +649,10 @@ NV_NVDLA_CDMA_dual_reg u_dual_reg_d1 (
   ,.datain_channel      (reg2dp_d1_datain_channel[12:0])     //|> w
   ,.datain_height_ext   (reg2dp_d1_datain_height_ext[12:0])  //|> w
   ,.datain_width_ext    (reg2dp_d1_datain_width_ext[12:0])   //|> w
-  ,.entries             (reg2dp_d1_entries[11:0])            //|> w
+  ,.entries             (reg2dp_d1_entries[13:0])            //|> w
   ,.grains              (reg2dp_d1_grains[11:0])             //|> w
-  ,.line_stride         (reg2dp_d1_line_stride[26:0])        //|> w
-  ,.uv_line_stride      (reg2dp_d1_uv_line_stride[26:0])     //|> w
+  ,.line_stride         (reg2dp_d1_line_stride[31:0])        //|> w
+  ,.uv_line_stride      (reg2dp_d1_uv_line_stride[31:0])     //|> w
   ,.mean_format         (reg2dp_d1_mean_format)              //|> w
   ,.mean_gu             (reg2dp_d1_mean_gu[15:0])            //|> w
   ,.mean_ry             (reg2dp_d1_mean_ry[15:0])            //|> w
@@ -674,19 +674,19 @@ NV_NVDLA_CDMA_dual_reg u_dual_reg_d1 (
   ,.rsv_per_uv_line     (reg2dp_d1_rsv_per_uv_line[9:0])     //|> w
   ,.rsv_height          (reg2dp_d1_rsv_height[2:0])          //|> w
   ,.rsv_y_index         (reg2dp_d1_rsv_y_index[4:0])         //|> w
-  ,.surf_stride         (reg2dp_d1_surf_stride[26:0])        //|> w
+  ,.surf_stride         (reg2dp_d1_surf_stride[31:0])        //|> w
   ,.weight_addr_high    (reg2dp_d1_weight_addr_high[31:0])   //|> w
-  ,.weight_addr_low     (reg2dp_d1_weight_addr_low[26:0])    //|> w
-  ,.weight_bytes        (reg2dp_d1_weight_bytes[24:0])       //|> w
+  ,.weight_addr_low     (reg2dp_d1_weight_addr_low[31:0])    //|> w
+  ,.weight_bytes        (reg2dp_d1_weight_bytes[31:0])       //|> w
   ,.weight_format       (reg2dp_d1_weight_format)            //|> w
   ,.weight_ram_type     (reg2dp_d1_weight_ram_type)          //|> w
   ,.byte_per_kernel     (reg2dp_d1_byte_per_kernel[17:0])    //|> w
   ,.weight_kernel       (reg2dp_d1_weight_kernel[12:0])      //|> w
   ,.wgs_addr_high       (reg2dp_d1_wgs_addr_high[31:0])      //|> w
-  ,.wgs_addr_low        (reg2dp_d1_wgs_addr_low[26:0])       //|> w
+  ,.wgs_addr_low        (reg2dp_d1_wgs_addr_low[31:0])       //|> w
   ,.wmb_addr_high       (reg2dp_d1_wmb_addr_high[31:0])      //|> w
-  ,.wmb_addr_low        (reg2dp_d1_wmb_addr_low[26:0])       //|> w
-  ,.wmb_bytes           (reg2dp_d1_wmb_bytes[20:0])          //|> w
+  ,.wmb_addr_low        (reg2dp_d1_wmb_addr_low[31:0])       //|> w
+  ,.wmb_bytes           (reg2dp_d1_wmb_bytes[27:0])          //|> w
   ,.pad_bottom          (reg2dp_d1_pad_bottom[5:0])          //|> w
   ,.pad_left            (reg2dp_d1_pad_left[4:0])            //|> w
   ,.pad_right           (reg2dp_d1_pad_right[5:0])           //|> w

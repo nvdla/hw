@@ -1,0 +1,13 @@
+# --- UVM Report Summary ---
+# 
+# ** Report counts by severity
+# UVM_INFO :
+# UVM_WARNING :    0
+# UVM_ERROR :    0
+# UVM_FATAL :    0
+# ** Report counts by id
+# [CONSUMER/PKT/RECV]     2
+# [PRODUCER/END_TEST]     1
+# [PRODUCER/PKT/SEND]     2
+# [RNTST]     1
+# [TEST_DONE]     1

@@ -42,7 +42,7 @@
 // For reference model usage, begin
 #ifdef  NVDLA_REFERENCE_MODEL_ENABLE
 #include "NvdlaCoreInternalMonitor.h"
-#include "nitro_scsv_converter.h"
+#include "nvdla_scsv_converter.h"
 #endif
 // For reference model usage, end
 
@@ -118,7 +118,6 @@ class NV_NVDLA_core:
         tlm_utils::multi_passthrough_target_socket<NV_NVDLA_core, 512>      ext2cvif_rd_rsp;
         // virtual void ext2cvif_rd_rsp_b_transport(int ID, tlm::tlm_generic_payload& tlm_gp, sc_time& delay);
 
-        // FIXME, hack for csb2nvdla write response initial socket
         tlm_utils::multi_passthrough_initiator_socket<NV_NVDLA_core, 32, tlm::tlm_base_protocol_types, 0, sc_core::SC_ONE_OR_MORE_BOUND> csb2nvdla_wr_hack;
 
         sc_buffer<bool> mcif2bdma_wr_rsp;

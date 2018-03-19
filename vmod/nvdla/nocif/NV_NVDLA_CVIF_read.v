@@ -10,23 +10,37 @@
 
 `include "simulate_x_tick.vh"
 module NV_NVDLA_CVIF_read (
-   bdma2cvif_rd_cdt_lat_fifo_pop  //|< i
+  nvdla_core_clk                 //|< i
+  ,nvdla_core_rstn                //|< i
+  #ifdef NVDLA_BDMA_ENABLE
+  ,bdma2cvif_rd_cdt_lat_fifo_pop  //|< i
   ,bdma2cvif_rd_req_pd            //|< i
   ,bdma2cvif_rd_req_valid         //|< i
+  #endif
   ,cdma_dat2cvif_rd_req_pd        //|< i
   ,cdma_dat2cvif_rd_req_valid     //|< i
   ,cdma_wt2cvif_rd_req_pd         //|< i
   ,cdma_wt2cvif_rd_req_valid      //|< i
+  #ifdef NVDLA_CDP_ENABLE
   ,cdp2cvif_rd_cdt_lat_fifo_pop   //|< i
   ,cdp2cvif_rd_req_pd             //|< i
   ,cdp2cvif_rd_req_valid          //|< i
+  #endif
+  #ifdef NVDLA_BDMA_ENABLE
   ,cvif2bdma_rd_rsp_ready         //|< i
+  #endif
   ,cvif2cdma_dat_rd_rsp_ready     //|< i
   ,cvif2cdma_wt_rd_rsp_ready      //|< i
+  #ifdef NVDLA_CDP_ENABLE
   ,cvif2cdp_rd_rsp_ready          //|< i
+  #endif
   ,cvif2noc_axi_ar_arready        //|< i
+  #ifdef NVDLA_PDP_ENABLE
   ,cvif2pdp_rd_rsp_ready          //|< i
+  #endif
+  #ifdef NVDLA_RUBIK_ENABLE
   ,cvif2rbk_rd_rsp_ready          //|< i
+  #endif
   ,cvif2sdp_b_rd_rsp_ready        //|< i
   ,cvif2sdp_e_rd_rsp_ready        //|< i
   ,cvif2sdp_n_rd_rsp_ready        //|< i
@@ -35,22 +49,32 @@ module NV_NVDLA_CVIF_read (
   ,noc2cvif_axi_r_rid             //|< i
   ,noc2cvif_axi_r_rlast           //|< i
   ,noc2cvif_axi_r_rvalid          //|< i
-  ,nvdla_core_clk                 //|< i
-  ,nvdla_core_rstn                //|< i
+  #ifdef NVDLA_PDP_ENABLE
   ,pdp2cvif_rd_cdt_lat_fifo_pop   //|< i
   ,pdp2cvif_rd_req_pd             //|< i
   ,pdp2cvif_rd_req_valid          //|< i
+  #endif
   ,pwrbus_ram_pd                  //|< i
+  #ifdef NVDLA_RUBIK_ENABLE
   ,rbk2cvif_rd_cdt_lat_fifo_pop   //|< i
   ,rbk2cvif_rd_req_pd             //|< i
   ,rbk2cvif_rd_req_valid          //|< i
+  #endif
   ,reg2dp_rd_os_cnt               //|< i
+  #ifdef NVDLA_BDMA_ENABLE
   ,reg2dp_rd_weight_bdma          //|< i
+  #endif
   ,reg2dp_rd_weight_cdma_dat      //|< i
   ,reg2dp_rd_weight_cdma_wt       //|< i
+  #ifdef NVDLA_CDP_ENABLE
   ,reg2dp_rd_weight_cdp           //|< i
+  #endif
+  #ifdef NVDLA_PDP_ENABLE
   ,reg2dp_rd_weight_pdp           //|< i
+  #endif
+  #ifdef NVDLA_RUBIK_ENABLE
   ,reg2dp_rd_weight_rbk           //|< i
+  #endif
   ,reg2dp_rd_weight_sdp           //|< i
   ,reg2dp_rd_weight_sdp_b         //|< i
   ,reg2dp_rd_weight_sdp_e         //|< i
@@ -67,26 +91,38 @@ module NV_NVDLA_CVIF_read (
   ,sdp_n2cvif_rd_cdt_lat_fifo_pop //|< i
   ,sdp_n2cvif_rd_req_pd           //|< i
   ,sdp_n2cvif_rd_req_valid        //|< i
+  #ifdef NVDLA_BDMA_ENABLE
   ,bdma2cvif_rd_req_ready         //|> o
+  #endif
   ,cdma_dat2cvif_rd_req_ready     //|> o
   ,cdma_wt2cvif_rd_req_ready      //|> o
+  #ifdef NVDLA_CDP_ENABLE
   ,cdp2cvif_rd_req_ready          //|> o
+  #endif
+  #ifdef NVDLA_BDMA_ENABLE
   ,cvif2bdma_rd_rsp_pd            //|> o
   ,cvif2bdma_rd_rsp_valid         //|> o
+  #endif
   ,cvif2cdma_dat_rd_rsp_pd        //|> o
   ,cvif2cdma_dat_rd_rsp_valid     //|> o
   ,cvif2cdma_wt_rd_rsp_pd         //|> o
   ,cvif2cdma_wt_rd_rsp_valid      //|> o
+  #ifdef NVDLA_CDP_ENABLE
   ,cvif2cdp_rd_rsp_pd             //|> o
   ,cvif2cdp_rd_rsp_valid          //|> o
+  #endif
   ,cvif2noc_axi_ar_araddr         //|> o
   ,cvif2noc_axi_ar_arid           //|> o
   ,cvif2noc_axi_ar_arlen          //|> o
   ,cvif2noc_axi_ar_arvalid        //|> o
+  #ifdef NVDLA_PDP_ENABLE
   ,cvif2pdp_rd_rsp_pd             //|> o
   ,cvif2pdp_rd_rsp_valid          //|> o
+  #endif
+  #ifdef NVDLA_RUBIK_ENABLE
   ,cvif2rbk_rd_rsp_pd             //|> o
   ,cvif2rbk_rd_rsp_valid          //|> o
+  #endif
   ,cvif2sdp_b_rd_rsp_pd           //|> o
   ,cvif2sdp_b_rd_rsp_valid        //|> o
   ,cvif2sdp_e_rd_rsp_pd           //|> o
@@ -96,8 +132,12 @@ module NV_NVDLA_CVIF_read (
   ,cvif2sdp_rd_rsp_pd             //|> o
   ,cvif2sdp_rd_rsp_valid          //|> o
   ,noc2cvif_axi_r_rready          //|> o
+  #ifdef NVDLA_PDP_ENABLE
   ,pdp2cvif_rd_req_ready          //|> o
+  #endif
+  #ifdef NVDLA_RUBIK_ENABLE
   ,rbk2cvif_rd_req_ready          //|> o
+  #endif
   ,sdp2cvif_rd_req_ready          //|> o
   ,sdp_b2cvif_rd_req_ready        //|> o
   ,sdp_e2cvif_rd_req_ready        //|> o
@@ -120,12 +160,20 @@ module NV_NVDLA_CVIF_read (
 // todo nets
 
 input [7:0] reg2dp_rd_os_cnt;
+  #ifdef NVDLA_BDMA_ENABLE
 input [7:0] reg2dp_rd_weight_bdma;
+#endif
 input [7:0] reg2dp_rd_weight_cdma_dat;
 input [7:0] reg2dp_rd_weight_cdma_wt;
+  #ifdef NVDLA_CDP_ENABLE
 input [7:0] reg2dp_rd_weight_cdp;
+#endif
+  #ifdef NVDLA_PDP_ENABLE
 input [7:0] reg2dp_rd_weight_pdp;
+#endif
+  #ifdef NVDLA_RUBIK_ENABLE
 input [7:0] reg2dp_rd_weight_rbk;
+#endif
 input [7:0] reg2dp_rd_weight_sdp;
 input [7:0] reg2dp_rd_weight_sdp_b;
 input [7:0] reg2dp_rd_weight_sdp_e;
@@ -137,11 +185,13 @@ input [7:0] reg2dp_rd_weight_sdp_n;
 input  nvdla_core_clk;   /* bdma2cvif_rd_cdt, bdma2cvif_rd_req, cdma_dat2cvif_rd_req, cdma_wt2cvif_rd_req, cdp2cvif_rd_cdt, cdp2cvif_rd_req, cvif2bdma_rd_rsp, cvif2cdma_dat_rd_rsp, cvif2cdma_wt_rd_rsp, cvif2cdp_rd_rsp, cvif2noc_axi_ar, cvif2pdp_rd_rsp, cvif2rbk_rd_rsp, cvif2sdp_b_rd_rsp, cvif2sdp_e_rd_rsp, cvif2sdp_n_rd_rsp, cvif2sdp_rd_rsp, noc2cvif_axi_r, pdp2cvif_rd_cdt, pdp2cvif_rd_req, rbk2cvif_rd_cdt, rbk2cvif_rd_req, sdp2cvif_rd_cdt, sdp2cvif_rd_req, sdp_b2cvif_rd_cdt, sdp_b2cvif_rd_req, sdp_e2cvif_rd_cdt, sdp_e2cvif_rd_req, sdp_n2cvif_rd_cdt, sdp_n2cvif_rd_req */
 input  nvdla_core_rstn;  /* bdma2cvif_rd_cdt, bdma2cvif_rd_req, cdma_dat2cvif_rd_req, cdma_wt2cvif_rd_req, cdp2cvif_rd_cdt, cdp2cvif_rd_req, cvif2bdma_rd_rsp, cvif2cdma_dat_rd_rsp, cvif2cdma_wt_rd_rsp, cvif2cdp_rd_rsp, cvif2noc_axi_ar, cvif2pdp_rd_rsp, cvif2rbk_rd_rsp, cvif2sdp_b_rd_rsp, cvif2sdp_e_rd_rsp, cvif2sdp_n_rd_rsp, cvif2sdp_rd_rsp, noc2cvif_axi_r, pdp2cvif_rd_cdt, pdp2cvif_rd_req, rbk2cvif_rd_cdt, rbk2cvif_rd_req, sdp2cvif_rd_cdt, sdp2cvif_rd_req, sdp_b2cvif_rd_cdt, sdp_b2cvif_rd_req, sdp_e2cvif_rd_cdt, sdp_e2cvif_rd_req, sdp_n2cvif_rd_cdt, sdp_n2cvif_rd_req */
 
+  #ifdef NVDLA_BDMA_ENABLE
 input  bdma2cvif_rd_cdt_lat_fifo_pop;
 
 input         bdma2cvif_rd_req_valid;  /* data valid */
 output        bdma2cvif_rd_req_ready;  /* data return handshake */
 input  [78:0] bdma2cvif_rd_req_pd;
+#endif
 
 input         cdma_dat2cvif_rd_req_valid;  /* data valid */
 output        cdma_dat2cvif_rd_req_ready;  /* data return handshake */
@@ -151,27 +201,33 @@ input         cdma_wt2cvif_rd_req_valid;  /* data valid */
 output        cdma_wt2cvif_rd_req_ready;  /* data return handshake */
 input  [78:0] cdma_wt2cvif_rd_req_pd;
 
+  #ifdef NVDLA_CDP_ENABLE
 input  cdp2cvif_rd_cdt_lat_fifo_pop;
 
 input         cdp2cvif_rd_req_valid;  /* data valid */
 output        cdp2cvif_rd_req_ready;  /* data return handshake */
 input  [78:0] cdp2cvif_rd_req_pd;
+#endif
 
+  #ifdef NVDLA_BDMA_ENABLE
 output         cvif2bdma_rd_rsp_valid;  /* data valid */
 input          cvif2bdma_rd_rsp_ready;  /* data return handshake */
-output [513:0] cvif2bdma_rd_rsp_pd;
+output [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] cvif2bdma_rd_rsp_pd;
+#endif
 
 output         cvif2cdma_dat_rd_rsp_valid;  /* data valid */
 input          cvif2cdma_dat_rd_rsp_ready;  /* data return handshake */
-output [513:0] cvif2cdma_dat_rd_rsp_pd;
+output [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] cvif2cdma_dat_rd_rsp_pd;
 
 output         cvif2cdma_wt_rd_rsp_valid;  /* data valid */
 input          cvif2cdma_wt_rd_rsp_ready;  /* data return handshake */
-output [513:0] cvif2cdma_wt_rd_rsp_pd;
+output [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] cvif2cdma_wt_rd_rsp_pd;
 
+  #ifdef NVDLA_CDP_ENABLE
 output         cvif2cdp_rd_rsp_valid;  /* data valid */
 input          cvif2cdp_rd_rsp_ready;  /* data return handshake */
-output [513:0] cvif2cdp_rd_rsp_pd;
+output [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] cvif2cdp_rd_rsp_pd;
+#endif
 
 output        cvif2noc_axi_ar_arvalid;  /* data valid */
 input         cvif2noc_axi_ar_arready;  /* data return handshake */
@@ -179,49 +235,57 @@ output  [7:0] cvif2noc_axi_ar_arid;
 output  [3:0] cvif2noc_axi_ar_arlen;
 output [63:0] cvif2noc_axi_ar_araddr;
 
+  #ifdef NVDLA_PDP_ENABLE
 output         cvif2pdp_rd_rsp_valid;  /* data valid */
 input          cvif2pdp_rd_rsp_ready;  /* data return handshake */
-output [513:0] cvif2pdp_rd_rsp_pd;
+output [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] cvif2pdp_rd_rsp_pd;
+#endif
 
+  #ifdef NVDLA_RUBIK_ENABLE
 output         cvif2rbk_rd_rsp_valid;  /* data valid */
 input          cvif2rbk_rd_rsp_ready;  /* data return handshake */
-output [513:0] cvif2rbk_rd_rsp_pd;
+output [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] cvif2rbk_rd_rsp_pd;
+#endif
 
 output         cvif2sdp_b_rd_rsp_valid;  /* data valid */
 input          cvif2sdp_b_rd_rsp_ready;  /* data return handshake */
-output [513:0] cvif2sdp_b_rd_rsp_pd;
+output [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] cvif2sdp_b_rd_rsp_pd;
 
 output         cvif2sdp_e_rd_rsp_valid;  /* data valid */
 input          cvif2sdp_e_rd_rsp_ready;  /* data return handshake */
-output [513:0] cvif2sdp_e_rd_rsp_pd;
+output [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] cvif2sdp_e_rd_rsp_pd;
 
 output         cvif2sdp_n_rd_rsp_valid;  /* data valid */
 input          cvif2sdp_n_rd_rsp_ready;  /* data return handshake */
-output [513:0] cvif2sdp_n_rd_rsp_pd;
+output [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] cvif2sdp_n_rd_rsp_pd;
 
 output         cvif2sdp_rd_rsp_valid;  /* data valid */
 input          cvif2sdp_rd_rsp_ready;  /* data return handshake */
-output [513:0] cvif2sdp_rd_rsp_pd;
+output [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] cvif2sdp_rd_rsp_pd;
 
 input          noc2cvif_axi_r_rvalid;  /* data valid */
 output         noc2cvif_axi_r_rready;  /* data return handshake */
 input    [7:0] noc2cvif_axi_r_rid;
 input          noc2cvif_axi_r_rlast;
-input  [511:0] noc2cvif_axi_r_rdata;
+input  [NVDLA_SECONDARY_MEMIF_WIDTH-1:0] noc2cvif_axi_r_rdata;
 
+  #ifdef NVDLA_PDP_ENABLE
 input  pdp2cvif_rd_cdt_lat_fifo_pop;
 
 input         pdp2cvif_rd_req_valid;  /* data valid */
 output        pdp2cvif_rd_req_ready;  /* data return handshake */
 input  [78:0] pdp2cvif_rd_req_pd;
+#endif
 
 input [31:0] pwrbus_ram_pd;
 
+  #ifdef NVDLA_RUBIK_ENABLE
 input  rbk2cvif_rd_cdt_lat_fifo_pop;
 
 input         rbk2cvif_rd_req_valid;  /* data valid */
 output        rbk2cvif_rd_req_ready;  /* data return handshake */
 input  [78:0] rbk2cvif_rd_req_pd;
+#endif
 
 input  sdp2cvif_rd_cdt_lat_fifo_pop;
 
@@ -286,20 +350,24 @@ wire        eg2ig_axi_vld;
 NV_NVDLA_CVIF_READ_ig u_ig (
    .nvdla_core_clk                 (nvdla_core_clk)                 //|< i
   ,.nvdla_core_rstn                (nvdla_core_rstn)                //|< i
+  #ifdef NVDLA_BDMA_ENABLE
   ,.bdma2cvif_rd_cdt_lat_fifo_pop  (bdma2cvif_rd_cdt_lat_fifo_pop)  //|< i
   ,.bdma2cvif_rd_req_valid         (bdma2cvif_rd_req_valid)         //|< i
   ,.bdma2cvif_rd_req_ready         (bdma2cvif_rd_req_ready)         //|> o
   ,.bdma2cvif_rd_req_pd            (bdma2cvif_rd_req_pd[78:0])      //|< i
+  #endif
   ,.cdma_dat2cvif_rd_req_valid     (cdma_dat2cvif_rd_req_valid)     //|< i
   ,.cdma_dat2cvif_rd_req_ready     (cdma_dat2cvif_rd_req_ready)     //|> o
   ,.cdma_dat2cvif_rd_req_pd        (cdma_dat2cvif_rd_req_pd[78:0])  //|< i
   ,.cdma_wt2cvif_rd_req_valid      (cdma_wt2cvif_rd_req_valid)      //|< i
   ,.cdma_wt2cvif_rd_req_ready      (cdma_wt2cvif_rd_req_ready)      //|> o
   ,.cdma_wt2cvif_rd_req_pd         (cdma_wt2cvif_rd_req_pd[78:0])   //|< i
+  #ifdef NVDLA_CDP_ENABLE
   ,.cdp2cvif_rd_cdt_lat_fifo_pop   (cdp2cvif_rd_cdt_lat_fifo_pop)   //|< i
   ,.cdp2cvif_rd_req_valid          (cdp2cvif_rd_req_valid)          //|< i
   ,.cdp2cvif_rd_req_ready          (cdp2cvif_rd_req_ready)          //|> o
   ,.cdp2cvif_rd_req_pd             (cdp2cvif_rd_req_pd[78:0])       //|< i
+  #endif
   ,.cq_wr_pvld                     (cq_wr_pvld)                     //|> w
   ,.cq_wr_prdy                     (cq_wr_prdy)                     //|< w
   ,.cq_wr_thread_id                (cq_wr_thread_id[3:0])           //|> w
@@ -309,14 +377,18 @@ NV_NVDLA_CVIF_READ_ig u_ig (
   ,.cvif2noc_axi_ar_arid           (cvif2noc_axi_ar_arid[7:0])      //|> o
   ,.cvif2noc_axi_ar_arlen          (cvif2noc_axi_ar_arlen[3:0])     //|> o
   ,.cvif2noc_axi_ar_araddr         (cvif2noc_axi_ar_araddr[63:0])   //|> o
+  #ifdef NVDLA_PDP_ENABLE
   ,.pdp2cvif_rd_cdt_lat_fifo_pop   (pdp2cvif_rd_cdt_lat_fifo_pop)   //|< i
   ,.pdp2cvif_rd_req_valid          (pdp2cvif_rd_req_valid)          //|< i
   ,.pdp2cvif_rd_req_ready          (pdp2cvif_rd_req_ready)          //|> o
   ,.pdp2cvif_rd_req_pd             (pdp2cvif_rd_req_pd[78:0])       //|< i
+  #endif
+  #ifdef NVDLA_RUBIK_ENABLE
   ,.rbk2cvif_rd_cdt_lat_fifo_pop   (rbk2cvif_rd_cdt_lat_fifo_pop)   //|< i
   ,.rbk2cvif_rd_req_valid          (rbk2cvif_rd_req_valid)          //|< i
   ,.rbk2cvif_rd_req_ready          (rbk2cvif_rd_req_ready)          //|> o
   ,.rbk2cvif_rd_req_pd             (rbk2cvif_rd_req_pd[78:0])       //|< i
+  #endif
   ,.sdp2cvif_rd_cdt_lat_fifo_pop   (sdp2cvif_rd_cdt_lat_fifo_pop)   //|< i
   ,.sdp2cvif_rd_req_valid          (sdp2cvif_rd_req_valid)          //|< i
   ,.sdp2cvif_rd_req_ready          (sdp2cvif_rd_req_ready)          //|> o
@@ -335,12 +407,20 @@ NV_NVDLA_CVIF_READ_ig u_ig (
   ,.sdp_n2cvif_rd_req_pd           (sdp_n2cvif_rd_req_pd[78:0])     //|< i
   ,.eg2ig_axi_vld                  (eg2ig_axi_vld)                  //|< w
   ,.reg2dp_rd_os_cnt               (reg2dp_rd_os_cnt[7:0])          //|< i
+  #ifdef NVDLA_BDMA_ENABLE
   ,.reg2dp_rd_weight_bdma          (reg2dp_rd_weight_bdma[7:0])     //|< i
+  #endif
   ,.reg2dp_rd_weight_cdma_dat      (reg2dp_rd_weight_cdma_dat[7:0]) //|< i
   ,.reg2dp_rd_weight_cdma_wt       (reg2dp_rd_weight_cdma_wt[7:0])  //|< i
+  #ifdef NVDLA_CDP_ENABLE
   ,.reg2dp_rd_weight_cdp           (reg2dp_rd_weight_cdp[7:0])      //|< i
+  #endif
+  #ifdef NVDLA_PDP_ENABLE
   ,.reg2dp_rd_weight_pdp           (reg2dp_rd_weight_pdp[7:0])      //|< i
+  #endif
+  #ifdef NVDLA_RUBIK_ENABLE
   ,.reg2dp_rd_weight_rbk           (reg2dp_rd_weight_rbk[7:0])      //|< i
+  #endif
   ,.reg2dp_rd_weight_sdp           (reg2dp_rd_weight_sdp[7:0])      //|< i
   ,.reg2dp_rd_weight_sdp_b         (reg2dp_rd_weight_sdp_b[7:0])    //|< i
   ,.reg2dp_rd_weight_sdp_e         (reg2dp_rd_weight_sdp_e[7:0])    //|< i
@@ -390,34 +470,42 @@ NV_NVDLA_CVIF_READ_eg u_eg (
   ,.nvdla_core_rstn                (nvdla_core_rstn)                //|< i
   ,.cvif2sdp_rd_rsp_valid          (cvif2sdp_rd_rsp_valid)          //|> o
   ,.cvif2sdp_rd_rsp_ready          (cvif2sdp_rd_rsp_ready)          //|< i
-  ,.cvif2sdp_rd_rsp_pd             (cvif2sdp_rd_rsp_pd[513:0])      //|> o
+  ,.cvif2sdp_rd_rsp_pd             (cvif2sdp_rd_rsp_pd[NVDLA_SECONDARY_MEMIF_WIDTH+1:0])      //|> o
   ,.cvif2sdp_b_rd_rsp_valid        (cvif2sdp_b_rd_rsp_valid)        //|> o
   ,.cvif2sdp_b_rd_rsp_ready        (cvif2sdp_b_rd_rsp_ready)        //|< i
-  ,.cvif2sdp_b_rd_rsp_pd           (cvif2sdp_b_rd_rsp_pd[513:0])    //|> o
+  ,.cvif2sdp_b_rd_rsp_pd           (cvif2sdp_b_rd_rsp_pd[NVDLA_SECONDARY_MEMIF_WIDTH+1:0])    //|> o
   ,.cvif2sdp_n_rd_rsp_valid        (cvif2sdp_n_rd_rsp_valid)        //|> o
   ,.cvif2sdp_n_rd_rsp_ready        (cvif2sdp_n_rd_rsp_ready)        //|< i
-  ,.cvif2sdp_n_rd_rsp_pd           (cvif2sdp_n_rd_rsp_pd[513:0])    //|> o
+  ,.cvif2sdp_n_rd_rsp_pd           (cvif2sdp_n_rd_rsp_pd[NVDLA_SECONDARY_MEMIF_WIDTH+1:0])    //|> o
   ,.cvif2sdp_e_rd_rsp_valid        (cvif2sdp_e_rd_rsp_valid)        //|> o
   ,.cvif2sdp_e_rd_rsp_ready        (cvif2sdp_e_rd_rsp_ready)        //|< i
-  ,.cvif2sdp_e_rd_rsp_pd           (cvif2sdp_e_rd_rsp_pd[513:0])    //|> o
+  ,.cvif2sdp_e_rd_rsp_pd           (cvif2sdp_e_rd_rsp_pd[NVDLA_SECONDARY_MEMIF_WIDTH+1:0])    //|> o
+  #ifdef NVDLA_CDP_ENABLE
   ,.cvif2cdp_rd_rsp_valid          (cvif2cdp_rd_rsp_valid)          //|> o
   ,.cvif2cdp_rd_rsp_ready          (cvif2cdp_rd_rsp_ready)          //|< i
-  ,.cvif2cdp_rd_rsp_pd             (cvif2cdp_rd_rsp_pd[513:0])      //|> o
+  ,.cvif2cdp_rd_rsp_pd             (cvif2cdp_rd_rsp_pd[NVDLA_SECONDARY_MEMIF_WIDTH+1:0])      //|> o
+  #endif
+  #ifdef NVDLA_PDP_ENABLE
   ,.cvif2pdp_rd_rsp_valid          (cvif2pdp_rd_rsp_valid)          //|> o
   ,.cvif2pdp_rd_rsp_ready          (cvif2pdp_rd_rsp_ready)          //|< i
-  ,.cvif2pdp_rd_rsp_pd             (cvif2pdp_rd_rsp_pd[513:0])      //|> o
+  ,.cvif2pdp_rd_rsp_pd             (cvif2pdp_rd_rsp_pd[NVDLA_SECONDARY_MEMIF_WIDTH+1:0])      //|> o
+  #endif
+  #ifdef NVDLA_BDMA_ENABLE
   ,.cvif2bdma_rd_rsp_valid         (cvif2bdma_rd_rsp_valid)         //|> o
   ,.cvif2bdma_rd_rsp_ready         (cvif2bdma_rd_rsp_ready)         //|< i
-  ,.cvif2bdma_rd_rsp_pd            (cvif2bdma_rd_rsp_pd[513:0])     //|> o
+  ,.cvif2bdma_rd_rsp_pd            (cvif2bdma_rd_rsp_pd[NVDLA_SECONDARY_MEMIF_WIDTH+1:0])     //|> o
+  #endif
+  #ifdef NVDLA_RUBIK_ENABLE
   ,.cvif2rbk_rd_rsp_valid          (cvif2rbk_rd_rsp_valid)          //|> o
   ,.cvif2rbk_rd_rsp_ready          (cvif2rbk_rd_rsp_ready)          //|< i
-  ,.cvif2rbk_rd_rsp_pd             (cvif2rbk_rd_rsp_pd[513:0])      //|> o
+  ,.cvif2rbk_rd_rsp_pd             (cvif2rbk_rd_rsp_pd[NVDLA_SECONDARY_MEMIF_WIDTH+1:0])      //|> o
+  #endif
   ,.cvif2cdma_wt_rd_rsp_valid      (cvif2cdma_wt_rd_rsp_valid)      //|> o
   ,.cvif2cdma_wt_rd_rsp_ready      (cvif2cdma_wt_rd_rsp_ready)      //|< i
-  ,.cvif2cdma_wt_rd_rsp_pd         (cvif2cdma_wt_rd_rsp_pd[513:0])  //|> o
+  ,.cvif2cdma_wt_rd_rsp_pd         (cvif2cdma_wt_rd_rsp_pd[NVDLA_SECONDARY_MEMIF_WIDTH+1:0])  //|> o
   ,.cvif2cdma_dat_rd_rsp_valid     (cvif2cdma_dat_rd_rsp_valid)     //|> o
   ,.cvif2cdma_dat_rd_rsp_ready     (cvif2cdma_dat_rd_rsp_ready)     //|< i
-  ,.cvif2cdma_dat_rd_rsp_pd        (cvif2cdma_dat_rd_rsp_pd[513:0]) //|> o
+  ,.cvif2cdma_dat_rd_rsp_pd        (cvif2cdma_dat_rd_rsp_pd[NVDLA_SECONDARY_MEMIF_WIDTH+1:0]) //|> o
   ,.cq_rd0_pvld                    (cq_rd0_pvld)                    //|< w
   ,.cq_rd0_prdy                    (cq_rd0_prdy)                    //|> w
   ,.cq_rd0_pd                      (cq_rd0_pd[6:0])                 //|< w
@@ -452,7 +540,7 @@ NV_NVDLA_CVIF_READ_eg u_eg (
   ,.noc2cvif_axi_r_rready          (noc2cvif_axi_r_rready)          //|> o
   ,.noc2cvif_axi_r_rid             (noc2cvif_axi_r_rid[7:0])        //|< i
   ,.noc2cvif_axi_r_rlast           (noc2cvif_axi_r_rlast)           //|< i
-  ,.noc2cvif_axi_r_rdata           (noc2cvif_axi_r_rdata[511:0])    //|< i
+  ,.noc2cvif_axi_r_rdata           (noc2cvif_axi_r_rdata[NVDLA_SECONDARY_MEMIF_WIDTH-1:0])    //|< i
   ,.pwrbus_ram_pd                  (pwrbus_ram_pd[31:0])            //|< i
   ,.eg2ig_axi_vld                  (eg2ig_axi_vld)                  //|> w
   );

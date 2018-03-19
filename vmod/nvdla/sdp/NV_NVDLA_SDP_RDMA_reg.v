@@ -9,6 +9,7 @@
 // File Name: NV_NVDLA_SDP_RDMA_reg.v
 
 `include "simulate_x_tick.vh"
+#include "NV_NVDLA_SDP_define.h"
 module NV_NVDLA_SDP_RDMA_reg (
    nvdla_core_clk               //|< i
   ,nvdla_core_rstn              //|< i
@@ -89,20 +90,20 @@ input  [31:0] dp2reg_status_nan_input_num;
 output        csb2sdp_rdma_req_prdy;
 output  [4:0] reg2dp_batch_number;
 output [31:0] reg2dp_bn_base_addr_high;
-output [26:0] reg2dp_bn_base_addr_low;
-output [26:0] reg2dp_bn_batch_stride;
-output [26:0] reg2dp_bn_line_stride;
-output [26:0] reg2dp_bn_surface_stride;
+output [31:0] reg2dp_bn_base_addr_low;
+output [31:0] reg2dp_bn_batch_stride;
+output [31:0] reg2dp_bn_line_stride;
+output [31:0] reg2dp_bn_surface_stride;
 output        reg2dp_brdma_data_mode;
 output        reg2dp_brdma_data_size;
 output  [1:0] reg2dp_brdma_data_use;
 output        reg2dp_brdma_disable;
 output        reg2dp_brdma_ram_type;
 output [31:0] reg2dp_bs_base_addr_high;
-output [26:0] reg2dp_bs_base_addr_low;
-output [26:0] reg2dp_bs_batch_stride;
-output [26:0] reg2dp_bs_line_stride;
-output [26:0] reg2dp_bs_surface_stride;
+output [31:0] reg2dp_bs_base_addr_low;
+output [31:0] reg2dp_bs_batch_stride;
+output [31:0] reg2dp_bs_line_stride;
+output [31:0] reg2dp_bs_surface_stride;
 output [12:0] reg2dp_channel;
 output        reg2dp_erdma_data_mode;
 output        reg2dp_erdma_data_size;
@@ -110,10 +111,10 @@ output  [1:0] reg2dp_erdma_data_use;
 output        reg2dp_erdma_disable;
 output        reg2dp_erdma_ram_type;
 output [31:0] reg2dp_ew_base_addr_high;
-output [26:0] reg2dp_ew_base_addr_low;
-output [26:0] reg2dp_ew_batch_stride;
-output [26:0] reg2dp_ew_line_stride;
-output [26:0] reg2dp_ew_surface_stride;
+output [31:0] reg2dp_ew_base_addr_low;
+output [31:0] reg2dp_ew_batch_stride;
+output [31:0] reg2dp_ew_line_stride;
+output [31:0] reg2dp_ew_surface_stride;
 output        reg2dp_flying_mode;
 output [12:0] reg2dp_height;
 output  [1:0] reg2dp_in_precision;
@@ -128,10 +129,10 @@ output        reg2dp_perf_dma_en;
 output        reg2dp_perf_nan_inf_count_en;
 output  [1:0] reg2dp_proc_precision;
 output [31:0] reg2dp_src_base_addr_high;
-output [26:0] reg2dp_src_base_addr_low;
-output [26:0] reg2dp_src_line_stride;
+output [31:0] reg2dp_src_base_addr_low;
+output [31:0] reg2dp_src_line_stride;
 output        reg2dp_src_ram_type;
-output [26:0] reg2dp_src_surface_stride;
+output [31:0] reg2dp_src_surface_stride;
 output [12:0] reg2dp_width;
 output        reg2dp_winograd;
 output [33:0] sdp_rdma2csb_resp_pd;
@@ -166,20 +167,20 @@ wire   [31:0] dp2reg_d1_status_inf_input_num_w;
 wire   [31:0] dp2reg_d1_status_nan_input_num_w;
 wire    [4:0] reg2dp_d0_batch_number;
 wire   [31:0] reg2dp_d0_bn_base_addr_high;
-wire   [26:0] reg2dp_d0_bn_base_addr_low;
-wire   [26:0] reg2dp_d0_bn_batch_stride;
-wire   [26:0] reg2dp_d0_bn_line_stride;
-wire   [26:0] reg2dp_d0_bn_surface_stride;
+wire   [31:0] reg2dp_d0_bn_base_addr_low;
+wire   [31:0] reg2dp_d0_bn_batch_stride;
+wire   [31:0] reg2dp_d0_bn_line_stride;
+wire   [31:0] reg2dp_d0_bn_surface_stride;
 wire          reg2dp_d0_brdma_data_mode;
 wire          reg2dp_d0_brdma_data_size;
 wire    [1:0] reg2dp_d0_brdma_data_use;
 wire          reg2dp_d0_brdma_disable;
 wire          reg2dp_d0_brdma_ram_type;
 wire   [31:0] reg2dp_d0_bs_base_addr_high;
-wire   [26:0] reg2dp_d0_bs_base_addr_low;
-wire   [26:0] reg2dp_d0_bs_batch_stride;
-wire   [26:0] reg2dp_d0_bs_line_stride;
-wire   [26:0] reg2dp_d0_bs_surface_stride;
+wire   [31:0] reg2dp_d0_bs_base_addr_low;
+wire   [31:0] reg2dp_d0_bs_batch_stride;
+wire   [31:0] reg2dp_d0_bs_line_stride;
+wire   [31:0] reg2dp_d0_bs_surface_stride;
 wire   [12:0] reg2dp_d0_channel;
 wire          reg2dp_d0_erdma_data_mode;
 wire          reg2dp_d0_erdma_data_size;
@@ -187,10 +188,10 @@ wire    [1:0] reg2dp_d0_erdma_data_use;
 wire          reg2dp_d0_erdma_disable;
 wire          reg2dp_d0_erdma_ram_type;
 wire   [31:0] reg2dp_d0_ew_base_addr_high;
-wire   [26:0] reg2dp_d0_ew_base_addr_low;
-wire   [26:0] reg2dp_d0_ew_batch_stride;
-wire   [26:0] reg2dp_d0_ew_line_stride;
-wire   [26:0] reg2dp_d0_ew_surface_stride;
+wire   [31:0] reg2dp_d0_ew_base_addr_low;
+wire   [31:0] reg2dp_d0_ew_batch_stride;
+wire   [31:0] reg2dp_d0_ew_line_stride;
+wire   [31:0] reg2dp_d0_ew_surface_stride;
 wire          reg2dp_d0_flying_mode;
 wire   [12:0] reg2dp_d0_height;
 wire    [1:0] reg2dp_d0_in_precision;
@@ -205,28 +206,28 @@ wire          reg2dp_d0_perf_dma_en;
 wire          reg2dp_d0_perf_nan_inf_count_en;
 wire    [1:0] reg2dp_d0_proc_precision;
 wire   [31:0] reg2dp_d0_src_base_addr_high;
-wire   [26:0] reg2dp_d0_src_base_addr_low;
-wire   [26:0] reg2dp_d0_src_line_stride;
+wire   [31:0] reg2dp_d0_src_base_addr_low;
+wire   [31:0] reg2dp_d0_src_line_stride;
 wire          reg2dp_d0_src_ram_type;
-wire   [26:0] reg2dp_d0_src_surface_stride;
+wire   [31:0] reg2dp_d0_src_surface_stride;
 wire   [12:0] reg2dp_d0_width;
 wire          reg2dp_d0_winograd;
 wire    [4:0] reg2dp_d1_batch_number;
 wire   [31:0] reg2dp_d1_bn_base_addr_high;
-wire   [26:0] reg2dp_d1_bn_base_addr_low;
-wire   [26:0] reg2dp_d1_bn_batch_stride;
-wire   [26:0] reg2dp_d1_bn_line_stride;
-wire   [26:0] reg2dp_d1_bn_surface_stride;
+wire   [31:0] reg2dp_d1_bn_base_addr_low;
+wire   [31:0] reg2dp_d1_bn_batch_stride;
+wire   [31:0] reg2dp_d1_bn_line_stride;
+wire   [31:0] reg2dp_d1_bn_surface_stride;
 wire          reg2dp_d1_brdma_data_mode;
 wire          reg2dp_d1_brdma_data_size;
 wire    [1:0] reg2dp_d1_brdma_data_use;
 wire          reg2dp_d1_brdma_disable;
 wire          reg2dp_d1_brdma_ram_type;
 wire   [31:0] reg2dp_d1_bs_base_addr_high;
-wire   [26:0] reg2dp_d1_bs_base_addr_low;
-wire   [26:0] reg2dp_d1_bs_batch_stride;
-wire   [26:0] reg2dp_d1_bs_line_stride;
-wire   [26:0] reg2dp_d1_bs_surface_stride;
+wire   [31:0] reg2dp_d1_bs_base_addr_low;
+wire   [31:0] reg2dp_d1_bs_batch_stride;
+wire   [31:0] reg2dp_d1_bs_line_stride;
+wire   [31:0] reg2dp_d1_bs_surface_stride;
 wire   [12:0] reg2dp_d1_channel;
 wire          reg2dp_d1_erdma_data_mode;
 wire          reg2dp_d1_erdma_data_size;
@@ -234,10 +235,10 @@ wire    [1:0] reg2dp_d1_erdma_data_use;
 wire          reg2dp_d1_erdma_disable;
 wire          reg2dp_d1_erdma_ram_type;
 wire   [31:0] reg2dp_d1_ew_base_addr_high;
-wire   [26:0] reg2dp_d1_ew_base_addr_low;
-wire   [26:0] reg2dp_d1_ew_batch_stride;
-wire   [26:0] reg2dp_d1_ew_line_stride;
-wire   [26:0] reg2dp_d1_ew_surface_stride;
+wire   [31:0] reg2dp_d1_ew_base_addr_low;
+wire   [31:0] reg2dp_d1_ew_batch_stride;
+wire   [31:0] reg2dp_d1_ew_line_stride;
+wire   [31:0] reg2dp_d1_ew_surface_stride;
 wire          reg2dp_d1_flying_mode;
 wire   [12:0] reg2dp_d1_height;
 wire    [1:0] reg2dp_d1_in_precision;
@@ -252,10 +253,10 @@ wire          reg2dp_d1_perf_dma_en;
 wire          reg2dp_d1_perf_nan_inf_count_en;
 wire    [1:0] reg2dp_d1_proc_precision;
 wire   [31:0] reg2dp_d1_src_base_addr_high;
-wire   [26:0] reg2dp_d1_src_base_addr_low;
-wire   [26:0] reg2dp_d1_src_line_stride;
+wire   [31:0] reg2dp_d1_src_base_addr_low;
+wire   [31:0] reg2dp_d1_src_line_stride;
 wire          reg2dp_d1_src_ram_type;
-wire   [26:0] reg2dp_d1_src_surface_stride;
+wire   [31:0] reg2dp_d1_src_surface_stride;
 wire   [12:0] reg2dp_d1_width;
 wire          reg2dp_d1_winograd;
 wire    [2:0] reg2dp_op_en_reg_w;
@@ -303,20 +304,20 @@ reg     [1:0] dp2reg_status_0;
 reg     [1:0] dp2reg_status_1;
 reg     [4:0] reg2dp_batch_number;
 reg    [31:0] reg2dp_bn_base_addr_high;
-reg    [26:0] reg2dp_bn_base_addr_low;
-reg    [26:0] reg2dp_bn_batch_stride;
-reg    [26:0] reg2dp_bn_line_stride;
-reg    [26:0] reg2dp_bn_surface_stride;
+reg    [31:0] reg2dp_bn_base_addr_low;
+reg    [31:0] reg2dp_bn_batch_stride;
+reg    [31:0] reg2dp_bn_line_stride;
+reg    [31:0] reg2dp_bn_surface_stride;
 reg           reg2dp_brdma_data_mode;
 reg           reg2dp_brdma_data_size;
 reg     [1:0] reg2dp_brdma_data_use;
 reg           reg2dp_brdma_disable;
 reg           reg2dp_brdma_ram_type;
 reg    [31:0] reg2dp_bs_base_addr_high;
-reg    [26:0] reg2dp_bs_base_addr_low;
-reg    [26:0] reg2dp_bs_batch_stride;
-reg    [26:0] reg2dp_bs_line_stride;
-reg    [26:0] reg2dp_bs_surface_stride;
+reg    [31:0] reg2dp_bs_base_addr_low;
+reg    [31:0] reg2dp_bs_batch_stride;
+reg    [31:0] reg2dp_bs_line_stride;
+reg    [31:0] reg2dp_bs_surface_stride;
 reg    [12:0] reg2dp_channel;
 reg           reg2dp_d0_op_en;
 reg           reg2dp_d0_op_en_w;
@@ -328,10 +329,10 @@ reg     [1:0] reg2dp_erdma_data_use;
 reg           reg2dp_erdma_disable;
 reg           reg2dp_erdma_ram_type;
 reg    [31:0] reg2dp_ew_base_addr_high;
-reg    [26:0] reg2dp_ew_base_addr_low;
-reg    [26:0] reg2dp_ew_batch_stride;
-reg    [26:0] reg2dp_ew_line_stride;
-reg    [26:0] reg2dp_ew_surface_stride;
+reg    [31:0] reg2dp_ew_base_addr_low;
+reg    [31:0] reg2dp_ew_batch_stride;
+reg    [31:0] reg2dp_ew_line_stride;
+reg    [31:0] reg2dp_ew_surface_stride;
 reg           reg2dp_flying_mode;
 reg    [12:0] reg2dp_height;
 reg     [1:0] reg2dp_in_precision;
@@ -347,10 +348,10 @@ reg           reg2dp_perf_dma_en;
 reg           reg2dp_perf_nan_inf_count_en;
 reg     [1:0] reg2dp_proc_precision;
 reg    [31:0] reg2dp_src_base_addr_high;
-reg    [26:0] reg2dp_src_base_addr_low;
-reg    [26:0] reg2dp_src_line_stride;
+reg    [31:0] reg2dp_src_base_addr_low;
+reg    [31:0] reg2dp_src_line_stride;
 reg           reg2dp_src_ram_type;
-reg    [26:0] reg2dp_src_surface_stride;
+reg    [31:0] reg2dp_src_surface_stride;
 reg    [12:0] reg2dp_width;
 reg           reg2dp_winograd;
 reg    [62:0] req_pd;
@@ -386,20 +387,20 @@ NV_NVDLA_SDP_RDMA_REG_dual u_dual_reg_d0 (
   ,.nvdla_core_clk        (nvdla_core_clk)                       //|< i
   ,.nvdla_core_rstn       (nvdla_core_rstn)                      //|< i
   ,.bn_base_addr_high     (reg2dp_d0_bn_base_addr_high[31:0])    //|> w
-  ,.bn_base_addr_low      (reg2dp_d0_bn_base_addr_low[26:0])     //|> w
-  ,.bn_batch_stride       (reg2dp_d0_bn_batch_stride[26:0])      //|> w
-  ,.bn_line_stride        (reg2dp_d0_bn_line_stride[26:0])       //|> w
-  ,.bn_surface_stride     (reg2dp_d0_bn_surface_stride[26:0])    //|> w
+  ,.bn_base_addr_low      (reg2dp_d0_bn_base_addr_low[31:0])     //|> w
+  ,.bn_batch_stride       (reg2dp_d0_bn_batch_stride[31:0])      //|> w
+  ,.bn_line_stride        (reg2dp_d0_bn_line_stride[31:0])       //|> w
+  ,.bn_surface_stride     (reg2dp_d0_bn_surface_stride[31:0])    //|> w
   ,.brdma_data_mode       (reg2dp_d0_brdma_data_mode)            //|> w
   ,.brdma_data_size       (reg2dp_d0_brdma_data_size)            //|> w
   ,.brdma_data_use        (reg2dp_d0_brdma_data_use[1:0])        //|> w
   ,.brdma_disable         (reg2dp_d0_brdma_disable)              //|> w
   ,.brdma_ram_type        (reg2dp_d0_brdma_ram_type)             //|> w
   ,.bs_base_addr_high     (reg2dp_d0_bs_base_addr_high[31:0])    //|> w
-  ,.bs_base_addr_low      (reg2dp_d0_bs_base_addr_low[26:0])     //|> w
-  ,.bs_batch_stride       (reg2dp_d0_bs_batch_stride[26:0])      //|> w
-  ,.bs_line_stride        (reg2dp_d0_bs_line_stride[26:0])       //|> w
-  ,.bs_surface_stride     (reg2dp_d0_bs_surface_stride[26:0])    //|> w
+  ,.bs_base_addr_low      (reg2dp_d0_bs_base_addr_low[31:0])     //|> w
+  ,.bs_batch_stride       (reg2dp_d0_bs_batch_stride[31:0])      //|> w
+  ,.bs_line_stride        (reg2dp_d0_bs_line_stride[31:0])       //|> w
+  ,.bs_surface_stride     (reg2dp_d0_bs_surface_stride[31:0])    //|> w
   ,.channel               (reg2dp_d0_channel[12:0])              //|> w
   ,.height                (reg2dp_d0_height[12:0])               //|> w
   ,.width                 (reg2dp_d0_width[12:0])                //|> w
@@ -409,10 +410,10 @@ NV_NVDLA_SDP_RDMA_REG_dual u_dual_reg_d0 (
   ,.erdma_disable         (reg2dp_d0_erdma_disable)              //|> w
   ,.erdma_ram_type        (reg2dp_d0_erdma_ram_type)             //|> w
   ,.ew_base_addr_high     (reg2dp_d0_ew_base_addr_high[31:0])    //|> w
-  ,.ew_base_addr_low      (reg2dp_d0_ew_base_addr_low[26:0])     //|> w
-  ,.ew_batch_stride       (reg2dp_d0_ew_batch_stride[26:0])      //|> w
-  ,.ew_line_stride        (reg2dp_d0_ew_line_stride[26:0])       //|> w
-  ,.ew_surface_stride     (reg2dp_d0_ew_surface_stride[26:0])    //|> w
+  ,.ew_base_addr_low      (reg2dp_d0_ew_base_addr_low[31:0])     //|> w
+  ,.ew_batch_stride       (reg2dp_d0_ew_batch_stride[31:0])      //|> w
+  ,.ew_line_stride        (reg2dp_d0_ew_line_stride[31:0])       //|> w
+  ,.ew_surface_stride     (reg2dp_d0_ew_surface_stride[31:0])    //|> w
   ,.batch_number          (reg2dp_d0_batch_number[4:0])          //|> w
   ,.flying_mode           (reg2dp_d0_flying_mode)                //|> w
   ,.in_precision          (reg2dp_d0_in_precision[1:0])          //|> w
@@ -428,10 +429,10 @@ NV_NVDLA_SDP_RDMA_REG_dual u_dual_reg_d0 (
   ,.perf_dma_en           (reg2dp_d0_perf_dma_en)                //|> w
   ,.perf_nan_inf_count_en (reg2dp_d0_perf_nan_inf_count_en)      //|> w
   ,.src_base_addr_high    (reg2dp_d0_src_base_addr_high[31:0])   //|> w
-  ,.src_base_addr_low     (reg2dp_d0_src_base_addr_low[26:0])    //|> w
+  ,.src_base_addr_low     (reg2dp_d0_src_base_addr_low[31:0])    //|> w
   ,.src_ram_type          (reg2dp_d0_src_ram_type)               //|> w
-  ,.src_line_stride       (reg2dp_d0_src_line_stride[26:0])      //|> w
-  ,.src_surface_stride    (reg2dp_d0_src_surface_stride[26:0])   //|> w
+  ,.src_line_stride       (reg2dp_d0_src_line_stride[31:0])      //|> w
+  ,.src_surface_stride    (reg2dp_d0_src_surface_stride[31:0])   //|> w
   ,.op_en                 (reg2dp_d0_op_en)                      //|< r
   ,.brdma_stall           (dp2reg_d0_brdma_stall[31:0])          //|< r
   ,.erdma_stall           (dp2reg_d0_erdma_stall[31:0])          //|< r
@@ -449,20 +450,20 @@ NV_NVDLA_SDP_RDMA_REG_dual u_dual_reg_d1 (
   ,.nvdla_core_clk        (nvdla_core_clk)                       //|< i
   ,.nvdla_core_rstn       (nvdla_core_rstn)                      //|< i
   ,.bn_base_addr_high     (reg2dp_d1_bn_base_addr_high[31:0])    //|> w
-  ,.bn_base_addr_low      (reg2dp_d1_bn_base_addr_low[26:0])     //|> w
-  ,.bn_batch_stride       (reg2dp_d1_bn_batch_stride[26:0])      //|> w
-  ,.bn_line_stride        (reg2dp_d1_bn_line_stride[26:0])       //|> w
-  ,.bn_surface_stride     (reg2dp_d1_bn_surface_stride[26:0])    //|> w
+  ,.bn_base_addr_low      (reg2dp_d1_bn_base_addr_low[31:0])     //|> w
+  ,.bn_batch_stride       (reg2dp_d1_bn_batch_stride[31:0])      //|> w
+  ,.bn_line_stride        (reg2dp_d1_bn_line_stride[31:0])       //|> w
+  ,.bn_surface_stride     (reg2dp_d1_bn_surface_stride[31:0])    //|> w
   ,.brdma_data_mode       (reg2dp_d1_brdma_data_mode)            //|> w
   ,.brdma_data_size       (reg2dp_d1_brdma_data_size)            //|> w
   ,.brdma_data_use        (reg2dp_d1_brdma_data_use[1:0])        //|> w
   ,.brdma_disable         (reg2dp_d1_brdma_disable)              //|> w
   ,.brdma_ram_type        (reg2dp_d1_brdma_ram_type)             //|> w
   ,.bs_base_addr_high     (reg2dp_d1_bs_base_addr_high[31:0])    //|> w
-  ,.bs_base_addr_low      (reg2dp_d1_bs_base_addr_low[26:0])     //|> w
-  ,.bs_batch_stride       (reg2dp_d1_bs_batch_stride[26:0])      //|> w
-  ,.bs_line_stride        (reg2dp_d1_bs_line_stride[26:0])       //|> w
-  ,.bs_surface_stride     (reg2dp_d1_bs_surface_stride[26:0])    //|> w
+  ,.bs_base_addr_low      (reg2dp_d1_bs_base_addr_low[31:0])     //|> w
+  ,.bs_batch_stride       (reg2dp_d1_bs_batch_stride[31:0])      //|> w
+  ,.bs_line_stride        (reg2dp_d1_bs_line_stride[31:0])       //|> w
+  ,.bs_surface_stride     (reg2dp_d1_bs_surface_stride[31:0])    //|> w
   ,.channel               (reg2dp_d1_channel[12:0])              //|> w
   ,.height                (reg2dp_d1_height[12:0])               //|> w
   ,.width                 (reg2dp_d1_width[12:0])                //|> w
@@ -472,10 +473,10 @@ NV_NVDLA_SDP_RDMA_REG_dual u_dual_reg_d1 (
   ,.erdma_disable         (reg2dp_d1_erdma_disable)              //|> w
   ,.erdma_ram_type        (reg2dp_d1_erdma_ram_type)             //|> w
   ,.ew_base_addr_high     (reg2dp_d1_ew_base_addr_high[31:0])    //|> w
-  ,.ew_base_addr_low      (reg2dp_d1_ew_base_addr_low[26:0])     //|> w
-  ,.ew_batch_stride       (reg2dp_d1_ew_batch_stride[26:0])      //|> w
-  ,.ew_line_stride        (reg2dp_d1_ew_line_stride[26:0])       //|> w
-  ,.ew_surface_stride     (reg2dp_d1_ew_surface_stride[26:0])    //|> w
+  ,.ew_base_addr_low      (reg2dp_d1_ew_base_addr_low[31:0])     //|> w
+  ,.ew_batch_stride       (reg2dp_d1_ew_batch_stride[31:0])      //|> w
+  ,.ew_line_stride        (reg2dp_d1_ew_line_stride[31:0])       //|> w
+  ,.ew_surface_stride     (reg2dp_d1_ew_surface_stride[31:0])    //|> w
   ,.batch_number          (reg2dp_d1_batch_number[4:0])          //|> w
   ,.flying_mode           (reg2dp_d1_flying_mode)                //|> w
   ,.in_precision          (reg2dp_d1_in_precision[1:0])          //|> w
@@ -491,10 +492,10 @@ NV_NVDLA_SDP_RDMA_REG_dual u_dual_reg_d1 (
   ,.perf_dma_en           (reg2dp_d1_perf_dma_en)                //|> w
   ,.perf_nan_inf_count_en (reg2dp_d1_perf_nan_inf_count_en)      //|> w
   ,.src_base_addr_high    (reg2dp_d1_src_base_addr_high[31:0])   //|> w
-  ,.src_base_addr_low     (reg2dp_d1_src_base_addr_low[26:0])    //|> w
+  ,.src_base_addr_low     (reg2dp_d1_src_base_addr_low[31:0])    //|> w
   ,.src_ram_type          (reg2dp_d1_src_ram_type)               //|> w
-  ,.src_line_stride       (reg2dp_d1_src_line_stride[26:0])      //|> w
-  ,.src_surface_stride    (reg2dp_d1_src_surface_stride[26:0])   //|> w
+  ,.src_line_stride       (reg2dp_d1_src_line_stride[31:0])      //|> w
+  ,.src_surface_stride    (reg2dp_d1_src_surface_stride[31:0])   //|> w
   ,.op_en                 (reg2dp_d1_op_en)                      //|< r
   ,.brdma_stall           (dp2reg_d1_brdma_stall[31:0])          //|< r
   ,.erdma_stall           (dp2reg_d1_erdma_stall[31:0])          //|< r

@@ -1,0 +1,695 @@
+
+--------------------------------------------------------------------------------
+Title: TLM Review
+--------------------------------------------------------------------------------
+
+This section provides a basic introduction to TLM ports, exports, interfaces,
+and sockets as well as basic rules for connecting them. See the <References>
+section for more in-depth materials, including the IEEE 1666-2011, the SystemC
+LRM that defines the TLM standard.
+
+
+Topic: Terms
+------------
+
+Definitions of terms used throughout this document.
+
+SV  - SystemVerilog, or UVM in SystemVerilog. The context
+      will make clear which. In figures, UVM SV components are shown in blue.
+
+SC  - SystemC. In figures, SC components are shown in yellow.
+
+model - Functionality encapsulated by a class. A model is typically a
+      subtypes (derived from) of ~sc_module~ in SC and ~uvm_component~
+      in SV. Although dynamic in nature, models deriving from these classes
+      are quasi-static; they are created during elaboration of the testbench
+      and continue to exist throughout simulation. 
+
+component - Synonymous with ~model~, above.
+
+hierarchical component - A model contains one or more models.
+
+TLM - Transaction-Level Model. TLM models exchange information as objects,
+      not the discrete signals or wires you see in RTL. Transactions abstract
+      away the low-level RTL details in exchange for speed and easier
+      maintenance. To be reusable, TLM models should communicate via
+      standard TLM1 or TLM2 interfaces.
+
+interface - A class that defines one or more method prototypes but does
+      not implement them. Classes inheriting from an interface must implement
+      the methods defined in the interface. TLM1 and TLM2 define several
+      interfaces for transaction-level communication. Models that implement
+      an interface are referred to as ~targets~.
+
+imp - SV only. Like an interface, except instead of providing an interface
+      implementation through inheritance, the ~imp~ is an object that provides
+      an interface through delegation. It is a SV workaround to lack of
+      multiple inheritance.
+
+export - An object that conveys (exports) an interface implementation from
+      the child to the parent level. Exports can also be connected to other
+      exports for purposes of promoting the interface implementation as
+      high in the model hierarchy as needed.
+
+port - An object through which interface calls are made. A port is connected to
+      the interface implementation via a combination of parent port-export-imp
+      connections. Thus, calls to a port in an initiator component end up
+      calling the method implementations in the target component, with neither
+      the initiator nor target knowing about each other.
+    
+Who initiates requests and who services them dictates the control flow 
+relationship between models. 
+
+initiator - A component that initiates transaction requests. Initiators
+      typically contain at least one port or initiator_socket.
+
+target - A component to which transaction requests are sent. Targets
+      typically implement an interface (SC) or contain at an initiator_socket
+      or imp.
+
+Who creates the transactions and who processes them dictate the data flow
+relationship between models.
+
+producer - A component that produces transactions.
+
+consumer - A component that consumes or executes transactions.
+
+
+There are thus four combinations of control and data flow possible for any
+given TLM connection.
+
+- ~Initiator-producers~ create transactions and send them out TLM ports or sockets.
+
+- ~Target-consumers~ receive transactions from initiator-producers via TLM exports,
+  interfaces, imps, or sockets. ~Initiator-consumers~ request transactions from
+  target-producers via TLM ports or sockets.
+  
+- ~Initiator-consumers~ request transactions from connected ~target-producers~.
+  Although it does not use a standard TLM interface, the UVM driver is an example
+  of a ~initiator-consumer~.
+
+- ~Target-producers~ create transactions upon request from ~initiator-consumers~. 
+  Although not a component using standard TLM, the UVM sequencer is an example of
+  a ~target-producer~, accepting requests for transactions from the driver.
+
+
+
+Topic: Context Independence
+---------------------------
+
+The purpose of TLM is to allow components to be self-contained, independent
+of the myriad ways they might be connected in a testbench. Likewise,
+connections should be not depend on the components' internal implementation
+details. The TLM standard defines the set of common interfaces and semantics
+required to make successful connections to independently developed components.
+
+Provided the IP you intend to integrate has properly applied the principles of
+context independence and TLM connectivity, mixed-language interoperability
+with UVMC can be achieved with no modifications to the IP on either side
+of the language boundary. 
+
+The examples included in this kit reinforce these concepts. All examples are
+fully documented with diagrams, explanations, and code in hyperlinked HTML.
+Together they show you step-by-step how to integrate existing IP in a mixed
+SystemC / SystemVerilog environment.
+
+
+
+Topic: Ports
+------------
+
+Ports are used to call interface methods implemented elsewhere.
+
+- Ports are the "starting point" for communication by initiators 
+- The testbench developer (integrator) connects ports external to the owner
+  of th eport.
+- Ports are depicted as square in diagrams
+
+(see UVMC_TLM_Overview_Ports.png)
+
+SC Example:
+
+| class producer : public sc_module
+| {
+|   sc_port<tlm_blocking_put_if<packet> > out;  <--
+|
+|   producer(sc_module_name nm) : out("out"){ 
+|      SC_THREAD(run);
+|   }
+|
+|   void run() {
+|      packet t;
+|      ...initialize/randomize packet...
+|      out->put(t); <--
+|   }
+|
+| };
+
+SV Example:
+
+| class producer extends uvm_component
+| {
+|   tlm_blocking_put_port #(packet) out; <--
+|
+|   `uvm_component_utils(producer)
+|
+|   function new (string name, uvm_component parent=null);
+|     super.new(name,parent);
+|     out = new("out",  this);
+|   endfunction
+|
+|   virtual task run_phase (uvm_phase phase);
+|     packet t = packet::type_id::create("tr",this);
+|     t.randomize();
+|     `uvm_info("PRODUCER/PKT/SEND", t.sprint(),UVM_MEDIUM)
+|     out.put(t);   <--
+|   endtask
+| };
+
+
+
+Topic: Interfaces & Imps
+------------------------
+
+An ~interface~ in SC and an ~imp~ in SV UVM are used to expose to the outside world
+an implementation of a standard TLM interface, which is a group of methods with
+predefined signatures and semantics. The interface is typically a small subset
+of a component's overall API. Thus, the TLM interface and imp minimize the
+coupling between components by exposing only the standard portion of its API.
+
+- Imps/interfaces are "end points" in a network of port/export/interface connections
+
+- Inteface methods are called via ports bound to the interface/imp, NOT directly
+
+
+- Interfaces/imps are depicted as a circle in diagrams
+
+
+SC Example:
+
+In SC, target components inherit the interface & implement the interface's methods
+
+(see UVMC_TLM_Overview_Interfaces.png)
+
+| class consumer : public sc_module,
+|                  tlm_blocking_put_if<packet> <-- interface inherited
+| {
+|    public:
+|    consumer(sc_module_name nm) { }
+| 
+|   virtual void put(const packet &t) {    <-- implementation
+|     cout << "Got packet: " << t << endl;
+|     wait(10,SC_NS);
+|   }
+| };
+
+
+SV Example:
+
+In SV, target components provide an "imp" object for connecting to the outside
+world. The ~imp~ delegates to the interface implementations provided
+in the component.
+
+(see UVMC_TLM_Overview_Imps.png)
+
+| class consumer extends uvm_component;
+|
+|   uvm_blocking_put_imp #(packet,consumer) in;  <-- imp object
+|
+|   `uvm_component_utils(consumer)
+|
+|    function new(string name, uvm_component parent=null);
+|       super.new(name,parent);
+|       in = new("in",  this);
+|    endfunction
+|
+|    virtual task put (packet t);   <-- implementation
+|      `uvm_info("CONSUMER/PKT/RECV",
+|                 t.sprint(),UVM_MEDIUM)
+|      #10ns;
+|    endtask
+|
+| endclass
+
+
+
+Topic: Exports
+--------------
+
+Exports promote an interface (or imp) implementation from a child to its parent.
+
+- Promotes (exports) interface implementations from a child  (or self) up a level
+
+- Internally bound to child export, imp / interface in c'tor
+
+- Externally connected to port or parent export, but not required.
+  (If no connection, no activity) 
+
+- Exports are depicted as circle in diagrams
+
+
+SC Example:
+
+Often, an SC component that implements an interface may provide that interface
+via an explicit export object, much like the ~imp~ provides an interface in SV.
+In this case, the SC Target binds its own interface implementation to the export.
+Then, a port can be connected directly to the export, e.g. ~prod.out.bind(cons.in);~
+
+(see UVMC_TLM_Overview_Export_Self.png)
+
+| class consumer : public sc_module,
+|                  tlm_blocking_put_if<packet>
+| {
+|   public:
+|
+|   sc_export<tlm_blocking_put_if<packet> > in;  <-- export
+|   
+|   consumer(sc_module_name nm) : in("in") {
+|     in(*this);                  <-- promote own intf impl
+|   }
+| 
+|  virtual void put(const packet &t) {
+|     cout << "Got packet: " << t << endl;
+|     wait(10,SC_NS);
+|   }
+| };
+
+
+SV Example:
+
+(see UVMC_TLM_Overview_Export_Imp.png)
+
+| class parent extends uvm_component;
+|
+|   uvm_blocking_put_export #(packet) in;
+|
+|   consumer cons; 
+|
+|   `uvm_component_utils(consumer)
+|
+|   function new(string name, uvm_component parent=null);
+|      super.new(name,parent);
+|      in = new("in",  this);
+|   endfunction
+|
+|   function void build_phase(uvm_phase phase);
+|     cons=consumer::type_id::create("const",this);
+|   endfunction
+|
+|   function void connect_phase(uvm_phase phase);
+|     in.connect(consumer.in);
+|   endfunction
+|
+| endclass
+
+
+
+Topic: Analysis
+---------------
+
+Analysis ports, exports, and imps are used to monitor transaction
+flow and help you debug your designs. Components emitting transactions
+out an analysis port are not necessarily the producers of those
+transactions. In all cases, components receiving transactions from
+an analysis connection do not execute them or modify them in any way.
+
+Analysis Ports:
+
+Analysis ports are a special kind of TLM port. They publish 
+transactions to any number of listeners, including zero.
+
+- Broadcasts ("publishes") to all connected targets ("subscribers") 
+
+- Transactions are read-only. Used for debug, scoreboards, etc. 
+
+- Usually does not require connection (SC_ZERO_OR_MORE_BOUND) 
+
+- Depicted as diamond in diagrams
+
+
+SC Example:
+
+(see UVMC_TLM_Overview_Analysis_Ports.png)
+
+| class monitor: public sc_module
+| {
+|   sc_port<tlm_analysis_if<packet>,
+|           0, SC_ZERO_OR_MORE_BOUND> > ap;
+|
+|   monitor(sc_module_name nm) : ap("ap"){ 
+|      SC_THREAD(run);
+|   }
+|   void run() {
+|      packet t;
+|      ...gather packet off bus...
+|      ap->write( t );  <--
+|   }
+| };
+
+
+Analysis Exports & Imps:
+
+Analysis exports and imps are subscribers to a TLM analysis port.
+
+- Receives streams of transactions from connected publisher (e.g. monitor) 
+- Transactions are read-only, i.e. for debugging, scoreboarding, etc. 
+- Like all exports and imps, does not typically ~require~ a connection 
+- Depicted as circle in diagrams
+
+
+SV Example:
+
+(see UVMC_TLM_Overview_Analysis_Imps.png)
+
+| class scoreboard extends uvm_component;
+|
+|    uvm_analysis_imp #(packet,scoreboard) actual_in;  <-- imp
+|
+|    `uvm_component_utils(scoreboard)
+|
+|    function new(string name, uvm_component parent=null);
+|       super.new(name,parent);
+|       actual_in = new("actual_in", this);
+|       ...
+|    endfunction
+|
+|    virtual function void write(packet t); <-- called by actual_in
+|      packet exp;
+|      `uvm_info("SB/PKT/RECV",t.sprint(),UVM_MEDIUM)
+|      if (!expect_fifo.try_get(exp)) ...error
+|      if (!t.compare(exp)) ...error
+|    endfunction
+| endclass
+
+
+
+
+Topic: TLM Initiator Socket
+---------------------------
+
+Sockets are a convenient way to make TLM2 connections; in fact, most
+TLM2 connections are made with sockets, not individual interface
+connections.
+
+- Can do blocking or non-blocking transport (usually one or the other)
+
+- Default type is ~tlm_generic_payload~ with base protocol semantics
+
+- Initiator must implement backward interface,
+  unless a simple initiator socket is used (in tlm_utils namespace)
+
+- When driving an SV target, the ~DMI~ and ~debug~ interface calls
+  will be ignored, as they are not implemented in SV.
+
+- When driving an SC target from SV, the ~DMI~ and ~debug~ interfaces
+  will not be called, so your SC models should not rely on them
+  being called.
+  
+- Depicted as square with outward facing arrow
+
+SC Example:
+
+(see UVMC_TLM_Overview_InitiatorSocket.png)
+
+| struct producer: public sc_module,
+|                  public tlm_bw_transport_if< >
+| {
+|   tlm::tlm_initiator_socket< > out; // default: tlm_gp
+|
+|   producer (sc_module_name nm) : out("out") {
+|     out(*this); // bind bw intf to self
+|     SC_THREAD(fw_proc);
+|   }
+|
+|   // FORWARD PATH
+|
+|   void fw_proc() {
+|     // produce tlm gp trans, then emit using...
+|     out->b_transport(t,del);
+|        *or*
+|     out->nb_transport_fw(t,ph,del);
+|   }
+|
+|   // BACKWARD PATH
+|
+|   virtual tlm_sync_enum nb_transport_bw(...) {
+|     ...coordinate with fw path, per protocol
+|   }
+|
+|   virtual void invalidate_direct_mem_ptr(...) {
+|     // Dummy implementation
+|   }
+| };
+
+
+
+Topic: TLM Target Socket
+------------------------
+
+A component having a target socket receives transaction on its forward
+interface and, if non-blocking, sends responses to the initiator via
+the backward path.
+
+Some other key aspects of target sockets include
+
+- They implement both blocking or non-blocking transport interface,
+  although the connected initiator typically uses one or the other.
+
+- The default transaction type is the ~tlm_generic_payload~
+  executed with ~TLM base protocol~ semantics
+
+- The target model must implement all of forward interface
+  unless the simple target socket is used, in which case only
+  those methods that are registered need to be implemented.
+
+- Because UVM SV does not support the direct memory and debug interfaces,
+  UVMC stubs these out. Attempts to use these interfaces by SV initiators
+  will be ignored.
+
+- Sockets are depicted in diagrams as a square with inward facing arrow.
+
+(see UVMC_TLM_Overview_TargetSocket.png)
+
+SC example:
+
+| struct consumer: public sc_module,
+|                  public tlm_fw_transport_if< > {
+|
+|   tlm::tlm_target_socket< > in;
+|
+|   consumer(sc_module_name nm) : in("in") {
+|     in.bind(*this);     SC_THREAD(bw_proc);
+|   }
+|
+|   // FORWARD PATH
+|
+|   void b_transport( packet& trans,sc_time& t ) { 
+|     // fully execute request, modify args, return
+|   }
+|
+|   tlm_sync_enum nb_transport_fw(...) {
+|     // per protocol, update args as allowed,return
+|   }
+|
+|   bool get_direct_mem_ptr() { return FALSE; }
+|
+|   unsigned int transport_dbg() { return 0; }
+| 
+|
+|   // BACKWARD PATH
+|
+|   void bw_proc() {
+|      ...coordinate with fw transport per protocol
+|      in->nb_transport_bw(trans,ph,delay);
+|   }
+| };
+
+
+
+Topic: Socket Connections
+-------------------------
+
+A socket is used to connect a forward and backward path between
+an initiator and target using a single ~connect~ or ~bind~ call.
+Although sockets support both blocking and non-blocking semantics,
+typically only one of them is in play for any given connection.
+
+
+Blocking Transport:
+
+- Initiator indirectly calls ~b_transport~ in Target 
+
+- Initiator must not modify transaction; transaction contents
+  invalid until ~b_transport~ returns 
+
+- When ~b_transport~ returns, transaction is complete with status/results 
+
+- Transaction can be reused in next ~b_transport~ call
+
+(see UVMC_TLM_Overview_BTransportSocket.png)
+
+
+Non-blocking Transport using Base Protocol:
+
+- Initiator starts request by calling ~nb_transport_fw~ in Target.
+  Target returns with updated arguments.
+
+- Target can call ~nb_transport_bw~ in Initiator at phase transitions.
+  To provide Initiator updates; Initiator may respond via fw interface.
+
+- Transaction contents, phase, & delay can change.
+  Only certain fields in certain phases, according to base protocol rules.
+
+- Transport calls continue back and forth until either returns transaction
+  complete status. For efficiency, the same transaction handle is used
+  throughout its execution.
+
+(see UVMC_TLM_Overview_NBTransportSocket.png)
+
+
+
+Topic: Legal TLM Connections
+----------------------------
+
+TLM port connections are like Verilog module port connections except you're
+connecting interfaces not wires. Control and data flow through each TLM
+connection can be in opposite directions.
+
+A successful connection requires a given pair of ports to agree on the interface
+and transaction types as well as the direction of control and data flow.
+
+Ports   - Ports can connect/bind to parent ports, sibling exports,
+          and sibling interfaces/imps. ~prod.port.bind(port|export|intf|imp)~
+
+Exports - Exports can connect/bind to child exports and child interfaces/imps.
+          ~export.bind(export|imp|interface)~
+
+Interfaces (SC) - Interfaces in Systemc are pure virtual classes that are
+          inherited by target. They are never on the left-hand side of
+          a bind or connect call.
+
+Imps (SV) - Imps in SV are implicitly bound to the parent in the parent's
+          constructor. ~imp = new("name", this)~, where ~this~ is the
+          parent.  They are never on the left-hand side of a bind or
+          connect call.
+
+(see UVMC_TLM_Overview_ITPC_Connections.png)
+
+
+A connection is hierarchical when a port connects to a parent port or an export
+connects to a child export, interface, or imp.  The following figure shows
+the legal port-export-imp-interface connections. Passthrough TLM sockets in SV UVM
+are used to make hierarchical socket connections.
+
+(see UVMC_TLM_Overview_Hierarchical.png)
+
+
+
+
+Topic: TLM Generic Payload
+--------------------------
+
+TLM 2.0 defines a canonical transaction type, ~tlm_generic_payload~, or
+~tlm_gp~ for short. TLM 2.0 also defines a base protocol for execution of
+the generic payload over standard initiator and target sockets.
+
+When used together--~tlm_gp~ with the ~base protocol~--interoperability 
+potential is at its highest.
+
+The TLM GP defines the following major fields. 
+
+  command         - READ, WRITE, or IGNORE
+
+  address         - Base address
+
+  data            - Data buffer. An array of bytes
+
+  data_length     - Number of valid bytes in data buffer
+
+  response_status - OK, INCOMPLETE, GENERIC_ERROR, ADDRESS_ERROR,
+                    BURST_ERROR, etc.
+
+  byte_enable     - Byte-enable data buffer
+
+  byte_enable_length - Number of valid byte-enables buffer
+
+Between SystemC, UVM, and the UVMC libraries, the tlm generic payload
+transaction definitions and converters come pre-defined for you. You do
+not need to define converters for ~tlm_gp~. You can just connect and go!
+
+
+
+Topic: TLM1 combination interfaces
+----------------------------------
+
+TLM ports ~require~ a connection to an implementation of
+its interface type, while TLM exports, interfaces, and imps ~provide~
+the implementation. As long as the provider provides ~at least~ the
+required interface, the connection is allowed.
+
+In most connections, you will be connecting TLM ports that are typed to
+matching interfaces, e.g. a ~uvm_tlm_blocking_put_port #(my_trans)~
+would be connected to a ~uvm_tlm_blocking_put_imp #(my_trans)~, or in SC,
+an ~sc_port< tlm_blocking_put_if<my_trans> >~ would be connected to
+a component implementing (inheriting) ~tlm_blocking_put_if<my_trans>~.
+
+To increase connection options for integrators, a VIP designer may opt
+to provide both the blocking and non-blocking interfaces, e.g. provide
+a ~uvm_tlm_put_imp #(my_tras)~. Integrators may connect to this any of
+~uvm_tlm_blocking_put_port #(my_trans)~, 
+~uvm_tlm_nonblocking_put_port #(my_trans)~,  or of course 
+~uvm_tlm_put_port #(my_trans)~.
+
+As you will see in the chapter on <UVMC Connections>, the same
+options when making connections that cross the language boundary.
+
+
+Topic: UVMC TLM Connections
+---------------------------
+
+Getting your SystemC TLM models and SystemVerilog UVM components talking to
+each other breaks down to two steps
+
+- Define converters, if necessary
+
+- Make connections
+
+If you're not using the TLM generic payload, you must
+define compatible transaction classes in SV and SC and
+the converters to go between them. If the transactions and the components that
+use them are pre-existing, this task entails writing a custom converter
+class that not only packs and unpacks but adapts to the differences
+in member types, member number, and declaration order between the two
+classes.
+
+If a transaction type pre-exists in one language but not the other,
+you would need to define the missing transaction type first, then define the
+converters to go between it and the original transaction. Try to define
+the class to match the existing definition as closely as possible.
+
+In UVM, your transaction should extend uvm_sequence_item. It must implement
+the ~do_pack~ and ~do_unpack~ methods, or it must use the ~`uvm_field~
+macros (not recommended). The number, order, and manner of
+unpacking must be compatible with that for unpacking. Typically,
+one is the exact reverse of the other.
+
+
+| //------------------------------------------------------------//
+| //   Copyright 2009-2015 Mentor Graphics Corporation          //
+| //   All Rights Reserved Worldwide                            //
+| //                                                            //
+| //   Licensed under the Apache License, Version 2.0 (the      //
+| //   "License"); you may not use this file except in          //
+| //   compliance with the License.  You may obtain a copy of   //
+| //   the License at                                           //
+| //                                                            //
+| //       http://www.apache.org/licenses/LICENSE-2.0           //
+| //                                                            //
+| //   Unless required by applicable law or agreed to in        //
+| //   writing, software distributed under the License is       //
+| //   distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR   //
+| //   CONDITIONS OF ANY KIND, either express or implied.  See  //
+| //   the License for the specific language governing          //
+| //   permissions and limitations under the License.           //
+| //------------------------------------------------------------//
+

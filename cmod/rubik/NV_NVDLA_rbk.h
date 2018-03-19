@@ -53,14 +53,14 @@ class RubikConfig {
         uint16_t  rbk_datain_width_;
         uint16_t  rbk_datain_height_;
         uint16_t  rbk_datain_channel_;
-        uint8_t   rbk_dain_addr_high_;
+        uint32_t  rbk_dain_addr_high_;
         uint32_t  rbk_dain_addr_low_;
         uint32_t  rbk_dain_line_stride_;
         uint32_t  rbk_dain_surf_stride_;
         uint32_t  rbk_dain_planar_stride_;
         uint8_t   rbk_dataout_ram_type_;
         uint16_t  rbk_dataout_channel_;
-        uint8_t   rbk_daout_addr_high_;
+        uint32_t  rbk_daout_addr_high_;
         uint32_t  rbk_daout_addr_low_;
         uint32_t  rbk_daout_line_stride_;
         uint32_t  rbk_contract_stride_0_;

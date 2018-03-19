@@ -1,0 +1,189 @@
+# If you search for all comments with the words "SITE SPECIFC" you'll see
+# they refer to a block of site specific settings for each tool environment.
+# These blocks should be the only things needing modification for
+# any specific site. All other settings are dependent on the SITE SPECIFIC
+# settings and should need no modifications.
+# 
+# Here we set default values for certain key variables.
+if ( ! $?LM_LICENSE_FILE ) setenv LM_LICENSE_FILE ""
+if ( ! $?LD_LIBRARY_PATH ) setenv LD_LIBRARY_PATH ""
+if ( ! $?M4PATH ) setenv M4PATH ""
+
+if ( ! $?BITS ) setenv BITS 32
+
+setenv LM_LICENSE_FILE /home/tools/license.dat
+
+#
+# Questa
+#
+
+if ($?env_questa) then
+    # SITE SPECIFIC -- begin {
+    setenv MGC_HOME /home/tools/questa/questa10.3c/questasim
+    # SITE SPECIFIC -- } end
+
+    setenv QUESTA_HOME $MGC_HOME
+    setenv MTI_HOME $MGC_HOME
+    setenv MTI_VCO_MODE $BITS
+    #setenv MTI_BYPASS_SC_PLATFORM_CHECK 1
+    set path = ($MGC_HOME/bin $path)
+endif
+
+#
+# VCS
+#
+
+if ($?env_vcs) then
+    # SITE SPECIFIC -- begin {
+    setenv VCSVER 2014.03-SP1
+    setenv VCS_HOME /home/tools/vcs/$VCSVER
+    # SITE SPECIFIC -- } end
+
+    setenv env_gcc # Enable proper gcc compiler for VCS (see below)
+
+    set path = ( $path $VCS_HOME/bin )
+endif
+
+#
+# IUS
+#
+
+if ($?env_ius) then
+    # SITE SPECIFIC -- begin {
+    setenv VERILOGVER INCISIV14.10-s005
+    setenv IUS_HOME /tools/cadence/$VERILOGVER/Linux
+    # SITE SPECIFIC -- } end
+
+    set path = ( $path $IUS_HOME/bin )
+endif
+
+#
+# GNU GCC
+#
+
+if ($?env_gcc) then # {
+
+    # 32 bit vs. 64 bit gcc compiler is chosen based on setting of
+    # BITS variable.
+
+    # SITE SPECIFIC -- begin {
+    #if ($?env_questa ) setenv GCCVER 474
+    if ($?env_questa ) setenv GCCVER 450
+    #if ($?env_questa ) setenv GCCVER 433
+    if ($?env_vcs)     setenv GCCVER 472
+    if ($?env_ius)     setenv GCCVER 445
+
+    if ( "$BITS" == "32" ) then
+        if( "$GCCVER" == "474" ) then
+            setenv GNUHOME $MGC_HOME/gcc-4.7.4-linux
+            setenv UVMC_BUILD_PLATFORM linux_el30_gnu47
+        else if( "$GCCVER" == "472" ) then
+            setenv GNUHOME $VCS_HOME/gnu/linux/gcc-4.7.2
+            setenv UVMC_BUILD_PLATFORM linux_el30_gnu47
+        else if( "$GCCVER" == "450" ) then
+            setenv GNUHOME $MGC_HOME/gcc-4.5.0-linux
+            setenv UVMC_BUILD_PLATFORM linux_el30_gnu45
+        else if( "$GCCVER" == "445" ) then
+            setenv GNUHOME /home/tools/gcc/gcc-4.4.5-linux
+            setenv UVMC_BUILD_PLATFORM linux_el30_gnu44
+        else if( "$GCCVER" == "433" ) then
+            setenv GNUHOME $MGC_HOME/gcc-4.3.3-linux
+            setenv UVMC_BUILD_PLATFORM linux_el30_gnu43
+        endif
+        setenv GNULIB lib
+
+    else if ( "$BITS" == "64" ) then
+        if( "$GCCVER" == "474" ) then
+            setenv GNUHOME $MGC_HOME/gcc-4.7.4-linux_x86_64
+            setenv UVMC_BUILD_PLATFORM linux64_el30_gnu47
+        else if( "$GCCVER" == "472" ) then
+            setenv GNUHOME $VCS_HOME/gnu/linux/gcc-4.7.2
+            setenv UVMC_BUILD_PLATFORM linux64_el30_gnu47
+        else if( "$GCCVER" == "450" ) then
+            setenv GNUHOME $MGC_HOME/gcc-4.5.0-linux_x86_64
+            setenv UVMC_BUILD_PLATFORM linux64_el30_gnu45
+        else if( "$GCCVER" == "445" ) then
+            setenv GNUHOME /home/tools/gcc/gcc-4.4.5-linux_x86_64
+            setenv UVMC_BUILD_PLATFORM linux64_el30_gnu44
+        else if( "$GCCVER" == "433" ) then
+            setenv GNUHOME $MGC_HOME/gcc-4.3.3-linux_x86_64
+            setenv UVMC_BUILD_PLATFORM linux64_el30_gnu43
+        endif
+        setenv GNULIB lib64
+    endif
+    # SITE SPECIFIC -- } end
+
+    setenv CPLUS_INCLUDE_PATH $GNUHOME/include/c++
+#   setenv GCC_EXEC_PREFIX $GNUHOME/lib/gcc-lib/
+    set path = ( $GNUHOME/bin $path )
+    setenv LD_LIBRARY_PATH $GNUHOME/$GNULIB\:${LD_LIBRARY_PATH}
+endif # }
+
+#
+# UVM
+#
+
+if ($?env_uvm) then
+    # SITE SPECIFIC -- begin {
+    # UVM base library
+    if ($?env_questa) then
+        setenv UVM_HOME $MGC_HOME/verilog_src/uvm-1.1d
+        setenv UVM_LIB $MGC_HOME/uvm-1.1d
+    endif
+    if ($?env_vcs) then
+        setenv UVM_HOME $VCS_HOME/etc/uvm-1.1
+    endif
+    if ($?env_ius) then
+        setenv UVM_HOME $IUS_HOME/tools/uvm/uvm_lib/uvm_sv
+        #setenv UVM_HOME $IUS_HOME/tools/methodology/UVM/CDNS-1.1d/sv
+    endif
+    # SITE SPECIFIC -- } end
+endif
+
+#
+# UVMC
+#
+
+if ($?env_uvmc) then
+    # SITE SPECIFIC -- begin {
+    setenv UVMC_HOME $MGC_HOME/verilog_src/uvmc-2.3.0
+    setenv UVMC_LIB $MGC_HOME/uvmc-2.3.0
+    # SITE SPECIFIC -- } end
+endif
+
+#
+# OSCI SystemC, TLM-2.0
+#
+if ($?env_sysc) then
+
+    # SITE SPECIFIC -- begin {
+    setenv SYSTEMC /home/tools/systemc/systemc-2.3.0
+    # SITE SPECIFIC -- } end
+
+    #setenv SYSC_LIB lib-linux
+    #setenv SYSC_LIB lib-linux64
+    setenv SYSC_LIB lib/$UVMC_BUILD_PLATFORM
+
+    setenv SYSTEMC_TLM_HOME $SYSTEMC/include
+    setenv SYSTEMC_BOOST_HOME $SYSTEMC/include/sysc/packages
+
+    setenv LD_LIBRARY_PATH ${SYSTEMC}/${SYSC_LIB}:$LD_LIBRARY_PATH
+endif
+
+#
+# VISTA
+#
+
+if ($?env_vista) then
+    # SITE SPECIFIC -- begin {
+    setenv VISTA_HOME /home/tools/vista/Vista3.8.0
+    # SITE SPECIFIC -- } end
+
+    setenv MODEL_BUILDER_HOME $VISTA_HOME/papoulis
+    if ( "$BITS" == "32" ) then
+        setenv LD_LIBRARY_PATH ${LD_LIBRARY_PATH}\:${VISTA_HOME}/linux32/tools/lib
+    else if ( "$BITS" == "64" ) then
+        setenv LD_LIBRARY_PATH ${LD_LIBRARY_PATH}\:${VISTA_HOME}/linux64/tools/lib
+    endif
+    set path = ( $path $VISTA_HOME/bin )
+endif

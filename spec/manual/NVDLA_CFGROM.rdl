@@ -1,0 +1,1402 @@
+// ================================================================
+// NVDLA Open Source Project
+//
+// Copyright(c) 2016 - 2017 NVIDIA Corporation.  Licensed under the
+// NVDLA Open Hardware License; Check "LICENSE" which comes with
+// this distribution for more information.
+// ================================================================
+
+property spec_sw_default {
+    type      = number;
+    component = field;
+};
+property spec_access {
+    type      = string;
+    component = field;
+};
+property sw_default_mask {
+    type      = number;
+    component = field;
+};
+property reset_mask {
+    type      = number;
+    component = field;
+};
+regfile regs_NVDLA_CFGROM{
+    default regwidth=32;
+    reg {
+        name = "CFGROM_HW_VERSION";
+        desc = "";
+        field {
+            sw              = r;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x00010001;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } HW_VERSION[31:0];
+    }CFGROM_HW_VERSION;
+
+//Sub-Unit GLB 
+    reg {
+        name = "CFGROM_GLB_DESC";
+        field {
+            sw              = r;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x1;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } GLB_DESC[31:0];
+        GLB_DESC->desc="";
+    }CFGROM_GLB_DESC;
+
+//Sub-Unit CIF
+    reg {
+        name = "CFGROM_CIF_DESC";
+        field {
+            sw              = r;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x00180002;
+            reset_mask      = 0x7ffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CIF_DESC[31:0];
+        CIF_DESC->desc="";
+    }CFGROM_CIF_DESC;
+
+    reg {
+        name = "CFGROM_CIF_CAP_INCOMPAT";
+        field {
+            sw              = r;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CIF_CAP_INCOMPAT[31:0];
+        CIF_CAP_INCOMPAT->desc="";
+    }CFGROM_CIF_CAP_INCOMPAT;
+
+    reg {
+        name = "CFGROM_CIF_CAP_COMPAT";
+        field {
+            sw              = r;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1fff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CIF_CAP_COMPAT[31:0];
+    }CFGROM_CIF_CAP_COMPAT;
+
+    reg {
+        name = "CFGROM_CIF_BASE_WIDTH";
+        field {
+            sw              = r;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x8;
+            reset_mask      = 0xf;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CIF_BASE_WIDTH[7:0];
+    }CFGROM_CIF_BASE_WIDTH;
+
+    reg {
+        name = "CFGROM_CIF_BASE_LATENCY";
+        field {
+            sw              = r;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x32;
+            reset_mask      = 0xffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CIF_BASE_LATENCY[31:0];
+    }CFGROM_CIF_BASE_LATENCY;
+
+    reg {
+        name = "CFGROM_CIF_BASE_BURST_LENGTH_MAX";
+        field {
+            sw              = r;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x4;
+            reset_mask      = 0xff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } BASE_BURST_LENGTH_MAX[31:5];
+    }CFGROM_CIF_BASE_BURST_LENGTH_MAX;
+
+    reg {
+        name = "CFGROM_CIF_BASE_MEM_ADDR_WIDTH";
+        field {
+            sw              = r;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x20;
+            reset_mask      = 0xff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CIF_BASE_MEM_ADDR_WIDTH[31:5];
+    }CFGROM_CIF_BASE_MEM_ADDR_WIDTH;
+
+//Sub-Unit CDMA
+    reg {
+        name = "CFGROM_CDMA_DESC";
+        field {
+            sw              = r;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x00340003;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CDMA_DESC[31:0];
+    }CFGROM_CDMA_DESC;
+
+    reg {
+        name = "CFGROM_CDMA_CAP_INCOMPAT";
+        field {
+            sw              = r;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CDMA_CAP_INCOMPAT[31:0];
+    }CFGROM_CDMA_CAP_INCOMPAT;
+
+    reg {
+        name = "CFGROM_CDMA_CAP_COMPAT";
+        field {
+            sw              = r;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x10;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CDMA_CAP_COMPAT[31:0];
+    }CFGROM_CDMA_CAP_COMPAT;
+
+    reg {
+        name = "CFGROM_CDMA_BASE_FEATURE_TYPES";
+        field {
+            sw              = r;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x10;
+            reset_mask      = 0xfff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CDMA_BASE_FEATURE_TYPES[11:0];
+    }CFGROM_CDMA_BASE_FEATURE_TYPES;
+
+    reg {
+        name = "CFGROM_CDMA_BASE_WEIGHT_TYPES";
+        field {
+            sw              = r;
+            hw              = r;
+            spec_access     = rwt;
+            reset           = 0x10;
+            reset_mask      = 0xfff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CDMA_BASE_WEIGHT_TYPES[11:0];
+    }CFGROM_CDMA_BASE_WEIGHT_TYPES;
+
+    reg {
+        name = "CFGROM_CDMA_BASE_ATOMIC_C";
+        field {
+            sw              = r;
+            hw              = r;
+            spec_access     = rwt;
+            reset           = 0x8;
+            reset_mask      = 0xff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CDMA_BASE_ATOMIC_C[31:0];
+    }CFGROM_CDMA_BASE_ATOMIC_C;
+
+    reg {
+        name = "CFGROM_CDMA_BASE_ATOMIC_K";
+        field {
+            sw              = r;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x8;
+            reset_mask      = 0xff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CDMA_BASE_ATOMIC_K[31:0];
+    }CFGROM_CDMA_BASE_ATOMIC_K;
+
+    reg {
+        name = "CFGROM_CDMA_BASE_ATOMIC_M";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x8;
+            reset_mask      = 0xff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CDMA_BASE_ATOMIC_M[31:0];
+    }CFGROM_CDMA_BASE_ATOMIC_M;
+
+    reg {
+        name = "CFGROM_CDMA_BASE_CBUF_BANK_NUM";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x20;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CDMA_BASE_CBUF_BANK_NUM[31:0];
+    }CFGROM_CDMA_BASE_CBUF_BANK_NUM;
+
+    reg {
+        name = "CFGROM_CDMA_BASE_CBUF_BANK_WIDTH";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x8;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CDMA_BASE_CBUF_BANK_WIDTH[31:0];
+    }CFGROM_CDMA_BASE_CBUF_BANK_WIDTH;
+
+    reg {
+        name = "CFGROM_CDMA_BASE_CBUF_BANK_DEPTH";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x200;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CDMA_BASE_CBUF_BANK_DEPTH[31:0];
+    }CFGROM_CDMA_BASE_CBUF_BANK_DEPTH;
+
+    reg {
+        name = "CFGROM_CDMA_MULTI_BATCH_MAX";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CDMA_MULTI_BATCH_MAX[31:0];
+    }CFGROM_CDMA_MULTI_BATCH_MAX;
+
+    reg {
+        name = "CFGROM_CDMA_IMAGE_IN_FORMATS_PACKED";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x0cfff001;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CDMA_IMAGE_IN_FORMATS_PACKED[31:0];
+    }CFGROM_CDMA_IMAGE_IN_FORMATS_PACKED;
+
+    reg {
+        name = "CFGROM_CDMA_IMAGE_IN_FORMATS_SEMI";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x3;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CDMA_IMAGE_IN_FORMATS_SEMI[31:0];
+    }CFGROM_CDMA_IMAGE_IN_FORMATS_SEMI;
+
+//Sub-Unit CBUF
+    reg {
+        name = "CFGROM_CBUF_DESC";
+        field {
+            sw              = r;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x00180004;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CBUF_DESC[31:0];
+    }CFGROM_CBUF_DESC;
+
+    reg {
+        name = "CFGROM_CBUF_CAP_INCOMPAT";
+        field {
+            sw              = r;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CBUF_CAP_INCOMPAT[31:0];
+    }CFGROM_CBUF_CAP_INCOMPAT;
+
+    reg {
+        name = "CFGROM_CBUF_CAP_COMPAT";
+        field {
+            sw              = r;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CBUF_CAP_COMPAT[31:0];
+    }CFGROM_CBUF_CAP_COMPAT;
+
+    reg {
+        name = "CFGROM_CBUF_BASE_CBUF_BANK_NUM";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x20;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CBUF_BASE_CBUF_BANK_NUM[31:0];
+    }CFGROM_CBUF_BASE_CBUF_BANK_NUM;
+
+    reg {
+        name = "CFGROM_CBUF_BASE_CBUF_BANK_WIDTH";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x8;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CBUF_BASE_CBUF_BANK_WIDTH[31:0];
+    }CFGROM_CBUF_BASE_CBUF_BANK_WIDTH;
+
+    reg {
+        name = "CFGROM_CBUF_BASE_CBUF_BANK_DEPTH";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x200;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CBUF_BASE_CBUF_BANK_DEPTH[31:0];
+    }CFGROM_CBUF_BASE_CBUF_BANK_DEPTH;
+
+    reg {
+        name = "CFGROM_CBUF_BASE_CDMA_ID";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x3;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CBUF_BASE_CDMA_ID[31:0];
+    }CFGROM_CBUF_BASE_CDMA_ID;
+
+//Sub-Unit CSC
+    reg {
+        name = "CFGROM_CSC_DESC";
+        field {
+            sw              = r;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x00300005;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CSC_DESC[31:0];
+    }CFGROM_CSC_DESC;
+
+    reg {
+        name = "CFGROM_CSC_CAP_INCOMPAT";
+        field {
+            sw              = r;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CSC_CAP_INCOMPAT[31:0];
+    }CFGROM_CSC_CAP_INCOMPAT;
+
+    reg {
+        name = "CFGROM_CSC_CAP_COMPAT";
+        field {
+            sw              = r;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x10;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CSC_CAP_COMPAT[31:0];
+    }CFGROM_CSC_CAP_COMPAT;
+
+    reg {
+        name = "CFGROM_CSC_BASE_FEATURE_TYPES";
+        field {
+            sw              = r;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x10;
+            reset_mask      = 0xfff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CSC_BASE_FEATURE_TYPES[11:0];
+    }CFGROM_CSC_BASE_FEATURE_TYPES;
+
+    reg {
+        name = "CFGROM_CSC_BASE_WEIGHT_TYPES";
+        field {
+            sw              = r;
+            hw              = r;
+            spec_access     = rwt;
+            reset           = 0x10;
+            reset_mask      = 0xfff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CSC_BASE_WEIGHT_TYPES[11:0];
+    }CFGROM_CSC_BASE_WEIGHT_TYPES;
+
+    reg {
+        name = "CFGROM_CSC_BASE_ATOMIC_C";
+        field {
+            sw              = r;
+            hw              = r;
+            spec_access     = rwt;
+            reset           = 0x8;
+            reset_mask      = 0xff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CSC_BASE_ATOMIC_C[31:0];
+    }CFGROM_CSC_BASE_ATOMIC_C;
+
+    reg {
+        name = "CFGROM_CSC_BASE_ATOMIC_K";
+        field {
+            sw              = r;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x8;
+            reset_mask      = 0xff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CSC_BASE_ATOMIC_K[31:0];
+    }CFGROM_CSC_BASE_ATOMIC_K;
+
+    reg {
+        name = "CFGROM_CSC_BASE_ATOMIC_M";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x8;
+            reset_mask      = 0xff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CSC_BASE_ATOMIC_M[31:0];
+    }CFGROM_CSC_BASE_ATOMIC_M;
+
+    reg {
+        name = "CFGROM_CSC_BASE_CBUF_BANK_NUM";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x20;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CSC_BASE_CBUF_BANK_NUM[31:0];
+    }CFGROM_CSC_BASE_CBUF_BANK_NUM;
+
+    reg {
+        name = "CFGROM_CSC_BASE_CBUF_BANK_WIDTH";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x8;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CSC_BASE_CBUF_BANK_WIDTH[31:0];
+    }CFGROM_CSC_BASE_CBUF_BANK_WIDTH;
+
+    reg {
+        name = "CFGROM_CSC_BASE_CBUF_BANK_DEPTH";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x200;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CSC_BASE_CBUF_BANK_DEPTH[31:0];
+    }CFGROM_CSC_BASE_CBUF_BANK_DEPTH;
+
+    reg {
+        name = "CFGROM_CSC_BASE_CDMA_ID";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x3;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CSC_BASE_CDMA_ID[31:0];
+    }CFGROM_CSC_BASE_CDMA_ID;
+
+    reg {
+        name = "CFGROM_CSC_MULTI_BATCH_MAX";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CSC_MULTI_BATCH_MAX[31:0];
+    }CFGROM_CSC_MULTI_BATCH_MAX;
+
+//Sub-Unit CMAC_A
+    reg {
+        name = "CFGROM_CMAC_A_DESC";
+        field {
+            sw              = r;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x001c0006;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CMAC_A_DESC[31:0];
+    }CFGROM_CMAC_A_DESC;
+
+    reg {
+        name = "CFGROM_CMAC_A_CAP_INCOMPAT";
+        field {
+            sw              = r;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CMAC_A_CAP_INCOMPAT[31:0];
+    }CFGROM_CMAC_A_CAP_INCOMPAT;
+
+    reg {
+        name = "CFGROM_CMAC_A_CAP_COMPAT";
+        field {
+            sw              = r;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x10;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CMAC_A_CAP_COMPAT[31:0];
+    }CFGROM_CMAC_A_CAP_COMPAT;
+
+    reg {
+        name = "CFGROM_CMAC_A_BASE_FEATURE_TYPES";
+        field {
+            sw              = r;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x10;
+            reset_mask      = 0xfff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CMAC_A_BASE_FEATURE_TYPES[11:0];
+    }CFGROM_CMAC_A_BASE_FEATURE_TYPES;
+
+    reg {
+        name = "CFGROM_CMAC_A_BASE_WEIGHT_TYPES";
+        field {
+            sw              = r;
+            hw              = r;
+            spec_access     = rwt;
+            reset           = 0x10;
+            reset_mask      = 0xfff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CMAC_A_BASE_WEIGHT_TYPES[11:0];
+    }CFGROM_CMAC_A_BASE_WEIGHT_TYPES;
+
+    reg {
+        name = "CFGROM_CMAC_A_BASE_ATOMIC_C";
+        field {
+            sw              = r;
+            hw              = r;
+            spec_access     = rwt;
+            reset           = 0x8;
+            reset_mask      = 0xff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CMAC_A_BASE_ATOMIC_C[31:0];
+    }CFGROM_CMAC_A_BASE_ATOMIC_C;
+
+    reg {
+        name = "CFGROM_CMAC_A_BASE_ATOMIC_K";
+        field {
+            sw              = r;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x8;
+            reset_mask      = 0xff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CMAC_A_BASE_ATOMIC_K[31:0];
+    }CFGROM_CMAC_A_BASE_ATOMIC_K;
+
+    reg {
+        name = "CFGROM_CMAC_A_BASE_CDMA_ID";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x3;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CMAC_A_BASE_CDMA_ID[31:0];
+    }CFGROM_CMAC_A_BASE_CDMA_ID;
+
+//Sub-Unit CMAC_B
+    reg {
+        name = "CFGROM_CMAC_B_DESC";
+        field {
+            sw              = r;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x001c0006;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CMAC_B_DESC[31:0];
+    }CFGROM_CMAC_B_DESC;
+
+    reg {
+        name = "CFGROM_CMAC_B_CAP_INCOMPAT";
+        field {
+            sw              = r;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CMAC_B_CAP_INCOMPAT[31:0];
+    }CFGROM_CMAC_B_CAP_INCOMPAT;
+
+    reg {
+        name = "CFGROM_CMAC_B_CAP_COMPAT";
+        field {
+            sw              = r;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x10;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CMAC_B_CAP_COMPAT[31:0];
+    }CFGROM_CMAC_B_CAP_COMPAT;
+
+    reg {
+        name = "CFGROM_CMAC_B_BASE_FEATURE_TYPES";
+        field {
+            sw              = r;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x10;
+            reset_mask      = 0xfff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CMAC_B_BASE_FEATURE_TYPES[11:0];
+    }CFGROM_CMAC_B_BASE_FEATURE_TYPES;
+
+    reg {
+        name = "CFGROM_CMAC_B_BASE_WEIGHT_TYPES";
+        field {
+            sw              = r;
+            hw              = r;
+            spec_access     = rwt;
+            reset           = 0x10;
+            reset_mask      = 0xfff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CMAC_B_BASE_WEIGHT_TYPES[11:0];
+    }CFGROM_CMAC_B_BASE_WEIGHT_TYPES;
+
+    reg {
+        name = "CFGROM_CMAC_B_BASE_ATOMIC_C";
+        field {
+            sw              = r;
+            hw              = r;
+            spec_access     = rwt;
+            reset           = 0x8;
+            reset_mask      = 0xff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CMAC_B_BASE_ATOMIC_C[31:0];
+    }CFGROM_CMAC_B_BASE_ATOMIC_C;
+
+    reg {
+        name = "CFGROM_CMAC_B_BASE_ATOMIC_K";
+        field {
+            sw              = r;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x8;
+            reset_mask      = 0xff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CMAC_B_BASE_ATOMIC_K[31:0];
+    }CFGROM_CMAC_B_BASE_ATOMIC_K;
+
+    reg {
+        name = "CFGROM_CMAC_B_BASE_CDMA_ID";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x3;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CMAC_B_BASE_CDMA_ID[31:0];
+    }CFGROM_CMAC_B_BASE_CDMA_ID;
+
+//Sub-Unit CACC
+    reg {
+        name = "CFGROM_CACC_DESC";
+        field {
+            sw              = r;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x00200007;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CACC_DESC[31:0];
+    }CFGROM_CACC_DESC;
+
+    reg {
+        name = "CFGROM_CACC_CAP_INCOMPAT";
+        field {
+            sw              = r;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CACC_CAP_INCOMPAT[31:0];
+    }CFGROM_CACC_CAP_INCOMPAT;
+
+    reg {
+        name = "CFGROM_CACC_CAP_COMPAT";
+        field {
+            sw              = r;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CACC_CAP_COMPAT[31:0];
+    }CFGROM_CACC_CAP_COMPAT;
+
+    reg {
+        name = "CFGROM_CACC_BASE_FEATURE_TYPES";
+        field {
+            sw              = r;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x10;
+            reset_mask      = 0xfff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CACC_BASE_FEATURE_TYPES[11:0];
+    }CFGROM_CACC_BASE_FEATURE_TYPES;
+
+    reg {
+        name = "CFGROM_CACC_BASE_WEIGHT_TYPES";
+        field {
+            sw              = r;
+            hw              = r;
+            spec_access     = rwt;
+            reset           = 0x10;
+            reset_mask      = 0xfff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CACC_BASE_WEIGHT_TYPES[11:0];
+    }CFGROM_CACC_BASE_WEIGHT_TYPES;
+
+    reg {
+        name = "CFGROM_CACC_BASE_ATOMIC_C";
+        field {
+            sw              = r;
+            hw              = r;
+            spec_access     = rwt;
+            reset           = 0x8;
+            reset_mask      = 0xff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CACC_BASE_ATOMIC_C[31:0];
+    }CFGROM_CACC_BASE_ATOMIC_C;
+
+    reg {
+        name = "CFGROM_CACC_BASE_ATOMIC_K";
+        field {
+            sw              = r;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x8;
+            reset_mask      = 0xff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CACC_BASE_ATOMIC_K[31:0];
+    }CFGROM_CACC_BASE_ATOMIC_K;
+
+    reg {
+        name = "CFGROM_CACC_BASE_CDMA_ID";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x3;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CACC_BASE_CDMA_ID[31:0];
+    }CFGROM_CACC_BASE_CDMA_ID;
+
+    reg {
+        name = "CFGROM_CACC_MULTI_BATCH_MAX";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CACC_MULTI_BATCH_MAX[31:0];
+    }CFGROM_CACC_MULTI_BATCH_MAX;
+
+//Sub-Unit SDP_RDMA
+    reg {
+        name = "CFGROM_SDP_RDMA_DESC";
+        field {
+            sw              = r;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x000e0008;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } SDP_RDMA_DESC[31:0];
+    }CFGROM_SDP_RDMA_DESC;
+
+    reg {
+        name = "CFGROM_SDP_RDMA_CAP_INCOMPAT";
+        field {
+            sw              = r;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } SDP_RDMA_CAP_INCOMPAT[31:0];
+    }CFGROM_SDP_RDMA_CAP_INCOMPAT;
+
+    reg {
+        name = "CFGROM_SDP_RDMA_CAP_COMPAT";
+        field {
+            sw              = r;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } SDP_RDMA_CAP_COMPAT[31:0];
+    }CFGROM_SDP_RDMA_CAP_COMPAT;
+
+    reg {
+        name = "CFGROM_SDP_RDMA_BASE_ATOMIC_M";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x8;
+            reset_mask      = 0xff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } SDP_RDMA_BASE_ATOMIC_M[31:0];
+    }CFGROM_SDP_RDMA_BASE_ATOMIC_M;
+
+    reg {
+        name = "CFGROM_SDP_RDMA_BASE_SDP_ID";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x9;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } SDP_RDMA_BASE_SDP_ID[31:0];
+    }CFGROM_SDP_RDMA_BASE_SDP_ID;
+
+//Sub-Unit SDP 
+    reg {
+        name = "CFGROM_SDP_DESC";
+        field {
+            sw              = r;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x00200009;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } SDP_DESC[31:0];
+    }CFGROM_SDP_DESC;
+
+    reg {
+        name = "CFGROM_SDP_CAP_INCOMPAT";
+        field {
+            sw              = r;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } SDP_CAP_INCOMPAT[31:0];
+    }CFGROM_SDP_CAP_INCOMPAT;
+
+    reg {
+        name = "CFGROM_SDP_CAP_COMPAT";
+        field {
+            sw              = r;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x18;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } SDP_CAP_COMPAT[31:0];
+    }CFGROM_SDP_CAP_COMPAT;
+
+    reg {
+        name = "CFGROM_SDP_BASE_FEATURE_TYPES";
+        field {
+            sw              = r;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x10;
+            reset_mask      = 0xfff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } SDP_BASE_FEATURE_TYPES[11:0];
+    }CFGROM_SDP_BASE_FEATURE_TYPES;
+
+    reg {
+        name = "CFGROM_SDP_BASE_WEIGHT_TYPES";
+        field {
+            sw              = r;
+            hw              = r;
+            spec_access     = rwt;
+            reset           = 0x10;
+            reset_mask      = 0xfff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } SDP_BASE_WEIGHT_TYPES[11:0];
+    }CFGROM_SDP_BASE_WEIGHT_TYPES;
+
+    reg {
+        name = "CFGROM_SDP_BASE_CDMA_ID";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x3;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } SDP_BASE_CDMA_ID[31:0];
+    }CFGROM_SDP_BASE_CDMA_ID;
+
+    reg {
+        name = "CFGROM_SDP_MULTI_BATCH_MAX";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } SDP_MULTI_BATCH_MAX[31:0];
+    }CFGROM_SDP_MULTI_BATCH_MAX;
+
+    reg {
+        name = "CFGROM_SDP_BS_THROUGHPUT";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x1;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } SDP_BS_THROUGHPUT[31:0];
+    }CFGROM_SDP_BS_THROUGHPUT;
+
+    reg {
+        name = "CFGROM_SDP_BN_THROUGHPUT";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x1;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } SDP_BN_THROUGHPUT[31:0];
+    }CFGROM_SDP_BN_THROUGHPUT;
+
+    reg {
+        name = "CFGROM_SDP_EW_THROUGHPUT";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } SDP_EW_THROUGHPUT[31:0];
+    }CFGROM_SDP_EW_THROUGHPUT;
+
+//Sub-Unit PDP_RDMA
+    reg {
+        name = "CFGROM_PDP_RDMA_DESC";
+        field {
+            sw              = r;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x000e000a;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } PDP_RDMA_DESC[31:0];
+    }CFGROM_PDP_RDMA_DESC;
+
+    reg {
+        name = "CFGROM_PDP_RDMA_CAP_INCOMPAT";
+        field {
+            sw              = r;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } PDP_RDMA_CAP_INCOMPAT[31:0];
+    }CFGROM_PDP_RDMA_CAP_INCOMPAT;
+
+    reg {
+        name = "CFGROM_PDP_RDMA_CAP_COMPAT";
+        field {
+            sw              = r;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } PDP_RDMA_CAP_COMPAT[31:0];
+    }CFGROM_PDP_RDMA_CAP_COMPAT;
+
+    reg {
+        name = "CFGROM_PDP_RDMA_BASE_ATOMIC_M";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x8;
+            reset_mask      = 0xff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } PDP_RDMA_BASE_ATOMIC_M[31:0];
+    }CFGROM_PDP_RDMA_BASE_ATOMIC_M;
+
+    reg {
+        name = "CFGROM_PDP_RDMA_BASE_PDP_ID";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0xb;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } PDP_RDMA_BASE_PDP_ID[31:0];
+    }CFGROM_PDP_RDMA_BASE_PDP_ID;
+
+//Sub-Unit PDP 
+    reg {
+        name = "CFGROM_PDP_DESC";
+        field {
+            sw              = r;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0010000b;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } PDP_DESC[31:0];
+    }CFGROM_PDP_DESC;
+
+    reg {
+        name = "CFGROM_PDP_CAP_INCOMPAT";
+        field {
+            sw              = r;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } PDP_CAP_INCOMPAT[31:0];
+    }CFGROM_PDP_CAP_INCOMPAT;
+
+    reg {
+        name = "CFGROM_PDP_CAP_COMPAT";
+        field {
+            sw              = r;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } PDP_CAP_COMPAT[31:0];
+    }CFGROM_PDP_CAP_COMPAT;
+
+    reg {
+        name = "CFGROM_PDP_BASE_FEATURE_TYPES";
+        field {
+            sw              = r;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x10;
+            reset_mask      = 0xfff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } PDP_BASE_FEATURE_TYPES[11:0];
+    }CFGROM_PDP_BASE_FEATURE_TYPES;
+
+    reg {
+        name = "CFGROM_PDP_BASE_THROUGHPUT";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x1;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } PDP_BASE_THROUGHPUT[31:0];
+    }CFGROM_PDP_BASE_THROUGHPUT;
+
+//Sub-Unit CDP_RDMA
+    reg {
+        name = "CFGROM_CDP_RDMA_DESC";
+        field {
+            sw              = r;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x000e000c;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CDP_RDMA_DESC[31:0];
+    }CFGROM_CDP_RDMA_DESC;
+
+    reg {
+        name = "CFGROM_CDP_RDMA_CAP_INCOMPAT";
+        field {
+            sw              = r;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CDP_RDMA_CAP_INCOMPAT[31:0];
+    }CFGROM_CDP_RDMA_CAP_INCOMPAT;
+
+    reg {
+        name = "CFGROM_CDP_RDMA_CAP_COMPAT";
+        field {
+            sw              = r;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CDP_RDMA_CAP_COMPAT[31:0];
+    }CFGROM_CDP_RDMA_CAP_COMPAT;
+
+    reg {
+        name = "CFGROM_CDP_RDMA_BASE_ATOMIC_M";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x8;
+            reset_mask      = 0xff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CDP_RDMA_BASE_ATOMIC_M[31:0];
+    }CFGROM_CDP_RDMA_BASE_ATOMIC_M;
+
+    reg {
+        name = "CFGROM_CDP_RDMA_BASE_CDP_ID";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0xd;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CDP_RDMA_BASE_CDP_ID[31:0];
+    }CFGROM_CDP_RDMA_BASE_CDP_ID;
+
+//Sub-Unit CDP 
+    reg {
+        name = "CFGROM_CDP_DESC";
+        field {
+            sw              = r;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0010000d;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CDP_DESC[31:0];
+    }CFGROM_CDP_DESC;
+
+    reg {
+        name = "CFGROM_CDP_CAP_INCOMPAT";
+        field {
+            sw              = r;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CDP_CAP_INCOMPAT[31:0];
+    }CFGROM_CDP_CAP_INCOMPAT;
+
+    reg {
+        name = "CFGROM_CDP_CAP_COMPAT";
+        field {
+            sw              = r;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CDP_CAP_COMPAT[31:0];
+    }CFGROM_CDP_CAP_COMPAT;
+
+    reg {
+        name = "CFGROM_CDP_BASE_FEATURE_TYPES";
+        field {
+            sw              = r;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x10;
+            reset_mask      = 0xfff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CDP_BASE_FEATURE_TYPES[11:0];
+    }CFGROM_CDP_BASE_FEATURE_TYPES;
+
+    reg {
+        name = "CFGROM_CDP_BASE_THROUGHPUT";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x1;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CDP_BASE_THROUGHPUT[31:0];
+    }CFGROM_CDP_BASE_THROUGHPUT;
+
+//End-Of-List
+    reg {
+        name = "CFGROM_END_OF_LIST";
+        desc = "";
+        field {
+            sw              = r;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } END_OF_LIST[31:0];
+    }CFGROM_END_OF_LIST;
+};
+
+addrmap  {
+    regs_NVDLA_CFGROM NVDLA_CFGROM @0x0;
+}addrmap_NVDLA_CFGROM;

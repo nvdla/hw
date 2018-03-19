@@ -89,43 +89,43 @@ input  nvdla_core_rstn;  /* cvif2sdp_rd_rsp, cvif2sdp_b_rd_rsp, cvif2sdp_n_rd_rs
 
 output         cvif2sdp_rd_rsp_valid;  /* data valid */
 input          cvif2sdp_rd_rsp_ready;  /* data return handshake */
-output [513:0] cvif2sdp_rd_rsp_pd;
+output [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] cvif2sdp_rd_rsp_pd;
 
 output         cvif2sdp_b_rd_rsp_valid;  /* data valid */
 input          cvif2sdp_b_rd_rsp_ready;  /* data return handshake */
-output [513:0] cvif2sdp_b_rd_rsp_pd;
+output [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] cvif2sdp_b_rd_rsp_pd;
 
 output         cvif2sdp_n_rd_rsp_valid;  /* data valid */
 input          cvif2sdp_n_rd_rsp_ready;  /* data return handshake */
-output [513:0] cvif2sdp_n_rd_rsp_pd;
+output [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] cvif2sdp_n_rd_rsp_pd;
 
 output         cvif2sdp_e_rd_rsp_valid;  /* data valid */
 input          cvif2sdp_e_rd_rsp_ready;  /* data return handshake */
-output [513:0] cvif2sdp_e_rd_rsp_pd;
+output [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] cvif2sdp_e_rd_rsp_pd;
 
 output         cvif2cdp_rd_rsp_valid;  /* data valid */
 input          cvif2cdp_rd_rsp_ready;  /* data return handshake */
-output [513:0] cvif2cdp_rd_rsp_pd;
+output [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] cvif2cdp_rd_rsp_pd;
 
 output         cvif2pdp_rd_rsp_valid;  /* data valid */
 input          cvif2pdp_rd_rsp_ready;  /* data return handshake */
-output [513:0] cvif2pdp_rd_rsp_pd;
+output [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] cvif2pdp_rd_rsp_pd;
 
 output         cvif2bdma_rd_rsp_valid;  /* data valid */
 input          cvif2bdma_rd_rsp_ready;  /* data return handshake */
-output [513:0] cvif2bdma_rd_rsp_pd;
+output [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] cvif2bdma_rd_rsp_pd;
 
 output         cvif2rbk_rd_rsp_valid;  /* data valid */
 input          cvif2rbk_rd_rsp_ready;  /* data return handshake */
-output [513:0] cvif2rbk_rd_rsp_pd;
+output [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] cvif2rbk_rd_rsp_pd;
 
 output         cvif2cdma_wt_rd_rsp_valid;  /* data valid */
 input          cvif2cdma_wt_rd_rsp_ready;  /* data return handshake */
-output [513:0] cvif2cdma_wt_rd_rsp_pd;
+output [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] cvif2cdma_wt_rd_rsp_pd;
 
 output         cvif2cdma_dat_rd_rsp_valid;  /* data valid */
 input          cvif2cdma_dat_rd_rsp_ready;  /* data return handshake */
-output [513:0] cvif2cdma_dat_rd_rsp_pd;
+output [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] cvif2cdma_dat_rd_rsp_pd;
 
 input        cq_rd0_pvld;  /* data valid */
 output       cq_rd0_prdy;  /* data return handshake */
@@ -171,14 +171,14 @@ input          noc2cvif_axi_r_rvalid;  /* data valid */
 output         noc2cvif_axi_r_rready;  /* data return handshake */
 input    [7:0] noc2cvif_axi_r_rid;
 input          noc2cvif_axi_r_rlast;
-input  [511:0] noc2cvif_axi_r_rdata;
+input  [NVDLA_SECONDARY_MEMIF_WIDTH-1:0] noc2cvif_axi_r_rdata;
 
 input [31:0] pwrbus_ram_pd;
 
 output         eg2ig_axi_vld;
 reg      [1:0] arb_cnt;
 reg      [6:0] arb_cq_pd;
-reg    [511:0] arb_data;
+reg    [NVDLA_SECONDARY_MEMIF_WIDTH-1:0] arb_data;
 reg      [1:0] arb_wen;
 reg      [1:0] ctt0_cnt;
 reg      [6:0] ctt0_cq_pd;
@@ -256,7 +256,7 @@ wire           ctt8_rdy;
 wire           ctt9_accept;
 wire           ctt9_last_beat;
 wire           ctt9_rdy;
-wire   [511:0] dma0_data;
+wire   [NVDLA_SECONDARY_MEMIF_WIDTH-1:0] dma0_data;
 wire   [255:0] dma0_data0;
 wire   [255:0] dma0_data1;
 wire           dma0_is_last_odd;
@@ -264,10 +264,10 @@ wire           dma0_last_odd;
 wire     [1:0] dma0_mask;
 wire   [255:0] dma0_mdata0;
 wire   [255:0] dma0_mdata1;
-wire   [513:0] dma0_pd;
+wire   [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] dma0_pd;
 wire           dma0_rdy;
 wire           dma0_vld;
-wire   [511:0] dma1_data;
+wire   [NVDLA_SECONDARY_MEMIF_WIDTH-1:0] dma1_data;
 wire   [255:0] dma1_data0;
 wire   [255:0] dma1_data1;
 wire           dma1_is_last_odd;
@@ -275,10 +275,10 @@ wire           dma1_last_odd;
 wire     [1:0] dma1_mask;
 wire   [255:0] dma1_mdata0;
 wire   [255:0] dma1_mdata1;
-wire   [513:0] dma1_pd;
+wire   [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] dma1_pd;
 wire           dma1_rdy;
 wire           dma1_vld;
-wire   [511:0] dma2_data;
+wire   [NVDLA_SECONDARY_MEMIF_WIDTH-1:0] dma2_data;
 wire   [255:0] dma2_data0;
 wire   [255:0] dma2_data1;
 wire           dma2_is_last_odd;
@@ -286,10 +286,10 @@ wire           dma2_last_odd;
 wire     [1:0] dma2_mask;
 wire   [255:0] dma2_mdata0;
 wire   [255:0] dma2_mdata1;
-wire   [513:0] dma2_pd;
+wire   [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] dma2_pd;
 wire           dma2_rdy;
 wire           dma2_vld;
-wire   [511:0] dma3_data;
+wire   [NVDLA_SECONDARY_MEMIF_WIDTH-1:0] dma3_data;
 wire   [255:0] dma3_data0;
 wire   [255:0] dma3_data1;
 wire           dma3_is_last_odd;
@@ -297,10 +297,10 @@ wire           dma3_last_odd;
 wire     [1:0] dma3_mask;
 wire   [255:0] dma3_mdata0;
 wire   [255:0] dma3_mdata1;
-wire   [513:0] dma3_pd;
+wire   [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] dma3_pd;
 wire           dma3_rdy;
 wire           dma3_vld;
-wire   [511:0] dma4_data;
+wire   [NVDLA_SECONDARY_MEMIF_WIDTH-1:0] dma4_data;
 wire   [255:0] dma4_data0;
 wire   [255:0] dma4_data1;
 wire           dma4_is_last_odd;
@@ -308,10 +308,10 @@ wire           dma4_last_odd;
 wire     [1:0] dma4_mask;
 wire   [255:0] dma4_mdata0;
 wire   [255:0] dma4_mdata1;
-wire   [513:0] dma4_pd;
+wire   [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] dma4_pd;
 wire           dma4_rdy;
 wire           dma4_vld;
-wire   [511:0] dma5_data;
+wire   [NVDLA_SECONDARY_MEMIF_WIDTH-1:0] dma5_data;
 wire   [255:0] dma5_data0;
 wire   [255:0] dma5_data1;
 wire           dma5_is_last_odd;
@@ -319,10 +319,10 @@ wire           dma5_last_odd;
 wire     [1:0] dma5_mask;
 wire   [255:0] dma5_mdata0;
 wire   [255:0] dma5_mdata1;
-wire   [513:0] dma5_pd;
+wire   [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] dma5_pd;
 wire           dma5_rdy;
 wire           dma5_vld;
-wire   [511:0] dma6_data;
+wire   [NVDLA_SECONDARY_MEMIF_WIDTH-1:0] dma6_data;
 wire   [255:0] dma6_data0;
 wire   [255:0] dma6_data1;
 wire           dma6_is_last_odd;
@@ -330,10 +330,10 @@ wire           dma6_last_odd;
 wire     [1:0] dma6_mask;
 wire   [255:0] dma6_mdata0;
 wire   [255:0] dma6_mdata1;
-wire   [513:0] dma6_pd;
+wire   [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] dma6_pd;
 wire           dma6_rdy;
 wire           dma6_vld;
-wire   [511:0] dma7_data;
+wire   [NVDLA_SECONDARY_MEMIF_WIDTH-1:0] dma7_data;
 wire   [255:0] dma7_data0;
 wire   [255:0] dma7_data1;
 wire           dma7_is_last_odd;
@@ -341,10 +341,10 @@ wire           dma7_last_odd;
 wire     [1:0] dma7_mask;
 wire   [255:0] dma7_mdata0;
 wire   [255:0] dma7_mdata1;
-wire   [513:0] dma7_pd;
+wire   [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] dma7_pd;
 wire           dma7_rdy;
 wire           dma7_vld;
-wire   [511:0] dma8_data;
+wire   [NVDLA_SECONDARY_MEMIF_WIDTH-1:0] dma8_data;
 wire   [255:0] dma8_data0;
 wire   [255:0] dma8_data1;
 wire           dma8_is_last_odd;
@@ -352,10 +352,10 @@ wire           dma8_last_odd;
 wire     [1:0] dma8_mask;
 wire   [255:0] dma8_mdata0;
 wire   [255:0] dma8_mdata1;
-wire   [513:0] dma8_pd;
+wire   [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] dma8_pd;
 wire           dma8_rdy;
 wire           dma8_vld;
-wire   [511:0] dma9_data;
+wire   [NVDLA_SECONDARY_MEMIF_WIDTH-1:0] dma9_data;
 wire   [255:0] dma9_data0;
 wire   [255:0] dma9_data1;
 wire           dma9_is_last_odd;
@@ -363,11 +363,11 @@ wire           dma9_last_odd;
 wire     [1:0] dma9_mask;
 wire   [255:0] dma9_mdata0;
 wire   [255:0] dma9_mdata1;
-wire   [513:0] dma9_pd;
+wire   [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] dma9_pd;
 wire           dma9_rdy;
 wire           dma9_vld;
 wire     [3:0] ipipe_axi_axid;
-wire   [511:0] ipipe_axi_data;
+wire   [NVDLA_SECONDARY_MEMIF_WIDTH-1:0] ipipe_axi_data;
 wire   [515:0] ipipe_axi_pd;
 wire           ipipe_axi_rdy;
 wire           ipipe_axi_vld;
@@ -515,67 +515,67 @@ wire   [256:0] ro9_wr1_pd;
 wire           ro9_wr1_prdy;
 wire           ro9_wr1_pvld;
 wire           ro9_wr_rdy;
-wire   [511:0] rq0_rd_pd;
+wire   [NVDLA_SECONDARY_MEMIF_WIDTH-1:0] rq0_rd_pd;
 wire           rq0_rd_prdy;
 wire           rq0_rd_pvld;
-wire   [511:0] rq0_wr_pd;
+wire   [NVDLA_SECONDARY_MEMIF_WIDTH-1:0] rq0_wr_pd;
 wire           rq0_wr_prdy;
 wire           rq0_wr_pvld;
-wire   [511:0] rq1_rd_pd;
+wire   [NVDLA_SECONDARY_MEMIF_WIDTH-1:0] rq1_rd_pd;
 wire           rq1_rd_prdy;
 wire           rq1_rd_pvld;
-wire   [511:0] rq1_wr_pd;
+wire   [NVDLA_SECONDARY_MEMIF_WIDTH-1:0] rq1_wr_pd;
 wire           rq1_wr_prdy;
 wire           rq1_wr_pvld;
-wire   [511:0] rq2_rd_pd;
+wire   [NVDLA_SECONDARY_MEMIF_WIDTH-1:0] rq2_rd_pd;
 wire           rq2_rd_prdy;
 wire           rq2_rd_pvld;
-wire   [511:0] rq2_wr_pd;
+wire   [NVDLA_SECONDARY_MEMIF_WIDTH-1:0] rq2_wr_pd;
 wire           rq2_wr_prdy;
 wire           rq2_wr_pvld;
-wire   [511:0] rq3_rd_pd;
+wire   [NVDLA_SECONDARY_MEMIF_WIDTH-1:0] rq3_rd_pd;
 wire           rq3_rd_prdy;
 wire           rq3_rd_pvld;
-wire   [511:0] rq3_wr_pd;
+wire   [NVDLA_SECONDARY_MEMIF_WIDTH-1:0] rq3_wr_pd;
 wire           rq3_wr_prdy;
 wire           rq3_wr_pvld;
-wire   [511:0] rq4_rd_pd;
+wire   [NVDLA_SECONDARY_MEMIF_WIDTH-1:0] rq4_rd_pd;
 wire           rq4_rd_prdy;
 wire           rq4_rd_pvld;
-wire   [511:0] rq4_wr_pd;
+wire   [NVDLA_SECONDARY_MEMIF_WIDTH-1:0] rq4_wr_pd;
 wire           rq4_wr_prdy;
 wire           rq4_wr_pvld;
-wire   [511:0] rq5_rd_pd;
+wire   [NVDLA_SECONDARY_MEMIF_WIDTH-1:0] rq5_rd_pd;
 wire           rq5_rd_prdy;
 wire           rq5_rd_pvld;
-wire   [511:0] rq5_wr_pd;
+wire   [NVDLA_SECONDARY_MEMIF_WIDTH-1:0] rq5_wr_pd;
 wire           rq5_wr_prdy;
 wire           rq5_wr_pvld;
-wire   [511:0] rq6_rd_pd;
+wire   [NVDLA_SECONDARY_MEMIF_WIDTH-1:0] rq6_rd_pd;
 wire           rq6_rd_prdy;
 wire           rq6_rd_pvld;
-wire   [511:0] rq6_wr_pd;
+wire   [NVDLA_SECONDARY_MEMIF_WIDTH-1:0] rq6_wr_pd;
 wire           rq6_wr_prdy;
 wire           rq6_wr_pvld;
-wire   [511:0] rq7_rd_pd;
+wire   [NVDLA_SECONDARY_MEMIF_WIDTH-1:0] rq7_rd_pd;
 wire           rq7_rd_prdy;
 wire           rq7_rd_pvld;
-wire   [511:0] rq7_wr_pd;
+wire   [NVDLA_SECONDARY_MEMIF_WIDTH-1:0] rq7_wr_pd;
 wire           rq7_wr_prdy;
 wire           rq7_wr_pvld;
-wire   [511:0] rq8_rd_pd;
+wire   [NVDLA_SECONDARY_MEMIF_WIDTH-1:0] rq8_rd_pd;
 wire           rq8_rd_prdy;
 wire           rq8_rd_pvld;
-wire   [511:0] rq8_wr_pd;
+wire   [NVDLA_SECONDARY_MEMIF_WIDTH-1:0] rq8_wr_pd;
 wire           rq8_wr_prdy;
 wire           rq8_wr_pvld;
-wire   [511:0] rq9_rd_pd;
+wire   [NVDLA_SECONDARY_MEMIF_WIDTH-1:0] rq9_rd_pd;
 wire           rq9_rd_prdy;
 wire           rq9_rd_pvld;
-wire   [511:0] rq9_wr_pd;
+wire   [NVDLA_SECONDARY_MEMIF_WIDTH-1:0] rq9_wr_pd;
 wire           rq9_wr_prdy;
 wire           rq9_wr_pvld;
-wire   [511:0] rq_wr_pd;
+wire   [NVDLA_SECONDARY_MEMIF_WIDTH-1:0] rq_wr_pd;
 wire           src0_gnt;
 wire           src0_req;
 wire           src1_gnt;
@@ -648,10 +648,10 @@ NV_NVDLA_CVIF_READ_EG_lat_fifo lat_fifo0 (
   ,.nvdla_core_rstn            (nvdla_core_rstn)                //|< i
   ,.rq_wr_prdy                 (rq0_wr_prdy)                    //|> w
   ,.rq_wr_pvld                 (rq0_wr_pvld)                    //|< w
-  ,.rq_wr_pd                   (rq0_wr_pd[511:0])               //|< w
+  ,.rq_wr_pd                   (rq0_wr_pd[NVDLA_SECONDARY_MEMIF_WIDTH-1:0])               //|< w
   ,.rq_rd_prdy                 (rq0_rd_prdy)                    //|< w
   ,.rq_rd_pvld                 (rq0_rd_pvld)                    //|> w
-  ,.rq_rd_pd                   (rq0_rd_pd[511:0])               //|> w
+  ,.rq_rd_pd                   (rq0_rd_pd[NVDLA_SECONDARY_MEMIF_WIDTH-1:0])               //|> w
   ,.pwrbus_ram_pd              (pwrbus_ram_pd[31:0])            //|< i
   );
 
@@ -663,10 +663,10 @@ NV_NVDLA_CVIF_READ_EG_lat_fifo lat_fifo1 (
   ,.nvdla_core_rstn            (nvdla_core_rstn)                //|< i
   ,.rq_wr_prdy                 (rq1_wr_prdy)                    //|> w
   ,.rq_wr_pvld                 (rq1_wr_pvld)                    //|< w
-  ,.rq_wr_pd                   (rq1_wr_pd[511:0])               //|< w
+  ,.rq_wr_pd                   (rq1_wr_pd[NVDLA_SECONDARY_MEMIF_WIDTH-1:0])               //|< w
   ,.rq_rd_prdy                 (rq1_rd_prdy)                    //|< w
   ,.rq_rd_pvld                 (rq1_rd_pvld)                    //|> w
-  ,.rq_rd_pd                   (rq1_rd_pd[511:0])               //|> w
+  ,.rq_rd_pd                   (rq1_rd_pd[NVDLA_SECONDARY_MEMIF_WIDTH-1:0])               //|> w
   ,.pwrbus_ram_pd              (pwrbus_ram_pd[31:0])            //|< i
   );
 
@@ -678,10 +678,10 @@ NV_NVDLA_CVIF_READ_EG_lat_fifo lat_fifo2 (
   ,.nvdla_core_rstn            (nvdla_core_rstn)                //|< i
   ,.rq_wr_prdy                 (rq2_wr_prdy)                    //|> w
   ,.rq_wr_pvld                 (rq2_wr_pvld)                    //|< w
-  ,.rq_wr_pd                   (rq2_wr_pd[511:0])               //|< w
+  ,.rq_wr_pd                   (rq2_wr_pd[NVDLA_SECONDARY_MEMIF_WIDTH-1:0])               //|< w
   ,.rq_rd_prdy                 (rq2_rd_prdy)                    //|< w
   ,.rq_rd_pvld                 (rq2_rd_pvld)                    //|> w
-  ,.rq_rd_pd                   (rq2_rd_pd[511:0])               //|> w
+  ,.rq_rd_pd                   (rq2_rd_pd[NVDLA_SECONDARY_MEMIF_WIDTH-1:0])               //|> w
   ,.pwrbus_ram_pd              (pwrbus_ram_pd[31:0])            //|< i
   );
 
@@ -693,10 +693,10 @@ NV_NVDLA_CVIF_READ_EG_lat_fifo lat_fifo3 (
   ,.nvdla_core_rstn            (nvdla_core_rstn)                //|< i
   ,.rq_wr_prdy                 (rq3_wr_prdy)                    //|> w
   ,.rq_wr_pvld                 (rq3_wr_pvld)                    //|< w
-  ,.rq_wr_pd                   (rq3_wr_pd[511:0])               //|< w
+  ,.rq_wr_pd                   (rq3_wr_pd[NVDLA_SECONDARY_MEMIF_WIDTH-1:0])               //|< w
   ,.rq_rd_prdy                 (rq3_rd_prdy)                    //|< w
   ,.rq_rd_pvld                 (rq3_rd_pvld)                    //|> w
-  ,.rq_rd_pd                   (rq3_rd_pd[511:0])               //|> w
+  ,.rq_rd_pd                   (rq3_rd_pd[NVDLA_SECONDARY_MEMIF_WIDTH-1:0])               //|> w
   ,.pwrbus_ram_pd              (pwrbus_ram_pd[31:0])            //|< i
   );
 
@@ -708,10 +708,10 @@ NV_NVDLA_CVIF_READ_EG_lat_fifo lat_fifo4 (
   ,.nvdla_core_rstn            (nvdla_core_rstn)                //|< i
   ,.rq_wr_prdy                 (rq4_wr_prdy)                    //|> w
   ,.rq_wr_pvld                 (rq4_wr_pvld)                    //|< w
-  ,.rq_wr_pd                   (rq4_wr_pd[511:0])               //|< w
+  ,.rq_wr_pd                   (rq4_wr_pd[NVDLA_SECONDARY_MEMIF_WIDTH-1:0])               //|< w
   ,.rq_rd_prdy                 (rq4_rd_prdy)                    //|< w
   ,.rq_rd_pvld                 (rq4_rd_pvld)                    //|> w
-  ,.rq_rd_pd                   (rq4_rd_pd[511:0])               //|> w
+  ,.rq_rd_pd                   (rq4_rd_pd[NVDLA_SECONDARY_MEMIF_WIDTH-1:0])               //|> w
   ,.pwrbus_ram_pd              (pwrbus_ram_pd[31:0])            //|< i
   );
 
@@ -723,10 +723,10 @@ NV_NVDLA_CVIF_READ_EG_lat_fifo lat_fifo5 (
   ,.nvdla_core_rstn            (nvdla_core_rstn)                //|< i
   ,.rq_wr_prdy                 (rq5_wr_prdy)                    //|> w
   ,.rq_wr_pvld                 (rq5_wr_pvld)                    //|< w
-  ,.rq_wr_pd                   (rq5_wr_pd[511:0])               //|< w
+  ,.rq_wr_pd                   (rq5_wr_pd[NVDLA_SECONDARY_MEMIF_WIDTH-1:0])               //|< w
   ,.rq_rd_prdy                 (rq5_rd_prdy)                    //|< w
   ,.rq_rd_pvld                 (rq5_rd_pvld)                    //|> w
-  ,.rq_rd_pd                   (rq5_rd_pd[511:0])               //|> w
+  ,.rq_rd_pd                   (rq5_rd_pd[NVDLA_SECONDARY_MEMIF_WIDTH-1:0])               //|> w
   ,.pwrbus_ram_pd              (pwrbus_ram_pd[31:0])            //|< i
   );
 
@@ -738,10 +738,10 @@ NV_NVDLA_CVIF_READ_EG_lat_fifo lat_fifo6 (
   ,.nvdla_core_rstn            (nvdla_core_rstn)                //|< i
   ,.rq_wr_prdy                 (rq6_wr_prdy)                    //|> w
   ,.rq_wr_pvld                 (rq6_wr_pvld)                    //|< w
-  ,.rq_wr_pd                   (rq6_wr_pd[511:0])               //|< w
+  ,.rq_wr_pd                   (rq6_wr_pd[NVDLA_SECONDARY_MEMIF_WIDTH-1:0])               //|< w
   ,.rq_rd_prdy                 (rq6_rd_prdy)                    //|< w
   ,.rq_rd_pvld                 (rq6_rd_pvld)                    //|> w
-  ,.rq_rd_pd                   (rq6_rd_pd[511:0])               //|> w
+  ,.rq_rd_pd                   (rq6_rd_pd[NVDLA_SECONDARY_MEMIF_WIDTH-1:0])               //|> w
   ,.pwrbus_ram_pd              (pwrbus_ram_pd[31:0])            //|< i
   );
 
@@ -753,10 +753,10 @@ NV_NVDLA_CVIF_READ_EG_lat_fifo lat_fifo7 (
   ,.nvdla_core_rstn            (nvdla_core_rstn)                //|< i
   ,.rq_wr_prdy                 (rq7_wr_prdy)                    //|> w
   ,.rq_wr_pvld                 (rq7_wr_pvld)                    //|< w
-  ,.rq_wr_pd                   (rq7_wr_pd[511:0])               //|< w
+  ,.rq_wr_pd                   (rq7_wr_pd[NVDLA_SECONDARY_MEMIF_WIDTH-1:0])               //|< w
   ,.rq_rd_prdy                 (rq7_rd_prdy)                    //|< w
   ,.rq_rd_pvld                 (rq7_rd_pvld)                    //|> w
-  ,.rq_rd_pd                   (rq7_rd_pd[511:0])               //|> w
+  ,.rq_rd_pd                   (rq7_rd_pd[NVDLA_SECONDARY_MEMIF_WIDTH-1:0])               //|> w
   ,.pwrbus_ram_pd              (pwrbus_ram_pd[31:0])            //|< i
   );
 
@@ -768,10 +768,10 @@ NV_NVDLA_CVIF_READ_EG_lat_fifo lat_fifo8 (
   ,.nvdla_core_rstn            (nvdla_core_rstn)                //|< i
   ,.rq_wr_prdy                 (rq8_wr_prdy)                    //|> w
   ,.rq_wr_pvld                 (rq8_wr_pvld)                    //|< w
-  ,.rq_wr_pd                   (rq8_wr_pd[511:0])               //|< w
+  ,.rq_wr_pd                   (rq8_wr_pd[NVDLA_SECONDARY_MEMIF_WIDTH-1:0])               //|< w
   ,.rq_rd_prdy                 (rq8_rd_prdy)                    //|< w
   ,.rq_rd_pvld                 (rq8_rd_pvld)                    //|> w
-  ,.rq_rd_pd                   (rq8_rd_pd[511:0])               //|> w
+  ,.rq_rd_pd                   (rq8_rd_pd[NVDLA_SECONDARY_MEMIF_WIDTH-1:0])               //|> w
   ,.pwrbus_ram_pd              (pwrbus_ram_pd[31:0])            //|< i
   );
 
@@ -783,10 +783,10 @@ NV_NVDLA_CVIF_READ_EG_lat_fifo lat_fifo9 (
   ,.nvdla_core_rstn            (nvdla_core_rstn)                //|< i
   ,.rq_wr_prdy                 (rq9_wr_prdy)                    //|> w
   ,.rq_wr_pvld                 (rq9_wr_pvld)                    //|< w
-  ,.rq_wr_pd                   (rq9_wr_pd[511:0])               //|< w
+  ,.rq_wr_pd                   (rq9_wr_pd[NVDLA_SECONDARY_MEMIF_WIDTH-1:0])               //|< w
   ,.rq_rd_prdy                 (rq9_rd_prdy)                    //|< w
   ,.rq_rd_pvld                 (rq9_rd_pvld)                    //|> w
-  ,.rq_rd_pd                   (rq9_rd_pd[511:0])               //|> w
+  ,.rq_rd_pd                   (rq9_rd_pd[NVDLA_SECONDARY_MEMIF_WIDTH-1:0])               //|> w
   ,.pwrbus_ram_pd              (pwrbus_ram_pd[31:0])            //|< i
   );
 
@@ -914,7 +914,7 @@ always @(
       src9_gnt: arb_data = rq9_rd_pd;
     //VCS coverage off
     default : begin 
-                arb_data[511:0] = {512{`x_or_0}};
+                arb_data[NVDLA_SECONDARY_MEMIF_WIDTH-1:0] = {NVDLA_SECONDARY_MEMIF_WIDTH{`x_or_0}};
               end  
     //VCS coverage on
     endcase
@@ -1047,7 +1047,7 @@ end
 assign last_odd = arb_last_beat && arb_cq_ltran && arb_cq_odd;
 
 assign arb_data0 = {arb_data[255:0]};
-assign arb_data1 = {arb_data[511:256]};
+assign arb_data1 = {arb_data[NVDLA_SECONDARY_MEMIF_WIDTH-1:256]};
 assign arb_data0_swizzled = arb_cq_swizzle ? arb_data1 : arb_data0; 
 assign arb_data1_swizzled = arb_cq_swizzle ? arb_data0 : arb_data1; 
 assign arb_pd0 = {last_odd,arb_data0_swizzled};
@@ -1105,9 +1105,9 @@ NV_NVDLA_CVIF_READ_EG_pipe_p2 pipe_p2 (
    .nvdla_core_clk             (nvdla_core_clk)                 //|< i
   ,.nvdla_core_rstn            (nvdla_core_rstn)                //|< i
   ,.cvif2bdma_rd_rsp_ready     (cvif2bdma_rd_rsp_ready)         //|< i
-  ,.dma0_pd                    (dma0_pd[513:0])                 //|< w
+  ,.dma0_pd                    (dma0_pd[NVDLA_SECONDARY_MEMIF_WIDTH+1:0])                 //|< w
   ,.dma0_vld                   (dma0_vld)                       //|< w
-  ,.cvif2bdma_rd_rsp_pd        (cvif2bdma_rd_rsp_pd[513:0])     //|> o
+  ,.cvif2bdma_rd_rsp_pd        (cvif2bdma_rd_rsp_pd[NVDLA_SECONDARY_MEMIF_WIDTH+1:0])     //|> o
   ,.cvif2bdma_rd_rsp_valid     (cvif2bdma_rd_rsp_valid)         //|> o
   ,.dma0_rdy                   (dma0_rdy)                       //|> w
   );
@@ -1158,9 +1158,9 @@ NV_NVDLA_CVIF_READ_EG_pipe_p3 pipe_p3 (
    .nvdla_core_clk             (nvdla_core_clk)                 //|< i
   ,.nvdla_core_rstn            (nvdla_core_rstn)                //|< i
   ,.cvif2sdp_rd_rsp_ready      (cvif2sdp_rd_rsp_ready)          //|< i
-  ,.dma1_pd                    (dma1_pd[513:0])                 //|< w
+  ,.dma1_pd                    (dma1_pd[NVDLA_SECONDARY_MEMIF_WIDTH+1:0])                 //|< w
   ,.dma1_vld                   (dma1_vld)                       //|< w
-  ,.cvif2sdp_rd_rsp_pd         (cvif2sdp_rd_rsp_pd[513:0])      //|> o
+  ,.cvif2sdp_rd_rsp_pd         (cvif2sdp_rd_rsp_pd[NVDLA_SECONDARY_MEMIF_WIDTH+1:0])      //|> o
   ,.cvif2sdp_rd_rsp_valid      (cvif2sdp_rd_rsp_valid)          //|> o
   ,.dma1_rdy                   (dma1_rdy)                       //|> w
   );
@@ -1211,9 +1211,9 @@ NV_NVDLA_CVIF_READ_EG_pipe_p4 pipe_p4 (
    .nvdla_core_clk             (nvdla_core_clk)                 //|< i
   ,.nvdla_core_rstn            (nvdla_core_rstn)                //|< i
   ,.cvif2pdp_rd_rsp_ready      (cvif2pdp_rd_rsp_ready)          //|< i
-  ,.dma2_pd                    (dma2_pd[513:0])                 //|< w
+  ,.dma2_pd                    (dma2_pd[NVDLA_SECONDARY_MEMIF_WIDTH+1:0])                 //|< w
   ,.dma2_vld                   (dma2_vld)                       //|< w
-  ,.cvif2pdp_rd_rsp_pd         (cvif2pdp_rd_rsp_pd[513:0])      //|> o
+  ,.cvif2pdp_rd_rsp_pd         (cvif2pdp_rd_rsp_pd[NVDLA_SECONDARY_MEMIF_WIDTH+1:0])      //|> o
   ,.cvif2pdp_rd_rsp_valid      (cvif2pdp_rd_rsp_valid)          //|> o
   ,.dma2_rdy                   (dma2_rdy)                       //|> w
   );
@@ -1264,9 +1264,9 @@ NV_NVDLA_CVIF_READ_EG_pipe_p5 pipe_p5 (
    .nvdla_core_clk             (nvdla_core_clk)                 //|< i
   ,.nvdla_core_rstn            (nvdla_core_rstn)                //|< i
   ,.cvif2cdp_rd_rsp_ready      (cvif2cdp_rd_rsp_ready)          //|< i
-  ,.dma3_pd                    (dma3_pd[513:0])                 //|< w
+  ,.dma3_pd                    (dma3_pd[NVDLA_SECONDARY_MEMIF_WIDTH+1:0])                 //|< w
   ,.dma3_vld                   (dma3_vld)                       //|< w
-  ,.cvif2cdp_rd_rsp_pd         (cvif2cdp_rd_rsp_pd[513:0])      //|> o
+  ,.cvif2cdp_rd_rsp_pd         (cvif2cdp_rd_rsp_pd[NVDLA_SECONDARY_MEMIF_WIDTH+1:0])      //|> o
   ,.cvif2cdp_rd_rsp_valid      (cvif2cdp_rd_rsp_valid)          //|> o
   ,.dma3_rdy                   (dma3_rdy)                       //|> w
   );
@@ -1317,9 +1317,9 @@ NV_NVDLA_CVIF_READ_EG_pipe_p6 pipe_p6 (
    .nvdla_core_clk             (nvdla_core_clk)                 //|< i
   ,.nvdla_core_rstn            (nvdla_core_rstn)                //|< i
   ,.cvif2rbk_rd_rsp_ready      (cvif2rbk_rd_rsp_ready)          //|< i
-  ,.dma4_pd                    (dma4_pd[513:0])                 //|< w
+  ,.dma4_pd                    (dma4_pd[NVDLA_SECONDARY_MEMIF_WIDTH+1:0])                 //|< w
   ,.dma4_vld                   (dma4_vld)                       //|< w
-  ,.cvif2rbk_rd_rsp_pd         (cvif2rbk_rd_rsp_pd[513:0])      //|> o
+  ,.cvif2rbk_rd_rsp_pd         (cvif2rbk_rd_rsp_pd[NVDLA_SECONDARY_MEMIF_WIDTH+1:0])      //|> o
   ,.cvif2rbk_rd_rsp_valid      (cvif2rbk_rd_rsp_valid)          //|> o
   ,.dma4_rdy                   (dma4_rdy)                       //|> w
   );
@@ -1370,9 +1370,9 @@ NV_NVDLA_CVIF_READ_EG_pipe_p7 pipe_p7 (
    .nvdla_core_clk             (nvdla_core_clk)                 //|< i
   ,.nvdla_core_rstn            (nvdla_core_rstn)                //|< i
   ,.cvif2sdp_b_rd_rsp_ready    (cvif2sdp_b_rd_rsp_ready)        //|< i
-  ,.dma5_pd                    (dma5_pd[513:0])                 //|< w
+  ,.dma5_pd                    (dma5_pd[NVDLA_SECONDARY_MEMIF_WIDTH+1:0])                 //|< w
   ,.dma5_vld                   (dma5_vld)                       //|< w
-  ,.cvif2sdp_b_rd_rsp_pd       (cvif2sdp_b_rd_rsp_pd[513:0])    //|> o
+  ,.cvif2sdp_b_rd_rsp_pd       (cvif2sdp_b_rd_rsp_pd[NVDLA_SECONDARY_MEMIF_WIDTH+1:0])    //|> o
   ,.cvif2sdp_b_rd_rsp_valid    (cvif2sdp_b_rd_rsp_valid)        //|> o
   ,.dma5_rdy                   (dma5_rdy)                       //|> w
   );
@@ -1423,9 +1423,9 @@ NV_NVDLA_CVIF_READ_EG_pipe_p8 pipe_p8 (
    .nvdla_core_clk             (nvdla_core_clk)                 //|< i
   ,.nvdla_core_rstn            (nvdla_core_rstn)                //|< i
   ,.cvif2sdp_n_rd_rsp_ready    (cvif2sdp_n_rd_rsp_ready)        //|< i
-  ,.dma6_pd                    (dma6_pd[513:0])                 //|< w
+  ,.dma6_pd                    (dma6_pd[NVDLA_SECONDARY_MEMIF_WIDTH+1:0])                 //|< w
   ,.dma6_vld                   (dma6_vld)                       //|< w
-  ,.cvif2sdp_n_rd_rsp_pd       (cvif2sdp_n_rd_rsp_pd[513:0])    //|> o
+  ,.cvif2sdp_n_rd_rsp_pd       (cvif2sdp_n_rd_rsp_pd[NVDLA_SECONDARY_MEMIF_WIDTH+1:0])    //|> o
   ,.cvif2sdp_n_rd_rsp_valid    (cvif2sdp_n_rd_rsp_valid)        //|> o
   ,.dma6_rdy                   (dma6_rdy)                       //|> w
   );
@@ -1476,9 +1476,9 @@ NV_NVDLA_CVIF_READ_EG_pipe_p9 pipe_p9 (
    .nvdla_core_clk             (nvdla_core_clk)                 //|< i
   ,.nvdla_core_rstn            (nvdla_core_rstn)                //|< i
   ,.cvif2sdp_e_rd_rsp_ready    (cvif2sdp_e_rd_rsp_ready)        //|< i
-  ,.dma7_pd                    (dma7_pd[513:0])                 //|< w
+  ,.dma7_pd                    (dma7_pd[NVDLA_SECONDARY_MEMIF_WIDTH+1:0])                 //|< w
   ,.dma7_vld                   (dma7_vld)                       //|< w
-  ,.cvif2sdp_e_rd_rsp_pd       (cvif2sdp_e_rd_rsp_pd[513:0])    //|> o
+  ,.cvif2sdp_e_rd_rsp_pd       (cvif2sdp_e_rd_rsp_pd[NVDLA_SECONDARY_MEMIF_WIDTH+1:0])    //|> o
   ,.cvif2sdp_e_rd_rsp_valid    (cvif2sdp_e_rd_rsp_valid)        //|> o
   ,.dma7_rdy                   (dma7_rdy)                       //|> w
   );
@@ -1529,9 +1529,9 @@ NV_NVDLA_CVIF_READ_EG_pipe_p10 pipe_p10 (
    .nvdla_core_clk             (nvdla_core_clk)                 //|< i
   ,.nvdla_core_rstn            (nvdla_core_rstn)                //|< i
   ,.cvif2cdma_dat_rd_rsp_ready (cvif2cdma_dat_rd_rsp_ready)     //|< i
-  ,.dma8_pd                    (dma8_pd[513:0])                 //|< w
+  ,.dma8_pd                    (dma8_pd[NVDLA_SECONDARY_MEMIF_WIDTH+1:0])                 //|< w
   ,.dma8_vld                   (dma8_vld)                       //|< w
-  ,.cvif2cdma_dat_rd_rsp_pd    (cvif2cdma_dat_rd_rsp_pd[513:0]) //|> o
+  ,.cvif2cdma_dat_rd_rsp_pd    (cvif2cdma_dat_rd_rsp_pd[NVDLA_SECONDARY_MEMIF_WIDTH+1:0]) //|> o
   ,.cvif2cdma_dat_rd_rsp_valid (cvif2cdma_dat_rd_rsp_valid)     //|> o
   ,.dma8_rdy                   (dma8_rdy)                       //|> w
   );
@@ -1582,9 +1582,9 @@ NV_NVDLA_CVIF_READ_EG_pipe_p11 pipe_p11 (
    .nvdla_core_clk             (nvdla_core_clk)                 //|< i
   ,.nvdla_core_rstn            (nvdla_core_rstn)                //|< i
   ,.cvif2cdma_wt_rd_rsp_ready  (cvif2cdma_wt_rd_rsp_ready)      //|< i
-  ,.dma9_pd                    (dma9_pd[513:0])                 //|< w
+  ,.dma9_pd                    (dma9_pd[NVDLA_SECONDARY_MEMIF_WIDTH+1:0])                 //|< w
   ,.dma9_vld                   (dma9_vld)                       //|< w
-  ,.cvif2cdma_wt_rd_rsp_pd     (cvif2cdma_wt_rd_rsp_pd[513:0])  //|> o
+  ,.cvif2cdma_wt_rd_rsp_pd     (cvif2cdma_wt_rd_rsp_pd[NVDLA_SECONDARY_MEMIF_WIDTH+1:0])  //|> o
   ,.cvif2cdma_wt_rd_rsp_valid  (cvif2cdma_wt_rd_rsp_valid)      //|> o
   ,.dma9_rdy                   (dma9_rdy)                       //|> w
   );
@@ -2655,7 +2655,7 @@ endmodule // NV_NVDLA_CVIF_READ_EG_pipe_p1
 
 
 // **************************************************************************************************************
-// Generated by ::pipe -m -rand none -bc -is cvif2bdma_rd_rsp_pd (cvif2bdma_rd_rsp_valid,cvif2bdma_rd_rsp_ready) <= dma0_pd[513:0] (dma0_vld,dma0_rdy)
+// Generated by ::pipe -m -rand none -bc -is cvif2bdma_rd_rsp_pd (cvif2bdma_rd_rsp_valid,cvif2bdma_rd_rsp_ready) <= dma0_pd[NVDLA_SECONDARY_MEMIF_WIDTH+1:0] (dma0_vld,dma0_rdy)
 // **************************************************************************************************************
 module NV_NVDLA_CVIF_READ_EG_pipe_p2 (
    nvdla_core_clk
@@ -2670,21 +2670,21 @@ module NV_NVDLA_CVIF_READ_EG_pipe_p2 (
 input          nvdla_core_clk;
 input          nvdla_core_rstn;
 input          cvif2bdma_rd_rsp_ready;
-input  [513:0] dma0_pd;
+input  [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] dma0_pd;
 input          dma0_vld;
-output [513:0] cvif2bdma_rd_rsp_pd;
+output [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] cvif2bdma_rd_rsp_pd;
 output         cvif2bdma_rd_rsp_valid;
 output         dma0_rdy;
-reg    [513:0] cvif2bdma_rd_rsp_pd;
+reg    [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] cvif2bdma_rd_rsp_pd;
 reg            cvif2bdma_rd_rsp_valid;
 reg            dma0_rdy;
-reg    [513:0] p2_pipe_data;
+reg    [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] p2_pipe_data;
 reg            p2_pipe_ready;
 reg            p2_pipe_ready_bc;
 reg            p2_pipe_valid;
 reg            p2_skid_catch;
-reg    [513:0] p2_skid_data;
-reg    [513:0] p2_skid_pipe_data;
+reg    [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] p2_skid_data;
+reg    [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] p2_skid_pipe_data;
 reg            p2_skid_pipe_ready;
 reg            p2_skid_pipe_valid;
 reg            p2_skid_ready;
@@ -2713,7 +2713,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 end
 always @(posedge nvdla_core_clk) begin
   // VCS sop_coverage_off start
-  p2_skid_data <= (p2_skid_catch)? dma0_pd[513:0] : p2_skid_data;
+  p2_skid_data <= (p2_skid_catch)? dma0_pd[NVDLA_SECONDARY_MEMIF_WIDTH+1:0] : p2_skid_data;
   // VCS sop_coverage_off end
 end
 always @(
@@ -2725,7 +2725,7 @@ always @(
   ) begin
   p2_skid_pipe_valid = (p2_skid_ready_flop)? dma0_vld : p2_skid_valid; 
   // VCS sop_coverage_off start
-  p2_skid_pipe_data = (p2_skid_ready_flop)? dma0_pd[513:0] : p2_skid_data;
+  p2_skid_pipe_data = (p2_skid_ready_flop)? dma0_pd[NVDLA_SECONDARY_MEMIF_WIDTH+1:0] : p2_skid_data;
   // VCS sop_coverage_off end
 end
 //## pipe (2) valid-ready-bubble-collapse
@@ -2864,7 +2864,7 @@ endmodule // NV_NVDLA_CVIF_READ_EG_pipe_p2
 
 
 // **************************************************************************************************************
-// Generated by ::pipe -m -rand none -bc -is cvif2sdp_rd_rsp_pd (cvif2sdp_rd_rsp_valid,cvif2sdp_rd_rsp_ready) <= dma1_pd[513:0] (dma1_vld,dma1_rdy)
+// Generated by ::pipe -m -rand none -bc -is cvif2sdp_rd_rsp_pd (cvif2sdp_rd_rsp_valid,cvif2sdp_rd_rsp_ready) <= dma1_pd[NVDLA_SECONDARY_MEMIF_WIDTH+1:0] (dma1_vld,dma1_rdy)
 // **************************************************************************************************************
 module NV_NVDLA_CVIF_READ_EG_pipe_p3 (
    nvdla_core_clk
@@ -2879,21 +2879,21 @@ module NV_NVDLA_CVIF_READ_EG_pipe_p3 (
 input          nvdla_core_clk;
 input          nvdla_core_rstn;
 input          cvif2sdp_rd_rsp_ready;
-input  [513:0] dma1_pd;
+input  [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] dma1_pd;
 input          dma1_vld;
-output [513:0] cvif2sdp_rd_rsp_pd;
+output [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] cvif2sdp_rd_rsp_pd;
 output         cvif2sdp_rd_rsp_valid;
 output         dma1_rdy;
-reg    [513:0] cvif2sdp_rd_rsp_pd;
+reg    [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] cvif2sdp_rd_rsp_pd;
 reg            cvif2sdp_rd_rsp_valid;
 reg            dma1_rdy;
-reg    [513:0] p3_pipe_data;
+reg    [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] p3_pipe_data;
 reg            p3_pipe_ready;
 reg            p3_pipe_ready_bc;
 reg            p3_pipe_valid;
 reg            p3_skid_catch;
-reg    [513:0] p3_skid_data;
-reg    [513:0] p3_skid_pipe_data;
+reg    [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] p3_skid_data;
+reg    [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] p3_skid_pipe_data;
 reg            p3_skid_pipe_ready;
 reg            p3_skid_pipe_valid;
 reg            p3_skid_ready;
@@ -2922,7 +2922,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 end
 always @(posedge nvdla_core_clk) begin
   // VCS sop_coverage_off start
-  p3_skid_data <= (p3_skid_catch)? dma1_pd[513:0] : p3_skid_data;
+  p3_skid_data <= (p3_skid_catch)? dma1_pd[NVDLA_SECONDARY_MEMIF_WIDTH+1:0] : p3_skid_data;
   // VCS sop_coverage_off end
 end
 always @(
@@ -2934,7 +2934,7 @@ always @(
   ) begin
   p3_skid_pipe_valid = (p3_skid_ready_flop)? dma1_vld : p3_skid_valid; 
   // VCS sop_coverage_off start
-  p3_skid_pipe_data = (p3_skid_ready_flop)? dma1_pd[513:0] : p3_skid_data;
+  p3_skid_pipe_data = (p3_skid_ready_flop)? dma1_pd[NVDLA_SECONDARY_MEMIF_WIDTH+1:0] : p3_skid_data;
   // VCS sop_coverage_off end
 end
 //## pipe (3) valid-ready-bubble-collapse
@@ -3073,7 +3073,7 @@ endmodule // NV_NVDLA_CVIF_READ_EG_pipe_p3
 
 
 // **************************************************************************************************************
-// Generated by ::pipe -m -rand none -bc -is cvif2pdp_rd_rsp_pd (cvif2pdp_rd_rsp_valid,cvif2pdp_rd_rsp_ready) <= dma2_pd[513:0] (dma2_vld,dma2_rdy)
+// Generated by ::pipe -m -rand none -bc -is cvif2pdp_rd_rsp_pd (cvif2pdp_rd_rsp_valid,cvif2pdp_rd_rsp_ready) <= dma2_pd[NVDLA_SECONDARY_MEMIF_WIDTH+1:0] (dma2_vld,dma2_rdy)
 // **************************************************************************************************************
 module NV_NVDLA_CVIF_READ_EG_pipe_p4 (
    nvdla_core_clk
@@ -3088,21 +3088,21 @@ module NV_NVDLA_CVIF_READ_EG_pipe_p4 (
 input          nvdla_core_clk;
 input          nvdla_core_rstn;
 input          cvif2pdp_rd_rsp_ready;
-input  [513:0] dma2_pd;
+input  [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] dma2_pd;
 input          dma2_vld;
-output [513:0] cvif2pdp_rd_rsp_pd;
+output [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] cvif2pdp_rd_rsp_pd;
 output         cvif2pdp_rd_rsp_valid;
 output         dma2_rdy;
-reg    [513:0] cvif2pdp_rd_rsp_pd;
+reg    [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] cvif2pdp_rd_rsp_pd;
 reg            cvif2pdp_rd_rsp_valid;
 reg            dma2_rdy;
-reg    [513:0] p4_pipe_data;
+reg    [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] p4_pipe_data;
 reg            p4_pipe_ready;
 reg            p4_pipe_ready_bc;
 reg            p4_pipe_valid;
 reg            p4_skid_catch;
-reg    [513:0] p4_skid_data;
-reg    [513:0] p4_skid_pipe_data;
+reg    [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] p4_skid_data;
+reg    [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] p4_skid_pipe_data;
 reg            p4_skid_pipe_ready;
 reg            p4_skid_pipe_valid;
 reg            p4_skid_ready;
@@ -3131,7 +3131,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 end
 always @(posedge nvdla_core_clk) begin
   // VCS sop_coverage_off start
-  p4_skid_data <= (p4_skid_catch)? dma2_pd[513:0] : p4_skid_data;
+  p4_skid_data <= (p4_skid_catch)? dma2_pd[NVDLA_SECONDARY_MEMIF_WIDTH+1:0] : p4_skid_data;
   // VCS sop_coverage_off end
 end
 always @(
@@ -3143,7 +3143,7 @@ always @(
   ) begin
   p4_skid_pipe_valid = (p4_skid_ready_flop)? dma2_vld : p4_skid_valid; 
   // VCS sop_coverage_off start
-  p4_skid_pipe_data = (p4_skid_ready_flop)? dma2_pd[513:0] : p4_skid_data;
+  p4_skid_pipe_data = (p4_skid_ready_flop)? dma2_pd[NVDLA_SECONDARY_MEMIF_WIDTH+1:0] : p4_skid_data;
   // VCS sop_coverage_off end
 end
 //## pipe (4) valid-ready-bubble-collapse
@@ -3282,7 +3282,7 @@ endmodule // NV_NVDLA_CVIF_READ_EG_pipe_p4
 
 
 // **************************************************************************************************************
-// Generated by ::pipe -m -rand none -bc -is cvif2cdp_rd_rsp_pd (cvif2cdp_rd_rsp_valid,cvif2cdp_rd_rsp_ready) <= dma3_pd[513:0] (dma3_vld,dma3_rdy)
+// Generated by ::pipe -m -rand none -bc -is cvif2cdp_rd_rsp_pd (cvif2cdp_rd_rsp_valid,cvif2cdp_rd_rsp_ready) <= dma3_pd[NVDLA_SECONDARY_MEMIF_WIDTH+1:0] (dma3_vld,dma3_rdy)
 // **************************************************************************************************************
 module NV_NVDLA_CVIF_READ_EG_pipe_p5 (
    nvdla_core_clk
@@ -3297,21 +3297,21 @@ module NV_NVDLA_CVIF_READ_EG_pipe_p5 (
 input          nvdla_core_clk;
 input          nvdla_core_rstn;
 input          cvif2cdp_rd_rsp_ready;
-input  [513:0] dma3_pd;
+input  [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] dma3_pd;
 input          dma3_vld;
-output [513:0] cvif2cdp_rd_rsp_pd;
+output [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] cvif2cdp_rd_rsp_pd;
 output         cvif2cdp_rd_rsp_valid;
 output         dma3_rdy;
-reg    [513:0] cvif2cdp_rd_rsp_pd;
+reg    [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] cvif2cdp_rd_rsp_pd;
 reg            cvif2cdp_rd_rsp_valid;
 reg            dma3_rdy;
-reg    [513:0] p5_pipe_data;
+reg    [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] p5_pipe_data;
 reg            p5_pipe_ready;
 reg            p5_pipe_ready_bc;
 reg            p5_pipe_valid;
 reg            p5_skid_catch;
-reg    [513:0] p5_skid_data;
-reg    [513:0] p5_skid_pipe_data;
+reg    [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] p5_skid_data;
+reg    [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] p5_skid_pipe_data;
 reg            p5_skid_pipe_ready;
 reg            p5_skid_pipe_valid;
 reg            p5_skid_ready;
@@ -3340,7 +3340,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 end
 always @(posedge nvdla_core_clk) begin
   // VCS sop_coverage_off start
-  p5_skid_data <= (p5_skid_catch)? dma3_pd[513:0] : p5_skid_data;
+  p5_skid_data <= (p5_skid_catch)? dma3_pd[NVDLA_SECONDARY_MEMIF_WIDTH+1:0] : p5_skid_data;
   // VCS sop_coverage_off end
 end
 always @(
@@ -3352,7 +3352,7 @@ always @(
   ) begin
   p5_skid_pipe_valid = (p5_skid_ready_flop)? dma3_vld : p5_skid_valid; 
   // VCS sop_coverage_off start
-  p5_skid_pipe_data = (p5_skid_ready_flop)? dma3_pd[513:0] : p5_skid_data;
+  p5_skid_pipe_data = (p5_skid_ready_flop)? dma3_pd[NVDLA_SECONDARY_MEMIF_WIDTH+1:0] : p5_skid_data;
   // VCS sop_coverage_off end
 end
 //## pipe (5) valid-ready-bubble-collapse
@@ -3491,7 +3491,7 @@ endmodule // NV_NVDLA_CVIF_READ_EG_pipe_p5
 
 
 // **************************************************************************************************************
-// Generated by ::pipe -m -rand none -bc -is cvif2rbk_rd_rsp_pd (cvif2rbk_rd_rsp_valid,cvif2rbk_rd_rsp_ready) <= dma4_pd[513:0] (dma4_vld,dma4_rdy)
+// Generated by ::pipe -m -rand none -bc -is cvif2rbk_rd_rsp_pd (cvif2rbk_rd_rsp_valid,cvif2rbk_rd_rsp_ready) <= dma4_pd[NVDLA_SECONDARY_MEMIF_WIDTH+1:0] (dma4_vld,dma4_rdy)
 // **************************************************************************************************************
 module NV_NVDLA_CVIF_READ_EG_pipe_p6 (
    nvdla_core_clk
@@ -3506,21 +3506,21 @@ module NV_NVDLA_CVIF_READ_EG_pipe_p6 (
 input          nvdla_core_clk;
 input          nvdla_core_rstn;
 input          cvif2rbk_rd_rsp_ready;
-input  [513:0] dma4_pd;
+input  [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] dma4_pd;
 input          dma4_vld;
-output [513:0] cvif2rbk_rd_rsp_pd;
+output [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] cvif2rbk_rd_rsp_pd;
 output         cvif2rbk_rd_rsp_valid;
 output         dma4_rdy;
-reg    [513:0] cvif2rbk_rd_rsp_pd;
+reg    [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] cvif2rbk_rd_rsp_pd;
 reg            cvif2rbk_rd_rsp_valid;
 reg            dma4_rdy;
-reg    [513:0] p6_pipe_data;
+reg    [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] p6_pipe_data;
 reg            p6_pipe_ready;
 reg            p6_pipe_ready_bc;
 reg            p6_pipe_valid;
 reg            p6_skid_catch;
-reg    [513:0] p6_skid_data;
-reg    [513:0] p6_skid_pipe_data;
+reg    [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] p6_skid_data;
+reg    [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] p6_skid_pipe_data;
 reg            p6_skid_pipe_ready;
 reg            p6_skid_pipe_valid;
 reg            p6_skid_ready;
@@ -3549,7 +3549,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 end
 always @(posedge nvdla_core_clk) begin
   // VCS sop_coverage_off start
-  p6_skid_data <= (p6_skid_catch)? dma4_pd[513:0] : p6_skid_data;
+  p6_skid_data <= (p6_skid_catch)? dma4_pd[NVDLA_SECONDARY_MEMIF_WIDTH+1:0] : p6_skid_data;
   // VCS sop_coverage_off end
 end
 always @(
@@ -3561,7 +3561,7 @@ always @(
   ) begin
   p6_skid_pipe_valid = (p6_skid_ready_flop)? dma4_vld : p6_skid_valid; 
   // VCS sop_coverage_off start
-  p6_skid_pipe_data = (p6_skid_ready_flop)? dma4_pd[513:0] : p6_skid_data;
+  p6_skid_pipe_data = (p6_skid_ready_flop)? dma4_pd[NVDLA_SECONDARY_MEMIF_WIDTH+1:0] : p6_skid_data;
   // VCS sop_coverage_off end
 end
 //## pipe (6) valid-ready-bubble-collapse
@@ -3700,7 +3700,7 @@ endmodule // NV_NVDLA_CVIF_READ_EG_pipe_p6
 
 
 // **************************************************************************************************************
-// Generated by ::pipe -m -rand none -bc -is cvif2sdp_b_rd_rsp_pd (cvif2sdp_b_rd_rsp_valid,cvif2sdp_b_rd_rsp_ready) <= dma5_pd[513:0] (dma5_vld,dma5_rdy)
+// Generated by ::pipe -m -rand none -bc -is cvif2sdp_b_rd_rsp_pd (cvif2sdp_b_rd_rsp_valid,cvif2sdp_b_rd_rsp_ready) <= dma5_pd[NVDLA_SECONDARY_MEMIF_WIDTH+1:0] (dma5_vld,dma5_rdy)
 // **************************************************************************************************************
 module NV_NVDLA_CVIF_READ_EG_pipe_p7 (
    nvdla_core_clk
@@ -3715,21 +3715,21 @@ module NV_NVDLA_CVIF_READ_EG_pipe_p7 (
 input          nvdla_core_clk;
 input          nvdla_core_rstn;
 input          cvif2sdp_b_rd_rsp_ready;
-input  [513:0] dma5_pd;
+input  [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] dma5_pd;
 input          dma5_vld;
-output [513:0] cvif2sdp_b_rd_rsp_pd;
+output [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] cvif2sdp_b_rd_rsp_pd;
 output         cvif2sdp_b_rd_rsp_valid;
 output         dma5_rdy;
-reg    [513:0] cvif2sdp_b_rd_rsp_pd;
+reg    [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] cvif2sdp_b_rd_rsp_pd;
 reg            cvif2sdp_b_rd_rsp_valid;
 reg            dma5_rdy;
-reg    [513:0] p7_pipe_data;
+reg    [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] p7_pipe_data;
 reg            p7_pipe_ready;
 reg            p7_pipe_ready_bc;
 reg            p7_pipe_valid;
 reg            p7_skid_catch;
-reg    [513:0] p7_skid_data;
-reg    [513:0] p7_skid_pipe_data;
+reg    [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] p7_skid_data;
+reg    [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] p7_skid_pipe_data;
 reg            p7_skid_pipe_ready;
 reg            p7_skid_pipe_valid;
 reg            p7_skid_ready;
@@ -3758,7 +3758,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 end
 always @(posedge nvdla_core_clk) begin
   // VCS sop_coverage_off start
-  p7_skid_data <= (p7_skid_catch)? dma5_pd[513:0] : p7_skid_data;
+  p7_skid_data <= (p7_skid_catch)? dma5_pd[NVDLA_SECONDARY_MEMIF_WIDTH+1:0] : p7_skid_data;
   // VCS sop_coverage_off end
 end
 always @(
@@ -3770,7 +3770,7 @@ always @(
   ) begin
   p7_skid_pipe_valid = (p7_skid_ready_flop)? dma5_vld : p7_skid_valid; 
   // VCS sop_coverage_off start
-  p7_skid_pipe_data = (p7_skid_ready_flop)? dma5_pd[513:0] : p7_skid_data;
+  p7_skid_pipe_data = (p7_skid_ready_flop)? dma5_pd[NVDLA_SECONDARY_MEMIF_WIDTH+1:0] : p7_skid_data;
   // VCS sop_coverage_off end
 end
 //## pipe (7) valid-ready-bubble-collapse
@@ -3909,7 +3909,7 @@ endmodule // NV_NVDLA_CVIF_READ_EG_pipe_p7
 
 
 // **************************************************************************************************************
-// Generated by ::pipe -m -rand none -bc -is cvif2sdp_n_rd_rsp_pd (cvif2sdp_n_rd_rsp_valid,cvif2sdp_n_rd_rsp_ready) <= dma6_pd[513:0] (dma6_vld,dma6_rdy)
+// Generated by ::pipe -m -rand none -bc -is cvif2sdp_n_rd_rsp_pd (cvif2sdp_n_rd_rsp_valid,cvif2sdp_n_rd_rsp_ready) <= dma6_pd[NVDLA_SECONDARY_MEMIF_WIDTH+1:0] (dma6_vld,dma6_rdy)
 // **************************************************************************************************************
 module NV_NVDLA_CVIF_READ_EG_pipe_p8 (
    nvdla_core_clk
@@ -3924,21 +3924,21 @@ module NV_NVDLA_CVIF_READ_EG_pipe_p8 (
 input          nvdla_core_clk;
 input          nvdla_core_rstn;
 input          cvif2sdp_n_rd_rsp_ready;
-input  [513:0] dma6_pd;
+input  [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] dma6_pd;
 input          dma6_vld;
-output [513:0] cvif2sdp_n_rd_rsp_pd;
+output [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] cvif2sdp_n_rd_rsp_pd;
 output         cvif2sdp_n_rd_rsp_valid;
 output         dma6_rdy;
-reg    [513:0] cvif2sdp_n_rd_rsp_pd;
+reg    [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] cvif2sdp_n_rd_rsp_pd;
 reg            cvif2sdp_n_rd_rsp_valid;
 reg            dma6_rdy;
-reg    [513:0] p8_pipe_data;
+reg    [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] p8_pipe_data;
 reg            p8_pipe_ready;
 reg            p8_pipe_ready_bc;
 reg            p8_pipe_valid;
 reg            p8_skid_catch;
-reg    [513:0] p8_skid_data;
-reg    [513:0] p8_skid_pipe_data;
+reg    [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] p8_skid_data;
+reg    [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] p8_skid_pipe_data;
 reg            p8_skid_pipe_ready;
 reg            p8_skid_pipe_valid;
 reg            p8_skid_ready;
@@ -3967,7 +3967,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 end
 always @(posedge nvdla_core_clk) begin
   // VCS sop_coverage_off start
-  p8_skid_data <= (p8_skid_catch)? dma6_pd[513:0] : p8_skid_data;
+  p8_skid_data <= (p8_skid_catch)? dma6_pd[NVDLA_SECONDARY_MEMIF_WIDTH+1:0] : p8_skid_data;
   // VCS sop_coverage_off end
 end
 always @(
@@ -3979,7 +3979,7 @@ always @(
   ) begin
   p8_skid_pipe_valid = (p8_skid_ready_flop)? dma6_vld : p8_skid_valid; 
   // VCS sop_coverage_off start
-  p8_skid_pipe_data = (p8_skid_ready_flop)? dma6_pd[513:0] : p8_skid_data;
+  p8_skid_pipe_data = (p8_skid_ready_flop)? dma6_pd[NVDLA_SECONDARY_MEMIF_WIDTH+1:0] : p8_skid_data;
   // VCS sop_coverage_off end
 end
 //## pipe (8) valid-ready-bubble-collapse
@@ -4118,7 +4118,7 @@ endmodule // NV_NVDLA_CVIF_READ_EG_pipe_p8
 
 
 // **************************************************************************************************************
-// Generated by ::pipe -m -rand none -bc -is cvif2sdp_e_rd_rsp_pd (cvif2sdp_e_rd_rsp_valid,cvif2sdp_e_rd_rsp_ready) <= dma7_pd[513:0] (dma7_vld,dma7_rdy)
+// Generated by ::pipe -m -rand none -bc -is cvif2sdp_e_rd_rsp_pd (cvif2sdp_e_rd_rsp_valid,cvif2sdp_e_rd_rsp_ready) <= dma7_pd[NVDLA_SECONDARY_MEMIF_WIDTH+1:0] (dma7_vld,dma7_rdy)
 // **************************************************************************************************************
 module NV_NVDLA_CVIF_READ_EG_pipe_p9 (
    nvdla_core_clk
@@ -4133,21 +4133,21 @@ module NV_NVDLA_CVIF_READ_EG_pipe_p9 (
 input          nvdla_core_clk;
 input          nvdla_core_rstn;
 input          cvif2sdp_e_rd_rsp_ready;
-input  [513:0] dma7_pd;
+input  [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] dma7_pd;
 input          dma7_vld;
-output [513:0] cvif2sdp_e_rd_rsp_pd;
+output [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] cvif2sdp_e_rd_rsp_pd;
 output         cvif2sdp_e_rd_rsp_valid;
 output         dma7_rdy;
-reg    [513:0] cvif2sdp_e_rd_rsp_pd;
+reg    [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] cvif2sdp_e_rd_rsp_pd;
 reg            cvif2sdp_e_rd_rsp_valid;
 reg            dma7_rdy;
-reg    [513:0] p9_pipe_data;
+reg    [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] p9_pipe_data;
 reg            p9_pipe_ready;
 reg            p9_pipe_ready_bc;
 reg            p9_pipe_valid;
 reg            p9_skid_catch;
-reg    [513:0] p9_skid_data;
-reg    [513:0] p9_skid_pipe_data;
+reg    [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] p9_skid_data;
+reg    [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] p9_skid_pipe_data;
 reg            p9_skid_pipe_ready;
 reg            p9_skid_pipe_valid;
 reg            p9_skid_ready;
@@ -4176,7 +4176,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 end
 always @(posedge nvdla_core_clk) begin
   // VCS sop_coverage_off start
-  p9_skid_data <= (p9_skid_catch)? dma7_pd[513:0] : p9_skid_data;
+  p9_skid_data <= (p9_skid_catch)? dma7_pd[NVDLA_SECONDARY_MEMIF_WIDTH+1:0] : p9_skid_data;
   // VCS sop_coverage_off end
 end
 always @(
@@ -4188,7 +4188,7 @@ always @(
   ) begin
   p9_skid_pipe_valid = (p9_skid_ready_flop)? dma7_vld : p9_skid_valid; 
   // VCS sop_coverage_off start
-  p9_skid_pipe_data = (p9_skid_ready_flop)? dma7_pd[513:0] : p9_skid_data;
+  p9_skid_pipe_data = (p9_skid_ready_flop)? dma7_pd[NVDLA_SECONDARY_MEMIF_WIDTH+1:0] : p9_skid_data;
   // VCS sop_coverage_off end
 end
 //## pipe (9) valid-ready-bubble-collapse
@@ -4327,7 +4327,7 @@ endmodule // NV_NVDLA_CVIF_READ_EG_pipe_p9
 
 
 // **************************************************************************************************************
-// Generated by ::pipe -m -rand none -bc -is cvif2cdma_dat_rd_rsp_pd (cvif2cdma_dat_rd_rsp_valid,cvif2cdma_dat_rd_rsp_ready) <= dma8_pd[513:0] (dma8_vld,dma8_rdy)
+// Generated by ::pipe -m -rand none -bc -is cvif2cdma_dat_rd_rsp_pd (cvif2cdma_dat_rd_rsp_valid,cvif2cdma_dat_rd_rsp_ready) <= dma8_pd[NVDLA_SECONDARY_MEMIF_WIDTH+1:0] (dma8_vld,dma8_rdy)
 // **************************************************************************************************************
 module NV_NVDLA_CVIF_READ_EG_pipe_p10 (
    nvdla_core_clk
@@ -4342,21 +4342,21 @@ module NV_NVDLA_CVIF_READ_EG_pipe_p10 (
 input          nvdla_core_clk;
 input          nvdla_core_rstn;
 input          cvif2cdma_dat_rd_rsp_ready;
-input  [513:0] dma8_pd;
+input  [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] dma8_pd;
 input          dma8_vld;
-output [513:0] cvif2cdma_dat_rd_rsp_pd;
+output [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] cvif2cdma_dat_rd_rsp_pd;
 output         cvif2cdma_dat_rd_rsp_valid;
 output         dma8_rdy;
-reg    [513:0] cvif2cdma_dat_rd_rsp_pd;
+reg    [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] cvif2cdma_dat_rd_rsp_pd;
 reg            cvif2cdma_dat_rd_rsp_valid;
 reg            dma8_rdy;
-reg    [513:0] p10_pipe_data;
+reg    [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] p10_pipe_data;
 reg            p10_pipe_ready;
 reg            p10_pipe_ready_bc;
 reg            p10_pipe_valid;
 reg            p10_skid_catch;
-reg    [513:0] p10_skid_data;
-reg    [513:0] p10_skid_pipe_data;
+reg    [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] p10_skid_data;
+reg    [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] p10_skid_pipe_data;
 reg            p10_skid_pipe_ready;
 reg            p10_skid_pipe_valid;
 reg            p10_skid_ready;
@@ -4385,7 +4385,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 end
 always @(posedge nvdla_core_clk) begin
   // VCS sop_coverage_off start
-  p10_skid_data <= (p10_skid_catch)? dma8_pd[513:0] : p10_skid_data;
+  p10_skid_data <= (p10_skid_catch)? dma8_pd[NVDLA_SECONDARY_MEMIF_WIDTH+1:0] : p10_skid_data;
   // VCS sop_coverage_off end
 end
 always @(
@@ -4397,7 +4397,7 @@ always @(
   ) begin
   p10_skid_pipe_valid = (p10_skid_ready_flop)? dma8_vld : p10_skid_valid; 
   // VCS sop_coverage_off start
-  p10_skid_pipe_data = (p10_skid_ready_flop)? dma8_pd[513:0] : p10_skid_data;
+  p10_skid_pipe_data = (p10_skid_ready_flop)? dma8_pd[NVDLA_SECONDARY_MEMIF_WIDTH+1:0] : p10_skid_data;
   // VCS sop_coverage_off end
 end
 //## pipe (10) valid-ready-bubble-collapse
@@ -4536,7 +4536,7 @@ endmodule // NV_NVDLA_CVIF_READ_EG_pipe_p10
 
 
 // **************************************************************************************************************
-// Generated by ::pipe -m -rand none -bc -is cvif2cdma_wt_rd_rsp_pd (cvif2cdma_wt_rd_rsp_valid,cvif2cdma_wt_rd_rsp_ready) <= dma9_pd[513:0] (dma9_vld,dma9_rdy)
+// Generated by ::pipe -m -rand none -bc -is cvif2cdma_wt_rd_rsp_pd (cvif2cdma_wt_rd_rsp_valid,cvif2cdma_wt_rd_rsp_ready) <= dma9_pd[NVDLA_SECONDARY_MEMIF_WIDTH+1:0] (dma9_vld,dma9_rdy)
 // **************************************************************************************************************
 module NV_NVDLA_CVIF_READ_EG_pipe_p11 (
    nvdla_core_clk
@@ -4551,21 +4551,21 @@ module NV_NVDLA_CVIF_READ_EG_pipe_p11 (
 input          nvdla_core_clk;
 input          nvdla_core_rstn;
 input          cvif2cdma_wt_rd_rsp_ready;
-input  [513:0] dma9_pd;
+input  [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] dma9_pd;
 input          dma9_vld;
-output [513:0] cvif2cdma_wt_rd_rsp_pd;
+output [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] cvif2cdma_wt_rd_rsp_pd;
 output         cvif2cdma_wt_rd_rsp_valid;
 output         dma9_rdy;
-reg    [513:0] cvif2cdma_wt_rd_rsp_pd;
+reg    [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] cvif2cdma_wt_rd_rsp_pd;
 reg            cvif2cdma_wt_rd_rsp_valid;
 reg            dma9_rdy;
-reg    [513:0] p11_pipe_data;
+reg    [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] p11_pipe_data;
 reg            p11_pipe_ready;
 reg            p11_pipe_ready_bc;
 reg            p11_pipe_valid;
 reg            p11_skid_catch;
-reg    [513:0] p11_skid_data;
-reg    [513:0] p11_skid_pipe_data;
+reg    [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] p11_skid_data;
+reg    [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] p11_skid_pipe_data;
 reg            p11_skid_pipe_ready;
 reg            p11_skid_pipe_valid;
 reg            p11_skid_ready;
@@ -4594,7 +4594,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 end
 always @(posedge nvdla_core_clk) begin
   // VCS sop_coverage_off start
-  p11_skid_data <= (p11_skid_catch)? dma9_pd[513:0] : p11_skid_data;
+  p11_skid_data <= (p11_skid_catch)? dma9_pd[NVDLA_SECONDARY_MEMIF_WIDTH+1:0] : p11_skid_data;
   // VCS sop_coverage_off end
 end
 always @(
@@ -4606,7 +4606,7 @@ always @(
   ) begin
   p11_skid_pipe_valid = (p11_skid_ready_flop)? dma9_vld : p11_skid_valid; 
   // VCS sop_coverage_off start
-  p11_skid_pipe_data = (p11_skid_ready_flop)? dma9_pd[513:0] : p11_skid_data;
+  p11_skid_pipe_data = (p11_skid_ready_flop)? dma9_pd[NVDLA_SECONDARY_MEMIF_WIDTH+1:0] : p11_skid_data;
   // VCS sop_coverage_off end
 end
 //## pipe (11) valid-ready-bubble-collapse
@@ -4746,7 +4746,7 @@ endmodule // NV_NVDLA_CVIF_READ_EG_pipe_p11
 // AUTOMATICALLY GENERATED -- DO NOT EDIT OR CHECK IN
 //
 // /home/nvtools/engr/2017/03/11_05_00_06/nvtools/scripts/fifogen
-// fifogen -input_config_yaml ../../../../../../../socd/ip_chip_tools/1.0/defs/public/fifogen/golden/tlit5/fifogen.yml -no_make_ram -no_make_ram -stdout -m NV_NVDLA_CVIF_READ_EG_lat_fifo -clk_name nvdla_core_clk -reset_name nvdla_core_rstn -wr_pipebus rq_wr -rd_pipebus rq_rd -d 4 -w 512 -ram ff [Chosen ram type: ff - fifogen_flops (user specified, thus no other ram type is allowed)]
+// fifogen -input_config_yaml ../../../../../../../socd/ip_chip_tools/1.0/defs/public/fifogen/golden/tlit5/fifogen.yml -no_make_ram -no_make_ram -stdout -m NV_NVDLA_CVIF_READ_EG_lat_fifo -clk_name nvdla_core_clk -reset_name nvdla_core_rstn -wr_pipebus rq_wr -rd_pipebus rq_rd -d 4 -w NVDLA_SECONDARY_MEMIF_WIDTH -ram ff [Chosen ram type: ff - fifogen_flops (user specified, thus no other ram type is allowed)]
 // chip config vars: assertion_module_prefix=nv_  strict_synchronizers=1  strict_synchronizers_use_lib_cells=1  strict_synchronizers_use_tm_lib_cells=1  strict_sync_randomizer=1  assertion_message_prefix=FIFOGEN_ASSERTION  allow_async_fifola=0  ignore_ramgen_fifola_variant=1  uses_p_SSYNC=0  uses_prand=1  uses_rammake_inc=1  use_x_or_0=1  force_wr_reg_gated=1  no_force_reset=1  no_timescale=1  no_pli_ifdef=1  requires_full_throughput=1  ram_auto_ff_bits_cutoff=16  ram_auto_ff_width_cutoff=2  ram_auto_ff_width_cutoff_max_depth=32  ram_auto_ff_depth_cutoff=-1  ram_auto_ff_no_la2_depth_cutoff=5  ram_auto_la2_width_cutoff=8  ram_auto_la2_width_cutoff_max_depth=56  ram_auto_la2_depth_cutoff=16  flopram_emu_model=1  dslp_single_clamp_port=1  dslp_clamp_port=1  slp_single_clamp_port=1  slp_clamp_port=1  master_clk_gated=1  clk_gate_module=NV_CLK_gate_power  redundant_timing_flops=0  hot_reset_async_force_ports_and_loopback=1  ram_sleep_en_width=1  async_cdc_reg_id=NV_AFIFO_  rd_reg_default_for_async=1  async_ram_instance_prefix=NV_ASYNC_RAM_  allow_rd_busy_reg_warning=0  do_dft_xelim_gating=1  add_dft_xelim_wr_clkgate=1  add_dft_xelim_rd_clkgate=1 
 //
 // leda B_3208_NV OFF -- Unequal length LHS and RHS in assignment
@@ -4778,10 +4778,10 @@ input         rq_wr_pvld;
 `ifdef FV_RAND_WR_PAUSE
 input         rq_wr_pause;
 `endif
-input  [511:0] rq_wr_pd;
+input  [NVDLA_SECONDARY_MEMIF_WIDTH-1:0] rq_wr_pd;
 input         rq_rd_prdy;
 output        rq_rd_pvld;
-output [511:0] rq_rd_pd;
+output [NVDLA_SECONDARY_MEMIF_WIDTH-1:0] rq_rd_pd;
 input  [31:0] pwrbus_ram_pd;
 
 // Master Clock Gating (SLCG)
@@ -4892,7 +4892,7 @@ end
 
 reg [1:0] rq_rd_adr;          // read address this cycle
 wire ram_we = wr_pushing;   // note: write occurs next cycle
-wire [511:0] rq_rd_pd;                    // read data out of ram
+wire [NVDLA_SECONDARY_MEMIF_WIDTH-1:0] rq_rd_pd;                    // read data out of ram
 
 wire [31 : 0] pwrbus_ram_pd;
 
@@ -4900,7 +4900,7 @@ wire [31 : 0] pwrbus_ram_pd;
 // Fifogen handles this by ignoring the data on the ram data out for that cycle.
 
 
-NV_NVDLA_CVIF_READ_EG_lat_fifo_flopram_rwsa_4x512 ram (
+NV_NVDLA_CVIF_READ_EG_lat_fifo_flopram_rwsa_4xNVDLA_SECONDARY_MEMIF_WIDTH ram (
       .clk( nvdla_core_clk_mgated )
     , .pwrbus_ram_pd ( pwrbus_ram_pd )
     , .di        ( rq_wr_pd )
@@ -5427,7 +5427,7 @@ endmodule // NV_NVDLA_CVIF_READ_EG_lat_fifo
 // 
 // Flop-Based RAM 
 //
-module NV_NVDLA_CVIF_READ_EG_lat_fifo_flopram_rwsa_4x512 (
+module NV_NVDLA_CVIF_READ_EG_lat_fifo_flopram_rwsa_4xNVDLA_SECONDARY_MEMIF_WIDTH (
       clk
     , pwrbus_ram_pd
     , di
@@ -5439,44 +5439,108 @@ module NV_NVDLA_CVIF_READ_EG_lat_fifo_flopram_rwsa_4x512 (
 
 input  clk;  // write clock
 input [31 : 0] pwrbus_ram_pd;
-input  [511:0] di;
+input  [NVDLA_SECONDARY_MEMIF_WIDTH-1:0] di;
 input  we;
 input  [1:0] wa;
 input  [1:0] ra;
-output [511:0] dout;
+output [NVDLA_SECONDARY_MEMIF_WIDTH-1:0] dout;
 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_0 (.A(pwrbus_ram_pd[0]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_1 (.A(pwrbus_ram_pd[1]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_2 (.A(pwrbus_ram_pd[2]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_3 (.A(pwrbus_ram_pd[3]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_4 (.A(pwrbus_ram_pd[4]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_5 (.A(pwrbus_ram_pd[5]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_6 (.A(pwrbus_ram_pd[6]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_7 (.A(pwrbus_ram_pd[7]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_8 (.A(pwrbus_ram_pd[8]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_9 (.A(pwrbus_ram_pd[9]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_10 (.A(pwrbus_ram_pd[10]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_11 (.A(pwrbus_ram_pd[11]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_12 (.A(pwrbus_ram_pd[12]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_13 (.A(pwrbus_ram_pd[13]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_14 (.A(pwrbus_ram_pd[14]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_15 (.A(pwrbus_ram_pd[15]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_16 (.A(pwrbus_ram_pd[16]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_17 (.A(pwrbus_ram_pd[17]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_18 (.A(pwrbus_ram_pd[18]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_19 (.A(pwrbus_ram_pd[19]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_20 (.A(pwrbus_ram_pd[20]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_21 (.A(pwrbus_ram_pd[21]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_22 (.A(pwrbus_ram_pd[22]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_23 (.A(pwrbus_ram_pd[23]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_24 (.A(pwrbus_ram_pd[24]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_25 (.A(pwrbus_ram_pd[25]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_26 (.A(pwrbus_ram_pd[26]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_27 (.A(pwrbus_ram_pd[27]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_28 (.A(pwrbus_ram_pd[28]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_29 (.A(pwrbus_ram_pd[29]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_30 (.A(pwrbus_ram_pd[30]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_31 (.A(pwrbus_ram_pd[31]));
+`endif 
 
 
 `ifdef EMU
@@ -5487,7 +5551,7 @@ NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_31 (.A(pwrbus_ram_pd[31]));
 //
 reg [1:0] Wa0_vmw;
 reg we0_vmw;
-reg [511:0] Di0_vmw;
+reg [NVDLA_SECONDARY_MEMIF_WIDTH-1:0] Di0_vmw;
 
 always @( posedge clk ) begin
     Wa0_vmw <=  wa;
@@ -5495,7 +5559,7 @@ always @( posedge clk ) begin
     Di0_vmw <=  di;
 end
 
-vmw_NV_NVDLA_CVIF_READ_EG_lat_fifo_flopram_rwsa_4x512 emu_ram (
+vmw_NV_NVDLA_CVIF_READ_EG_lat_fifo_flopram_rwsa_4xNVDLA_SECONDARY_MEMIF_WIDTH emu_ram (
      .Wa0( Wa0_vmw ) 
    , .we0( we0_vmw ) 
    , .Di0( Di0_vmw )
@@ -5505,10 +5569,10 @@ vmw_NV_NVDLA_CVIF_READ_EG_lat_fifo_flopram_rwsa_4x512 emu_ram (
 
 `else
 
-reg [511:0] ram_ff0;
-reg [511:0] ram_ff1;
-reg [511:0] ram_ff2;
-reg [511:0] ram_ff3;
+reg [NVDLA_SECONDARY_MEMIF_WIDTH-1:0] ram_ff0;
+reg [NVDLA_SECONDARY_MEMIF_WIDTH-1:0] ram_ff1;
+reg [NVDLA_SECONDARY_MEMIF_WIDTH-1:0] ram_ff2;
+reg [NVDLA_SECONDARY_MEMIF_WIDTH-1:0] ram_ff3;
 
 always @( posedge clk ) begin
     if ( we && wa == 2'd0 ) begin
@@ -5525,7 +5589,7 @@ always @( posedge clk ) begin
     end
 end
 
-reg [511:0] dout;
+reg [NVDLA_SECONDARY_MEMIF_WIDTH-1:0] dout;
 
 always @(*) begin
     case( ra ) 
@@ -5534,35 +5598,35 @@ always @(*) begin
     2'd2:       dout = ram_ff2;
     2'd3:       dout = ram_ff3;
     //VCS coverage off
-    default:    dout = {512{`x_or_0}};
+    default:    dout = {NVDLA_SECONDARY_MEMIF_WIDTH{`x_or_0}};
     //VCS coverage on
     endcase
 end
 
 `endif // EMU
 
-endmodule // NV_NVDLA_CVIF_READ_EG_lat_fifo_flopram_rwsa_4x512
+endmodule // NV_NVDLA_CVIF_READ_EG_lat_fifo_flopram_rwsa_4xNVDLA_SECONDARY_MEMIF_WIDTH
 
 // emulation model of flopram guts
 //
 `ifdef EMU
 
 
-module vmw_NV_NVDLA_CVIF_READ_EG_lat_fifo_flopram_rwsa_4x512 (
+module vmw_NV_NVDLA_CVIF_READ_EG_lat_fifo_flopram_rwsa_4xNVDLA_SECONDARY_MEMIF_WIDTH (
    Wa0, we0, Di0,
    Ra0, Do0
    );
 
 input  [1:0] Wa0;
 input            we0;
-input  [511:0] Di0;
+input  [NVDLA_SECONDARY_MEMIF_WIDTH-1:0] Di0;
 input  [1:0] Ra0;
-output [511:0] Do0;
+output [NVDLA_SECONDARY_MEMIF_WIDTH-1:0] Do0;
 
 // Only visible during Spyglass to avoid blackboxes.
 `ifdef SPYGLASS_FLOPRAM
 
-assign Do0 = 512'd0;
+assign Do0 = NVDLA_SECONDARY_MEMIF_WIDTH'd0;
 wire dummy = 1'b0 | (|Wa0) | (|we0) | (|Di0) | (|Ra0);
 
 `endif
@@ -5570,14 +5634,14 @@ wire dummy = 1'b0 | (|Wa0) | (|we0) | (|Di0) | (|Ra0);
 // synopsys translate_off
 `ifndef SYNTH_LEVEL1_COMPILE
 `ifndef SYNTHESIS
-reg [511:0] mem[3:0];
+reg [NVDLA_SECONDARY_MEMIF_WIDTH-1:0] mem[3:0];
 
 // expand mem for debug ease
 `ifdef EMU_EXPAND_FLOPRAM_MEM
-wire [511:0] Q0 = mem[0];
-wire [511:0] Q1 = mem[1];
-wire [511:0] Q2 = mem[2];
-wire [511:0] Q3 = mem[3];
+wire [NVDLA_SECONDARY_MEMIF_WIDTH-1:0] Q0 = mem[0];
+wire [NVDLA_SECONDARY_MEMIF_WIDTH-1:0] Q1 = mem[1];
+wire [NVDLA_SECONDARY_MEMIF_WIDTH-1:0] Q2 = mem[2];
+wire [NVDLA_SECONDARY_MEMIF_WIDTH-1:0] Q3 = mem[3];
 `endif
 
 // asynchronous ram writes
@@ -5596,24 +5660,24 @@ assign Do0 = mem[Ra0];
 // synopsys dc_script_begin
 // synopsys dc_script_end
 
-// g2c if { [find / -null_ok -subdesign vmw_NV_NVDLA_CVIF_READ_EG_lat_fifo_flopram_rwsa_4x512] != {} } { set_attr preserve 1 [find / -subdesign vmw_NV_NVDLA_CVIF_READ_EG_lat_fifo_flopram_rwsa_4x512] }
-endmodule // vmw_NV_NVDLA_CVIF_READ_EG_lat_fifo_flopram_rwsa_4x512
+// g2c if { [find / -null_ok -subdesign vmw_NV_NVDLA_CVIF_READ_EG_lat_fifo_flopram_rwsa_4xNVDLA_SECONDARY_MEMIF_WIDTH] != {} } { set_attr preserve 1 [find / -subdesign vmw_NV_NVDLA_CVIF_READ_EG_lat_fifo_flopram_rwsa_4xSECONDARY_MEMIF_WIDTH] }
+endmodule // vmw_NV_NVDLA_CVIF_READ_EG_lat_fifo_flopram_rwsa_4xNVDLA_SECONDARY_MEMIF_WIDTH
 
-//vmw: Memory vmw_NV_NVDLA_CVIF_READ_EG_lat_fifo_flopram_rwsa_4x512
+//vmw: Memory vmw_NV_NVDLA_CVIF_READ_EG_lat_fifo_flopram_rwsa_4xNVDLA_SECONDARY_MEMIF_WIDTH
 //vmw: Address-size 2
-//vmw: Data-size 512
+//vmw: Data-size NVDLA_SECONDARY_MEMIF_WIDTH
 //vmw: Sensitivity level 1
 //vmw: Ports W R
 
 //vmw: terminal we0 WriteEnable0
 //vmw: terminal Wa0 address0
-//vmw: terminal Di0[511:0] data0[511:0]
+//vmw: terminal Di0[NVDLA_SECONDARY_MEMIF_WIDTH-1:0] data0[SECONDARY_MEMIF_WIDTH-1:0]
 //vmw: 
 //vmw: terminal Ra0 address1
-//vmw: terminal Do0[511:0] data1[511:0]
+//vmw: terminal Do0[NVDLA_SECONDARY_MEMIF_WIDTH-1:0] data1[SECONDARY_MEMIF_WIDTH-1:0]
 //vmw: 
 
-//qt: CELL vmw_NV_NVDLA_CVIF_READ_EG_lat_fifo_flopram_rwsa_4x512
+//qt: CELL vmw_NV_NVDLA_CVIF_READ_EG_lat_fifo_flopram_rwsa_4xNVDLA_SECONDARY_MEMIF_WIDTH
 //qt: TERMINAL we0 TYPE=WE POLARITY=H PORT=1
 //qt: TERMINAL Wa0[%d] TYPE=ADDRESS DIR=W BIT=%1 PORT=1
 //qt: TERMINAL Di0[%d] TYPE=DATA DIR=I BIT=%1 PORT=1
@@ -6393,38 +6457,102 @@ input  [1:0] wa;
 input  [2:0] ra;
 output [256:0] dout;
 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_0 (.A(pwrbus_ram_pd[0]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_1 (.A(pwrbus_ram_pd[1]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_2 (.A(pwrbus_ram_pd[2]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_3 (.A(pwrbus_ram_pd[3]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_4 (.A(pwrbus_ram_pd[4]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_5 (.A(pwrbus_ram_pd[5]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_6 (.A(pwrbus_ram_pd[6]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_7 (.A(pwrbus_ram_pd[7]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_8 (.A(pwrbus_ram_pd[8]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_9 (.A(pwrbus_ram_pd[9]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_10 (.A(pwrbus_ram_pd[10]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_11 (.A(pwrbus_ram_pd[11]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_12 (.A(pwrbus_ram_pd[12]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_13 (.A(pwrbus_ram_pd[13]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_14 (.A(pwrbus_ram_pd[14]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_15 (.A(pwrbus_ram_pd[15]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_16 (.A(pwrbus_ram_pd[16]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_17 (.A(pwrbus_ram_pd[17]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_18 (.A(pwrbus_ram_pd[18]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_19 (.A(pwrbus_ram_pd[19]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_20 (.A(pwrbus_ram_pd[20]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_21 (.A(pwrbus_ram_pd[21]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_22 (.A(pwrbus_ram_pd[22]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_23 (.A(pwrbus_ram_pd[23]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_24 (.A(pwrbus_ram_pd[24]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_25 (.A(pwrbus_ram_pd[25]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_26 (.A(pwrbus_ram_pd[26]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_27 (.A(pwrbus_ram_pd[27]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_28 (.A(pwrbus_ram_pd[28]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_29 (.A(pwrbus_ram_pd[29]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_30 (.A(pwrbus_ram_pd[30]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_31 (.A(pwrbus_ram_pd[31]));
+`endif 
 
 
 `ifdef EMU

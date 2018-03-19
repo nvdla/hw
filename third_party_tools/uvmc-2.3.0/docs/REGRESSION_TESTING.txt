@@ -1,0 +1,242 @@
+--------------------------------------------------------------------------------
+Title: Regression testing
+--------------------------------------------------------------------------------
+
+------------------------------------------------------------------------------
+Group: Regression testing your UVMC examples
+------------------------------------------------------------------------------
+
+The following procedures show how to automatically regression test all the
+examples included in this package with a simple scheme that deploys recursive
+use of Makefiles applied from the root of the example tree. The same procedure
+can regression test all 3 vendor platforms, Questa, VCS, IUS.
+
+------------------------------------------------------------------------------
+Topic: Regression tree structure
+
+The ~regression root~ defines a ~tree of tests~.
+
+Starting with the root, the tests are organized as a hierarchical structure of
+~tree branch node directories~ and ~leaf test directories~.
+
+Each leaf test directory of the tree defines a specific unit test area
+where a given test or set of related tests sharing the same source code files
+are run.
+
+And each branch node of the tree, including the regression root node itself,
+leads to other branch nodes, or leaf tests, or both.
+
+Specifically for the UVM-Connect examples the ~regression root~ starts
+out at *$UVMC_HOME/examples/* and there are no branch nodes other than
+the regression root itself. Below the root node, there are 5
+~leaf test directories~,
+
+|   commands/
+|   connections/
+|   converters/
+|   field_types/
+|   xlerate.connections/
+|   config_exts/
+
+------------------------------------------------------------------------------
+Topic: Running regression trees recursively
+
+The entire regression tree structure is ~fractal~ in nature. Any branch node
+reachable from the ~regression root node~ has the same regression run semantics
+as the root itself. And every node or leaf test has a Makefile (for Questa,
+VCS, IUS) that completely self documents the procedures recursing to lower
+nodes or running the given tests.
+
+And the Makefile format used here is intentionally kept very
+"bare-bones basic simple" by avoiding use of some of the fancier gmake
+constructs. Again the intention is to keep things simple, intuitive,
+readable, maintainable.
+
+Each intermediate tree branch node contains a ~Makefile.<tool>~ (where ~<tool>~
+can be ~questa~, ~vcs~, or ~ius~) which documents the child branch nodes
+and/or leaf test nodes reachable from that node by defining a *$(DIRS)* macro.
+For example in the *$UVMC_HOME/examples/* regression tree root node, the
+Makefile looks like this,
+
+| #-------------------------------------
+| DIRS = \
+|     commands \
+|     connections \
+|     converters \
+|     field_types \
+|     xlerate.connections \
+|     config_exts
+|
+| BITS ?= 64
+|
+| MAKEFILE ?= Makefile
+|
+| all compile build sim check clean:
+|     #
+|     for i in $(DIRS); do \
+|         ../../test_drive.csh $$i $(MAKE) -f $(MAKEFILE) $@; \
+|     done
+
+*All* branch node Makefile's have exactly the same look as that shown above.
+
+Each tool specific Makefile drives the main branch node Makefile as you see here
+for example in ~Makefile.questa~,
+
+| all compile build sim check clean:
+|     $(MAKE) MAKEFILE=Makefile.questa $@
+
+So, again being fractal in nature, each tree branch node in effect defines its
+own miniature regression root which can be run on the spot and will recurse to
+all child nodes and eventually leaf tests. Simply execute the Makefile at that
+particular branch node and that will happen.
+
+Notice the reference to *test_drive.csh*. This is a generic drive script
+invokable from C-shell (csh) script that you will see placed at each
+regression root node that provides a structure for setting up the required
+environment of each leaf test and provides an option for generating a
+grep'pable PASSED/FAILED report (see topic below).
+
+The *test_drive.csh* simply has the following in it,
+
+|  #!/bin/csh -f
+|  cd $1;
+|  grep -q DIRS Ma*
+|  if ( $status == "0" ) then
+|      echo "=+= ----------- `pwd`"
+|      shift
+|      $*
+|  else
+|      source Env.script
+|      shift
+|      echo "Test Started: `date`"
+|      $*
+|      if ( $status == "0" ) then
+|          echo "=+= Test PASSED `pwd`"
+|      else
+|          echo "=+= Test FAILED `pwd`"
+|      endif
+|      echo "Test Ended: `date`"
+|  endif
+
+so not much to it really. It was done that way on purpose ! The intent
+was to avoid an "empire of scripts" for running regressions by keeping
+things fractal, atomic, simple throughout.
+
+So the *test_drive.csh* driver is what recurses through the regression
+tree all the way to the leaf test nodes.
+
+No complex environment setup is required to run the Makefile's at each
+intermmediate tree branch node. This is because only leaf tests below the
+branch nodes are responsible for ~self specifying~ their own specific
+environment setup requirements via a C-shell (csh) script called
+*Env.script* explained below.
+
+The only exception to the rule of "no environment setup" is that before
+running any of the branch node Makefile's, you need to define the following
+ENV var:
+
+|    $DEMO_ROOT
+
+  - Be sure *$DEMO_ROOT* is set to point to a directory containing a proper
+    *.toolsrc* file which is a master, ~site-specific~ tool setup script that
+    is referenced in each Env.script. A sample .toolsrc is included in the
+    $UVMC_HOME/lib/ area that you can customize for your
+    particular site settings. For example,
+
+|     setenv DEMO_ROOT $UVMC_HOME/lib
+
+  - OK, now you can source your ~Env.script~:
+
+|     source Env.script
+
+So the *test_drive.csh* script simply sees the local Makefile and
+executes it. If it is a leaf test node, it will automatically source
+the *Env.script* required for that leaf test assuming the 2 basic
+ENV vars above have been properly set a-priori.
+
+------------------------------------------------------------------------------
+Topic: Local Env.script's
+
+Note that the above assumes there is a local ~Env.script~ present for
+each leaf test directory. You can run the tests in that individual
+directory by just manually sourcing the Env.script.
+
+See <Environment setup template script> in the intro chapter for details
+of how this setup script uses a ~.toolsrc~ master environment setup template.
+
+As described above the recursive Makefile driven regression test driver
+deploys this Env.script to allow each test to self specify its environment
+but if you set the environment in your own way, you can just run the
+Makefile's directly as was described in the <Running a UVMC example> section.
+
+------------------------------------------------------------------------------
+Topic: Running leaf tests
+
+You will see that each of the leaf tests are self contained with their own
+~Makefile.<tool>~ variations (where ~<tool>~ can be ~questa~, ~vcs~, or ~ius~).
+
+Each leaf test directory also has its own *Env.script*. That is the
+file that must be sourced from a *PLAIN VANILLA* xterm csh and this is
+automatically done by the *test_driver.csh* drive script mentioned above.
+
+Assuming you follow the same procedures described above prior to sourcing
+*Env.script*, you can easily "manually" run any leaf test as well.
+
+Among the different leaf test directories you will see 3 types of Makefile's
+distinguished with different suffices. They have the following meanings,
+
+|   Makefile.questa   # Mentor Graphics Questa simulator
+|   Makefile.vcs      # Synopsys VCS simulator
+|   Makefile.ius      # Cadence IUS simulator
+
+- For example to run the any of the leaf tests in Questa mode,
+
+|   setenv DEMO_ROOT <path to directory containing .toolsrc>
+|   source Env.script
+|   make -f Makefile.questa BITS=64  # Note: BITS defaults to 32
+
+- Each leaf test Makefile has 5 standard targets that are used consistently
+  throughout the entire regression tree structure,
+
+|   all: compile build sim check clean # i.e. All of the 5 targets below.
+|
+|   compile:  # Analyze, synthesize HDL side
+|   build:    # Build HVL side
+|   sim:      # Run simulation
+|   check:    # Check results of simulation
+|   clean:    # Clean everything up
+
+- The rules for PASS/FAIL are quite simple: _if the Makefile fails the test
+  fails_, _if the Makefile passes the test passes_. I.e. if the Makefile can
+  execute all 5 targets cleanly including the *check:* target without failing,
+  then the test passes. That's it ! Again, this operation is consistent
+  throughout all of the Makefiles you see in the entire regression tree
+  structure.
+
+------------------------------------------------------------------------------
+Topic: Generating PASSED/FAILED reports
+
+Using the simple *grep* command you can easily generate a comprehensive
+PASSED/FAILED report.
+
+To do this, simply follow the branch node procedures described above but
+just redirect all output to a log file as follows:
+
+|   cd <any regression tree root node or branch node>
+|   gmake -f Makefile.<tool> |& tee gmake.log
+
+This will generate a full regression test report in 'gmake.log'.
+
+To generate a nice PASSED/FAILED report, simply grep for the pattern "=+= Test"
+as follows:
+
+|  grep "=+= Test" gmake.log
+
+and you will get a report that looks something like this,
+
+|  =+= Test PASSED /.../examples/commands
+|  =+= Test PASSED /.../examples/connections
+|  =+= Test PASSED /.../examples/converters
+|  =+= Test PASSED /.../examples/field_types
+|  =+= Test PASSED /.../examples/xlerate.connections
+|  =+= Test PASSED /.../examples/config_exts

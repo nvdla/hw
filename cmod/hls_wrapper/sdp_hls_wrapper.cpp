@@ -10,7 +10,7 @@
 
 #include "ac_int.h"
 #include "ac_channel.h"
-#include "arnvdla.h"
+#include "opendla.h"
 #include "log.h"
 #include "sdp_hls_wrapper.h"
 sdp_hls_wrapper::sdp_hls_wrapper() {
@@ -33,10 +33,15 @@ void sdp_hls_wrapper::sdp_x(bool is_x1, int32_t *sdp_data_in, int16_t *sdp_alu_o
     xDataInStruct data_in;
     xAluOpStruct alu_op;
     xMulOpStruct mul_op;
-    for (i=0; i<16; i++) {
+    for (i=0; i<SDP_PARALLEL_PROC_NUM; i++) {
         data_in.data[i] = (xDataInType)sdp_data_in[i];   //sdp_data_in[i] is actually signed value
         alu_op.data[i]  = (xAluOpType)sdp_alu_op[i];
         mul_op.data[i]  = (xMulOpType)sdp_mul_op[i];
+    }
+    for(i = SDP_PARALLEL_PROC_NUM; i < HLS_MAX_THROUGHPUT; i++) {
+        data_in.data[i] = 0; 
+        alu_op.data[i]  = 0; 
+        mul_op.data[i]  = 0; 
     }
     chn_data_in.write(data_in);
     chn_alu_op.write(alu_op);
@@ -68,23 +73,23 @@ void sdp_hls_wrapper::sdp_x(bool is_x1, int32_t *sdp_data_in, int16_t *sdp_alu_o
             ,sdp_x_data_out
             );
     xDataOutStruct x_data_out = sdp_x_data_out.read();
-    for (i=0; i<16; i++) {
+    for (i=0; i<SDP_PARALLEL_PROC_NUM; i++) {
         sdp_data[i] = x_data_out.data[i].to_int();
     }
 #ifdef HLS_TRACE
     cslDebug((30, "%s call NV_NVDLA_SDP_CORE_x on %d iter\n", HLS_TRACE, hls_call_iter++));
     cslDebug((30, "data_in:\n"));
-    for (i=0; i<16; i++) {
+    for (i=0; i<SDP_PARALLEL_PROC_NUM; i++) {
         cslDebug((30, "0x%08x ", (uint32_t)data_in.data[i]));
     }
     cslDebug((30, "\n"));
     cslDebug((30, "alu_op:\n"));
-    for (i=0; i<16; i++) {
+    for (i=0; i<SDP_PARALLEL_PROC_NUM; i++) {
         cslDebug((30, "0x%08x ", (uint32_t)sdp_alu_op[i]));
     }
     cslDebug((30, "\n"));
     cslDebug((30, "mul_op:\n"));
-    for (i=0; i<16; i++) {
+    for (i=0; i<SDP_PARALLEL_PROC_NUM; i++) {
         cslDebug((30, "0x%08x ", (uint32_t)sdp_mul_op[i]));
     }
     cslDebug((30, "\n"));
@@ -102,7 +107,7 @@ void sdp_hls_wrapper::sdp_x(bool is_x1, int32_t *sdp_data_in, int16_t *sdp_alu_o
     cslDebug((30, "cfg_nan_to_zero  :0x%x\n", (uint32_t)sdp_cfg_nan_to_zero));
     cslDebug((30, "cfg_precision    :0x%x\n", (uint32_t)sdp_cfg_proc_precision));
     cslDebug((30, "chn_data_out:\n"));
-    for (i=0; i<16; i++) {
+    for (i=0; i<SDP_PARALLEL_PROC_NUM; i++) {
         cslDebug((30, "0x%08x ", (uint32_t)sdp_data[i]));
     }
     cslDebug((30, "\n"));
@@ -178,12 +183,27 @@ void sdp_hls_wrapper::sdp_y(int32_t *sdp_data_in, int16_t *sdp_alu_op, int16_t *
     eDataInStruct alu_op;
     eDataInStruct mul_op;
     yInpInStruct  inp_op;
+    int sdp_y_loop_cnt = (SDP_PARALLEL_PROC_NUM+SPEED_Y-1)/SPEED_Y;
+    int last_proc_cnt  = SDP_PARALLEL_PROC_NUM%SPEED_Y;
 
-    for(int iter = 0; iter < 16/SPEED_Y; iter++) {
-        for (i=0; i<SPEED_Y; i++) {
-            data_in.data[i] = (yDataInType)sdp_data_in[iter*SPEED_Y + i];
-            alu_op.data[i]  = (eDataInType)sdp_alu_op[iter*SPEED_Y + i];
-            mul_op.data[i]  = (eDataInType)sdp_mul_op[iter*SPEED_Y + i];
+    for(int iter = 0; iter < sdp_y_loop_cnt; iter++) {
+        if (iter == sdp_y_loop_cnt-1) {
+            for (i=0; i<last_proc_cnt; i++) {
+                data_in.data[i] = (yDataInType)sdp_data_in[iter*SPEED_Y + i];
+                alu_op.data[i]  = (eDataInType)sdp_alu_op[iter*SPEED_Y + i];
+                mul_op.data[i]  = (eDataInType)sdp_mul_op[iter*SPEED_Y + i];
+            }
+            for (i=last_proc_cnt; i<SPEED_Y; i++) {
+                data_in.data[i] = 0;
+                alu_op.data[i]  = 0;
+                mul_op.data[i]  = 0;
+            }
+        } else {
+            for (i=0; i<SPEED_Y; i++) {
+                data_in.data[i] = (yDataInType)sdp_data_in[iter*SPEED_Y + i];
+                alu_op.data[i]  = (eDataInType)sdp_alu_op[iter*SPEED_Y + i];
+                mul_op.data[i]  = (eDataInType)sdp_mul_op[iter*SPEED_Y + i];
+            }
         }
         chn_data_in.write(data_in);
         chn_alu_op.write(alu_op);
@@ -484,8 +504,8 @@ void sdp_hls_wrapper::sdp_c(ac_channel<cDataInStruct> & chn_in)
             );
 
     cDataOutStruct data_out = chn_out.read();
-    uint16_t saturate[16];
-    for (i=0; i<16; i++) {
+    uint16_t saturate[SDP_PARALLEL_PROC_NUM];
+    for (i=0; i<SDP_PARALLEL_PROC_NUM; i++) {
         sdp_data_out[i] = data_out.data[i].to_int();
         if (sdp_cfg_out_precision == NVDLA_SDP_D_DATA_FORMAT_0_PROC_PRECISION_FP16) {
             saturate[i] = (sdp_data_out[i]&0x7FFF) == 0x7bff ? 1:0;
@@ -498,7 +518,7 @@ void sdp_hls_wrapper::sdp_c(ac_channel<cDataInStruct> & chn_in)
 #ifdef HLS_TRACE
     cslDebug((30, "%s call NV_NVDLA_SDP_CORE_c on %d iter\n", HLS_TRACE, hls_core_c_iter++));
     cslDebug((30, "chn_in.data:\n"));
-    for(i = 0; i < 16; i++) {
+    for(i = 0; i < SDP_PARALLEL_PROC_NUM; i++) {
         cslDebug((30, "0x%08x ", in.data[i].to_int()));
     }
     cslDebug((30, "\n"));   
@@ -509,7 +529,7 @@ void sdp_hls_wrapper::sdp_c(ac_channel<cDataInStruct> & chn_in)
     cslDebug((30, "cfg_out_precision:   0x%x\n", (uint32_t)sdp_cfg_out_precision));
     //cslDebug((30, "status_saturation:   0x%x\n", status_saturation));
     cslDebug((30, "chn_out.data:\n"));
-    for(i = 0; i < 16; i++) {
+    for(i = 0; i < SDP_PARALLEL_PROC_NUM; i++) {
         cslDebug((30, "0x%08x ", (uint32_t)sdp_data_out[i]));
         cslDebug((30, "0x%08x ", (uint32_t)saturate[i]));
     }
@@ -523,19 +543,19 @@ void sdp_hls_wrapper::sdp(int32_t *sdp_data_in,
         int16_t *sdp_y_alu_op,  int16_t *sdp_y_mul_op)
 {
     int i;
-    int32_t sdp_data[16];     //Use int32_t instead of uint32_t.  Bug200228448
-    int16_t sdp_x_alu_op[16], sdp_x_mul_op[16];
+    int32_t sdp_data[HLS_MAX_THROUGHPUT];     //Use int32_t instead of uint32_t.  Bug200228448
+    int16_t sdp_x_alu_op[HLS_MAX_THROUGHPUT], sdp_x_mul_op[HLS_MAX_THROUGHPUT];
                                 //Otherwise, "(FIX32)sdp_data[i]" may overflow and the result value will be MAX_INT.(0xffffb3ff->0x7fffffff, but we need to keep the bits unchanged)
     ac_channel<cDataInStruct> chn_in;
     if (sdp_cfg_nan_flush && sdp_cfg_proc_precision == NVDLA_SDP_D_DATA_FORMAT_0_PROC_PRECISION_FP16) {
-        for(i = 0; i < 16; i++) {
+        for(i = 0; i < SDP_PARALLEL_PROC_NUM; i++) {
             if (((sdp_data_in[i]&0x7FFFFF) != 0) && (((sdp_data_in[i]>>23)&0xFF) == 255)) {
                 sdp_data_in[i] = 0;
             }
         }
     }
     if (!sdp_cfg_x1_bypass) {
-        for(i = 0; i < 16; i++) {
+        for(i = 0; i < SDP_PARALLEL_PROC_NUM; i++) {
             sdp_x_alu_op[i] = (xMulOpType)sdp_x1_alu_op[i];
             sdp_x_mul_op[i] = (xMulOpType)sdp_x1_mul_op[i];
         }
@@ -543,13 +563,13 @@ void sdp_hls_wrapper::sdp(int32_t *sdp_data_in,
         // X1
         sdp_x(true, sdp_data_in, sdp_x_alu_op, sdp_x_mul_op, sdp_data); // Output is sdp_data_out
     } else {
-        for (i=0; i<16; i++) {
+        for (i=0; i< SDP_PARALLEL_PROC_NUM; i++) {
             sdp_data[i] = sdp_data_in[i];
         }
     }
     
     if (!sdp_cfg_x2_bypass) {
-        for (i=0; i<16; i++) {
+        for (i=0; i<SDP_PARALLEL_PROC_NUM; i++) {
             sdp_x_alu_op[i] = (xMulOpType)(sdp_x2_alu_op[i]);
             sdp_x_mul_op[i] = (xMulOpType)(sdp_x2_mul_op[i]);
         }
@@ -565,14 +585,14 @@ void sdp_hls_wrapper::sdp(int32_t *sdp_data_in,
 
     // Convert output of sdp_x to sdp_c
     cDataInStruct c_data_in;
-    for (i=0; i<16; i++) {
+    for (i=0; i<SDP_PARALLEL_PROC_NUM; i++) {
         c_data_in.data[i] = sdp_data[i];
     }
     chn_in.write(c_data_in);
 
     sdp_c(chn_in);
     if (sdp_cfg_perf_out_nan_cnt_en) {
-        for(i = 0; i < 16; i++) {
+        for(i = 0; i < SDP_PARALLEL_PROC_NUM; i++) {
             if (((sdp_data_out[i]&0x3FF) != 0) && (((sdp_data_out[i]>>10)&0x1F) == 0x1F)) {
                 o_nan_cnt++;
             }

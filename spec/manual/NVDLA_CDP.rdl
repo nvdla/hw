@@ -1,0 +1,1082 @@
+// ================================================================
+// NVDLA Open Source Project
+//
+// Copyright(c) 2016 - 2017 NVIDIA Corporation.  Licensed under the
+// NVDLA Open Hardware License; Check "LICENSE" which comes with
+// this distribution for more information.
+// ================================================================
+
+property spec_sw_default {
+    type      = number;
+    component = field;
+};
+property spec_access {
+    type      = string;
+    component = field;
+};
+property sw_default_mask {
+    type      = number;
+    component = field;
+};
+property reset_mask {
+    type      = number;
+    component = field;
+};
+regfile regs_NVDLA_CDP{
+    default regwidth=32;
+    reg {
+        name = "S_STATUS";
+        desc = "
+////Functional Logic and Write DMA for Channel Data Processor Registers
+//// --------------------------------------------------------------------------
+";
+        enum S_STATUS_STATUS_0_enum {
+            IDLE = 2'd0;
+            RUNNING = 2'd1;
+            PENDING = 2'd2;
+        };
+        field {
+            encode          = S_STATUS_STATUS_0_enum;
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x0;
+            reset_mask      = 0x3;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } STATUS_0[1:0];
+        STATUS_0->desc="
+//// Status of configuration register group 0
+";
+        enum S_STATUS_STATUS_1_enum {
+            IDLE = 2'd0;
+            RUNNING = 2'd1;
+            PENDING = 2'd2;
+        };
+        field {
+            encode          = S_STATUS_STATUS_1_enum;
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x0;
+            reset_mask      = 0x3;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } STATUS_1[17:16];
+        STATUS_1->desc="
+//// Status of configuration register group 1
+";
+    }S_STATUS @0x0;
+    reg {
+        name = "S_POINTER";
+        enum S_POINTER_PRODUCER_enum {
+            GROUP_0 = 1'd0;
+            GROUP_1 = 1'd1;
+        };
+        field {
+            encode          = S_POINTER_PRODUCER_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } PRODUCER[0:0];
+        PRODUCER->desc="
+////Pointer for CSB master to access groups
+";
+        enum S_POINTER_CONSUMER_enum {
+            GROUP_0 = 1'd0;
+            GROUP_1 = 1'd1;
+        };
+        field {
+            encode          = S_POINTER_CONSUMER_enum;
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CONSUMER[16:16];
+        CONSUMER->desc="
+////Pointer for datapath to access groups
+";
+    }S_POINTER @0x4;
+    reg {
+        name = "S_LUT_ACCESS_CFG";
+        desc = "
+//// LUT Content setup, begin
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rwto;
+            reset           = 0x0;
+            reset_mask      = 0x3ff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } LUT_ADDR[9:0];
+        LUT_ADDR->desc="
+////LUT access start address for one reading or writting process
+";
+        enum S_LUT_ACCESS_CFG_LUT_TABLE_ID_enum {
+            LE = 1'd0 {desc = "
+//// Access LE_lut
+";};
+            LO = 1'd1 {desc = "
+//// Access LO_lut
+";};
+        };
+        field {
+            encode          = S_LUT_ACCESS_CFG_LUT_TABLE_ID_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } LUT_TABLE_ID[16:16];
+        enum S_LUT_ACCESS_CFG_LUT_ACCESS_TYPE_enum {
+            READ = 1'd0 {desc = "
+//// Read data from table
+";};
+            WRITE = 1'd1 {desc = "
+//// Write data to table
+";};
+        };
+        field {
+            encode          = S_LUT_ACCESS_CFG_LUT_ACCESS_TYPE_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } LUT_ACCESS_TYPE[17:17];
+    }S_LUT_ACCESS_CFG @0x8;
+    reg {
+        name = "S_LUT_ACCESS_DATA";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rwto;
+            reset           = 0x0;
+            reset_mask      = 0xffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } LUT_DATA[15:0];
+        LUT_DATA->desc="
+////signed data 
+//// Data for LUT content access,
+//// When LUT_ACCESS_TYPE == WRITE, this register means data that be written to LUT
+//// When LUT_ACCESS_TYPE == READ, this register means data that read from LUT
+";
+    }S_LUT_ACCESS_DATA @0xc;
+    reg {
+        name = "S_LUT_CFG";
+        enum S_LUT_CFG_LUT_LE_FUNCTION_enum {
+            EXPONENT = 1'd0 {desc = "
+////raw table is an exponential table
+";};
+            LINEAR = 1'd1 {desc = "
+////raw table is a linear table 
+";};
+        };
+        field {
+            encode          = S_LUT_CFG_LUT_LE_FUNCTION_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } LUT_LE_FUNCTION[0:0];
+        LUT_LE_FUNCTION->desc="
+//// LE_lut function
+";
+        enum S_LUT_CFG_LUT_UFLOW_PRIORITY_enum {
+            LE = 1'd0 {desc = "
+////select LE_lut output
+";};
+            LO = 1'd1 {desc = "
+////select LO_lut output
+";};
+        };
+        field {
+            encode          = S_LUT_CFG_LUT_UFLOW_PRIORITY_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } LUT_UFLOW_PRIORITY[4:4];
+        LUT_UFLOW_PRIORITY->desc="
+//// indicate which table output should be selected when underflow happened to both table
+";
+        enum S_LUT_CFG_LUT_OFLOW_PRIORITY_enum {
+            LE = 1'd0 {desc = "
+////select LE_lut output
+";};
+            LO = 1'd1 {desc = "
+////select LO_lut output
+";};
+        };
+        field {
+            encode          = S_LUT_CFG_LUT_OFLOW_PRIORITY_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } LUT_OFLOW_PRIORITY[5:5];
+        LUT_OFLOW_PRIORITY->desc="
+//// indicate which table output should be selected when overflow happened to both table
+";
+        enum S_LUT_CFG_LUT_HYBRID_PRIORITY_enum {
+            LE = 1'd0 {desc = "
+////select LE_lut output
+";};
+            LO = 1'd1 {desc = "
+////select LO_lut output
+";};
+        };
+        field {
+            encode          = S_LUT_CFG_LUT_HYBRID_PRIORITY_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } LUT_HYBRID_PRIORITY[6:6];
+        LUT_HYBRID_PRIORITY->desc="
+//// indicate which table output should be selected when hit or miss happened to both table
+";
+    }S_LUT_CFG @0x10;
+    reg {
+        name = "S_LUT_INFO";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } LUT_LE_INDEX_OFFSET[7:0];
+        LUT_LE_INDEX_OFFSET->desc="
+////signed value, Parameter serves for LE_lut works as exponent, 8bits for all data type.
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } LUT_LE_INDEX_SELECT[15:8];
+        LUT_LE_INDEX_SELECT->desc="
+////signed value, Parameter serves for LE_lut works as linear,6bits for int8, 7bits for int16, 8bits for fp16
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } LUT_LO_INDEX_SELECT[23:16];
+        LUT_LO_INDEX_SELECT->desc="
+////signed value, Parameter serves for LO_lut, it is a Linear only table,6bits for int8, 7bits for int16, 8bits for fp16
+";
+    }S_LUT_INFO @0x14;
+    reg {
+        name = "S_LUT_LE_START_LOW";
+        desc = "
+//// LE_lut coverage range is [le_min, le_max], signed value
+//// when LE works as linear table, LUT_LE_START equals to the value of le_min;
+//// when LE works as exponential table, and LUT_LE_INDEX_OFFSET>=0, LUT_LE_START+2^LUT_LE_INDEX_OFFSET equals the value of le_min;
+//// when LE works as exponential table, and LUT_LE_INDEX_OFFSET<0,  LUT_LE_START equals to the value of le_min.
+//// 22bits for int8, 38bits for int16, 32bits for fp16(fp32 data value).
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } LUT_LE_START_LOW[31:0];
+    }S_LUT_LE_START_LOW @0x18;
+    reg {
+        name = "S_LUT_LE_START_HIGH";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x3f;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } LUT_LE_START_HIGH[5:0];
+    }S_LUT_LE_START_HIGH @0x1c;
+    reg {
+        name = "S_LUT_LE_END_LOW";
+        desc = "
+//// LE_lut coverage range is [le_min,le_max], signed value
+//// LUT_LE_END equals to the value of le_max;
+//// 22bits for int8, 38bits for int16, 32bits for fp16(fp32 data value).
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } LUT_LE_END_LOW[31:0];
+    }S_LUT_LE_END_LOW @0x20;
+    reg {
+        name = "S_LUT_LE_END_HIGH";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x3f;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } LUT_LE_END_HIGH[5:0];
+    }S_LUT_LE_END_HIGH @0x24;
+    reg {
+        name = "S_LUT_LO_START_LOW";
+        desc = "
+//// LO_lut coverage range is [lo_min, lo_max], signed value
+//// LUT_LO_START equals to the value of lo_min;
+//// 22bits for int8, 38bits for int16, 32bits for fp16(fp32 data value).
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } LUT_LO_START_LOW[31:0];
+    }S_LUT_LO_START_LOW @0x28;
+    reg {
+        name = "S_LUT_LO_START_HIGH";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x3f;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } LUT_LO_START_HIGH[5:0];
+    }S_LUT_LO_START_HIGH @0x2c;
+    reg {
+        name = "S_LUT_LO_END_LOW";
+        desc = "
+//// LO_lut coverage range is [lo_min, lo_max], signed value
+//// LUT_LO_END equals to the value of lo_max;
+//// 22bits for int8, 38bits for int16, 32bits for fp16(fp32 data value).
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } LUT_LO_END_LOW[31:0];
+    }S_LUT_LO_END_LOW @0x30;
+    reg {
+        name = "S_LUT_LO_END_HIGH";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x3f;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } LUT_LO_END_HIGH[5:0];
+    }S_LUT_LO_END_HIGH @0x34;
+    reg {
+        name = "S_LUT_LE_SLOPE_SCALE";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } LUT_LE_SLOPE_UFLOW_SCALE[15:0];
+        LUT_LE_SLOPE_UFLOW_SCALE->desc="
+//// slope scale parameter for LE_lut underflow, signed value.
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } LUT_LE_SLOPE_OFLOW_SCALE[31:16];
+        LUT_LE_SLOPE_OFLOW_SCALE->desc="
+//// slope scale parameter for LE_lut overflow, signed value.
+";
+    }S_LUT_LE_SLOPE_SCALE @0x38;
+    reg {
+        name = "S_LUT_LE_SLOPE_SHIFT";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1f;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } LUT_LE_SLOPE_UFLOW_SHIFT[4:0];
+        LUT_LE_SLOPE_UFLOW_SHIFT->desc="
+//// slope shift parameter for LE_lut underflow, signed value, shift right if a positive num, shift left if a negative num.
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1f;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } LUT_LE_SLOPE_OFLOW_SHIFT[9:5];
+        LUT_LE_SLOPE_OFLOW_SHIFT->desc="
+//// slope shift parameter for LE_lut overflow, signed value, shift right if a positive num, shift left if a negative num.
+";
+    }S_LUT_LE_SLOPE_SHIFT @0x3c;
+    reg {
+        name = "S_LUT_LO_SLOPE_SCALE";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } LUT_LO_SLOPE_UFLOW_SCALE[15:0];
+        LUT_LO_SLOPE_UFLOW_SCALE->desc="
+//// slope scale parameter for LO_lut underflow, signed value.
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } LUT_LO_SLOPE_OFLOW_SCALE[31:16];
+        LUT_LO_SLOPE_OFLOW_SCALE->desc="
+//// slope scale parameter for LO_lut overflow, signed value.
+";
+    }S_LUT_LO_SLOPE_SCALE @0x40;
+    reg {
+        name = "S_LUT_LO_SLOPE_SHIFT";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1f;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } LUT_LO_SLOPE_UFLOW_SHIFT[4:0];
+        LUT_LO_SLOPE_UFLOW_SHIFT->desc="
+//// slope shift parameter for LO_lut underflow, signed value, shift right if a positive num, shift left if a negative num.
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1f;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } LUT_LO_SLOPE_OFLOW_SHIFT[9:5];
+        LUT_LO_SLOPE_OFLOW_SHIFT->desc="
+//// slope shift parameter for LO_lut overflow, signed value, shift right if a positive num, shift left if a negative num.
+";
+    }S_LUT_LO_SLOPE_SHIFT @0x44;
+    reg {
+        name = "D_OP_ENABLE";
+        desc = "
+//// LUT Content setup, end
+//////////////////////////////////////////////////////////////////////////////////
+////                                                                            //
+////                    Define single group registers here                      //
+////                    Register name should shart with prefix D_               //
+////                                                                            //
+//////////////////////////////////////////////////////////////////////////////////
+//// 
+";
+        enum D_OP_ENABLE_OP_EN_enum {
+            DISABLE = 1'd0;
+            ENABLE = 1'd1;
+        };
+        field {
+            encode          = D_OP_ENABLE_OP_EN_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rwto;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } OP_EN[0:0];
+    }D_OP_ENABLE @0x48;
+    reg {
+        name = "D_FUNC_BYPASS";
+        enum D_FUNC_BYPASS_SQSUM_BYPASS_enum {
+            DISABLE = 1'd0;
+            ENABLE = 1'd1;
+        };
+        field {
+            encode          = D_FUNC_BYPASS_SQSUM_BYPASS_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } SQSUM_BYPASS[0:0];
+        SQSUM_BYPASS->desc="
+////square_sum process bypass control, DISABLE means disable bypass control and function works normally, ENABLE means function be bypassed.
+";
+        enum D_FUNC_BYPASS_MUL_BYPASS_enum {
+            DISABLE = 1'd0;
+            ENABLE = 1'd1;
+        };
+        field {
+            encode          = D_FUNC_BYPASS_MUL_BYPASS_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } MUL_BYPASS[1:1];
+        MUL_BYPASS->desc="
+////multiplier after interpolator bypass control, DISABLE means disable bypass control and function works normally, ENABLE means function be bypassed.
+";
+    }D_FUNC_BYPASS @0x4c;
+    reg {
+        name = "D_DST_BASE_ADDR_LOW";
+        desc = "
+//// Destination data cube memory configuration, begin
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } DST_BASE_ADDR_LOW[31:0];
+        DST_BASE_ADDR_LOW->desc="
+////  Start address of the source data cube which will be read from external memory for normalization
+";
+    }D_DST_BASE_ADDR_LOW @0x50;
+    reg {
+        name = "D_DST_BASE_ADDR_HIGH";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } DST_BASE_ADDR_HIGH[31:0];
+        DST_BASE_ADDR_HIGH->desc="
+////  Start address of the source data cube which will be read from external memory for normalization
+";
+    }D_DST_BASE_ADDR_HIGH @0x54;
+    reg {
+        name = "D_DST_LINE_STRIDE";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } DST_LINE_STRIDE[31:0];
+        DST_LINE_STRIDE->desc="
+////  Specify stride between two consective lines within a surface, actual stride value = LINE_STRIDE
+";
+    }D_DST_LINE_STRIDE @0x58;
+    reg {
+        name = "D_DST_SURFACE_STRIDE";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } DST_SURFACE_STRIDE[31:0];
+        DST_SURFACE_STRIDE->desc="
+////  Specify stride between two consective surface, actual stride value = SURFACE_STRIDE
+";
+    }D_DST_SURFACE_STRIDE @0x5c;
+    reg {
+        name = "D_DST_DMA_CFG";
+        enum D_DST_DMA_CFG_DST_RAM_TYPE_enum {
+            CV = 1'd0;
+            MC = 1'd1;
+        };
+        field {
+            encode          = D_DST_DMA_CFG_DST_RAM_TYPE_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } DST_RAM_TYPE[0:0];
+        DST_RAM_TYPE->desc="
+//// Specify target is MC or CV_SRAM
+";
+    }D_DST_DMA_CFG @0x60;
+    reg {
+        name = "D_DST_COMPRESSION_EN";
+        desc = "
+//// Destination data is compresed or not, always disable in NVDLA version 1.0
+";
+        enum D_DST_COMPRESSION_EN_DST_COMPRESSION_EN_enum {
+            DISABLE = 1'd0;
+            ENABLE = 1'd1;
+        };
+        field {
+            encode          = D_DST_COMPRESSION_EN_DST_COMPRESSION_EN_enum;
+            sw              = r;
+            hw              = r;
+            spec_access     = c;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } DST_COMPRESSION_EN[0:0];
+    }D_DST_COMPRESSION_EN @0x64;
+    reg {
+        name = "D_DATA_FORMAT";
+        desc = "
+//// Destination data cube memory configuration, end
+";
+        enum D_DATA_FORMAT_INPUT_DATA_TYPE_enum {
+            INT8 = 2'd0;
+            INT16 = 2'd1;
+            FP16 = 2'd2;
+        };
+        field {
+            encode          = D_DATA_FORMAT_INPUT_DATA_TYPE_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x1;
+            reset_mask      = 0x3;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } INPUT_DATA_TYPE[1:0];
+    }D_DATA_FORMAT @0x68;
+    reg {
+        name = "D_NAN_FLUSH_TO_ZERO";
+        enum D_NAN_FLUSH_TO_ZERO_NAN_TO_ZERO_enum {
+            DISABLE = 1'd0;
+            ENABLE = 1'd1;
+        };
+        field {
+            encode          = D_NAN_FLUSH_TO_ZERO_NAN_TO_ZERO_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } NAN_TO_ZERO[0:0];
+        NAN_TO_ZERO->desc="
+////option to flush input NaN to zero
+";
+    }D_NAN_FLUSH_TO_ZERO @0x6c;
+    reg {
+        name = "D_LRN_CFG";
+        desc = "
+//// figure out we need data conversion config or not
+";
+        enum D_LRN_CFG_NORMALZ_LEN_enum {
+            LEN3 = 2'd0 {desc = "
+////normal length=3 
+";};
+            LEN5 = 2'd1 {desc = "
+////normal length=5
+";};
+            LEN7 = 2'd2 {desc = "
+////normal length=7
+";};
+            LEN9 = 2'd3 {desc = "
+////normal length=9
+";};
+        };
+        field {
+            encode          = D_LRN_CFG_NORMALZ_LEN_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x3;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } NORMALZ_LEN[1:0];
+        NORMALZ_LEN->desc="
+////  the number of channels to sum over
+";
+    }D_LRN_CFG @0x70;
+    reg {
+        name = "D_DATIN_OFFSET";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } DATIN_OFFSET[15:0];
+        DATIN_OFFSET->desc="
+////  Input data convertor offset, signed data; 8bits for int8, 16bits for int16, 16bits for fp16.
+";
+    }D_DATIN_OFFSET @0x74;
+    reg {
+        name = "D_DATIN_SCALE";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x1;
+            reset_mask      = 0xffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } DATIN_SCALE[15:0];
+        DATIN_SCALE->desc="
+////  Input data convertor scaling factor, signed data
+";
+    }D_DATIN_SCALE @0x78;
+    reg {
+        name = "D_DATIN_SHIFTER";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1f;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } DATIN_SHIFTER[4:0];
+        DATIN_SHIFTER->desc="
+////  Input data convertor shifter factor, unsigned data
+";
+    }D_DATIN_SHIFTER @0x7c;
+    reg {
+        name = "D_DATOUT_OFFSET";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } DATOUT_OFFSET[31:0];
+        DATOUT_OFFSET->desc="
+////  Output data convertor offset, signed data; 25bits for int8, 32bits for int16, 16bits for fp16.
+";
+    }D_DATOUT_OFFSET @0x80;
+    reg {
+        name = "D_DATOUT_SCALE";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x1;
+            reset_mask      = 0xffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } DATOUT_SCALE[15:0];
+        DATOUT_SCALE->desc="
+////  Output data convertor scaling factor, signed data
+";
+    }D_DATOUT_SCALE @0x84;
+    reg {
+        name = "D_DATOUT_SHIFTER";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x3f;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } DATOUT_SHIFTER[5:0];
+        DATOUT_SHIFTER->desc="
+////  Output data convertor shiftor factor, unsigned data
+";
+    }D_DATOUT_SHIFTER @0x88;
+    reg {
+        name = "D_NAN_INPUT_NUM";
+        desc = "
+//////////////////////////////////////////////////////////////////////////////////////////
+////status register
+";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } NAN_INPUT_NUM[31:0];
+        NAN_INPUT_NUM->desc="
+//// input NaN element number
+";
+    }D_NAN_INPUT_NUM @0x8c;
+    reg {
+        name = "D_INF_INPUT_NUM";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } INF_INPUT_NUM[31:0];
+        INF_INPUT_NUM->desc="
+//// input Infinity element number
+";
+    }D_INF_INPUT_NUM @0x90;
+    reg {
+        name = "D_NAN_OUTPUT_NUM";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } NAN_OUTPUT_NUM[31:0];
+        NAN_OUTPUT_NUM->desc="
+//// output NaN element number
+";
+    }D_NAN_OUTPUT_NUM @0x94;
+    reg {
+        name = "D_OUT_SATURATION";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } OUT_SATURATION[31:0];
+        OUT_SATURATION->desc="
+//// saturated element number.
+";
+    }D_OUT_SATURATION @0x98;
+    reg {
+        name = "D_PERF_ENABLE";
+        desc = "
+//// LUT status, begin
+";
+        enum D_PERF_ENABLE_DMA_EN_enum {
+            DISABLE = 1'd0;
+            ENABLE = 1'd1;
+        };
+        field {
+            encode          = D_PERF_ENABLE_DMA_EN_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } DMA_EN[0:0];
+        DMA_EN->desc="
+//// dma perf reg enable control.
+";
+        enum D_PERF_ENABLE_LUT_EN_enum {
+            DISABLE = 1'd0;
+            ENABLE = 1'd1;
+        };
+        field {
+            encode          = D_PERF_ENABLE_LUT_EN_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } LUT_EN[1:1];
+        LUT_EN->desc="
+//// lut perf reg enable control.
+";
+    }D_PERF_ENABLE @0x9c;
+    reg {
+        name = "D_PERF_WRITE_STALL";
+        desc = "
+////reg D_PERF_READ_STALL               NVDLA_INCR 
+////    31:0    r   PERF_READ_STALL     init=0 // element number that for both LUT under-flow.
+////
+";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } PERF_WRITE_STALL[31:0];
+        PERF_WRITE_STALL->desc="
+//// element number that for both LUT under-flow.
+";
+    }D_PERF_WRITE_STALL @0xa0;
+    reg {
+        name = "D_PERF_LUT_UFLOW";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } PERF_LUT_UFLOW[31:0];
+        PERF_LUT_UFLOW->desc="
+//// element number that for both LUT under-flow.
+";
+    }D_PERF_LUT_UFLOW @0xa4;
+    reg {
+        name = "D_PERF_LUT_OFLOW";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } PERF_LUT_OFLOW[31:0];
+        PERF_LUT_OFLOW->desc="
+//// element number that for both LUT over-flow.
+";
+    }D_PERF_LUT_OFLOW @0xa8;
+    reg {
+        name = "D_PERF_LUT_HYBRID";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } PERF_LUT_HYBRID[31:0];
+        PERF_LUT_HYBRID->desc="
+//// element number that for both LUT miss, one is over-flow and the other is overflow.
+";
+    }D_PERF_LUT_HYBRID @0xac;
+    reg {
+        name = "D_PERF_LUT_LE_HIT";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } PERF_LUT_LE_HIT[31:0];
+        PERF_LUT_LE_HIT->desc="
+//// element number that for LE_lut hitted only.
+";
+    }D_PERF_LUT_LE_HIT @0xb0;
+    reg {
+        name = "D_PERF_LUT_LO_HIT";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } PERF_LUT_LO_HIT[31:0];
+        PERF_LUT_LO_HIT->desc="
+//// element number that for LO_lut hitted only.
+";
+    }D_PERF_LUT_LO_HIT @0xb4;
+    reg {
+        name = "D_CYA";
+        desc = "
+//// LUT status, end
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CYA[31:0];
+        CYA->desc="
+////CYA register
+";
+    }D_CYA @0xb8;
+};
+addrmap  {
+    regs_NVDLA_CDP NVDLA_CDP @0xd000;
+}addrmap_NVDLA;

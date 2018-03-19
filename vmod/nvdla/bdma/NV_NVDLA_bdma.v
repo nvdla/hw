@@ -9,15 +9,19 @@
 // File Name: NV_NVDLA_bdma.v
 
 module NV_NVDLA_bdma (
+   #ifdef NVDLA_SECONDARY_MEMIF_ENABLE
    bdma2cvif_rd_req_ready        //|< i
   ,bdma2cvif_wr_req_ready        //|< i
+  #endif
   ,bdma2mcif_rd_req_ready        //|< i
   ,bdma2mcif_wr_req_ready        //|< i
   ,csb2bdma_req_pd               //|< i
   ,csb2bdma_req_pvld             //|< i
+   #ifdef NVDLA_SECONDARY_MEMIF_ENABLE
   ,cvif2bdma_rd_rsp_pd           //|< i
   ,cvif2bdma_rd_rsp_valid        //|< i
   ,cvif2bdma_wr_rsp_complete     //|< i
+  #endif
   ,dla_clk_ovr_on_sync           //|< i
   ,global_clk_ovr_on_sync        //|< i
   ,mcif2bdma_rd_rsp_pd           //|< i
@@ -29,11 +33,13 @@ module NV_NVDLA_bdma (
   ,tmc2slcg_disable_clock_gating //|< i
   ,bdma2csb_resp_pd              //|> o
   ,bdma2csb_resp_valid           //|> o
+   #ifdef NVDLA_SECONDARY_MEMIF_ENABLE
   ,bdma2cvif_rd_cdt_lat_fifo_pop //|> o
   ,bdma2cvif_rd_req_pd           //|> o
   ,bdma2cvif_rd_req_valid        //|> o
   ,bdma2cvif_wr_req_pd           //|> o
   ,bdma2cvif_wr_req_valid        //|> o
+  #endif
   ,bdma2glb_done_intr_pd         //|> o
   ,bdma2mcif_rd_cdt_lat_fifo_pop //|> o
   ,bdma2mcif_rd_req_pd           //|> o
@@ -41,7 +47,9 @@ module NV_NVDLA_bdma (
   ,bdma2mcif_wr_req_pd           //|> o
   ,bdma2mcif_wr_req_valid        //|> o
   ,csb2bdma_req_prdy             //|> o
+  #ifdef NVDLA_SECONDARY_MEMIF_ENABLE
   ,cvif2bdma_rd_rsp_ready        //|> o
+  #endif
   ,mcif2bdma_rd_rsp_ready        //|> o
   );
 
@@ -54,6 +62,7 @@ input  nvdla_core_rstn;  /* bdma2csb_resp, bdma2cvif_rd_cdt, bdma2cvif_rd_req, b
 output        bdma2csb_resp_valid;  /* data valid */
 output [33:0] bdma2csb_resp_pd;     /* pkt_id_width=1 pkt_widths=33,33  */
 
+#ifdef NVDLA_SECONDARY_MEMIF_ENABLE
 output  bdma2cvif_rd_cdt_lat_fifo_pop;
 
 output        bdma2cvif_rd_req_valid;  /* data valid */
@@ -63,6 +72,7 @@ output [78:0] bdma2cvif_rd_req_pd;
 output         bdma2cvif_wr_req_valid;  /* data valid */
 input          bdma2cvif_wr_req_ready;  /* data return handshake */
 output [514:0] bdma2cvif_wr_req_pd;     /* pkt_id_width=1 pkt_widths=78,514  */
+#endif
 
 output [1:0] bdma2glb_done_intr_pd;
 
@@ -80,11 +90,13 @@ input         csb2bdma_req_pvld;  /* data valid */
 output        csb2bdma_req_prdy;  /* data return handshake */
 input  [62:0] csb2bdma_req_pd;
 
+#ifdef NVDLA_SECONDARY_MEMIF_ENABLE
 input          cvif2bdma_rd_rsp_valid;  /* data valid */
 output         cvif2bdma_rd_rsp_ready;  /* data return handshake */
 input  [513:0] cvif2bdma_rd_rsp_pd;
 
 input  cvif2bdma_wr_rsp_complete;
+#endif
 
 input          mcif2bdma_rd_rsp_valid;  /* data valid */
 output         mcif2bdma_rd_rsp_ready;  /* data return handshake */
@@ -193,9 +205,11 @@ NV_NVDLA_BDMA_load u_load (
   ,.bdma2mcif_rd_req_valid        (bdma2mcif_rd_req_valid)          //|> o
   ,.bdma2mcif_rd_req_ready        (bdma2mcif_rd_req_ready)          //|< i
   ,.bdma2mcif_rd_req_pd           (bdma2mcif_rd_req_pd[78:0])       //|> o
+#ifdef NVDLA_SECONDARY_MEMIF_ENABLE
   ,.bdma2cvif_rd_req_valid        (bdma2cvif_rd_req_valid)          //|> o
   ,.bdma2cvif_rd_req_ready        (bdma2cvif_rd_req_ready)          //|< i
   ,.bdma2cvif_rd_req_pd           (bdma2cvif_rd_req_pd[78:0])       //|> o
+#endif
   ,.ld2st_wr_pvld                 (ld2st_wr_pvld)                   //|> w
   ,.ld2st_wr_prdy                 (ld2st_wr_prdy)                   //|< w
   ,.ld2st_wr_pd                   (ld2st_wr_pd[160:0])              //|> w
@@ -230,19 +244,27 @@ NV_NVDLA_BDMA_store u_store (
   ,.mcif2bdma_rd_rsp_valid        (mcif2bdma_rd_rsp_valid)          //|< i
   ,.mcif2bdma_rd_rsp_ready        (mcif2bdma_rd_rsp_ready)          //|> o
   ,.mcif2bdma_rd_rsp_pd           (mcif2bdma_rd_rsp_pd[513:0])      //|< i
+#ifdef NVDLA_SECONDARY_MEMIF_ENABLE
   ,.cvif2bdma_rd_rsp_valid        (cvif2bdma_rd_rsp_valid)          //|< i
   ,.cvif2bdma_rd_rsp_ready        (cvif2bdma_rd_rsp_ready)          //|> o
   ,.cvif2bdma_rd_rsp_pd           (cvif2bdma_rd_rsp_pd[513:0])      //|< i
+#endif
   ,.bdma2mcif_rd_cdt_lat_fifo_pop (bdma2mcif_rd_cdt_lat_fifo_pop)   //|> o
+#ifdef NVDLA_SECONDARY_MEMIF_ENABLE
   ,.bdma2cvif_rd_cdt_lat_fifo_pop (bdma2cvif_rd_cdt_lat_fifo_pop)   //|> o
+#endif
   ,.bdma2mcif_wr_req_valid        (bdma2mcif_wr_req_valid)          //|> o
   ,.bdma2mcif_wr_req_ready        (bdma2mcif_wr_req_ready)          //|< i
   ,.bdma2mcif_wr_req_pd           (bdma2mcif_wr_req_pd[514:0])      //|> o
+#ifdef NVDLA_SECONDARY_MEMIF_ENABLE
   ,.bdma2cvif_wr_req_valid        (bdma2cvif_wr_req_valid)          //|> o
   ,.bdma2cvif_wr_req_ready        (bdma2cvif_wr_req_ready)          //|< i
   ,.bdma2cvif_wr_req_pd           (bdma2cvif_wr_req_pd[514:0])      //|> o
+#endif
   ,.mcif2bdma_wr_rsp_complete     (mcif2bdma_wr_rsp_complete)       //|< i
+#ifdef NVDLA_SECONDARY_MEMIF_ENABLE
   ,.cvif2bdma_wr_rsp_complete     (cvif2bdma_wr_rsp_complete)       //|< i
+#endif
   ,.ld2st_rd_pvld                 (ld2st_rd_pvld)                   //|< w
   ,.ld2st_rd_prdy                 (ld2st_rd_prdy)                   //|> w
   ,.ld2st_rd_pd                   (ld2st_rd_pd[160:0])              //|< w

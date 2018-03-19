@@ -24,7 +24,6 @@ input	 clr_ ;
 output	 q ;
 
 reg q,d1,d0;
-
 always @(posedge clk or negedge clr_)
 begin
     if(~clr_)
@@ -33,10 +32,5 @@ begin
         {q,d1,d0} <= {d1,d0,d};
 end
 
-first_stage_of_sync first_stage_of_sync();
-
 endmodule
 
-module first_stage_of_sync();
-parameter mode = 0;
-endmodule

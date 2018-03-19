@@ -1,0 +1,1734 @@
+// ================================================================
+// NVDLA Open Source Project
+//
+// Copyright(c) 2016 - 2017 NVIDIA Corporation.  Licensed under the
+// NVDLA Open Hardware License; Check "LICENSE" which comes with
+// this distribution for more information.
+// ================================================================
+
+property spec_sw_default {
+    type      = number;
+    component = field;
+};
+property spec_access {
+    type      = string;
+    component = field;
+};
+property sw_default_mask {
+    type      = number;
+    component = field;
+};
+property reset_mask {
+    type      = number;
+    component = field;
+};
+regfile regs_NVDLA_SDP{
+    default regwidth=32;
+    reg {
+        name = "S_STATUS";
+        desc = "
+////Functional Logic and Write DMA for Single Data Processor Registers
+//// 
+";
+        enum S_STATUS_STATUS_0_enum {
+            IDLE = 2'd0;
+            RUNNING = 2'd1;
+            PENDING = 2'd2;
+        };
+        field {
+            encode          = S_STATUS_STATUS_0_enum;
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x0;
+            reset_mask      = 0x3;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } STATUS_0[1:0];
+        STATUS_0->desc="
+//// Status of configuration register group 0
+";
+        enum S_STATUS_STATUS_1_enum {
+            IDLE = 2'd0;
+            RUNNING = 2'd1;
+            PENDING = 2'd2;
+        };
+        field {
+            encode          = S_STATUS_STATUS_1_enum;
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x0;
+            reset_mask      = 0x3;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } STATUS_1[17:16];
+        STATUS_1->desc="
+//// Status of configuration register group 1
+";
+    }S_STATUS @0x0;
+    reg {
+        name = "S_POINTER";
+        enum S_POINTER_PRODUCER_enum {
+            GROUP_0 = 1'd0;
+            GROUP_1 = 1'd1;
+        };
+        field {
+            encode          = S_POINTER_PRODUCER_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } PRODUCER[0:0];
+        PRODUCER->desc="
+////Pointer for CSB master to access groups
+";
+        enum S_POINTER_CONSUMER_enum {
+            GROUP_0 = 1'd0;
+            GROUP_1 = 1'd1;
+        };
+        field {
+            encode          = S_POINTER_CONSUMER_enum;
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CONSUMER[16:16];
+        CONSUMER->desc="
+////Pointer for datapath to access groups
+";
+    }S_POINTER @0x4;
+    reg {
+        name = "S_LUT_ACCESS_CFG";
+        desc = "
+//// LUT Content Program -- begin
+//// LUT_DATA When WRITE, the value will be wrote to a specific LUT entry
+//// When READ,  the value is read from a specific LUT entry
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rwt;
+            reset           = 0x0;
+            reset_mask      = 0x3ff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } LUT_ADDR[9:0];
+        LUT_ADDR->desc="
+//// The address to access the Table
+";
+        enum S_LUT_ACCESS_CFG_LUT_TABLE_ID_enum {
+            LE = 1'd0 {desc = "
+//// access Linear_Exponent table
+";};
+            LO = 1'd1 {desc = "
+//// access Linear_Only table
+";};
+        };
+        field {
+            encode          = S_LUT_ACCESS_CFG_LUT_TABLE_ID_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } LUT_TABLE_ID[16:16];
+        enum S_LUT_ACCESS_CFG_LUT_ACCESS_TYPE_enum {
+            READ = 1'd0 {desc = "
+//// Read data from table
+";};
+            WRITE = 1'd1 {desc = "
+//// Write data to table
+";};
+        };
+        field {
+            encode          = S_LUT_ACCESS_CFG_LUT_ACCESS_TYPE_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } LUT_ACCESS_TYPE[17:17];
+    }S_LUT_ACCESS_CFG @0x8;
+    reg {
+        name = "S_LUT_ACCESS_DATA";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rwto;
+            reset           = 0x0;
+            reset_mask      = 0xffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } LUT_DATA[15:0];
+    }S_LUT_ACCESS_DATA @0xc;
+    reg {
+        name = "S_LUT_CFG";
+        desc = "
+//// LUT Content Program -- end
+//// LUT Index -- begin
+";
+        enum S_LUT_CFG_LUT_LE_FUNCTION_enum {
+            EXPONENT = 1'd0;
+            LINEAR = 1'd1;
+        };
+        field {
+            encode          = S_LUT_CFG_LUT_LE_FUNCTION_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } LUT_LE_FUNCTION[0:0];
+        enum S_LUT_CFG_LUT_UFLOW_PRIORITY_enum {
+            LE = 1'd0 {desc = "
+////select LE_lut output
+";};
+            LO = 1'd1 {desc = "
+////select LO_lut output
+";};
+        };
+        field {
+            encode          = S_LUT_CFG_LUT_UFLOW_PRIORITY_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } LUT_UFLOW_PRIORITY[4:4];
+        LUT_UFLOW_PRIORITY->desc="
+//// indicate which table output should be selected when underflow happened to both table
+";
+        enum S_LUT_CFG_LUT_OFLOW_PRIORITY_enum {
+            LE = 1'd0 {desc = "
+////select LE_lut output
+";};
+            LO = 1'd1 {desc = "
+////select LO_lut output
+";};
+        };
+        field {
+            encode          = S_LUT_CFG_LUT_OFLOW_PRIORITY_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } LUT_OFLOW_PRIORITY[5:5];
+        LUT_OFLOW_PRIORITY->desc="
+//// indicate which table output should be selected when overflow happened to both table
+";
+        enum S_LUT_CFG_LUT_HYBRID_PRIORITY_enum {
+            LE = 1'd0 {desc = "
+////select LE_lut output
+";};
+            LO = 1'd1 {desc = "
+////select LO_lut output
+";};
+        };
+        field {
+            encode          = S_LUT_CFG_LUT_HYBRID_PRIORITY_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } LUT_HYBRID_PRIORITY[6:6];
+        LUT_HYBRID_PRIORITY->desc="
+//// indicate which table output should be selected when hit or miss happened to both table
+";
+    }S_LUT_CFG @0x10;
+    reg {
+        name = "S_LUT_INFO";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } LUT_LE_INDEX_OFFSET[7:0];
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } LUT_LE_INDEX_SELECT[15:8];
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } LUT_LO_INDEX_SELECT[23:16];
+    }S_LUT_INFO @0x14;
+    reg {
+        name = "S_LUT_LE_START";
+        desc = "
+//// Pipeline=INT: INT32
+//// Pipeline=FP: FP32, denorm/inf/nan are not allowed;
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } LUT_LE_START[31:0];
+        LUT_LE_START->desc="
+//// LE_lut coverage range is [min, max], LUT_LE_START means the value of min.
+";
+    }S_LUT_LE_START @0x18;
+    reg {
+        name = "S_LUT_LE_END";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } LUT_LE_END[31:0];
+        LUT_LE_END->desc="
+//// LE_lut coverage range is [min, max], LUT_LE_START means the value of min.
+";
+    }S_LUT_LE_END @0x1c;
+    reg {
+        name = "S_LUT_LO_START";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } LUT_LO_START[31:0];
+        LUT_LO_START->desc="
+//// LO_lut coverage range is [min, max], LUT_LO_START means the value of min.
+";
+    }S_LUT_LO_START @0x20;
+    reg {
+        name = "S_LUT_LO_END";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } LUT_LO_END[31:0];
+        LUT_LO_END->desc="
+//// LO_lut coverage range is [min, max], LUT_LO_START means the value of min.
+";
+    }S_LUT_LO_END @0x24;
+    reg {
+        name = "S_LUT_LE_SLOPE_SCALE";
+        desc = "
+//// Pipeline=INT: INT16;
+//// Pipeline=FP: FP16, inf/nan are not supported
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } LUT_LE_SLOPE_UFLOW_SCALE[15:0];
+        LUT_LE_SLOPE_UFLOW_SCALE->desc="
+//// slope scale parameter for LE_lut underflow, signed value.
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } LUT_LE_SLOPE_OFLOW_SCALE[31:16];
+        LUT_LE_SLOPE_OFLOW_SCALE->desc="
+//// slope scale parameter for LE_lut overflow, signed value.
+";
+    }S_LUT_LE_SLOPE_SCALE @0x28;
+    reg {
+        name = "S_LUT_LE_SLOPE_SHIFT";
+        desc = "
+//// Pipeline=INT: UINT5
+//// Pipeline=FP: DONT care
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1f;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } LUT_LE_SLOPE_UFLOW_SHIFT[4:0];
+        LUT_LE_SLOPE_UFLOW_SHIFT->desc="
+//// slope shift parameter for LE_lut underflow, signed value, shift right if a positive num, shift left if a negative num.
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1f;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } LUT_LE_SLOPE_OFLOW_SHIFT[9:5];
+        LUT_LE_SLOPE_OFLOW_SHIFT->desc="
+//// slope shift parameter for LE_lut overflow, signed value, shift right if a positive num, shift left if a negative num.
+";
+    }S_LUT_LE_SLOPE_SHIFT @0x2c;
+    reg {
+        name = "S_LUT_LO_SLOPE_SCALE";
+        desc = "
+//// Pipeline=INT: INT16;
+//// Pipeline=FP: FP16, inf/nan are not supported
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } LUT_LO_SLOPE_UFLOW_SCALE[15:0];
+        LUT_LO_SLOPE_UFLOW_SCALE->desc="
+//// slope scale parameter for LO_lut underflow, signed value.
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } LUT_LO_SLOPE_OFLOW_SCALE[31:16];
+        LUT_LO_SLOPE_OFLOW_SCALE->desc="
+//// slope scale parameter for LO_lut overflow, signed value.
+";
+    }S_LUT_LO_SLOPE_SCALE @0x30;
+    reg {
+        name = "S_LUT_LO_SLOPE_SHIFT";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1f;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } LUT_LO_SLOPE_UFLOW_SHIFT[4:0];
+        LUT_LO_SLOPE_UFLOW_SHIFT->desc="
+//// slope shift parameter for LO_lut underflow, signed value, shift right if a positive num, shift left if a negative num.
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1f;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } LUT_LO_SLOPE_OFLOW_SHIFT[9:5];
+        LUT_LO_SLOPE_OFLOW_SHIFT->desc="
+//// slope shift parameter for LO_lut overflow, signed value, shift right if a positive num, shift left if a negative num.
+";
+    }S_LUT_LO_SLOPE_SHIFT @0x34;
+    reg {
+        name = "D_OP_ENABLE";
+        desc = "
+//// LUT Index -- end
+//////////////////////////////////////////////////////////////////////////////////
+////                                                                            //
+////                    Define single group registers here                      //
+////                    Register name should shart with prefix D_               //
+////                                                                            //
+//////////////////////////////////////////////////////////////////////////////////
+//// 
+";
+        enum D_OP_ENABLE_OP_EN_enum {
+            DISABLE = 1'd0;
+            ENABLE = 1'd1;
+        };
+        field {
+            encode          = D_OP_ENABLE_OP_EN_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rwto;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } OP_EN[0:0];
+    }D_OP_ENABLE @0x38;
+    reg {
+        name = "D_DATA_CUBE_WIDTH";
+        desc = "
+//// Data cube configuration, begin
+//// Pipeline = INT/FP, U13
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1fff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } WIDTH[12:0];
+        WIDTH->desc="
+//// Element number in width direction, range is 1~8192, actual width = WIDTH+1
+";
+    }D_DATA_CUBE_WIDTH @0x3c;
+    reg {
+        name = "D_DATA_CUBE_HEIGHT";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1fff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } HEIGHT[12:0];
+        HEIGHT->desc="
+//// Element number in height direction, range is 1~8192, actual height = HEIGHT+1
+";
+    }D_DATA_CUBE_HEIGHT @0x40;
+    reg {
+        name = "D_DATA_CUBE_CHANNEL";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1fff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CHANNEL[12:0];
+        CHANNEL->desc="
+//// Element number in channel direction, range is 1~8192, actual channel = CHANNEL+1
+";
+    }D_DATA_CUBE_CHANNEL @0x44;
+    reg {
+        name = "D_DST_BASE_ADDR_LOW";
+        desc = "
+//// Data cube configuration, end
+//// Destination data cube memory configuration, begin
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } DST_BASE_ADDR_LOW[31:0];
+        DST_BASE_ADDR_LOW->desc="
+////  Start address of the destination data cube which will be wrote to external memory
+";
+    }D_DST_BASE_ADDR_LOW @0x48;
+    reg {
+        name = "D_DST_BASE_ADDR_HIGH";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } DST_BASE_ADDR_HIGH[31:0];
+        DST_BASE_ADDR_HIGH->desc="
+////  Start address of the destination data cube which will be wrote external memory
+";
+    }D_DST_BASE_ADDR_HIGH @0x4c;
+    reg {
+        name = "D_DST_LINE_STRIDE";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } DST_LINE_STRIDE[31:0];
+        DST_LINE_STRIDE->desc="
+////  Specify stride between two consective lines within a surface, actual stride value = LINE_STRIDE
+";
+    }D_DST_LINE_STRIDE @0x50;
+    reg {
+        name = "D_DST_SURFACE_STRIDE";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } DST_SURFACE_STRIDE[31:0];
+        DST_SURFACE_STRIDE->desc="
+////  Specify stride between two consective surface, actual stride value = SURFACE_STRIDE
+";
+    }D_DST_SURFACE_STRIDE @0x54;
+    reg {
+        name = "D_DP_BS_CFG";
+        desc = "
+////====================================================
+//// Bias
+////====================================================
+";
+        enum D_DP_BS_CFG_BS_BYPASS_enum {
+            NO = 1'd0;
+            YES = 1'd1;
+        };
+        field {
+            encode          = D_DP_BS_CFG_BS_BYPASS_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x1;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x1;
+            sw_default_mask = 0x0;
+        } BS_BYPASS[0:0];
+        enum D_DP_BS_CFG_BS_ALU_BYPASS_enum {
+            NO = 1'd0;
+            YES = 1'd1;
+        };
+        field {
+            encode          = D_DP_BS_CFG_BS_ALU_BYPASS_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x1;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x1;
+            sw_default_mask = 0x0;
+        } BS_ALU_BYPASS[1:1];
+        enum D_DP_BS_CFG_BS_ALU_ALGO_enum {
+            MAX = 2'd0;
+            MIN = 2'd1;
+            SUM = 2'd2;
+        };
+        field {
+            encode          = D_DP_BS_CFG_BS_ALU_ALGO_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x3;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } BS_ALU_ALGO[3:2];
+        enum D_DP_BS_CFG_BS_MUL_BYPASS_enum {
+            NO = 1'd0;
+            YES = 1'd1;
+        };
+        field {
+            encode          = D_DP_BS_CFG_BS_MUL_BYPASS_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x1;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x1;
+            sw_default_mask = 0x0;
+        } BS_MUL_BYPASS[4:4];
+        enum D_DP_BS_CFG_BS_MUL_PRELU_enum {
+            NO = 1'd0;
+            YES = 1'd1;
+        };
+        field {
+            encode          = D_DP_BS_CFG_BS_MUL_PRELU_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x1;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } BS_MUL_PRELU[5:5];
+        enum D_DP_BS_CFG_BS_RELU_BYPASS_enum {
+            NO = 1'd0;
+            YES = 1'd1;
+        };
+        field {
+            encode          = D_DP_BS_CFG_BS_RELU_BYPASS_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x1;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x1;
+            sw_default_mask = 0x0;
+        } BS_RELU_BYPASS[6:6];
+    }D_DP_BS_CFG @0x58;
+    reg {
+        name = "D_DP_BS_ALU_CFG";
+        enum D_DP_BS_ALU_CFG_BS_ALU_SRC_enum {
+            REG = 1'd0;
+            MEM = 1'd1;
+        };
+        field {
+            encode          = D_DP_BS_ALU_CFG_BS_ALU_SRC_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } BS_ALU_SRC[0:0];
+        BS_ALU_SRC->desc="
+////    1:1     rw  BS_ALU_SHIFT_DIR    init=0
+////                                    enum (  LEFT   =0,
+////                                            RIGHT  =1 
+////                                    )
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x3f;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } BS_ALU_SHIFT_VALUE[13:8];
+        BS_ALU_SHIFT_VALUE->desc="
+//// U6, not used for FP pipeline
+";
+    }D_DP_BS_ALU_CFG @0x5c;
+    reg {
+        name = "D_DP_BS_ALU_SRC_VALUE";
+        desc = "
+//// Pipeline=INT: INT16;
+//// Pipeline=FP: FP16, nan/inf are not supported
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } BS_ALU_OPERAND[15:0];
+    }D_DP_BS_ALU_SRC_VALUE @0x60;
+    reg {
+        name = "D_DP_BS_MUL_CFG";
+        enum D_DP_BS_MUL_CFG_BS_MUL_SRC_enum {
+            REG = 1'd0;
+            MEM = 1'd1;
+        };
+        field {
+            encode          = D_DP_BS_MUL_CFG_BS_MUL_SRC_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } BS_MUL_SRC[0:0];
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } BS_MUL_SHIFT_VALUE[15:8];
+        BS_MUL_SHIFT_VALUE->desc="
+//// Truncate after multiplier in DP pipeline
+";
+    }D_DP_BS_MUL_CFG @0x64;
+    reg {
+        name = "D_DP_BS_MUL_SRC_VALUE";
+        desc = "
+//// Pipeline=INT: INT16;
+//// Pipeline=FP: FP16, nan/inf are not supported
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } BS_MUL_OPERAND[15:0];
+    }D_DP_BS_MUL_SRC_VALUE @0x68;
+    reg {
+        name = "D_DP_BN_CFG";
+        desc = "
+////====================================================
+//// Batch Normalization
+////====================================================
+//// Module Functional Configuration on the first DP, which is mainly for Batch Normorlization, but could be used for other purpuse too
+";
+        enum D_DP_BN_CFG_BN_BYPASS_enum {
+            NO = 1'd0;
+            YES = 1'd1;
+        };
+        field {
+            encode          = D_DP_BN_CFG_BN_BYPASS_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x1;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x1;
+            sw_default_mask = 0x0;
+        } BN_BYPASS[0:0];
+        enum D_DP_BN_CFG_BN_ALU_BYPASS_enum {
+            NO = 1'd0;
+            YES = 1'd1;
+        };
+        field {
+            encode          = D_DP_BN_CFG_BN_ALU_BYPASS_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x1;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x1;
+            sw_default_mask = 0x0;
+        } BN_ALU_BYPASS[1:1];
+        enum D_DP_BN_CFG_BN_ALU_ALGO_enum {
+            MAX = 2'd0;
+            MIN = 2'd1;
+            SUM = 2'd2;
+        };
+        field {
+            encode          = D_DP_BN_CFG_BN_ALU_ALGO_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x3;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } BN_ALU_ALGO[3:2];
+        enum D_DP_BN_CFG_BN_MUL_BYPASS_enum {
+            NO = 1'd0;
+            YES = 1'd1;
+        };
+        field {
+            encode          = D_DP_BN_CFG_BN_MUL_BYPASS_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x1;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x1;
+            sw_default_mask = 0x0;
+        } BN_MUL_BYPASS[4:4];
+        enum D_DP_BN_CFG_BN_MUL_PRELU_enum {
+            NO = 1'd0;
+            YES = 1'd1;
+        };
+        field {
+            encode          = D_DP_BN_CFG_BN_MUL_PRELU_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } BN_MUL_PRELU[5:5];
+        enum D_DP_BN_CFG_BN_RELU_BYPASS_enum {
+            NO = 1'd0;
+            YES = 1'd1;
+        };
+        field {
+            encode          = D_DP_BN_CFG_BN_RELU_BYPASS_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x1;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x1;
+            sw_default_mask = 0x0;
+        } BN_RELU_BYPASS[6:6];
+    }D_DP_BN_CFG @0x6c;
+    reg {
+        name = "D_DP_BN_ALU_CFG";
+        enum D_DP_BN_ALU_CFG_BN_ALU_SRC_enum {
+            REG = 1'd0;
+            MEM = 1'd1;
+        };
+        field {
+            encode          = D_DP_BN_ALU_CFG_BN_ALU_SRC_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } BN_ALU_SRC[0:0];
+        BN_ALU_SRC->desc="
+////    1:1     rw  BN_ALU_SHIFT_DIR    init=0
+////                                    enum (  LEFT   =0,
+////                                            RIGHT  =1 
+////                                    )
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x3f;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } BN_ALU_SHIFT_VALUE[13:8];
+        BN_ALU_SHIFT_VALUE->desc="
+//// U6, not used for FP pipe
+";
+    }D_DP_BN_ALU_CFG @0x70;
+    reg {
+        name = "D_DP_BN_ALU_SRC_VALUE";
+        desc = "
+//// Pipeline=INT: INT16;
+//// Pipeline=FP: FP16, nan/inf are not supported
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } BN_ALU_OPERAND[15:0];
+    }D_DP_BN_ALU_SRC_VALUE @0x74;
+    reg {
+        name = "D_DP_BN_MUL_CFG";
+        enum D_DP_BN_MUL_CFG_BN_MUL_SRC_enum {
+            REG = 1'd0;
+            MEM = 1'd1;
+        };
+        field {
+            encode          = D_DP_BN_MUL_CFG_BN_MUL_SRC_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } BN_MUL_SRC[0:0];
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } BN_MUL_SHIFT_VALUE[15:8];
+        BN_MUL_SHIFT_VALUE->desc="
+//// Truncate value after BN multiplier in DP pipeline, U8
+";
+    }D_DP_BN_MUL_CFG @0x78;
+    reg {
+        name = "D_DP_BN_MUL_SRC_VALUE";
+        desc = "
+//// Pipeline=INT: INT16;
+//// Pipeline=FP: FP16, nan/inf are not supported
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } BN_MUL_OPERAND[15:0];
+    }D_DP_BN_MUL_SRC_VALUE @0x7c;
+    reg {
+        name = "D_DP_EW_CFG";
+        desc = "
+////====================================================
+//// Element Wise
+////====================================================
+//// EW_BYPASS: bypass the whole module, all ALU/MUL/LUT will be bypassed
+//// EW_ALU_BYPASS: bypass ALU(max/min/sum depends on ALU_ALGO field) logic
+//// EW_ALU_ALGO:   output = max/min/sum of two input
+//// EW_MUL_BYPASS: bypass MULTIPLIER logic
+//// EW_MUL_PRELU:  only do a MUL when the incoming data is negtive, and the operand from RDMA is per channel
+////                and the previous stage of RELU need be set as BYPASS to make the negtive number unchanged
+//// EW_RELU_BYPASS: bypass RELU logic
+";
+        enum D_DP_EW_CFG_EW_BYPASS_enum {
+            NO = 1'd0;
+            YES = 1'd1;
+        };
+        field {
+            encode          = D_DP_EW_CFG_EW_BYPASS_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x1;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x1;
+            sw_default_mask = 0x0;
+        } EW_BYPASS[0:0];
+        enum D_DP_EW_CFG_EW_ALU_BYPASS_enum {
+            NO = 1'd0;
+            YES = 1'd1;
+        };
+        field {
+            encode          = D_DP_EW_CFG_EW_ALU_BYPASS_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x1;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x1;
+            sw_default_mask = 0x0;
+        } EW_ALU_BYPASS[1:1];
+        enum D_DP_EW_CFG_EW_ALU_ALGO_enum {
+            MAX = 2'd0;
+            MIN = 2'd1;
+            SUM = 2'd2;
+            EQL = 2'd3;
+        };
+        field {
+            encode          = D_DP_EW_CFG_EW_ALU_ALGO_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x3;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } EW_ALU_ALGO[3:2];
+        enum D_DP_EW_CFG_EW_MUL_BYPASS_enum {
+            NO = 1'd0;
+            YES = 1'd1;
+        };
+        field {
+            encode          = D_DP_EW_CFG_EW_MUL_BYPASS_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x1;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x1;
+            sw_default_mask = 0x0;
+        } EW_MUL_BYPASS[4:4];
+        enum D_DP_EW_CFG_EW_MUL_PRELU_enum {
+            NO = 1'd0;
+            YES = 1'd1;
+        };
+        field {
+            encode          = D_DP_EW_CFG_EW_MUL_PRELU_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } EW_MUL_PRELU[5:5];
+        enum D_DP_EW_CFG_EW_LUT_BYPASS_enum {
+            NO = 1'd0;
+            YES = 1'd1;
+        };
+        field {
+            encode          = D_DP_EW_CFG_EW_LUT_BYPASS_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x1;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x1;
+            sw_default_mask = 0x0;
+        } EW_LUT_BYPASS[6:6];
+    }D_DP_EW_CFG @0x80;
+    reg {
+        name = "D_DP_EW_ALU_CFG";
+        enum D_DP_EW_ALU_CFG_EW_ALU_SRC_enum {
+            REG = 1'd0;
+            MEM = 1'd1;
+        };
+        field {
+            encode          = D_DP_EW_ALU_CFG_EW_ALU_SRC_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } EW_ALU_SRC[0:0];
+        enum D_DP_EW_ALU_CFG_EW_ALU_CVT_BYPASS_enum {
+            NO = 1'd0;
+            YES = 1'd1;
+        };
+        field {
+            encode          = D_DP_EW_ALU_CFG_EW_ALU_CVT_BYPASS_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x1;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x1;
+            sw_default_mask = 0x0;
+        } EW_ALU_CVT_BYPASS[1:1];
+    }D_DP_EW_ALU_CFG @0x84;
+    reg {
+        name = "D_DP_EW_ALU_SRC_VALUE";
+        desc = "
+//// Pipeline=INT: INT32;
+//// Pipeline=FP: FP32, denorm/nan/inf are not supported
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } EW_ALU_OPERAND[31:0];
+    }D_DP_EW_ALU_SRC_VALUE @0x88;
+    reg {
+        name = "D_DP_EW_ALU_CVT_OFFSET_VALUE";
+        desc = "
+//// Pipeline=INT: INT32;
+//// Pipeline=FP: Not used 
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } EW_ALU_CVT_OFFSET[31:0];
+    }D_DP_EW_ALU_CVT_OFFSET_VALUE @0x8c;
+    reg {
+        name = "D_DP_EW_ALU_CVT_SCALE_VALUE";
+        desc = "
+//// Pipeline=INT: INT16;
+//// Pipeline=FP: Not used 
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } EW_ALU_CVT_SCALE[15:0];
+    }D_DP_EW_ALU_CVT_SCALE_VALUE @0x90;
+    reg {
+        name = "D_DP_EW_ALU_CVT_TRUNCATE_VALUE";
+        desc = "
+//// Pipeline=INT: U6;
+//// Pipeline=FP: Not used 
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x3f;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } EW_ALU_CVT_TRUNCATE[5:0];
+    }D_DP_EW_ALU_CVT_TRUNCATE_VALUE @0x94;
+    reg {
+        name = "D_DP_EW_MUL_CFG";
+        enum D_DP_EW_MUL_CFG_EW_MUL_SRC_enum {
+            REG = 1'd0;
+            MEM = 1'd1;
+        };
+        field {
+            encode          = D_DP_EW_MUL_CFG_EW_MUL_SRC_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } EW_MUL_SRC[0:0];
+        enum D_DP_EW_MUL_CFG_EW_MUL_CVT_BYPASS_enum {
+            NO = 1'd0;
+            YES = 1'd1;
+        };
+        field {
+            encode          = D_DP_EW_MUL_CFG_EW_MUL_CVT_BYPASS_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x1;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x1;
+            sw_default_mask = 0x0;
+        } EW_MUL_CVT_BYPASS[1:1];
+    }D_DP_EW_MUL_CFG @0x98;
+    reg {
+        name = "D_DP_EW_MUL_SRC_VALUE";
+        desc = "
+//// Pipeline=INT: INT32;
+//// Pipeline=FP: FP32, denorm/nan/inf are not supported
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } EW_MUL_OPERAND[31:0];
+    }D_DP_EW_MUL_SRC_VALUE @0x9c;
+    reg {
+        name = "D_DP_EW_MUL_CVT_OFFSET_VALUE";
+        desc = "
+//// Pipeline=INT: INT32;
+//// Pipeline=FP: Not used 
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } EW_MUL_CVT_OFFSET[31:0];
+    }D_DP_EW_MUL_CVT_OFFSET_VALUE @0xa0;
+    reg {
+        name = "D_DP_EW_MUL_CVT_SCALE_VALUE";
+        desc = "
+//// Pipeline=INT: INT16;
+//// Pipeline=FP: Not used 
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } EW_MUL_CVT_SCALE[15:0];
+    }D_DP_EW_MUL_CVT_SCALE_VALUE @0xa4;
+    reg {
+        name = "D_DP_EW_MUL_CVT_TRUNCATE_VALUE";
+        desc = "
+//// Pipeline=INT: U6;
+//// Pipeline=FP: Not used 
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x3f;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } EW_MUL_CVT_TRUNCATE[5:0];
+    }D_DP_EW_MUL_CVT_TRUNCATE_VALUE @0xa8;
+    reg {
+        name = "D_DP_EW_TRUNCATE_VALUE";
+        desc = "
+//// Pipeline=INT: U8;
+//// Pipeline=FP: Not used 
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x3ff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } EW_TRUNCATE[9:0];
+    }D_DP_EW_TRUNCATE_VALUE @0xac;
+    reg {
+        name = "D_FEATURE_MODE_CFG";
+        desc = "
+//// Feature Configuration, Bias/BatchNorm/Elementwise
+//// BATCH_NUMBER: +1
+";
+        enum D_FEATURE_MODE_CFG_FLYING_MODE_enum {
+            OFF = 1'd0 {desc = "
+//// input data is from external Memory
+";};
+            ON = 1'd1 {desc = "
+//// input data is from ConvC
+";};
+        };
+        field {
+            encode          = D_FEATURE_MODE_CFG_FLYING_MODE_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } FLYING_MODE[0:0];
+        enum D_FEATURE_MODE_CFG_OUTPUT_DST_enum {
+            MEM = 1'd0 {desc = "
+//// Destination is external memory
+";};
+            PDP = 1'd1 {desc = "
+//// Destination is planar data processor
+";};
+        };
+        field {
+            encode          = D_FEATURE_MODE_CFG_OUTPUT_DST_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } OUTPUT_DST[1:1];
+        OUTPUT_DST->desc="
+//// Output data destination
+";
+        enum D_FEATURE_MODE_CFG_WINOGRAD_enum {
+            OFF = 1'd0;
+            ON = 1'd1;
+        };
+        field {
+            encode          = D_FEATURE_MODE_CFG_WINOGRAD_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } WINOGRAD[2:2];
+        enum D_FEATURE_MODE_CFG_NAN_TO_ZERO_enum {
+            DISABLE = 1'd0;
+            ENABLE = 1'd1;
+        };
+        field {
+            encode          = D_FEATURE_MODE_CFG_NAN_TO_ZERO_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } NAN_TO_ZERO[3:3];
+        NAN_TO_ZERO->desc="
+////option to flush input NaN to zero
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1f;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } BATCH_NUMBER[12:8];
+        BATCH_NUMBER->desc="
+//// Batch number, range is 1~32, actual value = BATCH_NUMBER+1
+";
+    }D_FEATURE_MODE_CFG @0xb0;
+    reg {
+        name = "D_DST_DMA_CFG";
+        enum D_DST_DMA_CFG_DST_RAM_TYPE_enum {
+            CV = 1'd0;
+            MC = 1'd1;
+        };
+        field {
+            encode          = D_DST_DMA_CFG_DST_RAM_TYPE_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } DST_RAM_TYPE[0:0];
+    }D_DST_DMA_CFG @0xb4;
+    reg {
+        name = "D_DST_BATCH_STRIDE";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } DST_BATCH_STRIDE[31:0];
+    }D_DST_BATCH_STRIDE @0xb8;
+    reg {
+        name = "D_DATA_FORMAT";
+        desc = "
+//// Destination data cube memory configuration, end
+";
+        enum D_DATA_FORMAT_PROC_PRECISION_enum {
+            INT8 = 2'd0;
+            INT16 = 2'd1;
+            FP16 = 2'd2;
+        };
+        field {
+            encode          = D_DATA_FORMAT_PROC_PRECISION_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x3;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } PROC_PRECISION[1:0];
+        enum D_DATA_FORMAT_OUT_PRECISION_enum {
+            INT8 = 2'd0;
+            INT16 = 2'd1;
+            FP16 = 2'd2;
+        };
+        field {
+            encode          = D_DATA_FORMAT_OUT_PRECISION_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x3;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } OUT_PRECISION[3:2];
+    }D_DATA_FORMAT @0xbc;
+    reg {
+        name = "D_CVT_OFFSET";
+        desc = "
+//// Pipeline=INT: INT32;
+//// Pipeline=FP: Not used 
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CVT_OFFSET[31:0];
+        CVT_OFFSET->desc="
+////  Offset which has been performed on output data before write to DMA
+";
+    }D_CVT_OFFSET @0xc0;
+    reg {
+        name = "D_CVT_SCALE";
+        desc = "
+//// Pipeline=INT: INT16;
+//// Pipeline=FP: Not used 
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CVT_SCALE[15:0];
+        CVT_SCALE->desc="
+////  Scaling factor which has been performed on output data before write to DMA
+";
+    }D_CVT_SCALE @0xc4;
+    reg {
+        name = "D_CVT_SHIFT";
+        desc = "
+//// Pipeline=INT: U6;
+//// Pipeline=FP: Not used 
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x3f;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CVT_SHIFT[5:0];
+    }D_CVT_SHIFT @0xc8;
+    reg {
+        name = "D_STATUS";
+        desc = "
+////status register
+";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } STATUS_UNEQUAL[0:0];
+    }D_STATUS @0xcc;
+    reg {
+        name = "D_STATUS_NAN_INPUT_NUM";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } STATUS_NAN_INPUT_NUM[31:0];
+        STATUS_NAN_INPUT_NUM->desc="
+//// input NaN element number
+";
+    }D_STATUS_NAN_INPUT_NUM @0xd0;
+    reg {
+        name = "D_STATUS_INF_INPUT_NUM";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } STATUS_INF_INPUT_NUM[31:0];
+        STATUS_INF_INPUT_NUM->desc="
+//// input Infinity element number
+";
+    }D_STATUS_INF_INPUT_NUM @0xd4;
+    reg {
+        name = "D_STATUS_NAN_OUTPUT_NUM";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } STATUS_NAN_OUTPUT_NUM[31:0];
+        STATUS_NAN_OUTPUT_NUM->desc="
+//// output NaN element number
+";
+    }D_STATUS_NAN_OUTPUT_NUM @0xd8;
+    reg {
+        name = "D_PERF_ENABLE";
+        enum D_PERF_ENABLE_PERF_DMA_EN_enum {
+            NO = 1'd0;
+            YES = 1'd1;
+        };
+        field {
+            encode          = D_PERF_ENABLE_PERF_DMA_EN_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } PERF_DMA_EN[0:0];
+        enum D_PERF_ENABLE_PERF_LUT_EN_enum {
+            NO = 1'd0;
+            YES = 1'd1;
+        };
+        field {
+            encode          = D_PERF_ENABLE_PERF_LUT_EN_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } PERF_LUT_EN[1:1];
+        enum D_PERF_ENABLE_PERF_SAT_EN_enum {
+            NO = 1'd0;
+            YES = 1'd1;
+        };
+        field {
+            encode          = D_PERF_ENABLE_PERF_SAT_EN_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } PERF_SAT_EN[2:2];
+        enum D_PERF_ENABLE_PERF_NAN_INF_COUNT_EN_enum {
+            NO = 1'd0;
+            YES = 1'd1;
+        };
+        field {
+            encode          = D_PERF_ENABLE_PERF_NAN_INF_COUNT_EN_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } PERF_NAN_INF_COUNT_EN[3:3];
+    }D_PERF_ENABLE @0xdc;
+    reg {
+        name = "D_PERF_WDMA_WRITE_STALL";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } WDMA_STALL[31:0];
+        WDMA_STALL->desc="
+//// Count stall cycles of write DMA for one layer
+";
+    }D_PERF_WDMA_WRITE_STALL @0xe0;
+    reg {
+        name = "D_PERF_LUT_UFLOW";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } LUT_UFLOW[31:0];
+        LUT_UFLOW->desc="
+//// element number of both table underflow
+";
+    }D_PERF_LUT_UFLOW @0xe4;
+    reg {
+        name = "D_PERF_LUT_OFLOW";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } LUT_OFLOW[31:0];
+        LUT_OFLOW->desc="
+//// element number of both table overflow
+";
+    }D_PERF_LUT_OFLOW @0xe8;
+    reg {
+        name = "D_PERF_OUT_SATURATION";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } OUT_SATURATION[31:0];
+        OUT_SATURATION->desc="
+//// element number of both table overflow
+";
+    }D_PERF_OUT_SATURATION @0xec;
+    reg {
+        name = "D_PERF_LUT_HYBRID";
+        desc = "
+//// element number of both hit, or both miss situation that element underflow one table and at the same time overflow the other. 
+";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } LUT_HYBRID[31:0];
+    }D_PERF_LUT_HYBRID @0xf0;
+    reg {
+        name = "D_PERF_LUT_LE_HIT";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } LUT_LE_HIT[31:0];
+        LUT_LE_HIT->desc="
+//// element number of only linear_exponent table hitted
+";
+    }D_PERF_LUT_LE_HIT @0xf4;
+    reg {
+        name = "D_PERF_LUT_LO_HIT";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } LUT_LO_HIT[31:0];
+        LUT_LO_HIT->desc="
+//// element number of only linear_only table hitted
+";
+    }D_PERF_LUT_LO_HIT @0xf8;
+};
+addrmap  {
+    regs_NVDLA_SDP NVDLA_SDP @0x9000;
+}addrmap_NVDLA;

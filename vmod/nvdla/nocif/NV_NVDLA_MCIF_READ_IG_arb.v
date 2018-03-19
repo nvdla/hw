@@ -11,22 +11,42 @@
 `include "simulate_x_tick.vh"
 module NV_NVDLA_MCIF_READ_IG_arb (
    arb2spt_req_ready         //|< i
+  #ifdef NVDLA_BDMA_ENABLE
   ,bpt2arb_req0_pd           //|< i
   ,bpt2arb_req0_valid        //|< i
+  #endif
   ,bpt2arb_req1_pd           //|< i
   ,bpt2arb_req1_valid        //|< i
+  #ifdef NVDLA_PDP_ENABLE
   ,bpt2arb_req2_pd           //|< i
   ,bpt2arb_req2_valid        //|< i
+  #endif
+  #ifdef NVDLA_CDP_ENABLE
   ,bpt2arb_req3_pd           //|< i
   ,bpt2arb_req3_valid        //|< i
+  #endif
+  #ifdef NVDLA_RUBIK_ENABLE
   ,bpt2arb_req4_pd           //|< i
   ,bpt2arb_req4_valid        //|< i
+  #endif
+  #ifdef NVDLA_SDP_BS_ENABLE
   ,bpt2arb_req5_pd           //|< i
   ,bpt2arb_req5_valid        //|< i
+  ,bpt2arb_req5_ready        //|> o
+  #endif
+  ,reg2dp_rd_weight_sdp_b    //|< i
+  #ifdef NVDLA_SDP_BN_ENABLE
   ,bpt2arb_req6_pd           //|< i
   ,bpt2arb_req6_valid        //|< i
+  ,bpt2arb_req6_ready        //|> o
+  #endif
+  ,reg2dp_rd_weight_sdp_n    //|< i
+  #ifdef NVDLA_SDP_EW_ENABLE
   ,bpt2arb_req7_pd           //|< i
   ,bpt2arb_req7_valid        //|< i
+  ,bpt2arb_req7_ready        //|> o
+  #endif
+  ,reg2dp_rd_weight_sdp_e    //|< i
   ,bpt2arb_req8_pd           //|< i
   ,bpt2arb_req8_valid        //|< i
   ,bpt2arb_req9_pd           //|< i
@@ -40,19 +60,21 @@ module NV_NVDLA_MCIF_READ_IG_arb (
   ,reg2dp_rd_weight_pdp      //|< i
   ,reg2dp_rd_weight_rbk      //|< i
   ,reg2dp_rd_weight_sdp      //|< i
-  ,reg2dp_rd_weight_sdp_b    //|< i
-  ,reg2dp_rd_weight_sdp_e    //|< i
-  ,reg2dp_rd_weight_sdp_n    //|< i
   ,arb2spt_req_pd            //|> o
   ,arb2spt_req_valid         //|> o
+  #ifdef NVDLA_BDMA_ENABLE
   ,bpt2arb_req0_ready        //|> o
+  #endif
   ,bpt2arb_req1_ready        //|> o
+  #ifdef NVDLA_PDP_ENABLE
   ,bpt2arb_req2_ready        //|> o
+  #endif
+  #ifdef NVDLA_CDP_ENABLE
   ,bpt2arb_req3_ready        //|> o
+  #endif
+  #ifdef NVDLA_RUBIK_ENABLE
   ,bpt2arb_req4_ready        //|> o
-  ,bpt2arb_req5_ready        //|> o
-  ,bpt2arb_req6_ready        //|> o
-  ,bpt2arb_req7_ready        //|> o
+  #endif
   ,bpt2arb_req8_ready        //|> o
   ,bpt2arb_req9_ready        //|> o
   );
@@ -62,37 +84,51 @@ module NV_NVDLA_MCIF_READ_IG_arb (
 input  nvdla_core_clk;
 input  nvdla_core_rstn;
 
+  #ifdef NVDLA_BDMA_ENABLE
 input         bpt2arb_req0_valid;  /* data valid */
 output        bpt2arb_req0_ready;  /* data return handshake */
 input  [74:0] bpt2arb_req0_pd;
-
+#endif
 input         bpt2arb_req1_valid;  /* data valid */
 output        bpt2arb_req1_ready;  /* data return handshake */
 input  [74:0] bpt2arb_req1_pd;
 
+  #ifdef NVDLA_PDP_ENABLE
 input         bpt2arb_req2_valid;  /* data valid */
 output        bpt2arb_req2_ready;  /* data return handshake */
 input  [74:0] bpt2arb_req2_pd;
-
+#endif
+  #ifdef NVDLA_CDP_ENABLE
 input         bpt2arb_req3_valid;  /* data valid */
 output        bpt2arb_req3_ready;  /* data return handshake */
 input  [74:0] bpt2arb_req3_pd;
-
+#endif
+  #ifdef NVDLA_RUBIK_ENABLE
 input         bpt2arb_req4_valid;  /* data valid */
 output        bpt2arb_req4_ready;  /* data return handshake */
 input  [74:0] bpt2arb_req4_pd;
+#endif
 
+#ifdef NVDLA_SDP_BS_ENABLE
 input         bpt2arb_req5_valid;  /* data valid */
 output        bpt2arb_req5_ready;  /* data return handshake */
 input  [74:0] bpt2arb_req5_pd;
+#endif
+input  [7:0] reg2dp_rd_weight_sdp_b;
 
+#ifdef NVDLA_SDP_BN_ENABLE
 input         bpt2arb_req6_valid;  /* data valid */
 output        bpt2arb_req6_ready;  /* data return handshake */
 input  [74:0] bpt2arb_req6_pd;
+#endif
+input  [7:0] reg2dp_rd_weight_sdp_n;
 
+#ifdef NVDLA_SDP_EW_ENABLE
 input         bpt2arb_req7_valid;  /* data valid */
 output        bpt2arb_req7_ready;  /* data return handshake */
 input  [74:0] bpt2arb_req7_pd;
+#endif
+input  [7:0] reg2dp_rd_weight_sdp_e;
 
 input         bpt2arb_req8_valid;  /* data valid */
 output        bpt2arb_req8_ready;  /* data return handshake */
@@ -113,9 +149,6 @@ input  [7:0] reg2dp_rd_weight_cdp;
 input  [7:0] reg2dp_rd_weight_pdp;
 input  [7:0] reg2dp_rd_weight_rbk;
 input  [7:0] reg2dp_rd_weight_sdp;
-input  [7:0] reg2dp_rd_weight_sdp_b;
-input  [7:0] reg2dp_rd_weight_sdp_e;
-input  [7:0] reg2dp_rd_weight_sdp_n;
 reg   [74:0] arb_pd;
 wire   [9:0] arb_gnt;
 wire  [74:0] arb_src0_pd;
@@ -197,6 +230,7 @@ wire   [7:0] wt9;
 
     
 
+  #ifdef NVDLA_BDMA_ENABLE
 NV_NVDLA_MCIF_READ_IG_ARB_pipe_p1 pipe_p1 (
    .nvdla_core_clk     (nvdla_core_clk)        //|< i
   ,.nvdla_core_rstn    (nvdla_core_rstn)       //|< i
@@ -209,6 +243,11 @@ NV_NVDLA_MCIF_READ_IG_ARB_pipe_p1 pipe_p1 (
   );
 assign src0_req   = arb_src0_vld;
 assign arb_src0_rdy = src0_gnt;
+#else
+assign arb_src0_pd = 75'd0;
+assign arb_src0_vld = 1'b0;
+#endif
+
 NV_NVDLA_MCIF_READ_IG_ARB_pipe_p2 pipe_p2 (
    .nvdla_core_clk     (nvdla_core_clk)        //|< i
   ,.nvdla_core_rstn    (nvdla_core_rstn)       //|< i
@@ -221,6 +260,7 @@ NV_NVDLA_MCIF_READ_IG_ARB_pipe_p2 pipe_p2 (
   );
 assign src1_req   = arb_src1_vld;
 assign arb_src1_rdy = src1_gnt;
+  #ifdef NVDLA_PDP_ENABLE
 NV_NVDLA_MCIF_READ_IG_ARB_pipe_p3 pipe_p3 (
    .nvdla_core_clk     (nvdla_core_clk)        //|< i
   ,.nvdla_core_rstn    (nvdla_core_rstn)       //|< i
@@ -233,6 +273,11 @@ NV_NVDLA_MCIF_READ_IG_ARB_pipe_p3 pipe_p3 (
   );
 assign src2_req   = arb_src2_vld;
 assign arb_src2_rdy = src2_gnt;
+#else
+assign arb_src2_pd = 75'd0;
+assign arb_src2_vld = 1'b0;
+#endif
+  #ifdef NVDLA_CDP_ENABLE
 NV_NVDLA_MCIF_READ_IG_ARB_pipe_p4 pipe_p4 (
    .nvdla_core_clk     (nvdla_core_clk)        //|< i
   ,.nvdla_core_rstn    (nvdla_core_rstn)       //|< i
@@ -245,6 +290,11 @@ NV_NVDLA_MCIF_READ_IG_ARB_pipe_p4 pipe_p4 (
   );
 assign src3_req   = arb_src3_vld;
 assign arb_src3_rdy = src3_gnt;
+#else
+assign bpt2arb_req3_pd = 75'd0;
+assign arb_src3_vld = 1'b0;
+#endif
+  #ifdef NVDLA_RUBIK_ENABLE
 NV_NVDLA_MCIF_READ_IG_ARB_pipe_p5 pipe_p5 (
    .nvdla_core_clk     (nvdla_core_clk)        //|< i
   ,.nvdla_core_rstn    (nvdla_core_rstn)       //|< i
@@ -257,6 +307,11 @@ NV_NVDLA_MCIF_READ_IG_ARB_pipe_p5 pipe_p5 (
   );
 assign src4_req   = arb_src4_vld;
 assign arb_src4_rdy = src4_gnt;
+#else
+assign arb_src4_pd = 75'd0;
+assign arb_src4_vld = 1'b0;
+#endif
+#ifdef NVDLA_SDP_BS_ENABLE
 NV_NVDLA_MCIF_READ_IG_ARB_pipe_p6 pipe_p6 (
    .nvdla_core_clk     (nvdla_core_clk)        //|< i
   ,.nvdla_core_rstn    (nvdla_core_rstn)       //|< i
@@ -269,6 +324,11 @@ NV_NVDLA_MCIF_READ_IG_ARB_pipe_p6 pipe_p6 (
   );
 assign src5_req   = arb_src5_vld;
 assign arb_src5_rdy = src5_gnt;
+#else
+assign arb_src5_pd = 75'd0;
+assign arb_src5_vld = 1'b0;
+#endif
+#ifdef NVDLA_SDP_BN_ENABLE
 NV_NVDLA_MCIF_READ_IG_ARB_pipe_p7 pipe_p7 (
    .nvdla_core_clk     (nvdla_core_clk)        //|< i
   ,.nvdla_core_rstn    (nvdla_core_rstn)       //|< i
@@ -281,6 +341,11 @@ NV_NVDLA_MCIF_READ_IG_ARB_pipe_p7 pipe_p7 (
   );
 assign src6_req   = arb_src6_vld;
 assign arb_src6_rdy = src6_gnt;
+#else
+assign arb_src6_pd = 75'd0;
+assign arb_src6_vld = 1'b0;
+#endif
+#ifdef NVDLA_SDP_EW_ENABLE
 NV_NVDLA_MCIF_READ_IG_ARB_pipe_p8 pipe_p8 (
    .nvdla_core_clk     (nvdla_core_clk)        //|< i
   ,.nvdla_core_rstn    (nvdla_core_rstn)       //|< i
@@ -293,6 +358,10 @@ NV_NVDLA_MCIF_READ_IG_ARB_pipe_p8 pipe_p8 (
   );
 assign src7_req   = arb_src7_vld;
 assign arb_src7_rdy = src7_gnt;
+#else
+assign arb_src7_pd = 75'd0;
+assign arb_src7_vld = 1'b0;
+#endif
 NV_NVDLA_MCIF_READ_IG_ARB_pipe_p9 pipe_p9 (
    .nvdla_core_clk     (nvdla_core_clk)        //|< i
   ,.nvdla_core_rstn    (nvdla_core_rstn)       //|< i
@@ -426,6 +495,7 @@ endmodule // NV_NVDLA_MCIF_READ_IG_arb
 // **************************************************************************************************************
 // Generated by ::pipe -m -rand none -bc -os arb_src0_pd (arb_src0_vld,arb_src0_rdy) <= bpt2arb_req0_pd[74:0] (bpt2arb_req0_valid,bpt2arb_req0_ready)
 // **************************************************************************************************************
+  #ifdef NVDLA_BDMA_ENABLE
 module NV_NVDLA_MCIF_READ_IG_ARB_pipe_p1 (
    nvdla_core_clk
   ,nvdla_core_rstn
@@ -628,6 +698,7 @@ wire p1_assert_clk = nvdla_core_clk;
 `endif // SPYGLASS_ASSERT_ON
 `endif
 endmodule // NV_NVDLA_MCIF_READ_IG_ARB_pipe_p1
+#endif
 
 
 
@@ -844,6 +915,7 @@ endmodule // NV_NVDLA_MCIF_READ_IG_ARB_pipe_p2
 // **************************************************************************************************************
 // Generated by ::pipe -m -rand none -bc -os arb_src2_pd (arb_src2_vld,arb_src2_rdy) <= bpt2arb_req2_pd[74:0] (bpt2arb_req2_valid,bpt2arb_req2_ready)
 // **************************************************************************************************************
+  #ifdef NVDLA_PDP_ENABLE
 module NV_NVDLA_MCIF_READ_IG_ARB_pipe_p3 (
    nvdla_core_clk
   ,nvdla_core_rstn
@@ -1046,6 +1118,7 @@ wire p3_assert_clk = nvdla_core_clk;
 `endif // SPYGLASS_ASSERT_ON
 `endif
 endmodule // NV_NVDLA_MCIF_READ_IG_ARB_pipe_p3
+#endif
 
 
 
@@ -1053,6 +1126,7 @@ endmodule // NV_NVDLA_MCIF_READ_IG_ARB_pipe_p3
 // **************************************************************************************************************
 // Generated by ::pipe -m -rand none -bc -os arb_src3_pd (arb_src3_vld,arb_src3_rdy) <= bpt2arb_req3_pd[74:0] (bpt2arb_req3_valid,bpt2arb_req3_ready)
 // **************************************************************************************************************
+  #ifdef NVDLA_CDP_ENABLE
 module NV_NVDLA_MCIF_READ_IG_ARB_pipe_p4 (
    nvdla_core_clk
   ,nvdla_core_rstn
@@ -1255,6 +1329,7 @@ wire p4_assert_clk = nvdla_core_clk;
 `endif // SPYGLASS_ASSERT_ON
 `endif
 endmodule // NV_NVDLA_MCIF_READ_IG_ARB_pipe_p4
+#endif
 
 
 
@@ -1262,6 +1337,7 @@ endmodule // NV_NVDLA_MCIF_READ_IG_ARB_pipe_p4
 // **************************************************************************************************************
 // Generated by ::pipe -m -rand none -bc -os arb_src4_pd (arb_src4_vld,arb_src4_rdy) <= bpt2arb_req4_pd[74:0] (bpt2arb_req4_valid,bpt2arb_req4_ready)
 // **************************************************************************************************************
+  #ifdef NVDLA_RUBIK_ENABLE
 module NV_NVDLA_MCIF_READ_IG_ARB_pipe_p5 (
    nvdla_core_clk
   ,nvdla_core_rstn
@@ -1464,6 +1540,7 @@ wire p5_assert_clk = nvdla_core_clk;
 `endif // SPYGLASS_ASSERT_ON
 `endif
 endmodule // NV_NVDLA_MCIF_READ_IG_ARB_pipe_p5
+#endif
 
 
 

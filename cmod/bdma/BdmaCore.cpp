@@ -10,8 +10,8 @@
 
 #include <algorithm>
 #include <iomanip>
-#include "arnvdla.uh"
-#include "arnvdla.h"
+#include "opendla.uh"
+#include "opendla.h"
 #include "cmacros.uh"
 #include "BdmaCore.h"
 #include "bdmacoreconfigclass.h"

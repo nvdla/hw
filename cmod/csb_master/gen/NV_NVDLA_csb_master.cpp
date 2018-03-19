@@ -213,7 +213,6 @@ NV_NVDLA_csb_master::nvdla2csb_b_transport(int ID, NV_MSDEC_csb2xx_16m_secure_be
     }
 }
 
-// FIXME, hack for csb2nvdla write response initial socket
 inline void
 NV_NVDLA_csb_master::csb2nvdla_wr_hack_b_transport(NV_MSDEC_xx2csb_wr_erpt_t* payload, sc_time& delay) {
     uint8_t *csb2nvdla_wr_hack_bp_byte_enable_ptr;

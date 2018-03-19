@@ -1,1 +1,0 @@
-Compile:Zxtor:SupportDollarDisplay=true

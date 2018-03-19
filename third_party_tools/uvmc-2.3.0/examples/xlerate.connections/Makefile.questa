@@ -1,0 +1,250 @@
+# ============================================================================
+#  @(#) $Id: Makefile.questa 1408 2015-03-02 14:27:35Z jstickle $
+# ============================================================================
+
+#    //_______________________
+#   // Mentor Graphics, Corp. \_______________________________________
+#  //                                                               //
+# //   (C) Copyright, Mentor Graphics, Corp. 2003-2014              //
+# //   All Rights Reserved                                          //
+# //                                                                //
+# //    Licensed under the Apache License, Version 2.0 (the         //
+# //    "License"); you may not use this file except in             //
+# //    compliance with the License.  You may obtain a copy of      //
+# //    the License at                                              //
+# //                                                                //
+# //        http://www.apache.org/licenses/LICENSE-2.0              //
+# //                                                                //
+# //    Unless required by applicable law or agreed to in           //
+# //    writing, software distributed under the License is          //
+# //    distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR      //
+# //    CONDITIONS OF ANY KIND, either express or implied.  See     //
+# //    the License for the specific language governing            //
+# //    permissions and limitations under the License.            //
+# //-------------------------------------------------------------//
+
+include common.mk
+
+VSIM_EXTRA ?=
+
+include $(UVMC_HOME)/examples/common/Makefile.questa
+
+#CFLAGS= -g
+
+CHECK_TESTS=$(TESTS:%=check.%)
+
+all: sim check
+
+sim: $(TESTS)
+check: $(CHECK_TESTS)
+
+#-----------------------------------------------------------------------------
+
+sc2sv2sc_loopback: check_uvm_home
+	# Benchmark 80 2MB HD images as 81920 2048 byte payloads using original
+	# uvmc_converter's ...
+	-rm -rf work
+	vlib work
+	$(VLOG) +incdir+common $@.sv
+	$(SCCOM) $(CFLAGS) -Icommon \
+		-DNUM_TRANSACTIONS=$(NUM_LIMITED_TRANSACTIONS) \
+		-DPAYLOAD_NUM_BYTES=$(LIMITED_PAYLOAD_NUM_BYTES) \
+		$@.cpp
+	$(LINK)
+	time $(VSIM) sc_main sv_main +UVMC_COMMAND_TRACE
+	mv $(LOG).log check.$@.log
+
+sv2sc2sv_loopback: check_uvm_home
+	# Benchmark 80 2MB HD images as 81920 2048 byte payloads using original
+	# uvmc_converter's ...
+	-rm -rf work
+	vlib work
+	$(VLOG) +incdir+common \
+		+define+NUM_TRANSACTIONS=$(NUM_LIMITED_TRANSACTIONS) \
+		+define+PAYLOAD_NUM_BYTES=$(LIMITED_PAYLOAD_NUM_BYTES) \
+		$@.sv
+	$(SCCOM) $(CFLAGS) -Icommon $@.cpp
+	$(LINK)
+	time $(VSIM) sc_main sv_main +UVMC_COMMAND_TRACE
+	mv $(LOG).log check.$@.log
+
+#-----------------------------------------------------------------------------
+
+sc2sv2sc_gp_converter_loopback: check_uvm_home
+	# Benchmark 80 2MB HD images as 81920 2048 byte payloads using XLerated
+	# uvmc_tlm_gp_converter's ...
+	-rm -rf work
+	vlib work
+	$(VLOG) +incdir+common $@.sv
+	$(SCCOM) $(CFLAGS) -Icommon \
+		-DNUM_TRANSACTIONS=$(NUM_LIMITED_TRANSACTIONS) \
+		-DPAYLOAD_NUM_BYTES=$(LIMITED_PAYLOAD_NUM_BYTES) \
+		$@.cpp
+	$(LINK) $(CFLAGS)
+	time $(VSIM) sc_main sv_main +UVMC_COMMAND_TRACE
+	mv $(LOG).log check.$@.log
+
+sv2sc2sv_gp_converter_loopback: check_uvm_home
+	# Benchmark 80 2MB HD images as 81920 2048 byte payloads using XLerated
+	# uvmc_tlm_gp_converter's ...
+	-rm -rf work
+	vlib work
+	$(VLOG) +incdir+common \
+		+define+NUM_TRANSACTIONS=$(NUM_LIMITED_TRANSACTIONS) \
+		+define+PAYLOAD_NUM_BYTES=$(LIMITED_PAYLOAD_NUM_BYTES) \
+		$@.sv
+	$(SCCOM) $(CFLAGS) -Icommon $@.cpp
+	$(LINK) $(CFLAGS)
+	time $(VSIM) sc_main sv_main +UVMC_COMMAND_TRACE
+	mv $(LOG).log check.$@.log
+
+sc2sv2sc_gp_converter_loopback_whole_image_payloads: check_uvm_home
+	# Benchmark 80 2MB HD images as 80 2Mbyte payloads using XLerated
+	# uvmc_tlm_gp_converter's ...
+	-rm -rf work
+	vlib work
+	$(VLOG) +incdir+common sc2sv2sc_gp_converter_loopback.sv
+	$(SCCOM) $(CFLAGS) -Icommon \
+		-DNUM_TRANSACTIONS=$(NUM_UNLIMITED_TRANSACTIONS) \
+		-DPAYLOAD_NUM_BYTES=$(UNLIMITED_PAYLOAD_NUM_BYTES) \
+		sc2sv2sc_gp_converter_loopback.cpp
+	$(LINK) $(CFLAGS)
+	time $(VSIM) sc_main sv_main +UVMC_COMMAND_TRACE
+	mv $(LOG).log check.$@.log
+
+sv2sc2sv_gp_converter_loopback_whole_image_payloads: check_uvm_home
+	# Benchmark 80 2MB HD images as 80 2Mbyte payloads using XLerated
+	# uvmc_tlm_gp_converter's ...
+	-rm -rf work
+	vlib work
+	$(VLOG) +incdir+common \
+		+define+NUM_TRANSACTIONS=$(NUM_UNLIMITED_TRANSACTIONS) \
+		+define+PAYLOAD_NUM_BYTES=$(UNLIMITED_PAYLOAD_NUM_BYTES) \
+		sv2sc2sv_gp_converter_loopback.sv
+	$(SCCOM) $(CFLAGS) -Icommon sv2sc2sv_gp_converter_loopback.cpp
+	$(LINK) $(CFLAGS)
+	time $(VSIM) sc_main sv_main +UVMC_COMMAND_TRACE
+	mv $(LOG).log check.$@.log
+
+#-----------------------------------------------------------------------------
+
+sc2sv2sc_xl_gp_converter_loopback: check_uvm_home
+	# Benchmark 80 2MB HD images as 81920 2048 byte payloads using XLerated
+	# uvmc_xl_converters ...
+	-rm -rf work
+	vlib work
+	$(VLOG) +incdir+common $@.sv
+	$(SCCOM) $(CFLAGS) -Icommon \
+		-DNUM_TRANSACTIONS=$(NUM_LIMITED_TRANSACTIONS) \
+		-DPAYLOAD_NUM_BYTES=$(LIMITED_PAYLOAD_NUM_BYTES) \
+		$@.cpp
+	$(LINK) $(CFLAGS)
+	time $(VSIM) sc_main sv_main +UVMC_COMMAND_TRACE
+	mv $(LOG).log check.$@.log
+
+sv2sc2sv_xl_gp_converter_loopback: check_uvm_home
+	# Benchmark 80 2MB HD images as 81920 2048 byte payloads using XLerated
+	# uvmc_xl_converters ...
+	-rm -rf work
+	vlib work
+	$(VLOG) +incdir+common \
+		+define+NUM_TRANSACTIONS=$(NUM_LIMITED_TRANSACTIONS) \
+		+define+PAYLOAD_NUM_BYTES=$(LIMITED_PAYLOAD_NUM_BYTES) \
+		$@.sv
+	$(SCCOM) $(CFLAGS) -Icommon $@.cpp
+	$(LINK) $(CFLAGS)
+	time $(VSIM) sc_main sv_main +UVMC_COMMAND_TRACE
+	mv $(LOG).log check.$@.log
+
+sc2sv2sc_xl_gp_converter_loopback_whole_image_payloads: check_uvm_home
+	# Benchmark 80 2MB HD images as 80 2Mbyte payloads using XLerated
+	# uvmc_xl_converters ...
+	-rm -rf work
+	vlib work
+	$(VLOG) +incdir+common sc2sv2sc_xl_gp_converter_loopback.sv
+	$(SCCOM) $(CFLAGS) -Icommon \
+		-DNUM_TRANSACTIONS=$(NUM_UNLIMITED_TRANSACTIONS) \
+		-DPAYLOAD_NUM_BYTES=$(UNLIMITED_PAYLOAD_NUM_BYTES) \
+		sc2sv2sc_xl_gp_converter_loopback.cpp
+	$(LINK) $(CFLAGS)
+	time $(VSIM) sc_main sv_main +UVMC_COMMAND_TRACE
+	mv $(LOG).log check.$@.log
+
+sv2sc2sv_xl_gp_converter_loopback_whole_image_payloads: check_uvm_home
+	# Benchmark 80 2MB HD images as 80 2Mbyte payloads using XLerated
+	# uvmc_xl_converters ...
+	-rm -rf work
+	vlib work
+	$(VLOG) +incdir+common \
+		+define+NUM_TRANSACTIONS=$(NUM_UNLIMITED_TRANSACTIONS) \
+		+define+PAYLOAD_NUM_BYTES=$(UNLIMITED_PAYLOAD_NUM_BYTES) \
+		sv2sc2sv_xl_gp_converter_loopback.sv
+	$(SCCOM) $(CFLAGS) -Icommon sv2sc2sv_xl_gp_converter_loopback.cpp
+	$(LINK) $(CFLAGS)
+	time $(VSIM) sc_main sv_main +UVMC_COMMAND_TRACE
+	mv $(LOG).log check.$@.log
+
+#-----------------------------------------------------------------------------
+
+sc2sc2sc_uvmc_loopback: check_uvm_home
+	-rm -rf work
+	vlib work
+	$(VLOG) +incdir+common $@.sv
+	$(SCCOM) $(CFLAGS) -Icommon \
+		-DNUM_TRANSACTIONS=$(NUM_LIMITED_TRANSACTIONS) \
+		-DPAYLOAD_NUM_BYTES=$(LIMITED_PAYLOAD_NUM_BYTES) \
+		$@.cpp
+	$(LINK)
+	time $(VSIM) sc_main sv_main
+	mv $(LOG).log check.$@.log
+
+#-----------------------------------------------------------------------------
+
+sv2sv2sv_uvmc_loopback: check_uvm_home
+	-rm -rf work
+	vlib work
+	$(VLOG) +incdir+common \
+		+define+NUM_TRANSACTIONS=$(NUM_LIMITED_TRANSACTIONS) \
+		+define+PAYLOAD_NUM_BYTES=$(LIMITED_PAYLOAD_NUM_BYTES) \
+		$@.sv
+	$(SCCOM) $(CFLAGS) -Icommon $@.cpp
+	$(LINK)
+	time $(VSIM) sc_main sv_main
+	mv $(LOG).log check.$@.log
+
+sv2sv2sv_xl_gp_converter_uvmc_loopback: check_uvm_home
+	# Benchmark 80 2MB HD images as 81920 2048 byte payloads using XLerated
+	# uvmc_xl_converters ...
+	-rm -rf work
+	vlib work
+	$(VLOG) +incdir+common \
+		+define+NUM_TRANSACTIONS=$(NUM_LIMITED_TRANSACTIONS) \
+		+define+PAYLOAD_NUM_BYTES=$(LIMITED_PAYLOAD_NUM_BYTES) \
+		$@.sv
+	$(SCCOM) $(CFLAGS) -Icommon $@.cpp
+	$(LINK) $(CFLAGS)
+	time $(VSIM) sc_main sv_main +UVMC_COMMAND_TRACE
+	mv $(LOG).log check.$@.log
+
+sv2sv2sv_xl_gp_converter_uvmc_loopback_whole_image_payloads: check_uvm_home
+	# Benchmark 80 2MB HD images as 80 2Mbyte payloads using XLerated
+	# uvmc_xl_converters ...
+	-rm -rf work
+	vlib work
+	$(VLOG) +incdir+common \
+		+define+NUM_TRANSACTIONS=$(NUM_UNLIMITED_TRANSACTIONS) \
+		+define+PAYLOAD_NUM_BYTES=$(UNLIMITED_PAYLOAD_NUM_BYTES) \
+		sv2sv2sv_xl_gp_converter_uvmc_loopback.sv
+	$(SCCOM) $(CFLAGS) -Icommon sv2sv2sv_xl_gp_converter_uvmc_loopback.cpp
+	$(LINK) $(CFLAGS)
+	time $(VSIM) sc_main sv_main +UVMC_COMMAND_TRACE
+	mv $(LOG).log check.$@.log
+
+#-----------------------------------------------------------------------------
+
+$(CHECK_TESTS):
+	cat $@.log | perl gold/check.pl > $@.log.cmp
+	cmp $@.log.cmp gold/$@.log.cmp
+
+clean:
+	rm -rf work *.log vsim* transcript *.vstf *.log.cmp modelsim.ini

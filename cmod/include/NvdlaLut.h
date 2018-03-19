@@ -11,7 +11,6 @@
 #ifndef _NVDLALUT_H_
 #define _NVDLALUT_H_
 
-// FIXME, move defines to a global place
 #define RAW_TABLE_INDEX 0
 #define DENSITY_TABLE_INDEX 1
 #define RAW_TABLE_SIZE 257

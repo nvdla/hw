@@ -66,7 +66,7 @@ proc writeReports {{prefix "default"}} {
 
     set module_report ${REPORT_DIR}/${MODULE}.${prefix}.report
     suppress_message [list "TIM-175"]
-    redirect -append $module_report { report_qor -significant_digits 4 }
+    redirect $module_report { report_qor -significant_digits 4 }
     unsuppress_message [list "TIM-175"]
     redirect -append $module_report { eval { report_timing } $timing_flags }
     redirect -append $module_report { report_constraint -all -sig 4 -nosplit }
@@ -80,6 +80,7 @@ proc writeReports {{prefix "default"}} {
     redirect -append $module_report { report_threshold_voltage_group }
     #redirect -append $module_report { nvSynGeneral::reportLibAttributes }
     redirect -append $module_report { report_design }
+    redirect -append $module_report { report_reference -hierarchy }
 
 }
 
@@ -114,6 +115,14 @@ setVar DEF_DIR def
 setVar SCRIPTS_DIR scripts
 setVar SEARCH_PATH "."
 setVar RTL_EXTENSIONS ".v .sv .gv"
+setVar SAIF_FILE ""
+setVar TB_PATH "top.nvdla_top"
+setVar INSTANCE ""
+
+proc verilog_inst_to_dc_inst { inst_path } {
+    return [regsub -all {\.} $inst_path "/"]
+}
+
 
 # Dont proceed if you cant find the scripts directory for app vars and other settings. 
 if {![file exists $SCRIPTS_DIR]} {
@@ -156,6 +165,9 @@ set library_name [file rootname [file tail [lindex ${TARGET_LIB} 0]]]
 set_svf ${FV_DIR}/${MODULE}/${MODULE}.svf
 puts "${synMsgInfo} Setting SVF to  ${FV_DIR}/${MODULE}/${MODULE}.svf"
 
+# Start keeping track of name changes
+saif_map -start
+
 
 # Misc Synthesis recipe variables
 setVar DC_NUM_CORES 1; # Assume calling scripts sets this up correctly
@@ -184,6 +196,10 @@ read_file -format db $target_library
 
 # Search path
 set_app_var search_path "${SEARCH_PATH}"
+
+# ungroup the clock gate level of hierarchy
+set power_cg_flatten true
+
 
 ######################
 ## Section : synthesis
@@ -411,7 +427,7 @@ if {![shell_is_in_exploration_mode]} {
 # Prevent ungrouping of specific hierarchies
 if {[info exists DONT_UNGROUP_LIST] && ${DONT_UNGROUP_LIST} != ""} {
     set retVal {}
-    foreach single_design $dont_ungroup_list {
+    foreach single_design $DONT_UNGROUP_LIST {
         set gdCmd1 "get_designs \"$single_design\""
         set gdList1 [eval $gdCmd1]
         if { [sizeof_collection $gdList1] > 0 } {
@@ -441,6 +457,29 @@ setVar AREA_RECOVERY 1
 if {[info exists AREA_RECOVERY] && ${AREA_RECOVERY} == 1} {
 	set_cost_priority {max_design_rules}
 	set_max_area 0.0
+}
+
+# Optional: Retiming (using the set_optimize_registers command recommended by Synopsys)
+setVar RETIME_LIST ""
+setVar RETIME_TRANSFORM "multiclass"
+setVar RETIME_JUSTIFICATION_EFFORT "high"
+if {[info exists RETIME_LIST] && $RETIME_LIST != ""} {
+    foreach pattern $RETIME_LIST {
+        set retimeDesign [lindex [split $pattern ":"] 0]
+        set retimeClock [lindex [split $pattern ":"] 1]
+        set retimeColl {}
+        append_to_collection retimeColl [get_designs -q $retimeDesign]
+        # Also handle cases where the design names have been uniquified. 
+        append_to_collection retimeColl [get_designs -q -filter "((defined(@original_design_name) && @original_design_name=~${retimeDesign}) || (defined(@hdl_template) && @hdl_template=~${retimeDesign}))"]
+        set retimeColl [add_to_collection -unique $retimeColl {}]   
+        if {[sizeof_collection $retimeColl]} {
+            set retimeList [get_object_name $retimeColl]
+            puts "${synMsgInfo} Retiming enabled for design $retimeDesign"
+            set optregCmd "set_optimize_registers -design \"$retimeList\" -clock $retimeClock true -sync_transform $RETIME_TRANSFORM -async_transform $RETIME_TRANSFORM -print_critical_loop -check_design -verbose -justification_effort $RETIME_JUSTIFICATION_EFFORT"
+            puts "Running command: \n$optregCmd"
+            eval $optregCmd
+        }
+    }
 }
 
 write -f ddc -hier -o ${DB_DIR}/${MODULE}.precompile.ddc
@@ -480,11 +519,14 @@ if {![shell_is_in_exploration_mode]} {
     puts "${synMsgInfo} Incremental compiles are not supported in Design Explorer. Skipping" 
 }
 
+# Make sure DC-inserted CG hierarchy is ungrouped.
+set power_cg_flatten true
+ungroup -all -flatten  
+
 # Run area recovery
 if {![shell_is_in_exploration_mode]} {
     if {[info exists AREA_RECOVERY] && $AREA_RECOVERY ==1 } {
-	     ungroup -all -flatten  
-	     optimize_netlist -area
+	optimize_netlist -area
     }
 }
 
@@ -504,6 +546,19 @@ redirect ${REPORT_DIR}/${MODULE}.check_timing { check_timing }
 
 # Stop recording the SVF. 
 set_svf -off
+
+# Write a name map 
+if { ${SAIF_FILE} != "" } {
+    foreach instance $INSTANCE {
+        saif_map -create_map -input ${SAIF_FILE} -source_instance [verilog_inst_to_dc_inst "${TB_PATH}.${instance}"]
+        saif_map -write_map ${REPORT_DIR}/${MODULE}.${instance}.saif.name_map -type ptpx
+    }
+}
+
+# Write Parasitics
+write_parasitics -output ${REPORT_DIR}/${MODULE}.spef -format reduced
+write_parasitics -output ${REPORT_DIR}/${MODULE}.parasitics.tcl -script
+write_sdf -significant_digits 4 ${REPORT_DIR}/${MODULE}.sdf
 
 # Print out summary of generated design collateral
 puts "${synMsgInfo} GENERATED NETLIST: ${NET_DIR}/${MODULE}.gv"

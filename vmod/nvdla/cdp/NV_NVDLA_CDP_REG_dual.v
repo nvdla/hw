@@ -103,10 +103,10 @@ output [31:0] datout_offset;
 output [15:0] datout_scale;
 output [5:0]  datout_shifter;
 output [31:0] dst_base_addr_high;
-output [26:0] dst_base_addr_low;
+output [31:0] dst_base_addr_low;
 output        dst_ram_type;
-output [26:0] dst_line_stride;
-output [26:0] dst_surface_stride;
+output [31:0] dst_line_stride;
+output [31:0] dst_surface_stride;
 output        mul_bypass;
 output        sqsum_bypass;
 output [1:0]  normalz_len;
@@ -146,10 +146,10 @@ reg    [15:0] datout_scale;
 reg     [5:0] datout_shifter;
 reg           dma_en;
 reg    [31:0] dst_base_addr_high;
-reg    [26:0] dst_base_addr_low;
-reg    [26:0] dst_line_stride;
+reg    [31:0] dst_base_addr_low;
+reg    [31:0] dst_line_stride;
 reg           dst_ram_type;
-reg    [26:0] dst_surface_stride;
+reg    [31:0] dst_surface_stride;
 reg     [1:0] input_data_type;
 reg           lut_en;
 reg           mul_bypass;
@@ -202,11 +202,11 @@ assign nvdla_cdp_d_datout_offset_0_out[31:0] = { datout_offset };
 assign nvdla_cdp_d_datout_scale_0_out[31:0] = { 16'b0, datout_scale };
 assign nvdla_cdp_d_datout_shifter_0_out[31:0] = { 26'b0, datout_shifter };
 assign nvdla_cdp_d_dst_base_addr_high_0_out[31:0] = { dst_base_addr_high };
-assign nvdla_cdp_d_dst_base_addr_low_0_out[31:0] = { dst_base_addr_low, 5'b0 };
+assign nvdla_cdp_d_dst_base_addr_low_0_out[31:0] = { dst_base_addr_low };
 assign nvdla_cdp_d_dst_compression_en_0_out[31:0] = { 31'b0, dst_compression_en };
 assign nvdla_cdp_d_dst_dma_cfg_0_out[31:0] = { 31'b0, dst_ram_type };
-assign nvdla_cdp_d_dst_line_stride_0_out[31:0] = { dst_line_stride, 5'b0 };
-assign nvdla_cdp_d_dst_surface_stride_0_out[31:0] = { dst_surface_stride, 5'b0 };
+assign nvdla_cdp_d_dst_line_stride_0_out[31:0] = { dst_line_stride };
+assign nvdla_cdp_d_dst_surface_stride_0_out[31:0] = { dst_surface_stride };
 assign nvdla_cdp_d_func_bypass_0_out[31:0] = { 30'b0, mul_bypass, sqsum_bypass };
 assign nvdla_cdp_d_inf_input_num_0_out[31:0] = { inf_input_num };
 assign nvdla_cdp_d_lrn_cfg_0_out[31:0] = { 30'b0, normalz_len };
@@ -368,10 +368,10 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     datout_scale[15:0] <= 16'b0000000000000001;
     datout_shifter[5:0] <= 6'b000000;
     dst_base_addr_high[31:0] <= 32'b00000000000000000000000000000000;
-    dst_base_addr_low[26:0] <= 27'b000000000000000000000000000;
+    dst_base_addr_low[31:0] <= 32'b00000000000000000000000000000000;
     dst_ram_type <= 1'b0;
-    dst_line_stride[26:0] <= 27'b000000000000000000000000000;
-    dst_surface_stride[26:0] <= 27'b000000000000000000000000000;
+    dst_line_stride[31:0] <= 32'b00000000000000000000000000000000;
+    dst_surface_stride[31:0] <= 32'b00000000000000000000000000000000;
     mul_bypass <= 1'b0;
     sqsum_bypass <= 1'b0;
     normalz_len[1:0] <= 2'b00;
@@ -426,7 +426,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 
   // Register: NVDLA_CDP_D_DST_BASE_ADDR_LOW_0    Field: dst_base_addr_low
   if (nvdla_cdp_d_dst_base_addr_low_0_wren) begin
-    dst_base_addr_low[26:0] <= reg_wr_data[31:5];
+    dst_base_addr_low[31:0] <= reg_wr_data[31:0];
   end
 
   // Not generating flops for constant field NVDLA_CDP_D_DST_COMPRESSION_EN_0::dst_compression_en
@@ -438,12 +438,12 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 
   // Register: NVDLA_CDP_D_DST_LINE_STRIDE_0    Field: dst_line_stride
   if (nvdla_cdp_d_dst_line_stride_0_wren) begin
-    dst_line_stride[26:0] <= reg_wr_data[31:5];
+    dst_line_stride[31:0] <= reg_wr_data[31:0];
   end
 
   // Register: NVDLA_CDP_D_DST_SURFACE_STRIDE_0    Field: dst_surface_stride
   if (nvdla_cdp_d_dst_surface_stride_0_wren) begin
-    dst_surface_stride[26:0] <= reg_wr_data[31:5];
+    dst_surface_stride[31:0] <= reg_wr_data[31:0];
   end
 
   // Register: NVDLA_CDP_D_FUNC_BYPASS_0    Field: mul_bypass

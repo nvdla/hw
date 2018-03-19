@@ -13,11 +13,13 @@
 
 #include <systemc.h>
 #include <stdint.h>
+#include "nvdla_config.h"
+
 #ifndef _nvdla_cc2pp_pkg_struct_H_
 #define _nvdla_cc2pp_pkg_struct_H_
 
 typedef struct nvdla_cc2pp_pkg_s {
-    sc_int<32>  data [16]; 
+    sc_int<32>  data [NVDLA_SDP_BS_THROUGHPUT]; 
     uint8_t     batch_end ; 
     uint8_t     layer_end ; 
 } nvdla_cc2pp_pkg_t;

@@ -44,7 +44,16 @@ include $(DEPTH)/tools/make/tools.mk
 ## paths to useful places in the tree
 TOT := $(shell $(DEPTH)/tools/bin/depth -abs_tot)
 REL_PATH_FROM_TOT := $(shell $(DEPTH)/tools/bin/depth -from_tot)
+OUT_DIR := $(TOT)/$(OUTDIR)/$(PROJECT)/$(REL_PATH_FROM_TOT)
 
+PATH_VMOD_INCLUDE := $(TOT)/vmod/include
+PATH_SPEC_MANUAL := $(TOT)/spec/manual
+PATH_SPEC_ODIF := $(TOT)/spec/odif
+
+
+OUT_DEF_DIR := $(DEPTH)/$(OUTDIR)/$(PROJECT)/spec/defs
+OUT_MAN_DIR := $(DEPTH)/$(OUTDIR)/$(PROJECT)/spec/manual
+PROJ_HEAD   := $(OUT_DEF_DIR)/project.h
 
 # Useful target to get the value of a variable.
 ifneq (,$(filter getvar_%,$(MAKECMDGOALS)))

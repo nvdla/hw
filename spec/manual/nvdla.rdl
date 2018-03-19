@@ -1,0 +1,20 @@
+import NVDLA_CFGROM.rdl
+import NVDLA_GLB.rdl
+import NVDLA_MCIF.rdl
+import NVDLA_CDMA.rdl
+import NVDLA_CSC.rdl
+import NVDLA_CMAC_A.rdl
+import NVDLA_CMAC_B.rdl
+import NVDLA_CACC.rdl
+import NVDLA_SDP_RDMA.rdl
+import NVDLA_SDP.rdl
+import NVDLA_PDP_RDMA.rdl
+import NVDLA_PDP.rdl
+import NVDLA_CDP_RDMA.rdl
+import NVDLA_CDP.rdl
+
+// Below sub-units are not used in nv_small. Keep them here to avoid cmod building error.
+import NVDLA_GEC.rdl
+import NVDLA_CVIF.rdl
+import NVDLA_BDMA.rdl
+import NVDLA_RBK.rdl

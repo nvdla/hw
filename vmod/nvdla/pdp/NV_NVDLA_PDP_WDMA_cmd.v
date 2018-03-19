@@ -8,6 +8,9 @@
 
 // File Name: NV_NVDLA_PDP_WDMA_cmd.v
 
+#include "NV_NVDLA_PDP_define.h"
+
+
 `include "simulate_x_tick.vh"
 module NV_NVDLA_PDP_WDMA_cmd (
    nvdla_core_clk                 //|< i
@@ -22,7 +25,7 @@ module NV_NVDLA_PDP_WDMA_cmd (
   ,reg2dp_dst_base_addr_low       //|< i
   ,reg2dp_dst_line_stride         //|< i
   ,reg2dp_dst_surface_stride      //|< i
-  ,reg2dp_input_data              //|< i
+//  ,reg2dp_input_data              //|< i
   ,reg2dp_partial_width_out_first //|< i
   ,reg2dp_partial_width_out_last  //|< i
   ,reg2dp_partial_width_out_mid   //|< i
@@ -30,15 +33,16 @@ module NV_NVDLA_PDP_WDMA_cmd (
   ,cmd_fifo_rd_pd                 //|> o
   ,cmd_fifo_rd_pvld               //|> o
   );
+////////////////////////////////////////////////////////////////////////
 //&Catenate "NV_NVDLA_PDP_wdma_ports.v";
 input  [12:0] reg2dp_cube_out_channel;
 input  [12:0] reg2dp_cube_out_height;
 input  [12:0] reg2dp_cube_out_width;
 input  [31:0] reg2dp_dst_base_addr_high;
-input  [26:0] reg2dp_dst_base_addr_low;
-input  [26:0] reg2dp_dst_line_stride;
-input  [26:0] reg2dp_dst_surface_stride;
-input   [1:0] reg2dp_input_data;
+input  [31:0] reg2dp_dst_base_addr_low;
+input  [31:0] reg2dp_dst_line_stride;
+input  [31:0] reg2dp_dst_surface_stride;
+//input   [1:0] reg2dp_input_data;
 input   [9:0] reg2dp_partial_width_out_first;
 input   [9:0] reg2dp_partial_width_out_last;
 input   [9:0] reg2dp_partial_width_out_mid;
@@ -50,26 +54,26 @@ input         nvdla_core_clk;
 input         nvdla_core_rstn;
 input  [31:0] pwrbus_ram_pd;
 input op_load;
+////////////////////////////////////////////////////////////////////////
 reg    [63:0] base_addr_line;
 reg    [63:0] base_addr_split;
 reg    [63:0] base_addr_surf;
-reg           cfg_do_int16;
-reg           cfg_do_int8;
+//reg           cfg_do_int16;
+//reg           cfg_do_int8;
 reg    [12:0] count_h;
-reg     [9:0] count_surf;
 reg     [7:0] count_wg;
 reg           mon_base_addr_line_c;
 reg           mon_base_addr_split_c;
 reg           mon_base_addr_surf_c;
 reg           op_prcess;
-reg    [14:0] size_of_byte_in_c;
+//reg    [14:0] size_of_byte_in_c;
 wire   [63:0] cfg_base_addr;
 wire          cfg_mode_split;
 wire          cmd_fifo_wr_accpet;
 wire   [79:0] cmd_fifo_wr_pd;
 wire          cmd_fifo_wr_prdy;
 wire          cmd_fifo_wr_pvld;
-wire   [13:0] cube_out_channel_use;
+//wire   [13:0] cube_out_channel_use;
 wire          is_cube_end;
 wire          is_first_wg;
 wire          is_fspt;
@@ -81,34 +85,23 @@ wire          is_lspt;
 wire          is_mspt;
 wire          is_split_end;
 wire          is_surf_end;
-wire          mon_size_of_surf;
+//wire          mon_size_of_surf;
 wire          op_done;
-wire    [1:0] size_of_b;
-wire    [9:0] size_of_surf;
-wire   [10:0] size_of_surf_use;
+//wire    [1:0] size_of_b;
+//: my $atomicm = NVDLA_MEMORY_ATOMIC_SIZE;
+//: my $k = int( log($atomicm)/log(2) );
+//: print "reg     [12-${k}:0] count_surf;  \n";
+
+//wire    [9:0] size_of_surf;
+//wire   [10:0] size_of_surf_use;
 wire   [12:0] size_of_width;
 wire    [9:0] split_size_of_width;
 wire   [18:0] splitw_stride;
 wire   [63:0] spt_cmd_addr;
 wire          spt_cmd_cube_end;
-wire    [1:0] spt_cmd_lenb;
+//wire    [1:0] spt_cmd_lenb;
 wire   [12:0] spt_cmd_size;
-// synoff nets
-
-// monitor nets
-
-// debug nets
-
-// tie high nets
-
-// tie low nets
-
-// no connect nets
-
-// not all bits used nets
-
-// todo nets
-
+////////////////////////////////////////////////////////////////////////
     
 assign op_done = op_prcess & cmd_fifo_wr_prdy & is_cube_end;
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
@@ -130,22 +123,22 @@ assign cmd_fifo_wr_accpet = cmd_fifo_wr_pvld & cmd_fifo_wr_prdy;
 
 assign cfg_mode_split = (reg2dp_split_num!=0);
 
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-  if (!nvdla_core_rstn) begin
-    cfg_do_int8 <= 1'b0;
-  end else begin
-  cfg_do_int8 <= reg2dp_input_data== 0;
-  end
-end
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-  if (!nvdla_core_rstn) begin
-    cfg_do_int16 <= 1'b0;
-  end else begin
-  cfg_do_int16 <= reg2dp_input_data== 2'h1;
-  end
-end
+//always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
+//  if (!nvdla_core_rstn) begin
+//    cfg_do_int8 <= 1'b0;
+//  end else begin
+//  cfg_do_int8 <= reg2dp_input_data== 0;
+//  end
+//end
+//always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
+//  if (!nvdla_core_rstn) begin
+//    cfg_do_int16 <= 1'b0;
+//  end else begin
+//  cfg_do_int16 <= reg2dp_input_data== 2'h1;
+//  end
+//end
  
-assign cfg_base_addr = {reg2dp_dst_base_addr_high,reg2dp_dst_base_addr_low,5'd0};
+assign cfg_base_addr = {reg2dp_dst_base_addr_high,reg2dp_dst_base_addr_low};
 
 //==============
 // CUBE DRAW
@@ -156,16 +149,15 @@ assign is_split_end = is_surf_end & is_last_surf;
 assign is_cube_end  = is_split_end & is_last_wg;
 
 // WIDTH COUNT: in width direction, indidate one block 
-//assign split_size_of_width = is_fspt ? reg2dp_partial_width_in_first :
-//                             is_lspt ? reg2dp_partial_width_in_last :
-//                             is_mspt ? reg2dp_partial_width_in_mid :  {10{`x_or_0}};
 assign split_size_of_width = is_fspt ? reg2dp_partial_width_out_first :
                              is_lspt ? reg2dp_partial_width_out_last :
                              is_mspt ? reg2dp_partial_width_out_mid :  {10{`x_or_0}};
 
 assign size_of_width = cfg_mode_split ? {3'd0,split_size_of_width} : reg2dp_cube_out_width;
 
-assign splitw_stride = (size_of_width+1)<<5;
+//assign splitw_stride = (size_of_width+1)<<5;
+//: my $atmm_bw = int( log(NVDLA_MEMORY_ATOMIC_SIZE)/log(2) );
+//: print "assign splitw_stride = (size_of_width+1)<<${atmm_bw};  ";
 
 // WG: WidthGroup, including one FSPT, one LSPT, and many MSPT
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
@@ -194,34 +186,21 @@ assign is_mspt = cfg_mode_split & !is_fspt & !is_lspt;
 // count_surf: when one surf with 4c is done, will go to next surf
 //==============
 
-assign cube_out_channel_use[13:0] = reg2dp_cube_out_channel[12:0] + 1'b1;
-always @(
-  cfg_do_int8
-  or cube_out_channel_use
-  or cfg_do_int16
-  ) begin
-    if (cfg_do_int8) begin
-        size_of_byte_in_c = {1'b0,cube_out_channel_use};
-    end else if (cfg_do_int16) begin
-        size_of_byte_in_c = {cube_out_channel_use,1'b0};
-    end else begin
-        size_of_byte_in_c = {cube_out_channel_use,1'b0};
-    end
-end
-//&Always;
-//    if (cfg_do_int8) begin
-//        size_of_byte_in_c = {1'b0,reg2dp_cube_out_channel[::range(13)]};
-//    end else if (cfg_do_int16) begin
-//        size_of_byte_in_c = {reg2dp_cube_out_channel[::range(13)],1'b0};
-//    end else begin
-//        size_of_byte_in_c = {reg2dp_cube_out_channel[::range(13)],1'b0};
-//    end
-//&End;
-//assign size_of_surf = size_of_byte_in_c[::range(14-5,5)]; // include the last unaligned channels
-//assign size_of_b = is_last_surf ? size_of_byte_in_c[::range(2,3)] : 2'd3;
-assign size_of_surf_use[10:0] = size_of_byte_in_c[14:5] + (|size_of_byte_in_c[4:0]); // include the last unaligned channels
-assign {mon_size_of_surf,size_of_surf[9:0]} = size_of_surf_use - 1'b1;
-assign size_of_b = 2'd3;
+// assign cube_out_channel_use[13:0] = reg2dp_cube_out_channel[12:0] + 1'b1;
+// always @(*) begin
+//     if (cfg_do_int8) begin
+//         size_of_byte_in_c = {1'b0,cube_out_channel_use};
+//     end else if (cfg_do_int16) begin
+//         size_of_byte_in_c = {cube_out_channel_use,1'b0};
+//     end else begin
+//         size_of_byte_in_c = {cube_out_channel_use,1'b0};
+//     end
+// end
+// assign size_of_surf_use[10:0] = size_of_byte_in_c[14:5] + (|size_of_byte_in_c[4:0]); // include the last unaligned channels
+// assign {mon_size_of_surf,size_of_surf[9:0]} = size_of_surf_use - 1'b1;
+
+
+// assign size_of_b = 2'd3;
 
 //==============
 // COUNT SURF
@@ -239,7 +218,11 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     end
   end
 end
-assign is_last_surf = (count_surf==size_of_surf);
+//: my $atomicm = NVDLA_MEMORY_ATOMIC_SIZE;
+//: my $k = int( log($atomicm)/log(2) );
+//:     print qq(
+//:         assign is_last_surf = (count_surf== reg2dp_cube_out_channel[12:${k}]);
+//:     );
 
 // per Surf
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
@@ -272,9 +255,9 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
         if (is_split_end) begin
             {mon_base_addr_line_c,base_addr_line} <= base_addr_split + splitw_stride;
         end else if (is_surf_end) begin
-            {mon_base_addr_line_c,base_addr_line} <= base_addr_surf + {reg2dp_dst_surface_stride,5'd0};
+            {mon_base_addr_line_c,base_addr_line} <= base_addr_surf + reg2dp_dst_surface_stride;
         end else if (is_line_end) begin
-            {mon_base_addr_line_c,base_addr_line} <= base_addr_line + {reg2dp_dst_line_stride,5'd0};
+            {mon_base_addr_line_c,base_addr_line} <= base_addr_line + reg2dp_dst_line_stride;
         end
     end
   end
@@ -337,7 +320,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
         if (is_split_end) begin
             {mon_base_addr_surf_c,base_addr_surf} <= base_addr_split + splitw_stride;
         end else if (is_surf_end) begin
-            {mon_base_addr_surf_c,base_addr_surf} <= base_addr_surf + {reg2dp_dst_surface_stride,5'd0};
+            {mon_base_addr_surf_c,base_addr_surf} <= base_addr_surf + reg2dp_dst_surface_stride;
         end
     end
   end
@@ -468,13 +451,13 @@ NV_NVDLA_PDP_WDMA_CMD_fifo u_fifo (
 //==============
 assign spt_cmd_addr = base_addr_line;
 assign spt_cmd_size = size_of_width;
-assign spt_cmd_lenb = size_of_b;
+//assign spt_cmd_lenb = size_of_b;
 assign spt_cmd_cube_end = is_cube_end;
 
 // PKT_PACK_WIRE( pdp_wdma_cmd , spt_cmd_ , cmd_fifo_wr_pd )
 assign      cmd_fifo_wr_pd[63:0] =    spt_cmd_addr[63:0];
 assign      cmd_fifo_wr_pd[76:64] =    spt_cmd_size[12:0];
-assign      cmd_fifo_wr_pd[78:77] =    spt_cmd_lenb[1:0];
+assign      cmd_fifo_wr_pd[78:77] =    0;//spt_cmd_lenb[1:0];
 assign      cmd_fifo_wr_pd[79] =    spt_cmd_cube_end ;
 
 endmodule // NV_NVDLA_PDP_WDMA_cmd
@@ -1154,6 +1137,7 @@ input  we;
 input  [0:0] ra;
 output [79:0] dout;
 
+`ifndef FPGA
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_0 (.A(pwrbus_ram_pd[0]));
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_1 (.A(pwrbus_ram_pd[1]));
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_2 (.A(pwrbus_ram_pd[2]));
@@ -1186,6 +1170,7 @@ NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_28 (.A(pwrbus_ram_pd[28]));
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_29 (.A(pwrbus_ram_pd[29]));
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_30 (.A(pwrbus_ram_pd[30]));
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_31 (.A(pwrbus_ram_pd[31]));
+`endif
 
 reg [79:0] di_d;  // -wr_reg
 

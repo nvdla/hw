@@ -55,8 +55,10 @@ wire wr_clk_dft_mgated;
 
 NV_CLK_gate_power wr_clk_wr_dft_mgate( .clk(wr_clk), .reset_(wr_reset_), .clk_en(dft_qualifier_wr_enable), .clk_gated(wr_clk_dft_mgated) );
 
+`ifndef FPGA
 // Add a dummy sink to prevent issue related to no fanout on this clock gate
 NV_BLKBOX_SINK UJ_BLKBOX_UNUSED_FIFOGEN_dft_wr_clkgate_sink (.A( wr_clk_dft_mgated ) );
+`endif
 
 // Read side
 wire dft_qualifier_rd_enable;
@@ -66,8 +68,10 @@ wire rd_clk_dft_mgated;
 
 NV_CLK_gate_power rd_clk_rd_dft_mgate( .clk(rd_clk), .reset_(rd_reset_), .clk_en(dft_qualifier_rd_enable), .clk_gated(rd_clk_dft_mgated) );
 
+`ifndef FPGA
 // Add a dummy sink to prevent issue related to no fanout on this clock gate
 NV_BLKBOX_SINK UJ_BLKBOX_UNUSED_FIFOGEN_dft_rd_clkgate_sink (.A( rd_clk_dft_mgated ) );
+`endif
 
 // Master Clock Gating (SLCG)
 //
@@ -970,6 +974,7 @@ input  [1:0] wa;
 input  [1:0] ra;
 output [49:0] dout;
 
+`ifndef FPGA
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_0 (.A(pwrbus_ram_pd[0]));
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_1 (.A(pwrbus_ram_pd[1]));
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_2 (.A(pwrbus_ram_pd[2]));
@@ -1002,6 +1007,7 @@ NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_28 (.A(pwrbus_ram_pd[28]));
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_29 (.A(pwrbus_ram_pd[29]));
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_30 (.A(pwrbus_ram_pd[30]));
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_31 (.A(pwrbus_ram_pd[31]));
+`endif
 
 reg [49:0] di_d;  // -wr_reg
 

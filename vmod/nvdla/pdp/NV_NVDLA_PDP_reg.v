@@ -96,10 +96,10 @@ output [12:0] reg2dp_cube_out_width;
 output [31:0] reg2dp_cya;
 output        reg2dp_dma_en;
 output [31:0] reg2dp_dst_base_addr_high;
-output [26:0] reg2dp_dst_base_addr_low;
-output [26:0] reg2dp_dst_line_stride;
+output [31:0] reg2dp_dst_base_addr_low;
+output [31:0] reg2dp_dst_line_stride;
 output        reg2dp_dst_ram_type;
-output [26:0] reg2dp_dst_surface_stride;
+output [31:0] reg2dp_dst_surface_stride;
 output        reg2dp_flying_mode;
 output  [1:0] reg2dp_input_data;
 output        reg2dp_interrupt_ptr;
@@ -131,9 +131,9 @@ output [16:0] reg2dp_recip_kernel_height;
 output [16:0] reg2dp_recip_kernel_width;
 output  [7:0] reg2dp_split_num;
 output [31:0] reg2dp_src_base_addr_high;
-output [26:0] reg2dp_src_base_addr_low;
-output [26:0] reg2dp_src_line_stride;
-output [26:0] reg2dp_src_surface_stride;
+output [31:0] reg2dp_src_base_addr_low;
+output [31:0] reg2dp_src_line_stride;
+output [31:0] reg2dp_src_surface_stride;
 output  [2:0] slcg_op_en;
 wire          csb_rresp_error;
 wire   [33:0] csb_rresp_pd_w;
@@ -159,10 +159,10 @@ wire   [12:0] reg2dp_d0_cube_out_width;
 wire   [31:0] reg2dp_d0_cya;
 wire          reg2dp_d0_dma_en;
 wire   [31:0] reg2dp_d0_dst_base_addr_high;
-wire   [26:0] reg2dp_d0_dst_base_addr_low;
-wire   [26:0] reg2dp_d0_dst_line_stride;
+wire   [31:0] reg2dp_d0_dst_base_addr_low;
+wire   [31:0] reg2dp_d0_dst_line_stride;
 wire          reg2dp_d0_dst_ram_type;
-wire   [26:0] reg2dp_d0_dst_surface_stride;
+wire   [31:0] reg2dp_d0_dst_surface_stride;
 wire          reg2dp_d0_flying_mode;
 wire    [1:0] reg2dp_d0_input_data;
 wire    [3:0] reg2dp_d0_kernel_height;
@@ -193,9 +193,9 @@ wire   [16:0] reg2dp_d0_recip_kernel_height;
 wire   [16:0] reg2dp_d0_recip_kernel_width;
 wire    [7:0] reg2dp_d0_split_num;
 wire   [31:0] reg2dp_d0_src_base_addr_high;
-wire   [26:0] reg2dp_d0_src_base_addr_low;
-wire   [26:0] reg2dp_d0_src_line_stride;
-wire   [26:0] reg2dp_d0_src_surface_stride;
+wire   [31:0] reg2dp_d0_src_base_addr_low;
+wire   [31:0] reg2dp_d0_src_line_stride;
+wire   [31:0] reg2dp_d0_src_surface_stride;
 wire   [12:0] reg2dp_d1_cube_in_channel;
 wire   [12:0] reg2dp_d1_cube_in_height;
 wire   [12:0] reg2dp_d1_cube_in_width;
@@ -205,10 +205,10 @@ wire   [12:0] reg2dp_d1_cube_out_width;
 wire   [31:0] reg2dp_d1_cya;
 wire          reg2dp_d1_dma_en;
 wire   [31:0] reg2dp_d1_dst_base_addr_high;
-wire   [26:0] reg2dp_d1_dst_base_addr_low;
-wire   [26:0] reg2dp_d1_dst_line_stride;
+wire   [31:0] reg2dp_d1_dst_base_addr_low;
+wire   [31:0] reg2dp_d1_dst_line_stride;
 wire          reg2dp_d1_dst_ram_type;
-wire   [26:0] reg2dp_d1_dst_surface_stride;
+wire   [31:0] reg2dp_d1_dst_surface_stride;
 wire          reg2dp_d1_flying_mode;
 wire    [1:0] reg2dp_d1_input_data;
 wire    [3:0] reg2dp_d1_kernel_height;
@@ -239,9 +239,9 @@ wire   [16:0] reg2dp_d1_recip_kernel_height;
 wire   [16:0] reg2dp_d1_recip_kernel_width;
 wire    [7:0] reg2dp_d1_split_num;
 wire   [31:0] reg2dp_d1_src_base_addr_high;
-wire   [26:0] reg2dp_d1_src_base_addr_low;
-wire   [26:0] reg2dp_d1_src_line_stride;
-wire   [26:0] reg2dp_d1_src_surface_stride;
+wire   [31:0] reg2dp_d1_src_base_addr_low;
+wire   [31:0] reg2dp_d1_src_line_stride;
+wire   [31:0] reg2dp_d1_src_surface_stride;
 wire    [2:0] reg2dp_op_en_reg_w;
 wire          reg2dp_producer;
 wire   [23:0] reg_offset;
@@ -300,10 +300,10 @@ reg           reg2dp_d1_op_en;
 reg           reg2dp_d1_op_en_w;
 reg           reg2dp_dma_en;
 reg    [31:0] reg2dp_dst_base_addr_high;
-reg    [26:0] reg2dp_dst_base_addr_low;
-reg    [26:0] reg2dp_dst_line_stride;
+reg    [31:0] reg2dp_dst_base_addr_low;
+reg    [31:0] reg2dp_dst_line_stride;
 reg           reg2dp_dst_ram_type;
-reg    [26:0] reg2dp_dst_surface_stride;
+reg    [31:0] reg2dp_dst_surface_stride;
 reg           reg2dp_flying_mode;
 reg     [1:0] reg2dp_input_data;
 reg     [3:0] reg2dp_kernel_height;
@@ -335,9 +335,9 @@ reg    [16:0] reg2dp_recip_kernel_height;
 reg    [16:0] reg2dp_recip_kernel_width;
 reg     [7:0] reg2dp_split_num;
 reg    [31:0] reg2dp_src_base_addr_high;
-reg    [26:0] reg2dp_src_base_addr_low;
-reg    [26:0] reg2dp_src_line_stride;
-reg    [26:0] reg2dp_src_surface_stride;
+reg    [31:0] reg2dp_src_base_addr_low;
+reg    [31:0] reg2dp_src_line_stride;
+reg    [31:0] reg2dp_src_surface_stride;
 reg    [62:0] req_pd;
 reg           req_pvld;
 reg     [2:0] slcg_op_en_d1;
@@ -377,10 +377,10 @@ NV_NVDLA_PDP_REG_dual u_dual_reg_d0 (
   ,.cube_out_width          (reg2dp_d0_cube_out_width[12:0])         //|> w
   ,.input_data              (reg2dp_d0_input_data[1:0])              //|> w
   ,.dst_base_addr_high      (reg2dp_d0_dst_base_addr_high[31:0])     //|> w
-  ,.dst_base_addr_low       (reg2dp_d0_dst_base_addr_low[26:0])      //|> w
-  ,.dst_line_stride         (reg2dp_d0_dst_line_stride[26:0])        //|> w
+  ,.dst_base_addr_low       (reg2dp_d0_dst_base_addr_low[31:0])      //|> w
+  ,.dst_line_stride         (reg2dp_d0_dst_line_stride[31:0])        //|> w
   ,.dst_ram_type            (reg2dp_d0_dst_ram_type)                 //|> w
-  ,.dst_surface_stride      (reg2dp_d0_dst_surface_stride[26:0])     //|> w
+  ,.dst_surface_stride      (reg2dp_d0_dst_surface_stride[31:0])     //|> w
   ,.nan_to_zero             (reg2dp_d0_nan_to_zero)                  //|> w
   ,.flying_mode             (reg2dp_d0_flying_mode)                  //|> w
   ,.pooling_method          (reg2dp_d0_pooling_method[1:0])          //|> w
@@ -411,9 +411,9 @@ NV_NVDLA_PDP_REG_dual u_dual_reg_d0 (
   ,.recip_kernel_height     (reg2dp_d0_recip_kernel_height[16:0])    //|> w
   ,.recip_kernel_width      (reg2dp_d0_recip_kernel_width[16:0])     //|> w
   ,.src_base_addr_high      (reg2dp_d0_src_base_addr_high[31:0])     //|> w
-  ,.src_base_addr_low       (reg2dp_d0_src_base_addr_low[26:0])      //|> w
-  ,.src_line_stride         (reg2dp_d0_src_line_stride[26:0])        //|> w
-  ,.src_surface_stride      (reg2dp_d0_src_surface_stride[26:0])     //|> w
+  ,.src_base_addr_low       (reg2dp_d0_src_base_addr_low[31:0])      //|> w
+  ,.src_line_stride         (reg2dp_d0_src_line_stride[31:0])        //|> w
+  ,.src_surface_stride      (reg2dp_d0_src_surface_stride[31:0])     //|> w
   ,.inf_input_num           (dp2reg_d0_inf_input_num[31:0])          //|< r
   ,.nan_input_num           (dp2reg_d0_nan_input_num[31:0])          //|< r
   ,.nan_output_num          (dp2reg_d0_nan_output_num[31:0])         //|< r
@@ -437,10 +437,10 @@ NV_NVDLA_PDP_REG_dual u_dual_reg_d1 (
   ,.cube_out_width          (reg2dp_d1_cube_out_width[12:0])         //|> w
   ,.input_data              (reg2dp_d1_input_data[1:0])              //|> w
   ,.dst_base_addr_high      (reg2dp_d1_dst_base_addr_high[31:0])     //|> w
-  ,.dst_base_addr_low       (reg2dp_d1_dst_base_addr_low[26:0])      //|> w
-  ,.dst_line_stride         (reg2dp_d1_dst_line_stride[26:0])        //|> w
+  ,.dst_base_addr_low       (reg2dp_d1_dst_base_addr_low[31:0])      //|> w
+  ,.dst_line_stride         (reg2dp_d1_dst_line_stride[31:0])        //|> w
   ,.dst_ram_type            (reg2dp_d1_dst_ram_type)                 //|> w
-  ,.dst_surface_stride      (reg2dp_d1_dst_surface_stride[26:0])     //|> w
+  ,.dst_surface_stride      (reg2dp_d1_dst_surface_stride[31:0])     //|> w
   ,.nan_to_zero             (reg2dp_d1_nan_to_zero)                  //|> w
   ,.flying_mode             (reg2dp_d1_flying_mode)                  //|> w
   ,.pooling_method          (reg2dp_d1_pooling_method[1:0])          //|> w
@@ -471,9 +471,9 @@ NV_NVDLA_PDP_REG_dual u_dual_reg_d1 (
   ,.recip_kernel_height     (reg2dp_d1_recip_kernel_height[16:0])    //|> w
   ,.recip_kernel_width      (reg2dp_d1_recip_kernel_width[16:0])     //|> w
   ,.src_base_addr_high      (reg2dp_d1_src_base_addr_high[31:0])     //|> w
-  ,.src_base_addr_low       (reg2dp_d1_src_base_addr_low[26:0])      //|> w
-  ,.src_line_stride         (reg2dp_d1_src_line_stride[26:0])        //|> w
-  ,.src_surface_stride      (reg2dp_d1_src_surface_stride[26:0])     //|> w
+  ,.src_base_addr_low       (reg2dp_d1_src_base_addr_low[31:0])      //|> w
+  ,.src_line_stride         (reg2dp_d1_src_line_stride[31:0])        //|> w
+  ,.src_surface_stride      (reg2dp_d1_src_surface_stride[31:0])     //|> w
   ,.inf_input_num           (dp2reg_d1_inf_input_num[31:0])          //|< r
   ,.nan_input_num           (dp2reg_d1_nan_input_num[31:0])          //|< r
   ,.nan_output_num          (dp2reg_d1_nan_output_num[31:0])         //|< r

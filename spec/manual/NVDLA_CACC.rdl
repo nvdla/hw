@@ -1,0 +1,336 @@
+property spec_sw_default {
+    type      = number;
+    component = field;
+};
+property spec_access {
+    type      = string;
+    component = field;
+};
+property sw_default_mask {
+    type      = number;
+    component = field;
+};
+property reset_mask {
+    type      = number;
+    component = field;
+};
+regfile regs_NVDLA_CACC{
+    default regwidth=32;
+    reg {
+        name = "S_STATUS";
+        desc = "
+////Convolution Accumulator Registers
+";
+        enum S_STATUS_STATUS_0_enum {
+            IDLE = 2'd0;
+            RUNNING = 2'd1;
+            PENDING = 2'd2;
+        };
+        field {
+            encode          = S_STATUS_STATUS_0_enum;
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x0;
+            reset_mask      = 0x3;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } STATUS_0[1:0];
+        STATUS_0->desc="
+//// Status of configuration register group 0
+";
+        enum S_STATUS_STATUS_1_enum {
+            IDLE = 2'd0;
+            RUNNING = 2'd1;
+            PENDING = 2'd2;
+        };
+        field {
+            encode          = S_STATUS_STATUS_1_enum;
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x0;
+            reset_mask      = 0x3;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } STATUS_1[17:16];
+        STATUS_1->desc="
+//// Status of configuration register group 1
+";
+    }S_STATUS @0x0;
+    reg {
+        name = "S_POINTER";
+        enum S_POINTER_PRODUCER_enum {
+            GROUP_0 = 1'd0;
+            GROUP_1 = 1'd1;
+        };
+        field {
+            encode          = S_POINTER_PRODUCER_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } PRODUCER[0:0];
+        PRODUCER->desc="
+////Pointer for CSB master to access groups
+";
+        enum S_POINTER_CONSUMER_enum {
+            GROUP_0 = 1'd0;
+            GROUP_1 = 1'd1;
+        };
+        field {
+            encode          = S_POINTER_CONSUMER_enum;
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CONSUMER[16:16];
+        CONSUMER->desc="
+////Pointer for datapath to access groups
+";
+    }S_POINTER @0x4;
+    reg {
+        name = "D_OP_ENABLE";
+        desc = "
+//////////////////////////////////////////////////////////////////////////////////
+////                                                                            //
+////                    Define single group registers here                      //
+////                    Register name should shart with prefix D_               //
+////                                                                            //
+//////////////////////////////////////////////////////////////////////////////////
+";
+        enum D_OP_ENABLE_OP_EN_enum {
+            DISABLE = 1'd0;
+            ENABLE = 1'd1;
+        };
+        field {
+            encode          = D_OP_ENABLE_OP_EN_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rwto;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } OP_EN[0:0];
+    }D_OP_ENABLE @0x8;
+    reg {
+        name = "D_MISC_CFG";
+        enum D_MISC_CFG_CONV_MODE_enum {
+            DIRECT = 1'd0;
+            WINOGRAD = 1'd1;
+        };
+        field {
+            encode          = D_MISC_CFG_CONV_MODE_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CONV_MODE[0:0];
+        enum D_MISC_CFG_PROC_PRECISION_enum {
+            INT8 = 2'd0;
+            INT16 = 2'd1;
+            FP16 = 2'd2;
+        };
+        field {
+            encode          = D_MISC_CFG_PROC_PRECISION_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x1;
+            reset_mask      = 0x3;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } PROC_PRECISION[13:12];
+    }D_MISC_CFG @0xc;
+    reg {
+        name = "D_DATAOUT_SIZE_0";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1fff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } DATAOUT_WIDTH[12:0];
+        DATAOUT_WIDTH->desc="
+////Output data cube width - 1
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1fff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } DATAOUT_HEIGHT[28:16];
+        DATAOUT_HEIGHT->desc="
+////Output data cube height - 1
+";
+    }D_DATAOUT_SIZE_0 @0x10;
+    reg {
+        name = "D_DATAOUT_SIZE_1";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1fff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } DATAOUT_CHANNEL[12:0];
+        DATAOUT_CHANNEL->desc="
+////Output data cube channel - 1
+";
+    }D_DATAOUT_SIZE_1 @0x14;
+    reg {
+        name = "D_DATAOUT_ADDR";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } DATAOUT_ADDR[31:0];
+        DATAOUT_ADDR->desc="
+////Output data address
+";
+    }D_DATAOUT_ADDR @0x18;
+    reg {
+        name = "D_BATCH_NUMBER";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1f;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } BATCHES[4:0];
+        BATCHES->desc="
+////batch number - 1
+";
+    }D_BATCH_NUMBER @0x1c;
+    reg {
+        name = "D_LINE_STRIDE";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } LINE_STRIDE[23:0];
+        LINE_STRIDE->desc="
+////bytes
+";
+    }D_LINE_STRIDE @0x20;
+    reg {
+        name = "D_SURF_STRIDE";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } SURF_STRIDE[23:0];
+        SURF_STRIDE->desc="
+////bytes
+";
+    }D_SURF_STRIDE @0x24;
+    reg {
+        name = "D_DATAOUT_MAP";
+        enum D_DATAOUT_MAP_LINE_PACKED_enum {
+            FALSE = 1'd0;
+            TRUE = 1'd1;
+        };
+        field {
+            encode          = D_DATAOUT_MAP_LINE_PACKED_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } LINE_PACKED[0:0];
+        enum D_DATAOUT_MAP_SURF_PACKED_enum {
+            FALSE = 1'd0;
+            TRUE = 1'd1;
+        };
+        field {
+            encode          = D_DATAOUT_MAP_SURF_PACKED_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } SURF_PACKED[16:16];
+    }D_DATAOUT_MAP @0x28;
+    reg {
+        name = "D_CLIP_CFG";
+        desc = "
+////CLIP_TRUNCATE is unsigned value. Range: 0~16
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1f;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CLIP_TRUNCATE[4:0];
+        CLIP_TRUNCATE->desc="
+////number of bits to be truncated
+";
+    }D_CLIP_CFG @0x2c;
+    reg {
+        name = "D_OUT_SATURATION";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } SAT_COUNT[31:0];
+    }D_OUT_SATURATION @0x30;
+    reg {
+        name = "D_CYA";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CYA[31:0];
+        CYA->desc="
+////CYA register
+";
+    }D_CYA @0x34;
+};
+addrmap  {
+    regs_NVDLA_CACC NVDLA_CACC @0x7000;
+}addrmap_NVDLA;

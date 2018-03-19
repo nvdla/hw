@@ -7,7 +7,7 @@
 ## ================================================================
 ##
 ## set the chip you want to build 
-PROJECTS := nv_full
+PROJECTS := nv_large nv_small
 
 #=================
 # ENV TOOL setup
@@ -21,3 +21,4 @@ JAVA := /usr/bin/java
 # used in ordt to generate reigster, need be newer than 1.7
 PERL := /usr/bin/perl
 
+PYTHON := /home/tools/continuum/Anaconda2-4.4.0/bin/python2.7

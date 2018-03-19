@@ -12,7 +12,9 @@
 module NV_NVDLA_BDMA_load (
    nvdla_core_clk            //|< i
   ,nvdla_core_rstn           //|< i
+  #ifdef NVDLA_SECONDARY_MEMIF_ENABLE
   ,bdma2cvif_rd_req_ready    //|< i
+  #endif
   ,bdma2mcif_rd_req_ready    //|< i
   ,csb2ld_vld                //|< i
   ,ld2st_wr_idle             //|< i
@@ -33,8 +35,10 @@ module NV_NVDLA_BDMA_load (
   ,reg2dp_src_surf_stride    //|< i
   ,reg2dp_surf_repeat_number //|< i
   ,st2ld_load_idle           //|< i
+  #ifdef NVDLA_SECONDARY_MEMIF_ENABLE
   ,bdma2cvif_rd_req_pd       //|> o
   ,bdma2cvif_rd_req_valid    //|> o
+  #endif
   ,bdma2mcif_rd_req_pd       //|> o
   ,bdma2mcif_rd_req_valid    //|> o
   ,csb2ld_rdy                //|> o
@@ -55,9 +59,11 @@ output        bdma2mcif_rd_req_valid;  /* data valid */
 input         bdma2mcif_rd_req_ready;  /* data return handshake */
 output [78:0] bdma2mcif_rd_req_pd;
 
+#ifdef NVDLA_SECONDARY_MEMIF_ENABLE
 output        bdma2cvif_rd_req_valid;  /* data valid */
 input         bdma2cvif_rd_req_ready;  /* data return handshake */
 output [78:0] bdma2cvif_rd_req_pd;
+#endif
 
 output         ld2st_wr_pvld;  /* data valid */
 input          ld2st_wr_prdy;  /* data return handshake */
@@ -521,9 +527,11 @@ assign bdma2mcif_rd_req_pd[78:0] = mc_int_rd_req_pd_d0[78:0];
 assign cv_int_rd_req_valid_d0 = cv_int_rd_req_valid;
 assign cv_int_rd_req_ready = cv_int_rd_req_ready_d0;
 assign cv_int_rd_req_pd_d0[78:0] = cv_int_rd_req_pd[78:0];
+#ifdef NVDLA_SECONDARY_MEMIF_ENABLE
 assign bdma2cvif_rd_req_valid = cv_int_rd_req_valid_d0;
 assign cv_int_rd_req_ready_d0 = bdma2cvif_rd_req_ready;
 assign bdma2cvif_rd_req_pd[78:0] = cv_int_rd_req_pd_d0[78:0];
+#endif
 
 
 //&Viva width_learning_off;

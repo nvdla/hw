@@ -1,0 +1,650 @@
+// ================================================================
+// NVDLA Open Source Project
+//
+// Copyright(c) 2016 - 2017 NVIDIA Corporation.  Licensed under the
+// NVDLA Open Hardware License; Check "LICENSE" which comes with
+// this distribution for more information.
+// ================================================================
+
+property spec_sw_default {
+    type      = number;
+    component = field;
+};
+property spec_access {
+    type      = string;
+    component = field;
+};
+property sw_default_mask {
+    type      = number;
+    component = field;
+};
+property reset_mask {
+    type      = number;
+    component = field;
+};
+regfile regs_NVDLA_GLB{
+    default regwidth=32;
+    reg {
+        name = "S_NVDLA_HW_VERSION";
+        desc = "
+//////////////////////////////////////////////////////////////////////////////////
+////                                                                            //
+////                    Define single group registers here                      //
+////                    Register name should shart with prefix S_               //
+////                                                                            //
+//////////////////////////////////////////////////////////////////////////////////
+";
+        field {
+            sw              = r;
+            hw              = r;
+            spec_access     = c;
+            reset           = 0x31;
+            reset_mask      = 0xff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } MAJOR[7:0];
+        MAJOR->desc="
+////value = 0x31, ASCII code of 1
+";
+        field {
+            sw              = r;
+            hw              = r;
+            spec_access     = c;
+            reset           = 0x3030;
+            reset_mask      = 0xffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } MINOR[23:8];
+        MINOR->desc="
+////value = 0x3030 code of 00
+";
+    }S_NVDLA_HW_VERSION @0x0;
+    reg {
+        name = "S_INTR_MASK";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } SDP_DONE_MASK0[0:0];
+        SDP_DONE_MASK0->desc="
+//// SDP layer done interrupt mask control
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } SDP_DONE_MASK1[1:1];
+        SDP_DONE_MASK1->desc="
+//// SDP layer done interrupt mask control
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CDP_DONE_MASK0[2:2];
+        CDP_DONE_MASK0->desc="
+//// CDP layer done interrupt mask control
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CDP_DONE_MASK1[3:3];
+        CDP_DONE_MASK1->desc="
+//// CDP layer done interrupt mask control
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } PDP_DONE_MASK0[4:4];
+        PDP_DONE_MASK0->desc="
+//// PDP layer done interrupt mask control
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } PDP_DONE_MASK1[5:5];
+        PDP_DONE_MASK1->desc="
+//// PDP layer done interrupt mask control
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } BDMA_DONE_MASK0[6:6];
+        BDMA_DONE_MASK0->desc="
+//// BDMA layer done interrupt mask control
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } BDMA_DONE_MASK1[7:7];
+        BDMA_DONE_MASK1->desc="
+//// BDMA layer done interrupt mask control
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } RUBIK_DONE_MASK0[8:8];
+        RUBIK_DONE_MASK0->desc="
+//// RUBIK layer done interrupt mask control
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } RUBIK_DONE_MASK1[9:9];
+        RUBIK_DONE_MASK1->desc="
+//// RUBIK layer done interrupt mask control
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CDMA_DAT_DONE_MASK0[16:16];
+        CDMA_DAT_DONE_MASK0->desc="
+//// CDMA data fetch done interrupt mask control
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CDMA_DAT_DONE_MASK1[17:17];
+        CDMA_DAT_DONE_MASK1->desc="
+//// CDMA data fetch done interrupt mask control
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CDMA_WT_DONE_MASK0[18:18];
+        CDMA_WT_DONE_MASK0->desc="
+//// CDMA weight fetch done interrupt mask control
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CDMA_WT_DONE_MASK1[19:19];
+        CDMA_WT_DONE_MASK1->desc="
+//// CDMA weight fetch done interrupt mask control
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CACC_DONE_MASK0[20:20];
+        CACC_DONE_MASK0->desc="
+//// CACC output done interrupt mask control
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CACC_DONE_MASK1[21:21];
+        CACC_DONE_MASK1->desc="
+//// CACC output done interrupt mask control
+";
+    }S_INTR_MASK @0x4;
+    reg {
+        name = "S_INTR_SET";
+        field {
+            sw              = w;
+            hw              = r;
+            spec_access     = wto;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } SDP_DONE_SET0[0:0];
+        SDP_DONE_SET0->desc="
+//// SDP layer done interrupt set manually 
+";
+        field {
+            sw              = w;
+            hw              = r;
+            spec_access     = wo;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } SDP_DONE_SET1[1:1];
+        SDP_DONE_SET1->desc="
+//// SDP layer done interrupt set manually 
+";
+        field {
+            sw              = w;
+            hw              = r;
+            spec_access     = wo;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CDP_DONE_SET0[2:2];
+        CDP_DONE_SET0->desc="
+//// CDP layer done interrupt set manually 
+";
+        field {
+            sw              = w;
+            hw              = r;
+            spec_access     = wo;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CDP_DONE_SET1[3:3];
+        CDP_DONE_SET1->desc="
+//// CDP layer done interrupt set manually 
+";
+        field {
+            sw              = w;
+            hw              = r;
+            spec_access     = wo;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } PDP_DONE_SET0[4:4];
+        PDP_DONE_SET0->desc="
+//// PDP layer done interrupt set manually 
+";
+        field {
+            sw              = w;
+            hw              = r;
+            spec_access     = wo;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } PDP_DONE_SET1[5:5];
+        PDP_DONE_SET1->desc="
+//// PDP layer done interrupt set manually 
+";
+        field {
+            sw              = w;
+            hw              = r;
+            spec_access     = wo;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } BDMA_DONE_SET0[6:6];
+        BDMA_DONE_SET0->desc="
+//// BDMA layer done interrupt set manually
+";
+        field {
+            sw              = w;
+            hw              = r;
+            spec_access     = wo;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } BDMA_DONE_SET1[7:7];
+        BDMA_DONE_SET1->desc="
+//// BDMA layer done interrupt set manually
+";
+        field {
+            sw              = w;
+            hw              = r;
+            spec_access     = wo;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } RUBIK_DONE_SET0[8:8];
+        RUBIK_DONE_SET0->desc="
+//// RUBIK layer done interrupt set manually
+";
+        field {
+            sw              = w;
+            hw              = r;
+            spec_access     = wo;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } RUBIK_DONE_SET1[9:9];
+        RUBIK_DONE_SET1->desc="
+//// RUBIK layer done interrupt set manually
+";
+        field {
+            sw              = w;
+            hw              = r;
+            spec_access     = wo;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CDMA_DAT_DONE_SET0[16:16];
+        CDMA_DAT_DONE_SET0->desc="
+//// CDMA data fetch done interrupt set manually
+";
+        field {
+            sw              = w;
+            hw              = r;
+            spec_access     = wo;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CDMA_DAT_DONE_SET1[17:17];
+        CDMA_DAT_DONE_SET1->desc="
+//// CDMA data fetch done interrupt set manually
+";
+        field {
+            sw              = w;
+            hw              = r;
+            spec_access     = wo;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CDMA_WT_DONE_SET0[18:18];
+        CDMA_WT_DONE_SET0->desc="
+//// CDMA weight fetch done interrupt set manually
+";
+        field {
+            sw              = w;
+            hw              = r;
+            spec_access     = wo;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CDMA_WT_DONE_SET1[19:19];
+        CDMA_WT_DONE_SET1->desc="
+//// CDMA weight fetch done interrupt set manually
+";
+        field {
+            sw              = w;
+            hw              = r;
+            spec_access     = wo;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CACC_DONE_SET0[20:20];
+        CACC_DONE_SET0->desc="
+//// CACC output done interrupt set manually
+";
+        field {
+            sw              = w;
+            hw              = r;
+            spec_access     = wo;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CACC_DONE_SET1[21:21];
+        CACC_DONE_SET1->desc="
+//// CACC output done interrupt set manually
+";
+    }S_INTR_SET @0x8;
+    reg {
+        name = "S_INTR_STATUS";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rwto;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } SDP_DONE_STATUS0[0:0];
+        SDP_DONE_STATUS0->desc="
+//// SDP layer done interrupt status 
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rwo;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } SDP_DONE_STATUS1[1:1];
+        SDP_DONE_STATUS1->desc="
+//// SDP layer done interrupt status 
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rwo;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CDP_DONE_STATUS0[2:2];
+        CDP_DONE_STATUS0->desc="
+//// CDP layer done interrupt status 
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rwo;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CDP_DONE_STATUS1[3:3];
+        CDP_DONE_STATUS1->desc="
+//// CDP layer done interrupt status 
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rwo;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } PDP_DONE_STATUS0[4:4];
+        PDP_DONE_STATUS0->desc="
+//// PDP layer done interrupt status 
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rwo;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } PDP_DONE_STATUS1[5:5];
+        PDP_DONE_STATUS1->desc="
+//// PDP layer done interrupt status 
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rwo;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } BDMA_DONE_STATUS0[6:6];
+        BDMA_DONE_STATUS0->desc="
+//// BDMA layer done interrupt status
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rwo;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } BDMA_DONE_STATUS1[7:7];
+        BDMA_DONE_STATUS1->desc="
+//// BDMA layer done interrupt status
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rwo;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } RUBIK_DONE_STATUS0[8:8];
+        RUBIK_DONE_STATUS0->desc="
+//// RUBIK layer done interrupt status
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rwo;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } RUBIK_DONE_STATUS1[9:9];
+        RUBIK_DONE_STATUS1->desc="
+//// RUBIK layer done interrupt status
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rwo;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CDMA_DAT_DONE_STATUS0[16:16];
+        CDMA_DAT_DONE_STATUS0->desc="
+//// CDMA data fetch done interrupt status
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rwo;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CDMA_DAT_DONE_STATUS1[17:17];
+        CDMA_DAT_DONE_STATUS1->desc="
+//// CDMA data fetch done interrupt status
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rwo;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CDMA_WT_DONE_STATUS0[18:18];
+        CDMA_WT_DONE_STATUS0->desc="
+//// CDMA weight fetch done interrupt status
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rwo;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CDMA_WT_DONE_STATUS1[19:19];
+        CDMA_WT_DONE_STATUS1->desc="
+//// CDMA weight fetch done interrupt status
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rwo;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CACC_DONE_STATUS0[20:20];
+        CACC_DONE_STATUS0->desc="
+//// CACC output done interrupt status
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rwo;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CACC_DONE_STATUS1[21:21];
+        CACC_DONE_STATUS1->desc="
+//// CACC output done interrupt status
+";
+    }S_INTR_STATUS @0xc;
+};
+addrmap  {
+    regs_NVDLA_GLB NVDLA_GLB @0x1000;
+}addrmap_NVDLA;

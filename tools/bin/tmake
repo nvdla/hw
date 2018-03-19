@@ -1,13 +1,15 @@
 #!/usr/bin/env perl
 
+use strict;
+use warnings;
 ##
 ## build tree
 ##
 use Getopt::Long;
 use Data::Dumper;
 use YAML qw(LoadFile);
-use IO::Tee;
 use Carp qw(croak);
+use Capture::Tiny qw(capture tee);
 
 my $MAKE = "make";
 
@@ -17,143 +19,257 @@ my $MAKE = "make";
 my @build;
 my $only;
 my $opt_m=""; # optins passed to make
-my $log = "build.log";
 my $outdir = "outdir";
 my $run = 1;
+my $parallel = 1;
 my $debug = 0;
-my $project;
-my $clobber;
+my $list = 0;
+my $verbose;
+my @projects;
+my $clobber = 0;
 GetOptions (
              "help|h" => sub {usage(); exit 0},
              "build|b=s" => \@build,
              "only=s" => \$only,
              "opt_m=s"   => \$opt_m,
-             "log=s"     => \$log,
-             "outdir=s"     => \$outdir,
-             "project=s" => \$project,
+             "outdir=s"  => \$outdir,
+             "projects=s" => \@projects,
              "run!"      => \$run,
              "debug"     => \$debug,
-             "clober|clean"      => \$clobber,
+             "list"     => \$list,
+             "parallel"     => \$parallel,
+             "verbose"     => \$verbose,
+             "clober|clean"  => \$clobber,
            ) or die "Unrecognized options @ARGV";
 
-push @build, "verif" unless @build;
+#=============================
+## Option 
+#=============================
+push @build, "all" unless @build;
+my $tree_make = "tree.make";
+@projects = get_projects($tree_make) unless @projects;
+
 #=============================
 ## Global Variables
 #=============================
 my $cfg = "tools/etc/build.config";
-my $outdir_log = "$outdir/$log";
-#
+
+my $cleanme = ".cleanme";
+my $cleaned = ".cleaned";
+
+#=============================
+## Clean Build
+#=============================
+my $diff = `diff $cleanme $cleaned 2>&1`;
+if ($diff and -e $tree_make) {
+    system ("rm outdir -rf");
+    system ("cp $cleanme $cleaned");
+    unlink $tree_make;
+    print "="x40,"\n";
+    print "[TMAKE]: Force clean your tree.$tree_make and $outdir are deleted, please use make to re-generate $tree_make first\n";
+    print "="x40,"\n";
+    exit 0;
+}
+ 
 #=============================
 ## MAIN
 #=============================
-build();
+my $tree = LoadFile($cfg);
+croak "$tree_make does not exist, please run make first" unless -e $tree_make;
+
+if ($list) {
+    print "Use -build <task> to specify the task you want to build\n";
+    print "Below are the valid task name:\n";
+    print "\n";
+    print join("\n",sort keys %$tree);
+    print "\n";
+    exit 0;
+}
+
+if ($clobber) {
+    print "[TMAKE]: option -clean is specified, $outdir is deleted before build\n";
+    system ("rm -rf $outdir");
+}
+
+unless (-e $outdir) {
+    print "[TMAKE]: $outdir does not exist, creating before build\n";
+    system ("mkdir -p $outdir");
+}
+
+
+foreach my $project (@projects) {
+    my $alog = "$outdir/$project".".log";
+    if ($parallel) {
+        my $pid = fork();
+        unless ($pid) {
+            open ALOG, ">", $alog;
+            build($project);
+            close ALOG;
+            exit 0;
+        }
+    } else {
+        open ALOG, ">", $alog;
+        build($project);
+        close ALOG;
+    }
+}
+if ($parallel) {
+    while (wait() != -1 ) {sleep 1;}
+}
+
+print "[TMAKE]: DONE\n";
+
+exit (0);
 
 #=============================
 ## SUB
 #=============================
 sub build {
-    my $outdir_log_tmp = "$outdir/$log".".tmp";
+    my $project = shift;
     
-    #system ("rm -rf $outdir_log");
-    unlink $outdir_log;
-    system ("mkdir -p $outdir");
-    system ("touch  $outdir_log");
-    
-    my @projects = $project ? ($project) : get_projects("tree.make");
-    foreach my $project (@projects) {
-        my $tree = LoadFile($cfg);
+    if ($only) {
+        run_cmd($tree,$only,$project);
+    } else {
         my $done;
-        #print Dumper($tree);
-        #
-        if ($only) {
-            croak "[ERROR]: build target $only does not exist in $cfg" unless $tree->{$only};
-                
-            foreach my $sandbox (@{$tree->{$only}{sandbox}}) {
-                system("$MAKE -C $sandbox PROJECT=$project $opt_m | tee $outdir_log_tmp")==0 or die "$sandbox build fail: $?" if $run;
-                system ("cat $outdir_log_tmp >> $outdir_log") if $run;
-            }
-            
-        } else {
-            while (%$tree) {
-                my @keys = keys %$tree;
-                
-                my $key="unknown";
-                foreach my $i (0..$#keys) {
-                    #print "key$i=$keys[$i]\n";
-                    if (grep {$keys[$i] =~ /^$_/} @build) {
-                        $key = $keys[$i];
-                        #print "find:key=$key\n";
-                        last;
-                    }
-                }
-                # all -build target is built;
-                print "key=$key\n" if $debug;
-                last if ($key eq "unknown");
-    
-                #print Dumper($tree);
-                
-                my $leaf = find_any_leaf($tree,$key,$done);
-            
-                print "leaf=$leaf\n" if $debug;
-            
-                foreach my $sandbox (@{$tree->{$leaf}{sandbox}}) {
-                    system("$MAKE -C $sandbox PROJECT=$project $opt_m | tee $outdir_log_tmp")==0 or die "$sandbox build fail: $?" if $run;
-                    system ("cat $outdir_log_tmp >> $outdir_log") if $run;
-                }
-                
-                $done->{$leaf} = 1;
-                delete $tree->{$leaf};
-            }
+        foreach my $key (@build) {
+            do_rec_build($tree,$key,$project,$done);
         }
     }
-    #system ("rm -rf $outdir_log_tmp");
-    unlink $outdir_log_tmp;
-    
-    print "logfile: $outdir_log\n";
-    my $tee = IO::Tee->new(\*STDOUT, $outdir_log);
-    print $tee "="x46,"\n";
-    print $tee "="x18,"BUILD PASS","="x18,"\n";
-    print $tee "="x46,"\n";
 }
 
-sub find_any_leaf {
+sub skip_build {
     my $tree = shift;
     my $key = shift;
+    my $project = shift;
+
+    if (exists $tree->{$key}{skip}) {
+        if (grep {$_ eq $project} @{$tree->{$key}{skip}}) {
+            print "$key is to skip on $project in tools/etc/build.config\n";
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+sub do_rec_build {
+    my $tree = shift;
+    my $key = shift;
+    my $project = shift;
     my $done = shift;
     
     croak "[ERROR]: dependency $key does not exist in $cfg" unless $tree->{$key};
 
-    my $leaf;
+    my $deps_skip = 0 ;
     if (exists $tree->{$key}{dependencies}) {
         #print "find_any_leaf:key=$key\n";
         foreach my $dep (@{$tree->{$key}{dependencies}}) {
             #print "find_any_leaf:dep=$dep\n";
             next if exists $done->{$dep};
-            return find_any_leaf($tree,$dep,$done);
+            my $dep_skip = do_rec_build($tree,$dep,$project,$done);
+            $deps_skip ||= $dep_skip;
         }
     }
-    return $key;
+
+    print "Skip building $key on $project\n" if $deps_skip;
+    
+    my $skip = $deps_skip || skip_build($tree,$key,$project);
+    unless ($skip) {
+        run_cmd($tree,$key,$project);
+        $done->{$key} = 1;
+    }
+
+    return $skip;
 }
 
 sub get_projects {
     my $file = shift;
 
     my @projects;
-    open my $fh,"<",$file or die;
+    open my $fh,"<",$file or die "Can not open $file: $!";
     while (my $line = <$fh>) {
         chomp $line;
         next unless $line =~ /^\s*PROJECTS/;
+        print "TREE.MAKE: $line\n" if $debug;
         my $str = $1 if $line =~ /=(.*)/;
         @projects = split(' ',$str);
     }
     close $fh;
 
-    #print Dumper(\@projects);
+    print Dumper(\@projects) if $debug;
     return @projects;
 }
 
-sub usage()
-{
-    print
-    	"Usage: tmake\n",
+sub run_cmd {
+    my $tree = shift;
+    my $only = shift;
+    my $project = shift;
+
+    croak "[ERROR]: build target $only does not exist in $cfg" unless $tree->{$only};
+
+    my $slog = "$outdir/$project".".${only}.log";
+    open my $SLOG, ">", $slog;
+
+    foreach my $sandbox (@{$tree->{$only}{sandbox}}) {
+        my $cmd = "cd $sandbox;";
+        if (exists $tree->{$only}{command}) {
+            $cmd .= $tree->{$only}{command};
+            $cmd =~ s/<project>/$project/;
+        } else {
+            $cmd .= "$MAKE PROJECT=$project $opt_m";
+        }
+
+        my $desc =  $tree->{$only}{desc} || "";
+        print "[TMAKE]: building $project in $sandbox $desc\n";
+        #print "[TMAKE]: command=$cmd\n";
+
+        print $SLOG "command: ", $cmd,"\n";
+        next unless $run;
+
+        my ($stdout, $stderr, $return);
+        if ($verbose) {
+            ($stdout, $stderr, $return) = tee { system($cmd); };
+        } else {
+            ($stdout, $stderr, $return) = capture { system($cmd); };
+        }
+
+        print $SLOG $stdout;
+        print $SLOG $stderr;
+        
+        print ALOG $stdout;
+        print ALOG $stderr;
+    
+        if ($return) { print $stderr; close ALOG; close $SLOG; die; }
+    }
+    close $SLOG;
 }
+
+sub usage {
+    print << "END"
+Usage: tmake [-help] -build [-project <project>] [-build|only <task name>]
+
+tmake is to call the make in each sandbox defined in tools/etc/build.config, each task has two properties defined, SANDBOX and DEPENDENCY.
+
+SANDBOX      : In which directory to run make, (multiple sandboxes are allowed for one task, but no order guarenteeded)
+DEPENDENCIES : The tasks required by the current task, will need be run before current task
+
+Required:
+  NONE
+
+Optional:
+  -help           : print this help statement
+
+  -project        : project name, by default, all projects defined in tree.make will be built in seriel, must have spec/defs/<project>.spec
+                    for exmaple: -project nv_large
+
+  -build          : build the specified task and all its dependencies, which is specified in tools/etc/build.config
+                    for exmaple: -build vmod_nvdla_top
+
+  -only           : build the specified task without its dependencies.
+                    for exmaple: -only vmod_nvdla_top
+
+  -verbose        : also print the log in screen 
+
+END
+}
+

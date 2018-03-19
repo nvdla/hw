@@ -1,0 +1,27 @@
+group Write 
+  field addr  12 
+  field data  32
+
+group Read 
+  field addr  12
+  field size  4
+
+group Flush 
+  field addr_start 1 
+  field addr_end   1
+
+interface command    
+  flow valid_ready
+  packet Write Read Flush
+
+interface request    
+  flow valid_ready
+  field addr   12    
+  field write   1 
+  field data   32
+
+interface request_2d    
+  flow valid_ready
+  field addr    12    
+  field write    1 
+  field data[2] 32

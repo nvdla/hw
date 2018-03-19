@@ -1,0 +1,135 @@
+#
+# //------------------------------------------------------------//
+# //   Copyright 2012 Synopsys, Inc                             //
+# //   All Rights Reserved Worldwid                             //
+# //                                                            //
+# //   Licensed under the Apache License, Version 2.0 (the      //
+# //   "License"); you may not use this file except in          //
+# //   compliance with the License.  You may obtain a copy of   //
+# //   the License at                                           //
+# //                                                            //
+# //       http://www.apache.org/licenses/LICENSE-2.0           //
+# //                                                            //
+# //   Unless required by applicable law or agreed to in        //
+# //   writing, software distributed under the License is       //
+# //   distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR   //
+# //   CONDITIONS OF ANY KIND, either express or implied.  See  //
+# //   the License for the specific language governing          //
+# //   permissions and limitations under the License.           //
+# //------------------------------------------------------------//
+
+UVMC_HOME ?= ../..
+
+help:
+	@echo " -----------------------------------------------------------------";
+	@echo "|                  UVMC EXAMPLES - CONNECTIONS                    |";
+	@echo " -----------------------------------------------------------------";
+	@echo "|                                                                 |";
+	@echo "| Usage:                                                          |";
+	@echo "|                                                                 |";
+	@echo "|   make [UVM_HOME=path] [UVMC_HOME=path] <example>               |";
+	@echo "|                                                                 |";
+	@echo "| where <example> is one or more of:                              |";
+	@echo "|                                                                 |";
+	@echo "|   sv2sc        : SV producer --> SC consumer                    |";
+	@echo "|                  Connection is made via UVMC                    |";
+	@echo "|                                                                 |";
+	@echo "|   sc2sv        : SC producer --> SV consumer                    |";
+	@echo "|                  Connection is made via UVMC                    |";
+	@echo "|                                                                 |";
+	@echo "|   sv2sc2sv     : SV producer --> SC consumer                    |";
+	@echo "|                  Producer and consumer send transactions to     |";
+	@echo "|                  scoreboard for comparison                      |";
+	@echo "|                  Connections are made via UVMC                  |";
+	@echo "|                                                                 |";
+	@echo "|   sc_wraps_sv  : SC producer --> SC consumer                    |";
+	@echo "|                  Defines SC wrapper around SV model, uses       |";
+	@echo "|                  UVMC connections inside the the wrapper to     |";
+	@echo "|                  integrate the SV component. The wrapper        |";
+	@echo "|                  appears as a native SC component.              |";
+	@echo "|                  Consider integration of RTL models in SC.      |";
+	@echo "|                                                                 |";
+	@echo "|   sv2sv_native : SV producer --> SV consumer                    |";
+	@echo "|                  Connection is made via standard UVM in SV      |";
+	@echo "|                                                                 |";
+	@echo "|   sc2sc_native : SC producer --> SC consumer                    |";
+	@echo "|                  Connection is made via standard IEEE TLM in SC |";
+	@echo "|                                                                 |";
+	@echo "|   sv2sv_uvmc   : SV producer --> SV consumer                    |";
+	@echo "|                  Connection is made via UVMC. Semantically      |";
+	@echo "|                  equivalent to sv2sv_native                     |";
+	@echo "|                                                                 |";
+	@echo "|   sc2sc_uvmc   : SC producer --> SC consumer                    |";
+	@echo "|                  Connection is made via UVMC. Semantically      |";
+	@echo "|                  equivalent to sc2sc_native (disabled)          |";
+	@echo "|                                                                 |";
+	@echo "| UVM_HOME and UVMC_HOME specify the location of the source       |";
+	@echo "| headers and macro definitions needed by the examples. You must  |";
+	@echo "| specify their locations via UVM_HOME and UVMC_HOME environment  |";
+	@echo "| variables or make command line options. Command line options    |";
+	@echo "| override any envrionment variable settings.                     |";
+	@echo "|                                                                 |";
+	@echo "| The UVM and UVMC libraries must be compiled prior to running    |";
+	@echo "| any example. If the libraries are not at their default location |";
+	@echo "| (UVMC_HOME/lib) then you must specify their location via the    |";
+	@echo "| UVM_LIB and/or UVMC_LIB environment variables or make command   |";
+	@echo "| line options. Make command line options take precedence.        |";
+	@echo "|                                                                 |";
+	@echo "| Other options:                                                  |";
+	@echo "|                                                                 |";
+	@echo "|   all   : Run all examples                                      |";
+	@echo "|   clean : Remove simulation files and directories               |";
+	@echo "|   help  : Print this help information                           |";
+	@echo "|                                                                 |";
+	@echo "|                                                                 |";
+	@echo " -----------------------------------------------------------------";
+
+include $(UVMC_HOME)/examples/common/Makefile.vcs
+
+all: sv2sc sc2sv sv2sc2sv sc_wraps_sv sv2sv_native sc2sc_native sv2sv_uvmc
+
+sc2sc_native: 
+	$(MAKE) -f Makefile.vcs clean
+	syscan -cpp g++ -cc gcc $(VCS_BITS) -cflags "-I${VCS_HOME}/etc/systemc/tlm/include/tlm/tlm_utils -Icommon" \
+		-tlm2 sc2sc_native.cpp
+	$(VCS_ELAB) sc_main 
+	$(SIMV) $(TRACE_OPT) $(ARGS) +UVM_NO_RELNOTES 2>&1 |tee sc2sc_native_run.log
+
+sv2sv_native:
+	$(MAKE) -f Makefile.vcs clean 
+	$(VLOGAN) +incdir+common sv2sv_native.sv +define+UVM_OBJECT_MUST_HAVE_CONSTRUCTOR 
+	vcs $(VCS_BITS) -timescale=1ns/1ps sv_main -CFLAGS -DVCS ${UVM_HOME}/src/dpi/uvm_dpi.cc
+	$(SIMV) $(TRACE_OPT) $(ARGS) +UVM_NO_RELNOTES 2>&1 |tee sv2sv_native_run.log	
+	grep "UVM_ERROR : *0$$" $@_run.log
+	grep "UVM_FATAL : *0$$" $@_run.log
+
+sv2sv_uvmc:
+	$(MAKE) -f Makefile.vcs clean comp run EXAMPLE=sv2sv_uvmc
+
+sv2sc: 
+	$(MAKE) -f Makefile.vcs clean comp run EXAMPLE=sv2sc 
+
+sc2sv:
+	$(MAKE) -f Makefile.vcs clean comp run EXAMPLE=sc2sv ARGS=+UVMC_COMMAND_TRACE
+
+sc_wraps_sv:
+	$(MAKE) -f Makefile.vcs clean comp run EXAMPLE=sc_wraps_sv
+
+sv2sc2sv:	
+	$(MAKE) -f Makefile.vcs clean comp run EXAMPLE=sv2sc2sv
+
+sc2sc_uvmc:
+	@echo "** SC-to-SC via UVMC not yet supported **"
+
+
+comp:
+	$(SYSCAN) -cflags -Icommon $(EXAMPLE).cpp 
+	$(VLOGAN) +incdir+common $(EXAMPLE).sv +define+UVM_OBJECT_MUST_HAVE_CONSTRUCTOR 
+	$(VCS_ELAB) sv_main sc_main
+
+sim: run
+
+run:	
+	$(SIMV) $(TRACE_OPT) $(ARGS) +UVM_NO_RELNOTES 2>&1 |tee $(EXAMPLE)_run.log
+	grep "UVM_ERROR : *0$$" $(EXAMPLE)_run.log
+	grep "UVM_FATAL : *0$$" $(EXAMPLE)_run.log

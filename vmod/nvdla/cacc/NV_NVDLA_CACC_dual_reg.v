@@ -70,11 +70,11 @@ output        surf_packed;
 output [12:0] dataout_height;
 output [12:0] dataout_width;
 output [12:0] dataout_channel;
-output [18:0] line_stride;
+output [23:0] line_stride;
 output        conv_mode;
 output [1:0]  proc_precision;
 output        op_en_trigger;
-output [18:0] surf_stride;
+output [23:0] surf_stride;
 
 // Read-only register inputs
 input         op_en;
@@ -98,11 +98,11 @@ reg    [12:0] dataout_channel;
 reg    [12:0] dataout_height;
 reg    [12:0] dataout_width;
 reg           line_packed;
-reg    [18:0] line_stride;
+reg    [23:0] line_stride;
 reg     [1:0] proc_precision;
 reg    [31:0] reg_rd_data;
 reg           surf_packed;
-reg    [18:0] surf_stride;
+reg    [23:0] surf_stride;
 
 assign reg_offset_wr = {20'b0 , reg_offset};
 // SCR signals
@@ -128,11 +128,11 @@ assign nvdla_cacc_d_dataout_addr_0_out[31:0] = { dataout_addr, 5'b0 };
 assign nvdla_cacc_d_dataout_map_0_out[31:0] = { 15'b0, surf_packed, 15'b0, line_packed };
 assign nvdla_cacc_d_dataout_size_0_0_out[31:0] = { 3'b0, dataout_height, 3'b0, dataout_width };
 assign nvdla_cacc_d_dataout_size_1_0_out[31:0] = { 19'b0, dataout_channel };
-assign nvdla_cacc_d_line_stride_0_out[31:0] = { 8'b0, line_stride, 5'b0 };
+assign nvdla_cacc_d_line_stride_0_out[31:0] = { 8'b0, line_stride};
 assign nvdla_cacc_d_misc_cfg_0_out[31:0] = { 18'b0, proc_precision, 11'b0, conv_mode };
 assign nvdla_cacc_d_op_enable_0_out[31:0] = { 31'b0, op_en };
 assign nvdla_cacc_d_out_saturation_0_out[31:0] = { sat_count };
-assign nvdla_cacc_d_surf_stride_0_out[31:0] = { 8'b0, surf_stride, 5'b0 };
+assign nvdla_cacc_d_surf_stride_0_out[31:0] = { 8'b0, surf_stride};
 
 assign op_en_trigger = nvdla_cacc_d_op_enable_0_wren;  //(W563)
 
@@ -211,10 +211,10 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     dataout_height[12:0] <= 13'b0000000000000;
     dataout_width[12:0] <= 13'b0000000000000;
     dataout_channel[12:0] <= 13'b0000000000000;
-    line_stride[18:0] <= 19'b0000000000000000000;
+    line_stride[23:0] <= 24'b000000000000000000000000;
     conv_mode <= 1'b0;
     proc_precision[1:0] <= 2'b01;
-    surf_stride[18:0] <= 19'b0000000000000000000;
+    surf_stride[23:0] <= 24'b000000000000000000000000;
   end else begin
   // Register: NVDLA_CACC_D_BATCH_NUMBER_0    Field: batches
   if (nvdla_cacc_d_batch_number_0_wren) begin
@@ -263,7 +263,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 
   // Register: NVDLA_CACC_D_LINE_STRIDE_0    Field: line_stride
   if (nvdla_cacc_d_line_stride_0_wren) begin
-    line_stride[18:0] <= reg_wr_data[23:5];
+    line_stride[23:0] <= reg_wr_data[23:0];
   end
 
   // Register: NVDLA_CACC_D_MISC_CFG_0    Field: conv_mode
@@ -282,7 +282,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 
   // Register: NVDLA_CACC_D_SURF_STRIDE_0    Field: surf_stride
   if (nvdla_cacc_d_surf_stride_0_wren) begin
-    surf_stride[18:0] <= reg_wr_data[23:5];
+    surf_stride[23:0] <= reg_wr_data[23:0];
   end
 
   end

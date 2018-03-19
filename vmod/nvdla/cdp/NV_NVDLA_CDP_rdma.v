@@ -11,10 +11,12 @@
 module NV_NVDLA_CDP_rdma (
    nvdla_core_clk                //|< i
   ,nvdla_core_rstn               //|< i
+  #ifdef NVDLA_SECONDARY_MEMIF_ENABLE
   ,cdp2cvif_rd_cdt_lat_fifo_pop  //|> o
   ,cdp2cvif_rd_req_valid         //|> o
   ,cdp2cvif_rd_req_ready         //|< i
   ,cdp2cvif_rd_req_pd            //|> o
+  #endif
   ,cdp2mcif_rd_cdt_lat_fifo_pop  //|> o
   ,cdp2mcif_rd_req_valid         //|> o
   ,cdp2mcif_rd_req_ready         //|< i
@@ -27,9 +29,11 @@ module NV_NVDLA_CDP_rdma (
   ,csb2cdp_rdma_req_pvld         //|< i
   ,csb2cdp_rdma_req_prdy         //|> o
   ,csb2cdp_rdma_req_pd           //|< i
+  #ifdef NVDLA_SECONDARY_MEMIF_ENABLE
   ,cvif2cdp_rd_rsp_valid         //|< i
   ,cvif2cdp_rd_rsp_ready         //|> o
   ,cvif2cdp_rd_rsp_pd            //|< i
+  #endif
   ,mcif2cdp_rd_rsp_valid         //|< i
   ,mcif2cdp_rd_rsp_ready         //|> o
   ,mcif2cdp_rd_rsp_pd            //|< i
@@ -44,36 +48,40 @@ module NV_NVDLA_CDP_rdma (
  input  nvdla_core_clk;   /* cdp2cvif_rd_cdt, cdp2cvif_rd_req, cdp2mcif_rd_cdt, cdp2mcif_rd_req, cdp_rdma2csb_resp, cdp_rdma2dp, csb2cdp_rdma_req, cvif2cdp_rd_rsp, mcif2cdp_rd_rsp */
  input  nvdla_core_rstn;  /* cdp2cvif_rd_cdt, cdp2cvif_rd_req, cdp2mcif_rd_cdt, cdp2mcif_rd_req, cdp_rdma2csb_resp, cdp_rdma2dp, csb2cdp_rdma_req, cvif2cdp_rd_rsp, mcif2cdp_rd_rsp */
 
+  #ifdef NVDLA_SECONDARY_MEMIF_ENABLE
  output  cdp2cvif_rd_cdt_lat_fifo_pop;
 
  output        cdp2cvif_rd_req_valid;  /* data valid */
  input         cdp2cvif_rd_req_ready;  /* data return handshake */
- output [78:0] cdp2cvif_rd_req_pd;
+ output [NVDLA_DMA_RD_REQ-1:0] cdp2cvif_rd_req_pd;
+ #endif
 
  output  cdp2mcif_rd_cdt_lat_fifo_pop;
 
  output        cdp2mcif_rd_req_valid;  /* data valid */
  input         cdp2mcif_rd_req_ready;  /* data return handshake */
- output [78:0] cdp2mcif_rd_req_pd;
+ output [NVDLA_DMA_RD_REQ-1:0] cdp2mcif_rd_req_pd;
 
  output        cdp_rdma2csb_resp_valid;  /* data valid */
  output [33:0] cdp_rdma2csb_resp_pd;     /* pkt_id_width=1 pkt_widths=33,33  */
 
  output        cdp_rdma2dp_valid;  /* data valid */
  input         cdp_rdma2dp_ready;  /* data return handshake */
- output [86:0] cdp_rdma2dp_pd;
+ output [NVDLA_CDP_THROUGHPUT*NVDLA_BPE+22:0] cdp_rdma2dp_pd;
 
  input         csb2cdp_rdma_req_pvld;  /* data valid */
  output        csb2cdp_rdma_req_prdy;  /* data return handshake */
  input  [62:0] csb2cdp_rdma_req_pd;
 
+  #ifdef NVDLA_SECONDARY_MEMIF_ENABLE
  input          cvif2cdp_rd_rsp_valid;  /* data valid */
  output         cvif2cdp_rd_rsp_ready;  /* data return handshake */
- input  [513:0] cvif2cdp_rd_rsp_pd;
+ input  [NVDLA_DMA_RD_RSP-1:0] cvif2cdp_rd_rsp_pd;
+ #endif
 
  input          mcif2cdp_rd_rsp_valid;  /* data valid */
  output         mcif2cdp_rd_rsp_ready;  /* data return handshake */
- input  [513:0] mcif2cdp_rd_rsp_pd;
+ input  [NVDLA_DMA_RD_RSP-1:0] mcif2cdp_rd_rsp_pd;
 
  input [31:0] pwrbus_ram_pd;
 
@@ -99,10 +107,10 @@ wire [12:0] reg2dp_height;
 wire  [1:0] reg2dp_input_data;
 wire  [0:0] reg2dp_op_en;
 wire [31:0] reg2dp_src_base_addr_high;
-wire [26:0] reg2dp_src_base_addr_low;
-wire [26:0] reg2dp_src_line_stride;
+wire [31:0] reg2dp_src_base_addr_low;
+wire [31:0] reg2dp_src_line_stride;
 wire  [0:0] reg2dp_src_ram_type;
-wire [26:0] reg2dp_src_surface_stride;
+wire [31:0] reg2dp_src_surface_stride;
 wire [12:0] reg2dp_width;
 wire        slcg_op_en;
 
@@ -128,10 +136,10 @@ NV_NVDLA_CDP_slcg u_slcg (
    ,.reg2dp_input_data             (reg2dp_input_data[1:0])          //|< w
    ,.reg2dp_op_en                  (reg2dp_op_en[0])                 //|< w
    ,.reg2dp_src_base_addr_high     (reg2dp_src_base_addr_high[31:0]) //|< w
-   ,.reg2dp_src_base_addr_low      (reg2dp_src_base_addr_low[26:0])  //|< w
-   ,.reg2dp_src_line_stride        (reg2dp_src_line_stride[26:0])    //|< w
+   ,.reg2dp_src_base_addr_low      (reg2dp_src_base_addr_low[31:0]) 
+   ,.reg2dp_src_line_stride        (reg2dp_src_line_stride[31:0])   
+   ,.reg2dp_src_surface_stride     (reg2dp_src_surface_stride[31:0])
    ,.reg2dp_src_ram_type           (reg2dp_src_ram_type[0])          //|< w
-   ,.reg2dp_src_surface_stride     (reg2dp_src_surface_stride[26:0]) //|< w
    ,.reg2dp_width                  (reg2dp_width[12:0])              //|< w
    ,.dp2reg_d0_perf_read_stall     (dp2reg_d0_perf_read_stall[31:0]) //|> w
    ,.dp2reg_d1_perf_read_stall     (dp2reg_d1_perf_read_stall[31:0]) //|> w
@@ -140,10 +148,12 @@ NV_NVDLA_CDP_slcg u_slcg (
    ,.nvdla_core_rstn               (nvdla_core_rstn)                 //|< i
    ,.cdp2mcif_rd_req_valid         (cdp2mcif_rd_req_valid)           //|> o
    ,.cdp2mcif_rd_req_ready         (cdp2mcif_rd_req_ready)           //|< i
-   ,.cdp2mcif_rd_req_pd            (cdp2mcif_rd_req_pd[78:0])        //|> o
+   ,.cdp2mcif_rd_req_pd            (cdp2mcif_rd_req_pd)        //|> o
+  #ifdef NVDLA_SECONDARY_MEMIF_ENABLE
    ,.cdp2cvif_rd_req_valid         (cdp2cvif_rd_req_valid)           //|> o
    ,.cdp2cvif_rd_req_ready         (cdp2cvif_rd_req_ready)           //|< i
-   ,.cdp2cvif_rd_req_pd            (cdp2cvif_rd_req_pd[78:0])        //|> o
+   ,.cdp2cvif_rd_req_pd            (cdp2cvif_rd_req_pd)        //|> o
+   #endif
    ,.cq_wr_pvld                    (cq_wr_pvld)                      //|> w
    ,.cq_wr_prdy                    (cq_wr_prdy)                      //|< w
    ,.cq_wr_pd                      (cq_wr_pd[6:0])                   //|> w
@@ -176,15 +186,17 @@ NV_NVDLA_CDP_slcg u_slcg (
    ,.nvdla_core_rstn               (nvdla_core_rstn)                 //|< i
    ,.mcif2cdp_rd_rsp_valid         (mcif2cdp_rd_rsp_valid)           //|< i
    ,.mcif2cdp_rd_rsp_ready         (mcif2cdp_rd_rsp_ready)           //|> o
-   ,.mcif2cdp_rd_rsp_pd            (mcif2cdp_rd_rsp_pd[513:0])       //|< i
+   ,.mcif2cdp_rd_rsp_pd            (mcif2cdp_rd_rsp_pd)       //|< i
    ,.cdp2mcif_rd_cdt_lat_fifo_pop  (cdp2mcif_rd_cdt_lat_fifo_pop)    //|> o
+  #ifdef NVDLA_SECONDARY_MEMIF_ENABLE
    ,.cvif2cdp_rd_rsp_valid         (cvif2cdp_rd_rsp_valid)           //|< i
    ,.cvif2cdp_rd_rsp_ready         (cvif2cdp_rd_rsp_ready)           //|> o
-   ,.cvif2cdp_rd_rsp_pd            (cvif2cdp_rd_rsp_pd[513:0])       //|< i
+   ,.cvif2cdp_rd_rsp_pd            (cvif2cdp_rd_rsp_pd)       //|< i
    ,.cdp2cvif_rd_cdt_lat_fifo_pop  (cdp2cvif_rd_cdt_lat_fifo_pop)    //|> o
+   #endif
    ,.cdp_rdma2dp_valid             (cdp_rdma2dp_valid)               //|> o
    ,.cdp_rdma2dp_ready             (cdp_rdma2dp_ready)               //|< i
-   ,.cdp_rdma2dp_pd                (cdp_rdma2dp_pd[86:0])            //|> o
+   ,.cdp_rdma2dp_pd                (cdp_rdma2dp_pd)            //|> o
    ,.cq_rd_pvld                    (cq_rd_pvld)                      //|< w
    ,.cq_rd_prdy                    (cq_rd_prdy)                      //|> w
    ,.cq_rd_pd                      (cq_rd_pd[6:0])                   //|< w
@@ -212,10 +224,10 @@ NV_NVDLA_CDP_slcg u_slcg (
    ,.reg2dp_input_data             (reg2dp_input_data[1:0])          //|> w
    ,.reg2dp_op_en                  (reg2dp_op_en)                    //|> w
    ,.reg2dp_src_base_addr_high     (reg2dp_src_base_addr_high[31:0]) //|> w
-   ,.reg2dp_src_base_addr_low      (reg2dp_src_base_addr_low[26:0])  //|> w
-   ,.reg2dp_src_line_stride        (reg2dp_src_line_stride[26:0])    //|> w
+   ,.reg2dp_src_base_addr_low      (reg2dp_src_base_addr_low[31:0])  //|> w
+   ,.reg2dp_src_line_stride        (reg2dp_src_line_stride[31:0])    //|> w
    ,.reg2dp_src_ram_type           (reg2dp_src_ram_type)             //|> w
-   ,.reg2dp_src_surface_stride     (reg2dp_src_surface_stride[26:0]) //|> w
+   ,.reg2dp_src_surface_stride     (reg2dp_src_surface_stride[31:0]) //|> w
    ,.reg2dp_width                  (reg2dp_width[12:0])              //|> w
    ,.slcg_op_en                    (slcg_op_en)                      //|> w
    );

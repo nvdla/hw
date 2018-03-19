@@ -19,7 +19,7 @@ use Text::ParseWords qw(shellwords);
       -i   <sig>      : input bus name, sig_i by default
       -o   <sig>      : output bus name, sig_o by default
 
-      -clk <clk>      : clock name, default is clk
+      -clk <clk>      : clock name, default is nvdla_core_clk
       -wid <n>        : width of the bus, default is 1
 
       -stage <n>      : number of stage bus will be retimed (0 is feedthrough), 1 by default
@@ -46,7 +46,7 @@ sub retime {
     my $wid   = 1;
     my $stages= 1;
     
-    my $clk   = "clk";
+    my $clk   = "nvdla_core_clk";
     
     my $cg_en_i;
     my $cg_en_o;
@@ -70,7 +70,7 @@ sub retime {
     #================================
     my $INDENT = " "x$indent;
 
-    my $range = "$wid-1";
+    my $range = ($wid == 1) ? "" : "[$wid-1:0]";
     
     #================================
     # CODE BODY
@@ -86,10 +86,10 @@ sub retime {
         $cg_en_str = "($cg_en_cur)" if $cg_en_i;
         my $sig_nxt = $sig_i."_d$stage";
 
-        my $SIG_NXT = $sig_nxt."[$range]";
-        my $SIG_CUR = $sig_cur."[$range]";
+        my $SIG_NXT = $sig_nxt.$range;
+        my $SIG_CUR = $sig_cur.$range;
         
-        push @code, "${INDENT}reg [$range] $sig_nxt;";
+        push @code, "${INDENT}reg $range $sig_nxt;";
         push @code, "${INDENT}always @(posedge $clk) begin";
         push @code, "${INDENT}    if ($cg_en_str) begin" if $cg_en_i;
         push @code, "${INDENT}        $SIG_NXT <= $SIG_CUR;";
@@ -114,7 +114,7 @@ sub retime {
 
     ### OUTPUT
     # bus
-    push @code, "${INDENT}wire [$range] $sig_o;";
+    push @code, "${INDENT}wire $range $sig_o;";
     push @code, "${INDENT}assign $sig_o = $sig_cur;";
     push @code, "";
 

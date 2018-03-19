@@ -16,13 +16,14 @@
 #ifndef _nvdla_stripe_info_struct_H_
 #include "nvdla_stripe_info_struct.h"
 #endif
+#include "nvdla_config.h"
 
 union nvdla_sc2mac_data_if_u {
     nvdla_stripe_info_t nvdla_stripe_info;
 };
 typedef struct nvdla_sc2mac_data_if_s {
     uint64_t mask [2] ; 
-    sc_int<8> data[128];
+    sc_int<8> data[NVDLA_CBUF_BANK_WIDTH];
     union nvdla_sc2mac_data_if_u pd ; 
 } nvdla_sc2mac_data_if_t;
 

@@ -8,6 +8,8 @@
 
 // File Name: NV_NVDLA_partition_p.v
 
+#include "NV_NVDLA_define.h"
+#include "../cmac/NV_NVDLA_CMAC.h"
 `ifdef NV_HWACC
 `include "NV_HWACC_NVDLA_tick_defines.vh"
 `endif
@@ -20,111 +22,121 @@ module NV_NVDLA_partition_p (
   ,csb2sdp_rdma_req_pvld          //|< i
   ,csb2sdp_req_pd                 //|< i
   ,csb2sdp_req_pvld               //|< i
-  ,cvif2sdp_b_rd_rsp_pd           //|< i
-  ,cvif2sdp_b_rd_rsp_valid        //|< i
-  ,cvif2sdp_e_rd_rsp_pd           //|< i
-  ,cvif2sdp_e_rd_rsp_valid        //|< i
-  ,cvif2sdp_n_rd_rsp_pd           //|< i
-  ,cvif2sdp_n_rd_rsp_valid        //|< i
-  ,cvif2sdp_rd_rsp_pd             //|< i
-  ,cvif2sdp_rd_rsp_valid          //|< i
-  ,cvif2sdp_wr_rsp_complete       //|< i
   ,direct_reset_                  //|< i
   ,dla_reset_rstn                 //|< i
   ,global_clk_ovr_on              //|< i
-  ,mac_a2accu_src_data0           //|< i
-  ,mac_a2accu_src_data1           //|< i
-  ,mac_a2accu_src_data2           //|< i
-  ,mac_a2accu_src_data3           //|< i
-  ,mac_a2accu_src_data4           //|< i
-  ,mac_a2accu_src_data5           //|< i
-  ,mac_a2accu_src_data6           //|< i
-  ,mac_a2accu_src_data7           //|< i
+#ifdef NVDLA_RETIMING_ENABLE
+//: for(my $i=0; $i<CMAC_ATOMK_HALF; $i++){
+//: print qq(
+//: ,mac_a2accu_src_data${i}    )
+//: }
   ,mac_a2accu_src_mask            //|< i
   ,mac_a2accu_src_mode            //|< i
   ,mac_a2accu_src_pd              //|< i
   ,mac_a2accu_src_pvld            //|< i
-  ,mcif2sdp_b_rd_rsp_pd           //|< i
-  ,mcif2sdp_b_rd_rsp_valid        //|< i
-  ,mcif2sdp_e_rd_rsp_pd           //|< i
-  ,mcif2sdp_e_rd_rsp_valid        //|< i
-  ,mcif2sdp_n_rd_rsp_pd           //|< i
-  ,mcif2sdp_n_rd_rsp_valid        //|< i
-  ,mcif2sdp_rd_rsp_pd             //|< i
-  ,mcif2sdp_rd_rsp_valid          //|< i
-  ,mcif2sdp_wr_rsp_complete       //|< i
-  ,nvdla_clk_ovr_on               //|< i
-  ,nvdla_core_clk                 //|< i
-  ,pwrbus_ram_pd                  //|< i
-  ,sdp2cvif_rd_req_ready          //|< i
-  ,sdp2cvif_wr_req_ready          //|< i
-  ,sdp2mcif_rd_req_ready          //|< i
-  ,sdp2mcif_wr_req_ready          //|< i
-  ,sdp2pdp_ready                  //|< i
-  ,sdp_b2cvif_rd_req_ready        //|< i
-  ,sdp_b2mcif_rd_req_ready        //|< i
-  ,sdp_e2cvif_rd_req_ready        //|< i
-  ,sdp_e2mcif_rd_req_ready        //|< i
-  ,sdp_n2cvif_rd_req_ready        //|< i
-  ,sdp_n2mcif_rd_req_ready        //|< i
-  ,test_mode                      //|< i
-  ,tmc2slcg_disable_clock_gating  //|< i
-  ,cacc2sdp_ready                 //|> o
-  ,csb2sdp_rdma_req_prdy          //|> o
-  ,csb2sdp_req_prdy               //|> o
-  ,cvif2sdp_b_rd_rsp_ready        //|> o
-  ,cvif2sdp_e_rd_rsp_ready        //|> o
-  ,cvif2sdp_n_rd_rsp_ready        //|> o
-  ,cvif2sdp_rd_rsp_ready          //|> o
-  ,mac_a2accu_dst_data0           //|> o
-  ,mac_a2accu_dst_data1           //|> o
-  ,mac_a2accu_dst_data2           //|> o
-  ,mac_a2accu_dst_data3           //|> o
-  ,mac_a2accu_dst_data4           //|> o
-  ,mac_a2accu_dst_data5           //|> o
-  ,mac_a2accu_dst_data6           //|> o
-  ,mac_a2accu_dst_data7           //|> o
+//: for(my $i=0; $i<CMAC_ATOMK_HALF; $i++){
+//: print qq(
+//: ,mac_a2accu_dst_data${i}    )
+//: }
   ,mac_a2accu_dst_mask            //|> o
   ,mac_a2accu_dst_mode            //|> o
   ,mac_a2accu_dst_pd              //|> o
   ,mac_a2accu_dst_pvld            //|> o
-  ,mcif2sdp_b_rd_rsp_ready        //|> o
-  ,mcif2sdp_e_rd_rsp_ready        //|> o
-  ,mcif2sdp_n_rd_rsp_ready        //|> o
-  ,mcif2sdp_rd_rsp_ready          //|> o
-  ,sdp2csb_resp_pd                //|> o
-  ,sdp2csb_resp_valid             //|> o
+#endif
+  ,nvdla_clk_ovr_on               //|< i
+  ,nvdla_core_clk                 //|< i
+  ,pwrbus_ram_pd                  //|< i
+#ifdef NVDLA_SECONDARY_MEMIF_ENABLE
+#ifdef NVDLA_SDP_BS_ENABLE
+  ,sdp_b2cvif_rd_cdt_lat_fifo_pop //|> o
+  ,sdp_b2cvif_rd_req_pd           //|> o
+  ,sdp_b2cvif_rd_req_valid        //|> o
+  ,sdp_b2cvif_rd_req_ready        //|< i
+  ,cvif2sdp_b_rd_rsp_pd           //|< i
+  ,cvif2sdp_b_rd_rsp_valid        //|< i
+  ,cvif2sdp_b_rd_rsp_ready        //|> o
+#endif
+#ifdef NVDLA_SDP_EW_ENABLE
+  ,sdp_e2cvif_rd_cdt_lat_fifo_pop //|> o
+  ,sdp_e2cvif_rd_req_pd           //|> o
+  ,sdp_e2cvif_rd_req_valid        //|> o
+  ,sdp_e2cvif_rd_req_ready        //|< i
+  ,cvif2sdp_e_rd_rsp_pd           //|< i
+  ,cvif2sdp_e_rd_rsp_valid        //|< i
+  ,cvif2sdp_e_rd_rsp_ready        //|> o
+#endif
+#ifdef NVDLA_SDP_BN_ENABLE
+  ,sdp_n2cvif_rd_cdt_lat_fifo_pop //|> o
+  ,sdp_n2cvif_rd_req_pd           //|> o
+  ,sdp_n2cvif_rd_req_valid        //|> o
+  ,sdp_n2cvif_rd_req_ready        //|< i
+  ,cvif2sdp_n_rd_rsp_pd           //|< i
+  ,cvif2sdp_n_rd_rsp_valid        //|< i
+  ,cvif2sdp_n_rd_rsp_ready        //|> o
+#endif
+  ,cvif2sdp_rd_rsp_pd             //|< i
+  ,cvif2sdp_rd_rsp_valid          //|< i
+  ,cvif2sdp_rd_rsp_ready          //|> o
   ,sdp2cvif_rd_cdt_lat_fifo_pop   //|> o
   ,sdp2cvif_rd_req_pd             //|> o
   ,sdp2cvif_rd_req_valid          //|> o
+  ,sdp2cvif_rd_req_ready          //|< i
   ,sdp2cvif_wr_req_pd             //|> o
   ,sdp2cvif_wr_req_valid          //|> o
-  ,sdp2glb_done_intr_pd           //|> o
+  ,sdp2cvif_wr_req_ready          //|< i
+  ,cvif2sdp_wr_rsp_complete       //|< i
+#endif
+
+#ifdef NVDLA_SDP_BS_ENABLE
+  ,sdp_b2mcif_rd_cdt_lat_fifo_pop //|> o
+  ,sdp_b2mcif_rd_req_pd           //|> o
+  ,sdp_b2mcif_rd_req_valid        //|> o
+  ,sdp_b2mcif_rd_req_ready        //|< i
+  ,mcif2sdp_b_rd_rsp_pd           //|< i
+  ,mcif2sdp_b_rd_rsp_valid        //|< i
+  ,mcif2sdp_b_rd_rsp_ready        //|> o
+#endif
+#ifdef NVDLA_SDP_EW_ENABLE
+  ,sdp_e2mcif_rd_cdt_lat_fifo_pop //|> o
+  ,sdp_e2mcif_rd_req_pd           //|> o
+  ,sdp_e2mcif_rd_req_valid        //|> o
+  ,sdp_e2mcif_rd_req_ready        //|< i
+  ,mcif2sdp_e_rd_rsp_pd           //|< i
+  ,mcif2sdp_e_rd_rsp_valid        //|< i
+  ,mcif2sdp_e_rd_rsp_ready        //|> o
+#endif
+#ifdef NVDLA_SDP_BN_ENABLE
+  ,sdp_n2mcif_rd_cdt_lat_fifo_pop //|> o
+  ,sdp_n2mcif_rd_req_pd           //|> o
+  ,sdp_n2mcif_rd_req_valid        //|> o
+  ,sdp_n2mcif_rd_req_ready        //|< i
+  ,mcif2sdp_n_rd_rsp_pd           //|< i
+  ,mcif2sdp_n_rd_rsp_valid        //|< i
+  ,mcif2sdp_n_rd_rsp_ready        //|> o
+#endif
+  ,mcif2sdp_rd_rsp_pd             //|< i
+  ,mcif2sdp_rd_rsp_valid          //|< i
+  ,mcif2sdp_wr_rsp_complete       //|< i
+  ,sdp2mcif_rd_req_ready          //|< i
+  ,sdp2mcif_wr_req_ready          //|< i
+  ,mcif2sdp_rd_rsp_ready          //|> o
   ,sdp2mcif_rd_cdt_lat_fifo_pop   //|> o
   ,sdp2mcif_rd_req_pd             //|> o
   ,sdp2mcif_rd_req_valid          //|> o
   ,sdp2mcif_wr_req_pd             //|> o
   ,sdp2mcif_wr_req_valid          //|> o
+
+  ,sdp2pdp_ready                  //|< i
+  ,test_mode                      //|< i
+  ,tmc2slcg_disable_clock_gating  //|< i
+  ,cacc2sdp_ready                 //|> o
+  ,csb2sdp_rdma_req_prdy          //|> o
+  ,csb2sdp_req_prdy               //|> o
+  ,sdp2csb_resp_pd                //|> o
+  ,sdp2csb_resp_valid             //|> o
+  ,sdp2glb_done_intr_pd           //|> o
   ,sdp2pdp_pd                     //|> o
   ,sdp2pdp_valid                  //|> o
-  ,sdp_b2cvif_rd_cdt_lat_fifo_pop //|> o
-  ,sdp_b2cvif_rd_req_pd           //|> o
-  ,sdp_b2cvif_rd_req_valid        //|> o
-  ,sdp_b2mcif_rd_cdt_lat_fifo_pop //|> o
-  ,sdp_b2mcif_rd_req_pd           //|> o
-  ,sdp_b2mcif_rd_req_valid        //|> o
-  ,sdp_e2cvif_rd_cdt_lat_fifo_pop //|> o
-  ,sdp_e2cvif_rd_req_pd           //|> o
-  ,sdp_e2cvif_rd_req_valid        //|> o
-  ,sdp_e2mcif_rd_cdt_lat_fifo_pop //|> o
-  ,sdp_e2mcif_rd_req_pd           //|> o
-  ,sdp_e2mcif_rd_req_valid        //|> o
-  ,sdp_n2cvif_rd_cdt_lat_fifo_pop //|> o
-  ,sdp_n2cvif_rd_req_pd           //|> o
-  ,sdp_n2cvif_rd_req_valid        //|> o
-  ,sdp_n2mcif_rd_cdt_lat_fifo_pop //|> o
-  ,sdp_n2mcif_rd_req_pd           //|> o
-  ,sdp_n2mcif_rd_req_valid        //|> o
   ,sdp_rdma2csb_resp_pd           //|> o
   ,sdp_rdma2csb_resp_valid        //|> o
   );
@@ -141,7 +153,7 @@ input  tmc2slcg_disable_clock_gating;
 
 input          cacc2sdp_valid;  /* data valid */
 output         cacc2sdp_ready;  /* data return handshake */
-input  [513:0] cacc2sdp_pd;
+input  [NVDLA_SDP_MAX_THROUGHPUT*32+2-1:0] cacc2sdp_pd;
 
 input         csb2sdp_rdma_req_pvld;  /* data valid */
 output        csb2sdp_rdma_req_prdy;  /* data return handshake */
@@ -151,137 +163,122 @@ input         csb2sdp_req_pvld;  /* data valid */
 output        csb2sdp_req_prdy;  /* data return handshake */
 input  [62:0] csb2sdp_req_pd;
 
-input          cvif2sdp_b_rd_rsp_valid;  /* data valid */
-output         cvif2sdp_b_rd_rsp_ready;  /* data return handshake */
-input  [513:0] cvif2sdp_b_rd_rsp_pd;
-
-input          cvif2sdp_e_rd_rsp_valid;  /* data valid */
-output         cvif2sdp_e_rd_rsp_ready;  /* data return handshake */
-input  [513:0] cvif2sdp_e_rd_rsp_pd;
-
-input          cvif2sdp_n_rd_rsp_valid;  /* data valid */
-output         cvif2sdp_n_rd_rsp_ready;  /* data return handshake */
-input  [513:0] cvif2sdp_n_rd_rsp_pd;
-
-input          cvif2sdp_rd_rsp_valid;  /* data valid */
-output         cvif2sdp_rd_rsp_ready;  /* data return handshake */
-input  [513:0] cvif2sdp_rd_rsp_pd;
-
-input  cvif2sdp_wr_rsp_complete;
-
+#ifdef NVDLA_RETIMING_ENABLE
 output         mac_a2accu_dst_pvld;   /* data valid */
-output   [7:0] mac_a2accu_dst_mask;
-output   [7:0] mac_a2accu_dst_mode;
-output [175:0] mac_a2accu_dst_data0;
-output [175:0] mac_a2accu_dst_data1;
-output [175:0] mac_a2accu_dst_data2;
-output [175:0] mac_a2accu_dst_data3;
-output [175:0] mac_a2accu_dst_data4;
-output [175:0] mac_a2accu_dst_data5;
-output [175:0] mac_a2accu_dst_data6;
-output [175:0] mac_a2accu_dst_data7;
+output   [CMAC_ATOMK_HALF-1:0] mac_a2accu_dst_mask;
+output         mac_a2accu_dst_mode;
+//: for(my $i=0; $i<CMAC_ATOMK_HALF; $i++){
+//: print qq(
+//: output [CMAC_RESULT_WIDTH-1:0] mac_a2accu_dst_data${i};   )
+//: }
 output   [8:0] mac_a2accu_dst_pd;
 
 input         mac_a2accu_src_pvld;   /* data valid */
-input   [7:0] mac_a2accu_src_mask;
-input   [7:0] mac_a2accu_src_mode;
-input [175:0] mac_a2accu_src_data0;
-input [175:0] mac_a2accu_src_data1;
-input [175:0] mac_a2accu_src_data2;
-input [175:0] mac_a2accu_src_data3;
-input [175:0] mac_a2accu_src_data4;
-input [175:0] mac_a2accu_src_data5;
-input [175:0] mac_a2accu_src_data6;
-input [175:0] mac_a2accu_src_data7;
+input   [CMAC_ATOMK_HALF-1:0] mac_a2accu_src_mask;
+input   mac_a2accu_src_mode;
+//: for(my $i=0; $i<CMAC_ATOMK_HALF; $i++){
+//: print qq(
+//: output [CMAC_RESULT_WIDTH-1:0] mac_a2accu_src_data${i};   )
+//: }
 input   [8:0] mac_a2accu_src_pd;
-
-input          mcif2sdp_b_rd_rsp_valid;  /* data valid */
-output         mcif2sdp_b_rd_rsp_ready;  /* data return handshake */
-input  [513:0] mcif2sdp_b_rd_rsp_pd;
-
-input          mcif2sdp_e_rd_rsp_valid;  /* data valid */
-output         mcif2sdp_e_rd_rsp_ready;  /* data return handshake */
-input  [513:0] mcif2sdp_e_rd_rsp_pd;
-
-input          mcif2sdp_n_rd_rsp_valid;  /* data valid */
-output         mcif2sdp_n_rd_rsp_ready;  /* data return handshake */
-input  [513:0] mcif2sdp_n_rd_rsp_pd;
-
-input          mcif2sdp_rd_rsp_valid;  /* data valid */
-output         mcif2sdp_rd_rsp_ready;  /* data return handshake */
-input  [513:0] mcif2sdp_rd_rsp_pd;
-
-input  mcif2sdp_wr_rsp_complete;
+#endif
 
 input [31:0] pwrbus_ram_pd;
 
 output        sdp2csb_resp_valid;  /* data valid */
 output [33:0] sdp2csb_resp_pd;     /* pkt_id_width=1 pkt_widths=33,33  */
 
-output  sdp2cvif_rd_cdt_lat_fifo_pop;
-
-output        sdp2cvif_rd_req_valid;  /* data valid */
-input         sdp2cvif_rd_req_ready;  /* data return handshake */
-output [78:0] sdp2cvif_rd_req_pd;
-
+#ifdef NVDLA_SECONDARY_MEMIF_ENABLE
+#ifdef NVDLA_SDP_BS_ENABLE
+output         sdp_b2cvif_rd_cdt_lat_fifo_pop;
+output         sdp_b2cvif_rd_req_valid;  /* data valid */
+input          sdp_b2cvif_rd_req_ready;  /* data return handshake */
+output [NVDLA_MEM_ADDRESS_WIDTH+14:0]  sdp_b2cvif_rd_req_pd;
+input          cvif2sdp_b_rd_rsp_valid;  /* data valid */
+output         cvif2sdp_b_rd_rsp_ready;  /* data return handshake */
+input  [NVDLA_DMAIF_BW+NVDLA_MEM_MASK_BIT-1:0] cvif2sdp_b_rd_rsp_pd;
+#endif
+#ifdef NVDLA_SDP_EW_ENABLE
+output         sdp_e2cvif_rd_cdt_lat_fifo_pop;
+output         sdp_e2cvif_rd_req_valid;  /* data valid */
+input          sdp_e2cvif_rd_req_ready;  /* data return handshake */
+output [NVDLA_MEM_ADDRESS_WIDTH+14:0]  sdp_e2cvif_rd_req_pd;
+input          cvif2sdp_e_rd_rsp_valid;  /* data valid */
+output         cvif2sdp_e_rd_rsp_ready;  /* data return handshake */
+input  [NVDLA_DMAIF_BW+NVDLA_MEM_MASK_BIT-1:0] cvif2sdp_e_rd_rsp_pd;
+#endif
+#ifdef NVDLA_SDP_BN_ENABLE
+output         sdp_n2cvif_rd_cdt_lat_fifo_pop;
+output         sdp_n2cvif_rd_req_valid;  /* data valid */
+input          sdp_n2cvif_rd_req_ready;  /* data return handshake */
+output [NVDLA_MEM_ADDRESS_WIDTH+14:0]  sdp_n2cvif_rd_req_pd;
+input          cvif2sdp_n_rd_rsp_valid;  /* data valid */
+output         cvif2sdp_n_rd_rsp_ready;  /* data return handshake */
+input  [NVDLA_DMAIF_BW+NVDLA_MEM_MASK_BIT-1:0] cvif2sdp_n_rd_rsp_pd;
+#endif
+input          cvif2sdp_rd_rsp_valid;  /* data valid */
+output         cvif2sdp_rd_rsp_ready;  /* data return handshake */
+input  [NVDLA_DMAIF_BW+NVDLA_MEM_MASK_BIT-1:0] cvif2sdp_rd_rsp_pd;
+output         sdp2cvif_rd_cdt_lat_fifo_pop;
+output         sdp2cvif_rd_req_valid;  /* data valid */
+input          sdp2cvif_rd_req_ready;  /* data return handshake */
+output [NVDLA_MEM_ADDRESS_WIDTH+14:0]  sdp2cvif_rd_req_pd;
 output         sdp2cvif_wr_req_valid;  /* data valid */
 input          sdp2cvif_wr_req_ready;  /* data return handshake */
-output [514:0] sdp2cvif_wr_req_pd;     /* pkt_id_width=1 pkt_widths=78,514  */
+output [NVDLA_DMAIF_BW+NVDLA_MEM_MASK_BIT:0] sdp2cvif_wr_req_pd;     /* pkt_id_width=1 pkt_widths=78,514  */
+input          cvif2sdp_wr_rsp_complete;
+#endif
 
 output [1:0] sdp2glb_done_intr_pd;
 
-output  sdp2mcif_rd_cdt_lat_fifo_pop;
-
-output        sdp2mcif_rd_req_valid;  /* data valid */
-input         sdp2mcif_rd_req_ready;  /* data return handshake */
-output [78:0] sdp2mcif_rd_req_pd;
-
-output         sdp2mcif_wr_req_valid;  /* data valid */
-input          sdp2mcif_wr_req_ready;  /* data return handshake */
-output [514:0] sdp2mcif_wr_req_pd;     /* pkt_id_width=1 pkt_widths=78,514  */
-
-output         sdp2pdp_valid;  /* data valid */
-input          sdp2pdp_ready;  /* data return handshake */
-output [255:0] sdp2pdp_pd;
-
-output  sdp_b2cvif_rd_cdt_lat_fifo_pop;
-
-output        sdp_b2cvif_rd_req_valid;  /* data valid */
-input         sdp_b2cvif_rd_req_ready;  /* data return handshake */
-output [78:0] sdp_b2cvif_rd_req_pd;
-
+#ifdef NVDLA_SDP_BS_ENABLE
 output  sdp_b2mcif_rd_cdt_lat_fifo_pop;
-
 output        sdp_b2mcif_rd_req_valid;  /* data valid */
 input         sdp_b2mcif_rd_req_ready;  /* data return handshake */
-output [78:0] sdp_b2mcif_rd_req_pd;
-
-output  sdp_e2cvif_rd_cdt_lat_fifo_pop;
-
-output        sdp_e2cvif_rd_req_valid;  /* data valid */
-input         sdp_e2cvif_rd_req_ready;  /* data return handshake */
-output [78:0] sdp_e2cvif_rd_req_pd;
-
+output [NVDLA_MEM_ADDRESS_WIDTH+14:0] sdp_b2mcif_rd_req_pd;
+input          mcif2sdp_b_rd_rsp_valid;  /* data valid */
+output         mcif2sdp_b_rd_rsp_ready;  /* data return handshake */
+input  [NVDLA_DMAIF_BW+NVDLA_MEM_MASK_BIT-1:0] mcif2sdp_b_rd_rsp_pd;
+#endif
+#ifdef NVDLA_SDP_EW_ENABLE
 output  sdp_e2mcif_rd_cdt_lat_fifo_pop;
-
 output        sdp_e2mcif_rd_req_valid;  /* data valid */
 input         sdp_e2mcif_rd_req_ready;  /* data return handshake */
-output [78:0] sdp_e2mcif_rd_req_pd;
-
-output  sdp_n2cvif_rd_cdt_lat_fifo_pop;
-
-output        sdp_n2cvif_rd_req_valid;  /* data valid */
-input         sdp_n2cvif_rd_req_ready;  /* data return handshake */
-output [78:0] sdp_n2cvif_rd_req_pd;
-
+output [NVDLA_MEM_ADDRESS_WIDTH+14:0] sdp_e2mcif_rd_req_pd;
+input          mcif2sdp_e_rd_rsp_valid;  /* data valid */
+output         mcif2sdp_e_rd_rsp_ready;  /* data return handshake */
+input  [NVDLA_DMAIF_BW+NVDLA_MEM_MASK_BIT-1:0] mcif2sdp_e_rd_rsp_pd;
+#endif
+#ifdef NVDLA_SDP_BN_ENABLE
 output  sdp_n2mcif_rd_cdt_lat_fifo_pop;
-
 output        sdp_n2mcif_rd_req_valid;  /* data valid */
 input         sdp_n2mcif_rd_req_ready;  /* data return handshake */
-output [78:0] sdp_n2mcif_rd_req_pd;
+output [NVDLA_MEM_ADDRESS_WIDTH+14:0] sdp_n2mcif_rd_req_pd;
+input          mcif2sdp_n_rd_rsp_valid;  /* data valid */
+output         mcif2sdp_n_rd_rsp_ready;  /* data return handshake */
+input  [NVDLA_DMAIF_BW+NVDLA_MEM_MASK_BIT-1:0] mcif2sdp_n_rd_rsp_pd;
+#endif
 
-output        sdp_rdma2csb_resp_valid;  /* data valid */
-output [33:0] sdp_rdma2csb_resp_pd;     /* pkt_id_width=1 pkt_widths=33,33  */
+output  sdp2mcif_rd_cdt_lat_fifo_pop;
+input          mcif2sdp_rd_rsp_valid;
+output         mcif2sdp_rd_rsp_ready;
+input  [NVDLA_DMAIF_BW+NVDLA_MEM_MASK_BIT-1:0] mcif2sdp_rd_rsp_pd;
+
+output        sdp2mcif_rd_req_valid;
+input         sdp2mcif_rd_req_ready;
+output [NVDLA_MEM_ADDRESS_WIDTH+14:0] sdp2mcif_rd_req_pd;
+
+output         sdp2mcif_wr_req_valid;
+input          sdp2mcif_wr_req_ready;
+output [NVDLA_DMAIF_BW+NVDLA_MEM_MASK_BIT:0] sdp2mcif_wr_req_pd;
+input  mcif2sdp_wr_rsp_complete;
+
+output         sdp2pdp_valid;
+input          sdp2pdp_ready;
+output [NVDLA_SDP_MAX_THROUGHPUT*NVDLA_BPE-1:0] sdp2pdp_pd;
+
+output        sdp_rdma2csb_resp_valid;
+output [33:0] sdp_rdma2csb_resp_pd;   
 
 //input  la_r_clk;           
 //input  larstn;             
@@ -299,171 +296,165 @@ wire   nvdla_core_rstn;
 //  NVDLA Partition P:    Reset Syncer                                //
 ////////////////////////////////////////////////////////////////////////
 NV_NVDLA_reset u_partition_p_reset (
-   .dla_reset_rstn                 (dla_reset_rstn)                 //|< i
-  ,.direct_reset_                  (direct_reset_)                  //|< i
-  ,.test_mode                      (test_mode)                      //|< i
-  ,.synced_rstn                    (nvdla_core_rstn)                //|> w
-  ,.nvdla_clk                      (nvdla_core_clk)                 //|< i
+   .dla_reset_rstn                 (dla_reset_rstn) 
+  ,.direct_reset_                  (direct_reset_)  
+  ,.test_mode                      (test_mode)      
+  ,.synced_rstn                    (nvdla_core_rstn)
+  ,.nvdla_clk                      (nvdla_core_clk) 
   );
 
 ////////////////////////////////////////////////////////////////////////
 // Sync for SLCG
 ////////////////////////////////////////////////////////////////////////
 NV_NVDLA_sync3d u_dla_clk_ovr_on_sync (
-   .clk                            (nvdla_core_clk)                 //|< i
-  ,.sync_i                         (nvdla_clk_ovr_on)               //|< i
-  ,.sync_o                         (dla_clk_ovr_on_sync)            //|> w
+   .clk                            (nvdla_core_clk)        
+  ,.sync_i                         (nvdla_clk_ovr_on)      
+  ,.sync_o                         (dla_clk_ovr_on_sync)   
   );
 
 NV_NVDLA_sync3d_s u_global_clk_ovr_on_sync (
-   .clk                            (nvdla_core_clk)                 //|< i
-  ,.prst                           (nvdla_core_rstn)                //|< w
-  ,.sync_i                         (global_clk_ovr_on)              //|< i
-  ,.sync_o                         (global_clk_ovr_on_sync)         //|> w
+   .clk                            (nvdla_core_clk)        
+  ,.prst                           (nvdla_core_rstn)       
+  ,.sync_i                         (global_clk_ovr_on)     
+  ,.sync_o                         (global_clk_ovr_on_sync)
   );
 
 ////////////////////////////////////////////////////////////////////////
 //  NVDLA Partition P:    Single Data Processor                       //
 ////////////////////////////////////////////////////////////////////////
 NV_NVDLA_sdp u_NV_NVDLA_sdp (
-   .nvdla_core_clk                 (nvdla_core_clk)                 //|< i
-  ,.nvdla_core_rstn                (nvdla_core_rstn)                //|< w
-  ,.cacc2sdp_valid                 (cacc2sdp_valid)                 //|< i
-  ,.cacc2sdp_ready                 (cacc2sdp_ready)                 //|> o
-  ,.cacc2sdp_pd                    (cacc2sdp_pd[513:0])             //|< i
-  ,.csb2sdp_rdma_req_pvld          (csb2sdp_rdma_req_pvld)          //|< i
-  ,.csb2sdp_rdma_req_prdy          (csb2sdp_rdma_req_prdy)          //|> o
-  ,.csb2sdp_rdma_req_pd            (csb2sdp_rdma_req_pd[62:0])      //|< i
-  ,.csb2sdp_req_pvld               (csb2sdp_req_pvld)               //|< i
-  ,.csb2sdp_req_prdy               (csb2sdp_req_prdy)               //|> o
-  ,.csb2sdp_req_pd                 (csb2sdp_req_pd[62:0])           //|< i
-  ,.cvif2sdp_b_rd_rsp_valid        (cvif2sdp_b_rd_rsp_valid)        //|< i
-  ,.cvif2sdp_b_rd_rsp_ready        (cvif2sdp_b_rd_rsp_ready)        //|> o
-  ,.cvif2sdp_b_rd_rsp_pd           (cvif2sdp_b_rd_rsp_pd[513:0])    //|< i
-  ,.cvif2sdp_e_rd_rsp_valid        (cvif2sdp_e_rd_rsp_valid)        //|< i
-  ,.cvif2sdp_e_rd_rsp_ready        (cvif2sdp_e_rd_rsp_ready)        //|> o
-  ,.cvif2sdp_e_rd_rsp_pd           (cvif2sdp_e_rd_rsp_pd[513:0])    //|< i
-  ,.cvif2sdp_n_rd_rsp_valid        (cvif2sdp_n_rd_rsp_valid)        //|< i
-  ,.cvif2sdp_n_rd_rsp_ready        (cvif2sdp_n_rd_rsp_ready)        //|> o
-  ,.cvif2sdp_n_rd_rsp_pd           (cvif2sdp_n_rd_rsp_pd[513:0])    //|< i
-  ,.cvif2sdp_rd_rsp_valid          (cvif2sdp_rd_rsp_valid)          //|< i
-  ,.cvif2sdp_rd_rsp_ready          (cvif2sdp_rd_rsp_ready)          //|> o
-  ,.cvif2sdp_rd_rsp_pd             (cvif2sdp_rd_rsp_pd[513:0])      //|< i
-  ,.cvif2sdp_wr_rsp_complete       (cvif2sdp_wr_rsp_complete)       //|< i
-  ,.mcif2sdp_b_rd_rsp_valid        (mcif2sdp_b_rd_rsp_valid)        //|< i
-  ,.mcif2sdp_b_rd_rsp_ready        (mcif2sdp_b_rd_rsp_ready)        //|> o
-  ,.mcif2sdp_b_rd_rsp_pd           (mcif2sdp_b_rd_rsp_pd[513:0])    //|< i
-  ,.mcif2sdp_e_rd_rsp_valid        (mcif2sdp_e_rd_rsp_valid)        //|< i
-  ,.mcif2sdp_e_rd_rsp_ready        (mcif2sdp_e_rd_rsp_ready)        //|> o
-  ,.mcif2sdp_e_rd_rsp_pd           (mcif2sdp_e_rd_rsp_pd[513:0])    //|< i
-  ,.mcif2sdp_n_rd_rsp_valid        (mcif2sdp_n_rd_rsp_valid)        //|< i
-  ,.mcif2sdp_n_rd_rsp_ready        (mcif2sdp_n_rd_rsp_ready)        //|> o
-  ,.mcif2sdp_n_rd_rsp_pd           (mcif2sdp_n_rd_rsp_pd[513:0])    //|< i
-  ,.mcif2sdp_rd_rsp_valid          (mcif2sdp_rd_rsp_valid)          //|< i
-  ,.mcif2sdp_rd_rsp_ready          (mcif2sdp_rd_rsp_ready)          //|> o
-  ,.mcif2sdp_rd_rsp_pd             (mcif2sdp_rd_rsp_pd[513:0])      //|< i
-  ,.mcif2sdp_wr_rsp_complete       (mcif2sdp_wr_rsp_complete)       //|< i
-  ,.pwrbus_ram_pd                  (pwrbus_ram_pd[31:0])            //|< i
-  ,.sdp2csb_resp_valid             (sdp2csb_resp_valid)             //|> o
-  ,.sdp2csb_resp_pd                (sdp2csb_resp_pd[33:0])          //|> o
-  ,.sdp2cvif_rd_cdt_lat_fifo_pop   (sdp2cvif_rd_cdt_lat_fifo_pop)   //|> o
-  ,.sdp2cvif_rd_req_valid          (sdp2cvif_rd_req_valid)          //|> o
-  ,.sdp2cvif_rd_req_ready          (sdp2cvif_rd_req_ready)          //|< i
-  ,.sdp2cvif_rd_req_pd             (sdp2cvif_rd_req_pd[78:0])       //|> o
-  ,.sdp2cvif_wr_req_valid          (sdp2cvif_wr_req_valid)          //|> o
-  ,.sdp2cvif_wr_req_ready          (sdp2cvif_wr_req_ready)          //|< i
-  ,.sdp2cvif_wr_req_pd             (sdp2cvif_wr_req_pd[514:0])      //|> o
-  ,.sdp2glb_done_intr_pd           (sdp2glb_done_intr_pd[1:0])      //|> o
-  ,.sdp2mcif_rd_cdt_lat_fifo_pop   (sdp2mcif_rd_cdt_lat_fifo_pop)   //|> o
-  ,.sdp2mcif_rd_req_valid          (sdp2mcif_rd_req_valid)          //|> o
-  ,.sdp2mcif_rd_req_ready          (sdp2mcif_rd_req_ready)          //|< i
-  ,.sdp2mcif_rd_req_pd             (sdp2mcif_rd_req_pd[78:0])       //|> o
-  ,.sdp2mcif_wr_req_valid          (sdp2mcif_wr_req_valid)          //|> o
-  ,.sdp2mcif_wr_req_ready          (sdp2mcif_wr_req_ready)          //|< i
-  ,.sdp2mcif_wr_req_pd             (sdp2mcif_wr_req_pd[514:0])      //|> o
-  ,.sdp2pdp_valid                  (sdp2pdp_valid)                  //|> o
-  ,.sdp2pdp_ready                  (sdp2pdp_ready)                  //|< i
-  ,.sdp2pdp_pd                     (sdp2pdp_pd[255:0])              //|> o
-  ,.sdp_b2cvif_rd_cdt_lat_fifo_pop (sdp_b2cvif_rd_cdt_lat_fifo_pop) //|> o
-  ,.sdp_b2cvif_rd_req_valid        (sdp_b2cvif_rd_req_valid)        //|> o
-  ,.sdp_b2cvif_rd_req_ready        (sdp_b2cvif_rd_req_ready)        //|< i
-  ,.sdp_b2cvif_rd_req_pd           (sdp_b2cvif_rd_req_pd[78:0])     //|> o
-  ,.sdp_b2mcif_rd_cdt_lat_fifo_pop (sdp_b2mcif_rd_cdt_lat_fifo_pop) //|> o
-  ,.sdp_b2mcif_rd_req_valid        (sdp_b2mcif_rd_req_valid)        //|> o
-  ,.sdp_b2mcif_rd_req_ready        (sdp_b2mcif_rd_req_ready)        //|< i
-  ,.sdp_b2mcif_rd_req_pd           (sdp_b2mcif_rd_req_pd[78:0])     //|> o
-  ,.sdp_e2cvif_rd_cdt_lat_fifo_pop (sdp_e2cvif_rd_cdt_lat_fifo_pop) //|> o
-  ,.sdp_e2cvif_rd_req_valid        (sdp_e2cvif_rd_req_valid)        //|> o
-  ,.sdp_e2cvif_rd_req_ready        (sdp_e2cvif_rd_req_ready)        //|< i
-  ,.sdp_e2cvif_rd_req_pd           (sdp_e2cvif_rd_req_pd[78:0])     //|> o
-  ,.sdp_e2mcif_rd_cdt_lat_fifo_pop (sdp_e2mcif_rd_cdt_lat_fifo_pop) //|> o
-  ,.sdp_e2mcif_rd_req_valid        (sdp_e2mcif_rd_req_valid)        //|> o
-  ,.sdp_e2mcif_rd_req_ready        (sdp_e2mcif_rd_req_ready)        //|< i
-  ,.sdp_e2mcif_rd_req_pd           (sdp_e2mcif_rd_req_pd[78:0])     //|> o
-  ,.sdp_n2cvif_rd_cdt_lat_fifo_pop (sdp_n2cvif_rd_cdt_lat_fifo_pop) //|> o
-  ,.sdp_n2cvif_rd_req_valid        (sdp_n2cvif_rd_req_valid)        //|> o
-  ,.sdp_n2cvif_rd_req_ready        (sdp_n2cvif_rd_req_ready)        //|< i
-  ,.sdp_n2cvif_rd_req_pd           (sdp_n2cvif_rd_req_pd[78:0])     //|> o
-  ,.sdp_n2mcif_rd_cdt_lat_fifo_pop (sdp_n2mcif_rd_cdt_lat_fifo_pop) //|> o
-  ,.sdp_n2mcif_rd_req_valid        (sdp_n2mcif_rd_req_valid)        //|> o
-  ,.sdp_n2mcif_rd_req_ready        (sdp_n2mcif_rd_req_ready)        //|< i
-  ,.sdp_n2mcif_rd_req_pd           (sdp_n2mcif_rd_req_pd[78:0])     //|> o
-  ,.sdp_rdma2csb_resp_valid        (sdp_rdma2csb_resp_valid)        //|> o
-  ,.sdp_rdma2csb_resp_pd           (sdp_rdma2csb_resp_pd[33:0])     //|> o
-  ,.dla_clk_ovr_on_sync            (dla_clk_ovr_on_sync)            //|< w
-  ,.global_clk_ovr_on_sync         (global_clk_ovr_on_sync)         //|< w
-  ,.tmc2slcg_disable_clock_gating  (tmc2slcg_disable_clock_gating)  //|< i
+   .nvdla_core_clk                 (nvdla_core_clk)       
+  ,.nvdla_core_rstn                (nvdla_core_rstn)      
+  ,.cacc2sdp_valid                 (cacc2sdp_valid)       
+  ,.cacc2sdp_ready                 (cacc2sdp_ready)       
+  ,.cacc2sdp_pd                    (cacc2sdp_pd)   
+  ,.csb2sdp_rdma_req_pvld          (csb2sdp_rdma_req_pvld)
+  ,.csb2sdp_rdma_req_prdy          (csb2sdp_rdma_req_prdy)         
+  ,.csb2sdp_rdma_req_pd            (csb2sdp_rdma_req_pd)     
+  ,.csb2sdp_req_pvld               (csb2sdp_req_pvld)              
+  ,.csb2sdp_req_prdy               (csb2sdp_req_prdy)              
+  ,.csb2sdp_req_pd                 (csb2sdp_req_pd)          
+#ifdef NVDLA_SECONDARY_MEMIF_ENABLE
+#ifdef NVDLA_SDP_BS_ENABLE
+  ,.sdp_b2cvif_rd_cdt_lat_fifo_pop (sdp_b2cvif_rd_cdt_lat_fifo_pop)
+  ,.sdp_b2cvif_rd_req_valid        (sdp_b2cvif_rd_req_valid)       
+  ,.sdp_b2cvif_rd_req_ready        (sdp_b2cvif_rd_req_ready)       
+  ,.sdp_b2cvif_rd_req_pd           (sdp_b2cvif_rd_req_pd      )    
+  ,.cvif2sdp_b_rd_rsp_valid        (cvif2sdp_b_rd_rsp_valid)       
+  ,.cvif2sdp_b_rd_rsp_ready        (cvif2sdp_b_rd_rsp_ready)       
+  ,.cvif2sdp_b_rd_rsp_pd           (cvif2sdp_b_rd_rsp_pd       )   
+#endif
+#ifdef NVDLA_SDP_EW_ENABLE
+  ,.sdp_e2cvif_rd_cdt_lat_fifo_pop (sdp_e2cvif_rd_cdt_lat_fifo_pop)
+  ,.sdp_e2cvif_rd_req_valid        (sdp_e2cvif_rd_req_valid)       
+  ,.sdp_e2cvif_rd_req_ready        (sdp_e2cvif_rd_req_ready)       
+  ,.sdp_e2cvif_rd_req_pd           (sdp_e2cvif_rd_req_pd      )    
+  ,.cvif2sdp_e_rd_rsp_valid        (cvif2sdp_e_rd_rsp_valid)       
+  ,.cvif2sdp_e_rd_rsp_ready        (cvif2sdp_e_rd_rsp_ready)       
+  ,.cvif2sdp_e_rd_rsp_pd           (cvif2sdp_e_rd_rsp_pd       )   
+#endif
+#ifdef NVDLA_SDP_BN_ENABLE
+  ,.sdp_n2cvif_rd_cdt_lat_fifo_pop (sdp_n2cvif_rd_cdt_lat_fifo_pop)
+  ,.sdp_n2cvif_rd_req_valid        (sdp_n2cvif_rd_req_valid)       
+  ,.sdp_n2cvif_rd_req_ready        (sdp_n2cvif_rd_req_ready)       
+  ,.sdp_n2cvif_rd_req_pd           (sdp_n2cvif_rd_req_pd      )    
+  ,.cvif2sdp_n_rd_rsp_valid        (cvif2sdp_n_rd_rsp_valid)       
+  ,.cvif2sdp_n_rd_rsp_ready        (cvif2sdp_n_rd_rsp_ready)       
+  ,.cvif2sdp_n_rd_rsp_pd           (cvif2sdp_n_rd_rsp_pd       )   
+#endif
+  ,.cvif2sdp_rd_rsp_valid          (cvif2sdp_rd_rsp_valid)         
+  ,.cvif2sdp_rd_rsp_ready          (cvif2sdp_rd_rsp_ready)         
+  ,.cvif2sdp_rd_rsp_pd             (cvif2sdp_rd_rsp_pd       )     
+  ,.sdp2cvif_rd_cdt_lat_fifo_pop   (sdp2cvif_rd_cdt_lat_fifo_pop)  
+  ,.sdp2cvif_rd_req_valid          (sdp2cvif_rd_req_valid)         
+  ,.sdp2cvif_rd_req_ready          (sdp2cvif_rd_req_ready)         
+  ,.sdp2cvif_rd_req_pd             (sdp2cvif_rd_req_pd      )      
+  ,.sdp2cvif_wr_req_valid          (sdp2cvif_wr_req_valid)         
+  ,.sdp2cvif_wr_req_ready          (sdp2cvif_wr_req_ready)         
+  ,.sdp2cvif_wr_req_pd             (sdp2cvif_wr_req_pd       )     
+  ,.cvif2sdp_wr_rsp_complete       (cvif2sdp_wr_rsp_complete)      
+#endif
+#ifdef NVDLA_SDP_BS_ENABLE
+  ,.sdp_b2mcif_rd_cdt_lat_fifo_pop (sdp_b2mcif_rd_cdt_lat_fifo_pop)
+  ,.sdp_b2mcif_rd_req_valid        (sdp_b2mcif_rd_req_valid)       
+  ,.sdp_b2mcif_rd_req_ready        (sdp_b2mcif_rd_req_ready)       
+  ,.sdp_b2mcif_rd_req_pd           (sdp_b2mcif_rd_req_pd)    
+  ,.mcif2sdp_b_rd_rsp_valid        (mcif2sdp_b_rd_rsp_valid)       
+  ,.mcif2sdp_b_rd_rsp_ready        (mcif2sdp_b_rd_rsp_ready)       
+  ,.mcif2sdp_b_rd_rsp_pd           (mcif2sdp_b_rd_rsp_pd)   
+#endif
+#ifdef NVDLA_SDP_EW_ENABLE
+  ,.sdp_e2mcif_rd_cdt_lat_fifo_pop (sdp_e2mcif_rd_cdt_lat_fifo_pop)
+  ,.sdp_e2mcif_rd_req_valid        (sdp_e2mcif_rd_req_valid)       
+  ,.sdp_e2mcif_rd_req_ready        (sdp_e2mcif_rd_req_ready)       
+  ,.sdp_e2mcif_rd_req_pd           (sdp_e2mcif_rd_req_pd)    
+  ,.mcif2sdp_e_rd_rsp_valid        (mcif2sdp_e_rd_rsp_valid)       
+  ,.mcif2sdp_e_rd_rsp_ready        (mcif2sdp_e_rd_rsp_ready)       
+  ,.mcif2sdp_e_rd_rsp_pd           (mcif2sdp_e_rd_rsp_pd)   
+#endif
+#ifdef NVDLA_SDP_BN_ENABLE
+  ,.sdp_n2mcif_rd_cdt_lat_fifo_pop (sdp_n2mcif_rd_cdt_lat_fifo_pop)
+  ,.sdp_n2mcif_rd_req_valid        (sdp_n2mcif_rd_req_valid)       
+  ,.sdp_n2mcif_rd_req_ready        (sdp_n2mcif_rd_req_ready)       
+  ,.sdp_n2mcif_rd_req_pd           (sdp_n2mcif_rd_req_pd)    
+  ,.mcif2sdp_n_rd_rsp_valid        (mcif2sdp_n_rd_rsp_valid)       
+  ,.mcif2sdp_n_rd_rsp_ready        (mcif2sdp_n_rd_rsp_ready)       
+  ,.mcif2sdp_n_rd_rsp_pd           (mcif2sdp_n_rd_rsp_pd)   
+#endif
+  ,.mcif2sdp_rd_rsp_valid          (mcif2sdp_rd_rsp_valid)         
+  ,.mcif2sdp_rd_rsp_ready          (mcif2sdp_rd_rsp_ready)         
+  ,.mcif2sdp_rd_rsp_pd             (mcif2sdp_rd_rsp_pd)     
+  ,.mcif2sdp_wr_rsp_complete       (mcif2sdp_wr_rsp_complete)      
+  ,.pwrbus_ram_pd                  (pwrbus_ram_pd)           
+  ,.sdp2csb_resp_valid             (sdp2csb_resp_valid)            
+  ,.sdp2csb_resp_pd                (sdp2csb_resp_pd)         
+  ,.sdp2glb_done_intr_pd           (sdp2glb_done_intr_pd)     
+  ,.sdp2mcif_rd_cdt_lat_fifo_pop   (sdp2mcif_rd_cdt_lat_fifo_pop)  
+  ,.sdp2mcif_rd_req_valid          (sdp2mcif_rd_req_valid)         
+  ,.sdp2mcif_rd_req_ready          (sdp2mcif_rd_req_ready)         
+  ,.sdp2mcif_rd_req_pd             (sdp2mcif_rd_req_pd)      
+  ,.sdp2mcif_wr_req_valid          (sdp2mcif_wr_req_valid)         
+  ,.sdp2mcif_wr_req_ready          (sdp2mcif_wr_req_ready)         
+  ,.sdp2mcif_wr_req_pd             (sdp2mcif_wr_req_pd)     
+  ,.sdp2pdp_valid                  (sdp2pdp_valid)                 
+  ,.sdp2pdp_ready                  (sdp2pdp_ready)                 
+  ,.sdp2pdp_pd                     (sdp2pdp_pd)             
+  ,.sdp_rdma2csb_resp_valid        (sdp_rdma2csb_resp_valid)       
+  ,.sdp_rdma2csb_resp_pd           (sdp_rdma2csb_resp_pd)    
+  ,.dla_clk_ovr_on_sync            (dla_clk_ovr_on_sync)           
+  ,.global_clk_ovr_on_sync         (global_clk_ovr_on_sync)        
+  ,.tmc2slcg_disable_clock_gating  (tmc2slcg_disable_clock_gating) 
   );
-    //&Connect s/sdp2(mc|cv)if_rd_(req|cdt)/sdp2${1}if_rd_${2}_src/;
-    //&Connect s/(mc|cv)if2sdp_rd_(rsp)/${1}if2sdp_rd_${2}_dst/;
-    //&Connect s/sdp_b2(mc|cv)if_rd_(req|cdt)/sdp_b2${1}if_rd_${2}_src/;
-    //&Connect s/(mc|cv)if2sdp_b_rd_(rsp)/${1}if2sdp_b_rd_${2}_dst/;
 
+#ifdef NVDLA_RETIMING_ENABLE
 ////////////////////////////////////////////////////////////////////////
 //  NVDLA Partition P:    Retiming path cmac_a->cacc                  //
 ////////////////////////////////////////////////////////////////////////
 NV_NVDLA_RT_cmac_a2cacc u_NV_NVDLA_RT_cmac_a2cacc (
-   .nvdla_core_clk                 (nvdla_core_clk)                 //|< i
-  ,.nvdla_core_rstn                (nvdla_core_rstn)                //|< w
-  ,.mac2accu_src_pvld              (mac_a2accu_src_pvld)            //|< i
-  ,.mac2accu_src_mask              (mac_a2accu_src_mask[7:0])       //|< i
-  ,.mac2accu_src_mode              (mac_a2accu_src_mode[7:0])       //|< i
-  ,.mac2accu_src_data0             (mac_a2accu_src_data0[175:0])    //|< i
-  ,.mac2accu_src_data1             (mac_a2accu_src_data1[175:0])    //|< i
-  ,.mac2accu_src_data2             (mac_a2accu_src_data2[175:0])    //|< i
-  ,.mac2accu_src_data3             (mac_a2accu_src_data3[175:0])    //|< i
-  ,.mac2accu_src_data4             (mac_a2accu_src_data4[175:0])    //|< i
-  ,.mac2accu_src_data5             (mac_a2accu_src_data5[175:0])    //|< i
-  ,.mac2accu_src_data6             (mac_a2accu_src_data6[175:0])    //|< i
-  ,.mac2accu_src_data7             (mac_a2accu_src_data7[175:0])    //|< i
-  ,.mac2accu_src_pd                (mac_a2accu_src_pd[8:0])         //|< i
-  ,.mac2accu_dst_pvld              (mac_a2accu_dst_pvld)            //|> o
-  ,.mac2accu_dst_mask              (mac_a2accu_dst_mask[7:0])       //|> o
-  ,.mac2accu_dst_mode              (mac_a2accu_dst_mode[7:0])       //|> o
-  ,.mac2accu_dst_data0             (mac_a2accu_dst_data0[175:0])    //|> o
-  ,.mac2accu_dst_data1             (mac_a2accu_dst_data1[175:0])    //|> o
-  ,.mac2accu_dst_data2             (mac_a2accu_dst_data2[175:0])    //|> o
-  ,.mac2accu_dst_data3             (mac_a2accu_dst_data3[175:0])    //|> o
-  ,.mac2accu_dst_data4             (mac_a2accu_dst_data4[175:0])    //|> o
-  ,.mac2accu_dst_data5             (mac_a2accu_dst_data5[175:0])    //|> o
-  ,.mac2accu_dst_data6             (mac_a2accu_dst_data6[175:0])    //|> o
-  ,.mac2accu_dst_data7             (mac_a2accu_dst_data7[175:0])    //|> o
-  ,.mac2accu_dst_pd                (mac_a2accu_dst_pd[8:0])         //|> o
+   .nvdla_core_clk                 (nvdla_core_clk)             
+  ,.nvdla_core_rstn                (nvdla_core_rstn)            
+  ,.mac2accu_src_pvld              (mac_a2accu_src_pvld)        
+  ,.mac2accu_src_mask              (mac_a2accu_src_mask)   
+  ,.mac2accu_src_mode              (mac_a2accu_src_mode)   
+  //: for(my $i=0; $i<CMAC_ATOMK_HALF; $i++){
+  //: print qq(
+  //: ,.mac2accu_src_data${i}             (mac_a2accu_src_data${i})   )
+  //: }
+  ,.mac2accu_src_pd                (mac_a2accu_src_pd)     
+  ,.mac2accu_dst_pvld              (mac_a2accu_dst_pvld)        
+  ,.mac2accu_dst_mask              (mac_a2accu_dst_mask)   
+  ,.mac2accu_dst_mode              (mac_a2accu_dst_mode)   
+  //: for(my $i=0; $i<CMAC_ATOMK_HALF; $i++){
+  //: print qq(
+  //: ,.mac2accu_dst_data${i}             (mac_a2accu_dst_data${i})   )
+  //: }
+  ,.mac2accu_dst_pd                (mac_a2accu_dst_pd)   
   );
-
-////////////////////////////////////////////////////////////////////////
-//  NVDLA Partition P:    OBS                                         //
-////////////////////////////////////////////////////////////////////////
-//&Instance NV_NVDLA_P_obs;
+#endif
 
 ////////////////////////////////////////////////////////////////////////
 //  Dangles/Contenders report                                         //
 ////////////////////////////////////////////////////////////////////////
-
-//|
-//|
-//|
-//|
 
 endmodule // NV_NVDLA_partition_p
 

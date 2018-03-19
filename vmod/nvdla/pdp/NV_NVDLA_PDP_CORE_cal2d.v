@@ -8,10 +8,11 @@
 
 // File Name: NV_NVDLA_PDP_CORE_cal2d.v
 
+#include "NV_NVDLA_PDP_define.h"
+
 module NV_NVDLA_PDP_CORE_cal2d (
    nvdla_core_clk                 //|< i
   ,nvdla_core_rstn                //|< i
-  ,nvdla_op_gated_clk_fp16        //|< i
   ,padding_v_cfg                  //|< i
   ,pdp_dp2wdma_ready              //|< i
   ,pdp_op_start                   //|< i
@@ -28,10 +29,9 @@ module NV_NVDLA_PDP_CORE_cal2d (
   ,pwrbus_ram_pd                  //|< i
   ,reg2dp_cube_in_height          //|< i
   ,reg2dp_cube_out_width          //|< i
-  ,reg2dp_fp16_en                 //|< i
-  ,reg2dp_input_data              //|< i
-  ,reg2dp_int16_en                //|< i
-  ,reg2dp_int8_en                 //|< i
+  //,reg2dp_input_data              //|< i
+  //,reg2dp_int16_en                //|< i
+  //,reg2dp_int8_en                 //|< i
   ,reg2dp_kernel_height           //|< i
   ,reg2dp_kernel_width            //|< i
   ,reg2dp_pad_bottom_cfg          //|< i
@@ -52,14 +52,14 @@ module NV_NVDLA_PDP_CORE_cal2d (
   ,pdp_dp2wdma_valid              //|> o
   ,pooling1d_prdy                 //|> o
   );
-
+/////////////////////////////////////////////////////////////////////////
 input          nvdla_core_clk;
 input          nvdla_core_rstn;
-input          nvdla_op_gated_clk_fp16;
 input    [2:0] padding_v_cfg;
 input          pdp_dp2wdma_ready;
 input          pdp_op_start;
-input  [111:0] pooling1d_pd;
+//: my $m = NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6);
+//: print " input [$m-1:0] pooling1d_pd; \n";
 input          pooling1d_pvld;
 input   [12:0] pooling_channel_cfg;
 input    [9:0] pooling_out_fwidth_cfg;
@@ -72,10 +72,9 @@ input    [1:0] pooling_type_cfg;
 input   [31:0] pwrbus_ram_pd;
 input   [12:0] reg2dp_cube_in_height;
 input   [12:0] reg2dp_cube_out_width;
-input          reg2dp_fp16_en;
-input    [1:0] reg2dp_input_data;
-input          reg2dp_int16_en;
-input          reg2dp_int8_en;
+//input    [1:0] reg2dp_input_data;
+//input          reg2dp_int16_en;
+//input          reg2dp_int8_en;
 input    [2:0] reg2dp_kernel_height;
 input    [2:0] reg2dp_kernel_width;
 input    [2:0] reg2dp_pad_bottom_cfg;
@@ -92,10 +91,12 @@ input    [9:0] reg2dp_partial_width_out_last;
 input    [9:0] reg2dp_partial_width_out_mid;
 input   [16:0] reg2dp_recip_height_cfg;
 input   [16:0] reg2dp_recip_width_cfg;
-output  [63:0] pdp_dp2wdma_pd;
+//: my $m = NVDLA_PDP_THROUGHPUT*NVDLA_PDP_BWPE;
+//: print "output  [${m}-1:0] pdp_dp2wdma_pd; \n";
 output         pdp_dp2wdma_valid;
 output         pooling1d_prdy;
-wire     [5:0] BANK_DEPTH;
+/////////////////////////////////////////////////////////////////////////
+wire     [8:0] BANK_DEPTH;
 wire           active_last_line;
 wire           average_pooling_en;
 wire           bubble_en_end;
@@ -105,357 +106,21 @@ wire     [3:0] buffer_lines_1;
 wire     [3:0] buffer_lines_2;
 wire     [3:0] buffer_lines_3;
 wire     [3:0] cube_in_height_cfg;
-wire    [13:0] cube_out_channel;
 wire           cur_datin_disable_2d_sync;
-wire    [21:0] data_16bit_0;
-wire    [21:0] data_16bit_0_ff;
-wire    [21:0] data_16bit_1;
-wire    [21:0] data_16bit_1_ff;
-wire    [21:0] data_16bit_2;
-wire    [21:0] data_16bit_2_ff;
-wire    [21:0] data_16bit_3;
-wire    [21:0] data_16bit_3_ff;
-wire    [13:0] data_8bit_0;
-wire    [13:0] data_8bit_0_ff;
-wire    [13:0] data_8bit_1;
-wire    [13:0] data_8bit_1_ff;
-wire    [13:0] data_8bit_2;
-wire    [13:0] data_8bit_2_ff;
-wire    [13:0] data_8bit_3;
-wire    [13:0] data_8bit_3_ff;
-wire    [13:0] data_8bit_4;
-wire    [13:0] data_8bit_4_ff;
-wire    [13:0] data_8bit_5;
-wire    [13:0] data_8bit_5_ff;
-wire    [13:0] data_8bit_6;
-wire    [13:0] data_8bit_6_ff;
-wire    [13:0] data_8bit_7;
-wire    [13:0] data_8bit_7_ff;
 wire           data_c_end;
-wire    [18:0] data_hmult_16bit_0;
-wire    [38:0] data_hmult_16bit_0_ext;
-wire    [38:0] data_hmult_16bit_0_ext_ff;
-wire    [18:0] data_hmult_16bit_1;
-wire    [38:0] data_hmult_16bit_1_ext;
-wire    [38:0] data_hmult_16bit_1_ext_ff;
-wire    [18:0] data_hmult_16bit_2;
-wire    [38:0] data_hmult_16bit_2_ext;
-wire    [38:0] data_hmult_16bit_2_ext_ff;
-wire    [18:0] data_hmult_16bit_3;
-wire    [38:0] data_hmult_16bit_3_ext;
-wire    [38:0] data_hmult_16bit_3_ext_ff;
-wire    [21:0] data_hmult_8bit_0;
-wire    [30:0] data_hmult_8bit_0_lsb_ext;
-wire    [30:0] data_hmult_8bit_0_lsb_ext_ff;
-wire    [30:0] data_hmult_8bit_0_msb_ext;
-wire    [30:0] data_hmult_8bit_0_msb_ext_ff;
-wire    [21:0] data_hmult_8bit_1;
-wire    [30:0] data_hmult_8bit_1_lsb_ext;
-wire    [30:0] data_hmult_8bit_1_lsb_ext_ff;
-wire    [30:0] data_hmult_8bit_1_msb_ext;
-wire    [30:0] data_hmult_8bit_1_msb_ext_ff;
-wire    [21:0] data_hmult_8bit_2;
-wire    [30:0] data_hmult_8bit_2_lsb_ext;
-wire    [30:0] data_hmult_8bit_2_lsb_ext_ff;
-wire    [30:0] data_hmult_8bit_2_msb_ext;
-wire    [30:0] data_hmult_8bit_2_msb_ext_ff;
-wire    [21:0] data_hmult_8bit_3;
-wire    [30:0] data_hmult_8bit_3_lsb_ext;
-wire    [30:0] data_hmult_8bit_3_lsb_ext_ff;
-wire    [30:0] data_hmult_8bit_3_msb_ext;
-wire    [30:0] data_hmult_8bit_3_msb_ext_ff;
-wire    [21:0] data_hmult_stage0_in0;
-wire    [21:0] data_hmult_stage0_in1;
-wire    [21:0] data_hmult_stage0_in2;
-wire    [21:0] data_hmult_stage0_in3;
-wire    [15:0] data_mult_stage1_in0;
-wire    [15:0] data_mult_stage1_in1;
-wire    [15:0] data_mult_stage1_in2;
-wire    [15:0] data_mult_stage1_in3;
-wire    [15:0] data_vmult_16bit_0;
-wire    [35:0] data_vmult_16bit_0_ext;
-wire    [35:0] data_vmult_16bit_0_ext_ff;
-wire    [15:0] data_vmult_16bit_1;
-wire    [35:0] data_vmult_16bit_1_ext;
-wire    [35:0] data_vmult_16bit_1_ext_ff;
-wire    [15:0] data_vmult_16bit_2;
-wire    [35:0] data_vmult_16bit_2_ext;
-wire    [35:0] data_vmult_16bit_2_ext_ff;
-wire    [15:0] data_vmult_16bit_3;
-wire    [35:0] data_vmult_16bit_3_ext;
-wire    [35:0] data_vmult_16bit_3_ext_ff;
-wire    [15:0] data_vmult_8bit_0;
-wire    [27:0] data_vmult_8bit_0_lsb_ext;
-wire    [27:0] data_vmult_8bit_0_lsb_ext_ff;
-wire    [27:0] data_vmult_8bit_0_msb_ext;
-wire    [27:0] data_vmult_8bit_0_msb_ext_ff;
-wire    [15:0] data_vmult_8bit_1;
-wire    [27:0] data_vmult_8bit_1_lsb_ext;
-wire    [27:0] data_vmult_8bit_1_lsb_ext_ff;
-wire    [27:0] data_vmult_8bit_1_msb_ext;
-wire    [27:0] data_vmult_8bit_1_msb_ext_ff;
-wire    [15:0] data_vmult_8bit_2;
-wire    [27:0] data_vmult_8bit_2_lsb_ext;
-wire    [27:0] data_vmult_8bit_2_lsb_ext_ff;
-wire    [27:0] data_vmult_8bit_2_msb_ext;
-wire    [27:0] data_vmult_8bit_2_msb_ext_ff;
-wire    [15:0] data_vmult_8bit_3;
-wire    [27:0] data_vmult_8bit_3_lsb_ext;
-wire    [27:0] data_vmult_8bit_3_lsb_ext_ff;
-wire    [27:0] data_vmult_8bit_3_msb_ext;
-wire    [27:0] data_vmult_8bit_3_msb_ext_ff;
-wire   [254:0] din_pd;
-wire   [254:0] din_pd_d0;
-wire   [254:0] din_pd_d1;
-wire   [254:0] din_pd_d2;
-wire   [254:0] din_pd_d3;
-wire   [254:0] din_pd_d4;
-wire           din_rdy;
-wire           din_rdy_d0;
-wire           din_rdy_d1;
-wire           din_rdy_d2;
-wire           din_rdy_d3;
-wire           din_rdy_d4;
-wire           din_vld;
-wire           din_vld_d0;
-wire           din_vld_d1;
-wire           din_vld_d2;
-wire           din_vld_d3;
-wire           din_vld_d4;
-wire   [254:0] dout_pd;
-wire           dout_rdy;
-wire           dout_vld;
 wire     [3:0] first_out_num;
 wire     [2:0] first_out_num_dec2;
 wire           first_splitw;
 wire     [2:0] flush_in_next_surf;
 wire     [2:0] flush_num_dec1;
 wire           flush_read_en;
-wire     [7:0] fp16_4add_in_prdy;
-wire     [7:0] fp16_4add_in_pvld;
-wire     [7:0] fp16_4add_out_prdy;
-wire     [7:0] fp16_4add_out_pvld;
-wire    [67:0] fp16_add_in_a;
-wire    [67:0] fp16_add_in_a_sync;
-wire    [67:0] fp16_add_in_b0;
-wire    [67:0] fp16_add_in_b1;
-wire    [67:0] fp16_add_in_b2;
-wire    [67:0] fp16_add_in_b3;
-wire    [67:0] fp16_add_in_b4;
-wire    [67:0] fp16_add_in_b5;
-wire    [67:0] fp16_add_in_b6;
-wire    [67:0] fp16_add_in_b7;
-wire           fp16_add_in_rdy;
-wire     [3:0] fp16_add_pad_in_a_rdy;
-wire     [3:0] fp16_add_pad_in_a_vld;
-wire     [3:0] fp16_add_pad_in_b_rdy;
-wire     [3:0] fp16_add_pad_in_b_vld;
-wire    [16:0] fp16_add_pad_out0;
-wire    [16:0] fp16_add_pad_out1;
-wire    [16:0] fp16_add_pad_out2;
-wire    [16:0] fp16_add_pad_out3;
-wire           fp16_add_pad_out_pvld;
-wire     [3:0] fp16_add_pad_out_rdy;
-wire     [3:0] fp16_add_pad_out_vld;
-wire           fp16_en;
-wire           fp16_mean_pool_cfg;
-wire           fp16_mean_pool_valid;
-wire   [114:0] fp16_mul_pad_line_in_pd;
-wire   [114:0] fp16_mul_pad_line_in_pd_d0;
-wire   [114:0] fp16_mul_pad_line_in_pd_d1;
-wire   [114:0] fp16_mul_pad_line_in_pd_d2;
-wire   [114:0] fp16_mul_pad_line_in_pd_d3;
-wire           fp16_mul_pad_line_in_rdy;
-wire           fp16_mul_pad_line_in_rdy_d0;
-wire           fp16_mul_pad_line_in_rdy_d1;
-wire           fp16_mul_pad_line_in_rdy_d2;
-wire           fp16_mul_pad_line_in_rdy_d3;
-wire     [0:0] fp16_mul_pad_line_in_vld;
-wire           fp16_mul_pad_line_in_vld_d0;
-wire           fp16_mul_pad_line_in_vld_d1;
-wire           fp16_mul_pad_line_in_vld_d2;
-wire           fp16_mul_pad_line_in_vld_d3;
-wire   [114:0] fp16_mul_pad_line_out_pd;
-wire           fp16_mul_pad_line_out_rdy;
-wire           fp16_mul_pad_line_out_vld;
-wire           fp16_mul_pad_line_prdy;
-wire           fp16_mul_pad_line_pvld;
-wire     [1:0] fp16_mul_pad_line_rdy;
-wire     [1:0] fp16_mul_pad_line_vld;
-wire     [3:0] fp16_mulv_in_a_rdy;
-wire     [3:0] fp16_mulv_in_a_vld;
-wire     [3:0] fp16_mulv_in_b_rdy;
-wire     [3:0] fp16_mulv_in_b_vld;
-wire           fp16_mulv_in_vld;
-wire    [16:0] fp16_mulv_out0;
-wire    [16:0] fp16_mulv_out1;
-wire    [16:0] fp16_mulv_out2;
-wire    [16:0] fp16_mulv_out3;
-wire     [3:0] fp16_mulv_out_rdy;
-wire     [3:0] fp16_mulv_out_vld;
-wire           fp16_mulv_rdy;
-wire     [3:0] fp16_mulw_in_a_rdy;
-wire     [3:0] fp16_mulw_in_a_vld;
-wire     [3:0] fp16_mulw_in_b_rdy;
-wire     [3:0] fp16_mulw_in_b_vld;
-wire           fp16_mulw_in_vld;
-wire    [16:0] fp16_mulw_out0;
-wire    [16:0] fp16_mulw_out1;
-wire    [16:0] fp16_mulw_out2;
-wire    [16:0] fp16_mulw_out3;
-wire           fp16_mulw_out_pvld;
-wire     [3:0] fp16_mulw_out_rdy;
-wire     [3:0] fp16_mulw_out_vld;
-wire           fp16_mulw_rdy;
-wire   [114:0] fp16_pout_mem_data;
-wire    [15:0] fp17T16_out0;
-wire    [15:0] fp17T16_out1;
-wire    [15:0] fp17T16_out2;
-wire    [15:0] fp17T16_out3;
-wire     [3:0] fp17T16_out_rdy;
-wire     [3:0] fp17T16_out_vld;
-wire   [111:0] fp_add_out_dp_ext_0;
-wire   [111:0] fp_add_out_dp_ext_1;
-wire   [111:0] fp_add_out_dp_ext_2;
-wire   [111:0] fp_add_out_dp_ext_3;
-wire   [111:0] fp_add_out_dp_ext_4;
-wire   [111:0] fp_add_out_dp_ext_5;
-wire   [111:0] fp_add_out_dp_ext_6;
-wire   [111:0] fp_add_out_dp_ext_7;
-wire           fp_add_out_load;
-wire           fp_add_out_vld;
-wire    [63:0] fp_dp2wdma_dp;
-wire           fp_dp2wdma_prdy;
-wire           fp_dp2wdma_pvld;
-wire     [5:0] fp_mem0_waddr;
-wire   [115:0] fp_mem0_wdata;
-wire     [5:0] fp_mem1_waddr;
-wire   [115:0] fp_mem1_wdata;
-wire     [5:0] fp_mem2_waddr;
-wire   [115:0] fp_mem2_wdata;
-wire     [5:0] fp_mem3_waddr;
-wire   [115:0] fp_mem3_wdata;
-wire     [5:0] fp_mem4_waddr;
-wire   [115:0] fp_mem4_wdata;
-wire     [5:0] fp_mem5_waddr;
-wire   [115:0] fp_mem5_wdata;
-wire     [5:0] fp_mem6_waddr;
-wire   [115:0] fp_mem6_wdata;
-wire     [5:0] fp_mem7_waddr;
-wire   [115:0] fp_mem7_wdata;
-wire     [2:0] fp_mem_size_v;
-wire     [7:0] fp_mem_we;
-wire           fp_mulw_prdy;
-wire   [115:0] fp_pooling_result0;
-wire   [115:0] fp_pooling_result1;
-wire   [115:0] fp_pooling_result2;
-wire   [115:0] fp_pooling_result3;
-wire   [115:0] fp_pooling_result4;
-wire   [115:0] fp_pooling_result5;
-wire   [115:0] fp_pooling_result6;
-wire   [115:0] fp_pooling_result7;
-wire    [67:0] fp_pooling_result_dp_0;
-wire    [67:0] fp_pooling_result_dp_1;
-wire    [67:0] fp_pooling_result_dp_2;
-wire    [67:0] fp_pooling_result_dp_3;
-wire    [67:0] fp_pooling_result_dp_4;
-wire    [67:0] fp_pooling_result_dp_5;
-wire    [67:0] fp_pooling_result_dp_6;
-wire    [67:0] fp_pooling_result_dp_7;
-wire   [114:0] fp_pout_mem_data;
-wire   [114:0] fp_pout_mem_data_act;
-wire   [114:0] fp_pout_mem_data_last;
-wire     [7:0] fp_pout_mem_data_sel;
-wire     [7:0] fp_pout_mem_data_sel_last;
 wire     [3:0] h_pt;
 wire     [4:0] h_pt_pb;
-wire    [10:0] hmult_8bit_0_lsb;
-wire    [10:0] hmult_8bit_0_msb;
-wire    [10:0] hmult_8bit_1_lsb;
-wire    [10:0] hmult_8bit_1_msb;
-wire    [10:0] hmult_8bit_2_lsb;
-wire    [10:0] hmult_8bit_2_msb;
-wire    [10:0] hmult_8bit_3_lsb;
-wire    [10:0] hmult_8bit_3_msb;
-wire           i16_less_neg_0_5_0;
-wire           i16_less_neg_0_5_1;
-wire           i16_less_neg_0_5_2;
-wire           i16_less_neg_0_5_3;
-wire           i16_more_neg_0_5_0;
-wire           i16_more_neg_0_5_1;
-wire           i16_more_neg_0_5_2;
-wire           i16_more_neg_0_5_3;
-wire    [18:0] i16_neg_add1_0;
-wire    [18:0] i16_neg_add1_1;
-wire    [18:0] i16_neg_add1_2;
-wire    [18:0] i16_neg_add1_3;
-wire    [15:0] i16_neg_vadd1_0;
-wire    [15:0] i16_neg_vadd1_1;
-wire    [15:0] i16_neg_vadd1_2;
-wire    [15:0] i16_neg_vadd1_3;
-wire           i16_vless_neg_0_5_0;
-wire           i16_vless_neg_0_5_1;
-wire           i16_vless_neg_0_5_2;
-wire           i16_vless_neg_0_5_3;
-wire           i16_vmore_neg_0_5_0;
-wire           i16_vmore_neg_0_5_1;
-wire           i16_vmore_neg_0_5_2;
-wire           i16_vmore_neg_0_5_3;
-wire           i8_less_neg_0_5_0_l;
-wire           i8_less_neg_0_5_0_m;
-wire           i8_less_neg_0_5_1_l;
-wire           i8_less_neg_0_5_1_m;
-wire           i8_less_neg_0_5_2_l;
-wire           i8_less_neg_0_5_2_m;
-wire           i8_less_neg_0_5_3_l;
-wire           i8_less_neg_0_5_3_m;
-wire           i8_more_neg_0_5_0_l;
-wire           i8_more_neg_0_5_0_m;
-wire           i8_more_neg_0_5_1_l;
-wire           i8_more_neg_0_5_1_m;
-wire           i8_more_neg_0_5_2_l;
-wire           i8_more_neg_0_5_2_m;
-wire           i8_more_neg_0_5_3_l;
-wire           i8_more_neg_0_5_3_m;
-wire    [10:0] i8_neg_add1_0_l;
-wire    [10:0] i8_neg_add1_0_m;
-wire    [10:0] i8_neg_add1_1_l;
-wire    [10:0] i8_neg_add1_1_m;
-wire    [10:0] i8_neg_add1_2_l;
-wire    [10:0] i8_neg_add1_2_m;
-wire    [10:0] i8_neg_add1_3_l;
-wire    [10:0] i8_neg_add1_3_m;
-wire     [7:0] i8_neg_vadd1_0_l;
-wire     [7:0] i8_neg_vadd1_0_m;
-wire     [7:0] i8_neg_vadd1_1_l;
-wire     [7:0] i8_neg_vadd1_1_m;
-wire     [7:0] i8_neg_vadd1_2_l;
-wire     [7:0] i8_neg_vadd1_2_m;
-wire     [7:0] i8_neg_vadd1_3_l;
-wire     [7:0] i8_neg_vadd1_3_m;
-wire           i8_vless_neg_0_5_0_l;
-wire           i8_vless_neg_0_5_0_m;
-wire           i8_vless_neg_0_5_1_l;
-wire           i8_vless_neg_0_5_1_m;
-wire           i8_vless_neg_0_5_2_l;
-wire           i8_vless_neg_0_5_2_m;
-wire           i8_vless_neg_0_5_3_l;
-wire           i8_vless_neg_0_5_3_m;
-wire           i8_vmore_neg_0_5_0_l;
-wire           i8_vmore_neg_0_5_0_m;
-wire           i8_vmore_neg_0_5_1_l;
-wire           i8_vmore_neg_0_5_1_m;
-wire           i8_vmore_neg_0_5_2_l;
-wire           i8_vmore_neg_0_5_2_m;
-wire           i8_vmore_neg_0_5_3_l;
-wire           i8_vmore_neg_0_5_3_m;
 wire           init_cnt;
 wire     [7:0] init_unit2d_set;
-wire           int16_en;
-wire           int8_en;
-wire    [63:0] int_dp2wdma_pd;
+wire    [NVDLA_PDP_THROUGHPUT*NVDLA_BPE-1:0] int_dp2wdma_pd;
 wire           int_dp2wdma_valid;
-wire   [114:0] int_pout_mem_data;
+wire   [NVDLA_PDP_THROUGHPUT*(NVDLA_BPE+6)+2:0] int_pout_mem_data;
 wire     [3:0] kernel_width_cfg;
 wire           last_c;
 wire           last_line_in;
@@ -473,16 +138,16 @@ wire           load_wr_stage2_all;
 wire           load_wr_stage3;
 wire           load_wr_stage3_all;
 wire     [7:0] mem_data_valid;
-wire     [5:0] mem_raddr;
+wire     [8:0] mem_raddr;
 wire     [5:0] mem_raddr_2d_sync;
-wire   [115:0] mem_rdata_0;
-wire   [115:0] mem_rdata_1;
-wire   [115:0] mem_rdata_2;
-wire   [115:0] mem_rdata_3;
-wire   [115:0] mem_rdata_4;
-wire   [115:0] mem_rdata_5;
-wire   [115:0] mem_rdata_6;
-wire   [115:0] mem_rdata_7;
+wire   [NVDLA_PDP_THROUGHPUT*(NVDLA_BPE+6)+3:0] mem_rdata_0;
+wire   [NVDLA_PDP_THROUGHPUT*(NVDLA_BPE+6)+3:0] mem_rdata_1;
+wire   [NVDLA_PDP_THROUGHPUT*(NVDLA_BPE+6)+3:0] mem_rdata_2;
+wire   [NVDLA_PDP_THROUGHPUT*(NVDLA_BPE+6)+3:0] mem_rdata_3;
+wire   [NVDLA_PDP_THROUGHPUT*(NVDLA_BPE+6)+3:0] mem_rdata_4;
+wire   [NVDLA_PDP_THROUGHPUT*(NVDLA_BPE+6)+3:0] mem_rdata_5;
+wire   [NVDLA_PDP_THROUGHPUT*(NVDLA_BPE+6)+3:0] mem_rdata_6;
+wire   [NVDLA_PDP_THROUGHPUT*(NVDLA_BPE+6)+3:0] mem_rdata_7;
 wire     [7:0] mem_re;
 wire     [7:0] mem_re1;
 wire     [7:0] mem_re1_1st;
@@ -499,81 +164,32 @@ wire     [7:0] mem_re_1st;
 wire     [7:0] mem_re_1st_2d_sync;
 wire     [7:0] mem_re_2d_sync;
 wire     [7:0] mem_re_last;
-wire     [5:0] mem_waddr_0;
-wire     [5:0] mem_waddr_1;
-wire     [5:0] mem_waddr_2;
-wire     [5:0] mem_waddr_3;
-wire     [5:0] mem_waddr_4;
-wire     [5:0] mem_waddr_5;
-wire     [5:0] mem_waddr_6;
-wire     [5:0] mem_waddr_7;
-wire   [115:0] mem_wdata_0;
-wire   [115:0] mem_wdata_1;
-wire   [115:0] mem_wdata_2;
-wire   [115:0] mem_wdata_3;
-wire   [115:0] mem_wdata_4;
-wire   [115:0] mem_wdata_5;
-wire   [115:0] mem_wdata_6;
-wire   [115:0] mem_wdata_7;
+wire     [8:0] mem_waddr_0;
+wire     [8:0] mem_waddr_1;
+wire     [8:0] mem_waddr_2;
+wire     [8:0] mem_waddr_3;
+wire     [8:0] mem_waddr_4;
+wire     [8:0] mem_waddr_5;
+wire     [8:0] mem_waddr_6;
+wire     [8:0] mem_waddr_7;
+wire   [NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)+3:0] mem_wdata_0;
+wire   [NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)+3:0] mem_wdata_1;
+wire   [NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)+3:0] mem_wdata_2;
+wire   [NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)+3:0] mem_wdata_3;
+wire   [NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)+3:0] mem_wdata_4;
+wire   [NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)+3:0] mem_wdata_5;
+wire   [NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)+3:0] mem_wdata_6;
+wire   [NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)+3:0] mem_wdata_7;
 wire     [7:0] mem_we;
 wire           middle_surface_trig;
-wire     [0:0] mon_data_16bit_0;
-wire     [0:0] mon_data_16bit_0_ff;
-wire     [0:0] mon_data_16bit_1;
-wire     [0:0] mon_data_16bit_1_ff;
-wire     [0:0] mon_data_16bit_2;
-wire     [0:0] mon_data_16bit_2_ff;
-wire     [0:0] mon_data_16bit_3;
-wire     [0:0] mon_data_16bit_3_ff;
-wire     [1:0] mon_data_8bit_0;
-wire     [1:0] mon_data_8bit_0_ff;
-wire     [1:0] mon_data_8bit_1;
-wire     [1:0] mon_data_8bit_1_ff;
-wire     [1:0] mon_data_8bit_2;
-wire     [1:0] mon_data_8bit_2_ff;
-wire     [1:0] mon_data_8bit_3;
-wire     [1:0] mon_data_8bit_3_ff;
-wire     [1:0] mon_data_8bit_4;
-wire     [1:0] mon_data_8bit_4_ff;
-wire     [1:0] mon_data_8bit_5;
-wire     [1:0] mon_data_8bit_5_ff;
-wire     [1:0] mon_data_8bit_6;
-wire     [1:0] mon_data_8bit_6_ff;
-wire     [1:0] mon_data_8bit_7;
-wire     [1:0] mon_data_8bit_7_ff;
 wire     [0:0] mon_first_out_num;
 wire           mon_flush_in_next_surf;
 wire           mon_flush_num_dec1;
-wire           mon_i16_neg_add1_0;
-wire           mon_i16_neg_add1_1;
-wire           mon_i16_neg_add1_2;
-wire           mon_i16_neg_add1_3;
-wire           mon_i16_neg_vadd1_0;
-wire           mon_i16_neg_vadd1_1;
-wire           mon_i16_neg_vadd1_2;
-wire           mon_i16_neg_vadd1_3;
-wire           mon_i8_neg_add1_0_l;
-wire           mon_i8_neg_add1_0_m;
-wire           mon_i8_neg_add1_1_l;
-wire           mon_i8_neg_add1_1_m;
-wire           mon_i8_neg_add1_2_l;
-wire           mon_i8_neg_add1_2_m;
-wire           mon_i8_neg_add1_3_l;
-wire           mon_i8_neg_add1_3_m;
-wire           mon_i8_neg_vadd1_0_l;
-wire           mon_i8_neg_vadd1_0_m;
-wire           mon_i8_neg_vadd1_1_l;
-wire           mon_i8_neg_vadd1_1_m;
-wire           mon_i8_neg_vadd1_2_l;
-wire           mon_i8_neg_vadd1_2_m;
-wire           mon_i8_neg_vadd1_3_l;
-wire           mon_i8_neg_vadd1_3_m;
 wire     [0:0] mon_pad_table_index;
 wire           mon_pad_value;
 wire     [1:0] mon_pooling_size_minus_sride;
 wire           mon_rest_height;
 wire     [5:0] mon_strip_ycnt_offset;
-wire           mon_surface_num_0;
 wire     [1:0] mon_unit2d_cnt_pooling_max;
 wire           need_flush;
 wire           one_width_bubble_end;
@@ -592,7 +208,7 @@ wire     [2:0] padding_stride2_num;
 wire     [2:0] padding_stride3_num;
 wire     [2:0] padding_stride4_num;
 wire           pooling1d_norm_rdy;
-wire   [111:0] pooling1d_pd_use;
+wire   [NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)-1:0] pooling1d_pd_use;
 wire           pooling1d_prdy_use;
 wire           pooling1d_pvld_use;
 wire           pooling1d_vld_rebuild;
@@ -607,16 +223,16 @@ wire     [3:0] pooling_2d_info_6;
 wire     [3:0] pooling_2d_info_7;
 wire    [31:0] pooling_2d_info_sync;
 wire           pooling_2d_rdy;
-wire   [111:0] pooling_2d_result_0;
-wire   [111:0] pooling_2d_result_1;
-wire   [111:0] pooling_2d_result_2;
-wire   [111:0] pooling_2d_result_3;
-wire   [111:0] pooling_2d_result_4;
-wire   [111:0] pooling_2d_result_5;
-wire   [111:0] pooling_2d_result_6;
-wire   [111:0] pooling_2d_result_7;
-wire   [111:0] pooling_datin;
-wire   [111:0] pooling_datin_ext;
+wire   [NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)-1:0] pooling_2d_result_0;
+wire   [NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)-1:0] pooling_2d_result_1;
+wire   [NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)-1:0] pooling_2d_result_2;
+wire   [NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)-1:0] pooling_2d_result_3;
+wire   [NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)-1:0] pooling_2d_result_4;
+wire   [NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)-1:0] pooling_2d_result_5;
+wire   [NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)-1:0] pooling_2d_result_6;
+wire   [NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)-1:0] pooling_2d_result_7;
+wire   [NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)-1:0] pooling_datin;
+wire   [NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)-1:0] pooling_datin_ext;
 wire     [3:0] pooling_size;
 wire     [2:0] pooling_size_minus_sride;
 wire     [3:0] pooling_size_v;
@@ -626,13 +242,9 @@ wire           pout_data_stage0_prdy;
 wire           pout_data_stage1_prdy;
 wire           pout_data_stage2_prdy;
 wire           pout_data_stage3_prdy;
-wire   [114:0] pout_mem_data;
-wire    [21:0] pout_mem_data0;
-wire    [21:0] pout_mem_data1;
-wire    [21:0] pout_mem_data2;
-wire    [21:0] pout_mem_data3;
-wire   [114:0] pout_mem_data_last;
-wire   [114:0] pout_mem_data_last_sync;
+wire   [NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)+2:0] pout_mem_data;
+wire   [NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)+2:0] pout_mem_data_last;
+wire   [NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)+2:0] pout_mem_data_last_sync;
 wire     [7:0] pout_mem_data_sel;
 wire     [7:0] pout_mem_data_sel_0;
 wire     [7:0] pout_mem_data_sel_1;
@@ -674,9 +286,12 @@ wire           stride_trig_end;
 wire     [2:0] strip_ycnt_offset;
 wire           stripe_receive_done;
 wire           sub_lbuf_dout_done;
-wire     [9:0] surface_num;
-wire     [9:0] surface_num_0;
-wire     [9:0] surface_num_1;
+//: my $m = NVDLA_MEMORY_ATOMIC_SIZE;
+//: my $k = int(log($m)/log(2));
+//: print "wire     [12-${k}:0] surface_num; \n";
+//: print "reg     [12-${k}:0] surface_cnt_rd; \n";
+//wire     [9:0] surface_num_0;
+//wire     [9:0] surface_num_1;
 wire     [7:0] unit2d_clr;
 wire     [3:0] unit2d_cnt_pooling_a1;
 wire     [3:0] unit2d_cnt_pooling_a2;
@@ -732,14 +347,6 @@ wire     [2:0] unit2d_vsize_5;
 wire     [2:0] unit2d_vsize_6;
 wire     [2:0] unit2d_vsize_7;
 wire     [2:0] up_pnum0;
-wire     [7:0] vmult_8bit_0_lsb;
-wire     [7:0] vmult_8bit_0_msb;
-wire     [7:0] vmult_8bit_1_lsb;
-wire     [7:0] vmult_8bit_1_msb;
-wire     [7:0] vmult_8bit_2_lsb;
-wire     [7:0] vmult_8bit_2_msb;
-wire     [7:0] vmult_8bit_3_lsb;
-wire     [7:0] vmult_8bit_3_msb;
 wire           wr_data_stage0_prdy;
 wire           wr_data_stage1_prdy;
 wire           wr_line_dat_done;
@@ -752,53 +359,52 @@ reg      [2:0] bubble_cnt;
 reg      [2:0] bubble_num;
 reg      [2:0] bubble_num_use;
 reg      [3:0] buffer_lines_num;
-reg      [1:0] c_cnt;
-reg      [1:0] channel_cnt;
+reg      [4:0] c_cnt;
+reg      [4:0] channel_cnt;
 reg            cube_end_flag;
 reg            cur_datin_disable;
 reg            cur_datin_disable_2d;
 reg            cur_datin_disable_3d;
 reg            cur_datin_disable_d;
-reg    [111:0] datin_buf;
-reg    [111:0] datin_buf_2d;
+reg    [NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)-1:0] datin_buf;
+reg    [NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)-1:0] datin_buf_2d;
 reg      [2:0] flush_num;
 reg      [2:0] flush_num_cal;
 reg            flush_read_en_d;
-reg      [5:0] int_mem_waddr;
-reg    [115:0] int_mem_wdata_0;
-reg    [115:0] int_mem_wdata_1;
-reg    [115:0] int_mem_wdata_2;
-reg    [115:0] int_mem_wdata_3;
-reg    [115:0] int_mem_wdata_4;
-reg    [115:0] int_mem_wdata_5;
-reg    [115:0] int_mem_wdata_6;
-reg    [115:0] int_mem_wdata_7;
+reg      [8:0] int_mem_waddr;
+reg    [NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)+3:0] int_mem_wdata_0;
+reg    [NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)+3:0] int_mem_wdata_1;
+reg    [NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)+3:0] int_mem_wdata_2;
+reg    [NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)+3:0] int_mem_wdata_3;
+reg    [NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)+3:0] int_mem_wdata_4;
+reg    [NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)+3:0] int_mem_wdata_5;
+reg    [NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)+3:0] int_mem_wdata_6;
+reg    [NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)+3:0] int_mem_wdata_7;
 reg      [7:0] int_mem_we;
 reg            is_one_width_in;
-reg     [16:0] kernel_width_fp17;
 reg            last_active_line_2d;
 reg            last_active_line_d;
 reg      [2:0] last_out_cnt;
 reg            last_out_en;
 reg     [12:0] line_cnt;
-reg    [114:0] mem_data0;
-reg    [114:0] mem_data0_lst;
-reg    [114:0] mem_data1;
-reg    [114:0] mem_data1_lst;
-reg    [114:0] mem_data2;
-reg    [114:0] mem_data2_lst;
-reg    [114:0] mem_data3;
-reg    [114:0] mem_data3_lst;
-reg    [114:0] mem_data4;
-reg    [114:0] mem_data4_lst;
-reg    [114:0] mem_data5;
-reg    [114:0] mem_data5_lst;
-reg    [114:0] mem_data6;
-reg    [114:0] mem_data6_lst;
-reg    [114:0] mem_data7;
-reg    [114:0] mem_data7_lst;
-reg      [5:0] mem_raddr_2d;
-reg      [5:0] mem_raddr_d;
+reg    [NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)+2:0] mem_data0;
+reg    [NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)+2:0] mem_data0_lst;
+reg    [NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)+2:0] mem_data1;
+reg    [NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)+2:0] mem_data1_lst;
+reg    [NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)+2:0] mem_data2;
+reg    [NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)+2:0] mem_data2_lst;
+reg    [NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)+2:0] mem_data3;
+reg    [NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)+2:0] mem_data3_lst;
+reg    [NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)+2:0] mem_data4;
+reg    [NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)+2:0] mem_data4_lst;
+reg    [NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)+2:0] mem_data5;
+reg    [NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)+2:0] mem_data5_lst;
+reg    [NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)+2:0] mem_data6;
+reg    [NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)+2:0] mem_data6_lst;
+reg    [NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)+2:0] mem_data7;
+reg    [NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)+2:0] mem_data7_lst;
+reg      [8:0] mem_raddr_2d;
+reg      [8:0] mem_raddr_d;
 reg            mem_re1_sel;
 reg            mem_re2_sel;
 reg            mem_re2_sel_last;
@@ -855,30 +461,49 @@ reg      [2:0] pnum_flush3;
 reg      [2:0] pnum_flush4;
 reg      [2:0] pnum_flush5;
 reg      [2:0] pnum_flush6;
-reg     [27:0] pout_data_0_0;
-reg     [27:0] pout_data_0_1;
-reg     [27:0] pout_data_0_2;
-reg     [27:0] pout_data_0_3;
-reg     [21:0] pout_data_stage0_0;
-reg     [21:0] pout_data_stage0_1;
-reg     [21:0] pout_data_stage0_2;
-reg     [21:0] pout_data_stage0_3;
-reg     [15:0] pout_data_stage1_0;
-reg     [15:0] pout_data_stage1_1;
-reg     [15:0] pout_data_stage1_2;
-reg     [15:0] pout_data_stage1_3;
 reg            pout_data_stage1_vld;
 reg            pout_data_stage2_vld;
 reg            pout_data_stage3_vld;
-reg     [27:0] pout_mem_data_0;
-reg     [27:0] pout_mem_data_1;
-reg     [27:0] pout_mem_data_2;
-reg     [27:0] pout_mem_data_3;
-reg    [114:0] pout_mem_data_act;
+//: my $k = NVDLA_PDP_THROUGHPUT;
+//: my $x = NVDLA_PDP_BWPE;
+//: my $j = NVDLA_PDP_BWPE+3;
+//: my $m = NVDLA_PDP_BWPE+6;
+//: foreach my $i (0..$k-1) {
+//:   print qq(
+//:     reg     [${m}-1:0] pout_mem_data_$i;
+//:   //  wire    [${m}-1:0] pout_mem_data$i; 
+//:     wire    [${m}:0] data_8bit_${i};
+//:     wire    [${m}:0] data_8bit_${i}_ff;
+//:     wire           mon_data_8bit_${i};
+//:     wire           mon_data_8bit_${i}_ff;
+//:     reg     [${m}:0] pout_data_0_${i};
+//:     wire    [${m}+16:0] data_hmult_8bit_${i}_ext_ff;
+//:     wire    [${m}+16:0] data_hmult_8bit_${i}_ext;
+//:     wire           i8_less_neg_0_5_${i};
+//:     wire           i8_more_neg_0_5_${i};
+//:     wire           mon_i8_neg_add1_${i};
+//:     wire    [${j}-1:0] i8_neg_add1_${i};
+//:     wire    [${j}-1:0] hmult_8bit_${i};
+//:     wire    [${j}-1:0] data_hmult_8bit_${i};
+//:     wire    [${j}-1:0] data_hmult_stage0_in$i;
+//:     reg     [${j}-1:0] pout_data_stage0_$i;
+//:     wire    [${j}+16:0] data_vmult_8bit_${i}_ext_ff;
+//:     wire    [${j}+16:0] data_vmult_8bit_${i}_ext;
+//:     wire           i8_vless_neg_0_5_${i};
+//:     wire           i8_vmore_neg_0_5_${i};
+//:     wire           mon_i8_neg_vadd1_${i};
+//:     wire     [${x}-1:0] i8_neg_vadd1_${i};
+//:     wire     [${x}-1:0] vmult_8bit_${i};
+//:     wire    [${x}-1:0] data_vmult_8bit_${i};
+//:     wire    [${x}-1:0] data_mult_stage1_in${i};
+//:     reg     [${x}-1:0] pout_data_stage1_${i};
+//:   );
+//: }
+reg    [NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)+2:0] pout_mem_data_act;
 reg      [2:0] pout_mem_size_v;
 reg     [12:0] pout_width_cur_latch;
 reg      [2:0] rd_comb_lbuf_cnt;
-reg      [5:0] rd_line_out_cnt;
+reg      [8:0] rd_line_out_cnt;
 reg            rd_pout_data_en_2d;
 reg            rd_pout_data_en_3d;
 reg            rd_pout_data_en_4d;
@@ -890,9 +515,8 @@ reg      [2:0] samllH_flush_num;
 reg      [2:0] strip_ycnt_psize;
 reg      [3:0] strip_ycnt_stride;
 reg      [3:0] strip_ycnt_stride_f;
-reg      [5:0] sub_lbuf_dout_cnt;
+reg      [8:0] sub_lbuf_dout_cnt;
 reg            subend_need_flush_flg;
-reg     [10:0] surface_cnt_rd;
 reg            surfend_need_bubble_flg;
 reg      [2:0] unit2d_cnt_pooling;
 reg      [2:0] unit2d_cnt_pooling_last;
@@ -933,24 +557,7 @@ reg      [2:0] wr_sub_lbuf_cnt;
 reg     [12:0] wr_surface_dat_cnt;
 reg            wr_surface_dat_done_2d;
 reg            wr_surface_dat_done_buf;
-
-// synoff nets
-
-// monitor nets
-
-// debug nets
-
-// tie high nets
-
-// tie low nets
-
-// no connect nets
-
-// not all bits used nets
-
-// todo nets
-
-    
+/////////////////////////////////////////////////////////////////////////////////////////
 //==============================================================
 ////pdp cube_out_width setting
 
@@ -987,140 +594,8 @@ reg            wr_surface_dat_done_buf;
 `endif // FV_ASSERT_ON
   // VCS coverage off 
   nv_assert_never #(0,0,"PDP cube_out_width setting out of range")      zzz_assert_never_1x (nvdla_core_clk, `ASSERT_RESET, load_din &(pout_width_cur > 13'd127) & (bank_merge_num==4'd8)); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-  // VCS coverage off 
   nv_assert_never #(0,0,"PDP cube_out_width setting out of range")      zzz_assert_never_2x (nvdla_core_clk, `ASSERT_RESET, load_din &(pout_width_cur > 13'd63)  & (bank_merge_num==4'd4)); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-  // VCS coverage off 
   nv_assert_never #(0,0,"PDP cube_out_width setting out of range")      zzz_assert_never_3x (nvdla_core_clk, `ASSERT_RESET, load_din &(pout_width_cur > 13'd31)  & (bank_merge_num==4'd2)); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-  // VCS coverage off 
   nv_assert_never #(0,0,"PDP cube_out_width setting out of range")      zzz_assert_never_4x (nvdla_core_clk, `ASSERT_RESET, load_din &(pout_width_cur > 13'd15)  & (bank_merge_num==4'd1)); // spyglass disable W504 SelfDeterminedExpr-ML 
   // VCS coverage on
 `undef ASSERT_RESET
@@ -1140,9 +615,12 @@ reg            wr_surface_dat_done_buf;
 `endif // SPYGLASS_ASSERT_ON
 
 //==============================================================
-//bank depth is fixed to 64
+//bank depth follows rule of 16 elements in width in worst case
+//it's 64 in t194
 //--------------------------------------------------------------
-assign BANK_DEPTH = 6'd63;//64-1
+//: my $depth = (NVDLA_MEMORY_ATOMIC_SIZE/NVDLA_PDP_THROUGHPUT)*16-1;
+//: print " assign BANK_DEPTH = 9'd${depth};  \n";
+
 //==============================================================
 // buffer the input data from pooling 1D unit
 // calculate the data postion in input-data-cube
@@ -1150,7 +628,7 @@ assign BANK_DEPTH = 6'd63;//64-1
 //--------------------------------------------------------------
 assign pooling1d_prdy = pooling1d_prdy_use;
 assign pooling1d_pvld_use = pooling1d_pvld;
-assign pooling1d_pd_use = pooling1d_pd[111:0];
+assign pooling1d_pd_use = pooling1d_pd;
 
 assign pooling1d_prdy_use = one_width_norm_rdy & (~cur_datin_disable);
 assign one_width_norm_rdy = pooling1d_norm_rdy & (~one_width_disable);
@@ -1159,18 +637,23 @@ assign load_din         = pooling1d_prdy_use & pooling1d_pvld_use;
 assign stripe_receive_done = load_din & data_c_end;
 
 assign average_pooling_en = (pooling_type_cfg== 2'h0 );
-assign int8_en = (reg2dp_input_data[1:0] == 2'h0 );
-assign int16_en = (reg2dp_input_data[1:0] == 2'h1 );
+//assign int8_en = (reg2dp_input_data[1:0] == 2'h0 );
+//assign int16_en = (reg2dp_input_data[1:0] == 2'h1 );
 //////////////////////////////////////////////////////////////////////////////////////
+//: my $m = NVDLA_MEMORY_ATOMIC_SIZE;
+//: my $k = NVDLA_PDP_THROUGHPUT;
+//: my $j = int($m / $k);
+//: print "assign data_c_end = (c_cnt == 5'd${j}-1); \n";
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
-    c_cnt[1:0] <= {2{1'b0}};
-  end else begin
-    if(load_din)
-        c_cnt[1:0] <= c_cnt + 1'b1;
+    c_cnt[4:0] <= 0;
+  end else if(load_din) begin
+    if(data_c_end)
+        c_cnt[4:0] <= 0;
+    else
+        c_cnt[4:0] <= c_cnt + 1'b1;
   end
 end
-assign data_c_end       = (c_cnt == 2'd3); 
 //end of line
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
@@ -1199,26 +682,28 @@ assign last_line_in = ( wr_surface_dat_cnt==reg2dp_cube_in_height[12:0]);
 assign wr_surface_dat_done = wr_line_dat_done & last_line_in;
 
 //end of splitw
-assign cube_out_channel[13:0]= pooling_channel_cfg[12:0] + 1'b1;
-//16bits: INT16 or FP16
-//assign surface_num_0[9:0] = cube_out_channel[12:4] + (|cube_out_channel[3:0]);
-assign {mon_surface_num_0,surface_num_0[9:0]} = cube_out_channel[13:4] + {9'd0,(|cube_out_channel[3:0])};
-//8bits: INT8
-//assign surface_num_1[9:0] = {2'b0,cube_out_channel[12:5]} + (|cube_out_channel[4:0]);
-assign surface_num_1[9:0] = {1'b0,cube_out_channel[13:5]} + (|cube_out_channel[4:0]);
-assign surface_num        = int8_en ? surface_num_1 : surface_num_0;
+//assign cube_out_channel[13:0]= pooling_channel_cfg[12:0] + 1'b1;
+//////16bits: INT16 or FP16
+////assign {mon_surface_num_0,surface_num_0[9:0]} = cube_out_channel[13:4] + {9'd0,(|cube_out_channel[3:0])};
+//////8bits: INT8
+////assign surface_num_1[9:0] = {1'b0,cube_out_channel[13:5]} + (|cube_out_channel[4:0]);
+////assign surface_num        = int8_en ? surface_num_1 : surface_num_0;
+
+//: my $m = NVDLA_MEMORY_ATOMIC_SIZE;
+//: my $k = int(log($m)/log(2));
+//: print "assign surface_num = pooling_channel_cfg[12:${k}]; \n";
 
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
-    surface_cnt_rd[10:0] <= {11{1'b0}};
+    surface_cnt_rd <= 0;
   end else begin
   if(wr_subcube_dat_done)
-       surface_cnt_rd[10:0] <=  11'd0;
+       surface_cnt_rd <=  0;
   else if(wr_surface_dat_done)
-       surface_cnt_rd[10:0] <= surface_cnt_rd + 1;
+       surface_cnt_rd <= surface_cnt_rd + 1;
   end
 end
-assign wr_subcube_dat_done = ((surface_num-1)==surface_cnt_rd) & wr_surface_dat_done;
+assign wr_subcube_dat_done = (surface_num==surface_cnt_rd) & wr_surface_dat_done;
 
 //total cube done
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
@@ -2151,23 +1636,23 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
         pout_width_cur_latch <= pout_width_cur;
   end
 end
-
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
-    channel_cnt <= {2{1'b0}};
+    channel_cnt <= 0;
   end else begin
     if(cur_datin_disable) begin
         if(last_c)
-            channel_cnt <= 2'd0;
-        //else if(pooling1d_norm_rdy)
+            channel_cnt <= 0;
         else if(one_width_norm_rdy)
             channel_cnt <= channel_cnt + 1'b1;
     end else
-            channel_cnt <= 2'd0;
+            channel_cnt <= 0;
   end
 end
-//assign last_c = (channel_cnt==2'd3) & pooling1d_norm_rdy;
-assign last_c = (channel_cnt==2'd3) & one_width_norm_rdy;
+//: my $m = NVDLA_MEMORY_ATOMIC_SIZE;
+//: my $k = NVDLA_PDP_THROUGHPUT;
+//: my $j = int($m / $k);
+//: print "assign last_c = (channel_cnt==5'd${j}-1) & one_width_norm_rdy; \n";
 
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
@@ -2395,549 +1880,76 @@ assign last_pooling_flag = rest_height_use[13:0] <= {11'd0,pooling_size_v_cfg};
 //======================================================================
 
 //unit2d pooling enable         
-assign init_unit2d_set[0] = init_cnt & (padding_stride_num>=0); 
+//: foreach my $i (0..7) {
+//: my $j=$i-1;
+//:     print "assign init_unit2d_set[$i] = init_cnt & (padding_stride_num>=${i}); \n";
+//:     if($i == 0) {
+//:         print "assign unit2d_set_trig[${i}] = stride_end & stride_trig_end & (~last_pooling_flag);\n";
+//:     } else {
+//:         print "assign unit2d_set_trig[${i}] = stride_end & (unit2d_cnt_stride == 3'd${j}) & (~stride_trig_end) & (~last_pooling_flag);\n";
+//:     }
+//:     print qq(
+//:             assign unit2d_set[${i}] = unit2d_set_trig[${i}] | init_unit2d_set[${i}]; 
+//:             assign unit2d_clr[${i}] = (pooling_2d_rdy & (unit2d_cnt_pooling == 3'd${i})) | wr_surface_dat_done; 
+//:             always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
+//:               if (!nvdla_core_rstn)
+//:                    unit2d_en[$i] <= 1'b0;
+//:               else if(wr_total_cube_done)
+//:                    unit2d_en[$i] <= 1'b0;
+//:               else if(unit2d_set[${i}])
+//:                    unit2d_en[$i] <= 1'b1;
+//:               else if(unit2d_clr[${i}])
+//:                    unit2d_en[$i] <= 1'b0;
+//:             end
+//:     );
+//: }
 
-assign unit2d_set_trig[0] = stride_end & stride_trig_end & (~last_pooling_flag);
-
-assign unit2d_set[0] = unit2d_set_trig[0] | init_unit2d_set[0];
-
-assign unit2d_clr[0] = (pooling_2d_rdy & (unit2d_cnt_pooling == 3'd0)) | wr_surface_dat_done;
-
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-  if (!nvdla_core_rstn) begin
-    unit2d_en[0] <= 1'b0;
-  end else begin
-
- if(wr_total_cube_done) 
-
-      unit2d_en[0] <= 1'b0;
-
- else if(unit2d_set[0]) 
-
-      unit2d_en[0] <= 1'b1;
-
- else if(unit2d_clr[0]) 
-
-      unit2d_en[0] <= 1'b0;
-
-  end
-end
-
-assign init_unit2d_set[1] = init_cnt & (padding_stride_num>=1); 
-
-assign unit2d_set_trig[1] = stride_end & (unit2d_cnt_stride == 3'd0) & (~stride_trig_end) & (~last_pooling_flag);
-
-assign unit2d_set[1] = unit2d_set_trig[1] | init_unit2d_set[1];
-
-assign unit2d_clr[1] = (pooling_2d_rdy & (unit2d_cnt_pooling == 3'd1)) | wr_surface_dat_done;
-
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-  if (!nvdla_core_rstn) begin
-    unit2d_en[1] <= 1'b0;
-  end else begin
-
- if(wr_total_cube_done) 
-
-      unit2d_en[1] <= 1'b0;
-
- else if(unit2d_set[1]) 
-
-      unit2d_en[1] <= 1'b1;
-
- else if(unit2d_clr[1]) 
-
-      unit2d_en[1] <= 1'b0;
-
-  end
-end
-
-assign init_unit2d_set[2] = init_cnt & (padding_stride_num>=2); 
-
-assign unit2d_set_trig[2] = stride_end & (unit2d_cnt_stride == 3'd1) & (~stride_trig_end) & (~last_pooling_flag);
-
-assign unit2d_set[2] = unit2d_set_trig[2] | init_unit2d_set[2];
-
-assign unit2d_clr[2] = (pooling_2d_rdy & (unit2d_cnt_pooling == 3'd2)) | wr_surface_dat_done;
-
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-  if (!nvdla_core_rstn) begin
-    unit2d_en[2] <= 1'b0;
-  end else begin
-
- if(wr_total_cube_done) 
-
-      unit2d_en[2] <= 1'b0;
-
- else if(unit2d_set[2]) 
-
-      unit2d_en[2] <= 1'b1;
-
- else if(unit2d_clr[2]) 
-
-      unit2d_en[2] <= 1'b0;
-
-  end
-end
-
-assign init_unit2d_set[3] = init_cnt & (padding_stride_num>=3); 
-
-assign unit2d_set_trig[3] = stride_end & (unit2d_cnt_stride == 3'd2) & (~stride_trig_end) & (~last_pooling_flag);
-
-assign unit2d_set[3] = unit2d_set_trig[3] | init_unit2d_set[3];
-
-assign unit2d_clr[3] = (pooling_2d_rdy & (unit2d_cnt_pooling == 3'd3)) | wr_surface_dat_done;
-
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-  if (!nvdla_core_rstn) begin
-    unit2d_en[3] <= 1'b0;
-  end else begin
-
- if(wr_total_cube_done) 
-
-      unit2d_en[3] <= 1'b0;
-
- else if(unit2d_set[3]) 
-
-      unit2d_en[3] <= 1'b1;
-
- else if(unit2d_clr[3]) 
-
-      unit2d_en[3] <= 1'b0;
-
-  end
-end
-
-assign init_unit2d_set[4] = init_cnt & (padding_stride_num>=4); 
-
-assign unit2d_set_trig[4] = stride_end & (unit2d_cnt_stride == 3'd3) & (~stride_trig_end) & (~last_pooling_flag);
-
-assign unit2d_set[4] = unit2d_set_trig[4] | init_unit2d_set[4];
-
-assign unit2d_clr[4] = (pooling_2d_rdy & (unit2d_cnt_pooling == 3'd4)) | wr_surface_dat_done;
-
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-  if (!nvdla_core_rstn) begin
-    unit2d_en[4] <= 1'b0;
-  end else begin
-
- if(wr_total_cube_done) 
-
-      unit2d_en[4] <= 1'b0;
-
- else if(unit2d_set[4]) 
-
-      unit2d_en[4] <= 1'b1;
-
- else if(unit2d_clr[4]) 
-
-      unit2d_en[4] <= 1'b0;
-
-  end
-end
-
-assign init_unit2d_set[5] = init_cnt & (padding_stride_num>=5); 
-
-assign unit2d_set_trig[5] = stride_end & (unit2d_cnt_stride == 3'd4) & (~stride_trig_end) & (~last_pooling_flag);
-
-assign unit2d_set[5] = unit2d_set_trig[5] | init_unit2d_set[5];
-
-assign unit2d_clr[5] = (pooling_2d_rdy & (unit2d_cnt_pooling == 3'd5)) | wr_surface_dat_done;
-
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-  if (!nvdla_core_rstn) begin
-    unit2d_en[5] <= 1'b0;
-  end else begin
-
- if(wr_total_cube_done) 
-
-      unit2d_en[5] <= 1'b0;
-
- else if(unit2d_set[5]) 
-
-      unit2d_en[5] <= 1'b1;
-
- else if(unit2d_clr[5]) 
-
-      unit2d_en[5] <= 1'b0;
-
-  end
-end
-
-assign init_unit2d_set[6] = init_cnt & (padding_stride_num>=6); 
-
-assign unit2d_set_trig[6] = stride_end & (unit2d_cnt_stride == 3'd5) & (~stride_trig_end) & (~last_pooling_flag);
-
-assign unit2d_set[6] = unit2d_set_trig[6] | init_unit2d_set[6];
-
-assign unit2d_clr[6] = (pooling_2d_rdy & (unit2d_cnt_pooling == 3'd6)) | wr_surface_dat_done;
-
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-  if (!nvdla_core_rstn) begin
-    unit2d_en[6] <= 1'b0;
-  end else begin
-
- if(wr_total_cube_done) 
-
-      unit2d_en[6] <= 1'b0;
-
- else if(unit2d_set[6]) 
-
-      unit2d_en[6] <= 1'b1;
-
- else if(unit2d_clr[6]) 
-
-      unit2d_en[6] <= 1'b0;
-
-  end
-end
-
-assign init_unit2d_set[7] = init_cnt & (padding_stride_num>=7); 
-
-assign unit2d_set_trig[7] = stride_end & (unit2d_cnt_stride == 3'd6) & (~stride_trig_end) & (~last_pooling_flag);
-
-assign unit2d_set[7] = unit2d_set_trig[7] | init_unit2d_set[7];
-
-assign unit2d_clr[7] = (pooling_2d_rdy & (unit2d_cnt_pooling == 3'd7)) | wr_surface_dat_done;
-
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-  if (!nvdla_core_rstn) begin
-    unit2d_en[7] <= 1'b0;
-  end else begin
-
- if(wr_total_cube_done) 
-
-      unit2d_en[7] <= 1'b0;
-
- else if(unit2d_set[7]) 
-
-      unit2d_en[7] <= 1'b1;
-
- else if(unit2d_clr[7]) 
-
-      unit2d_en[7] <= 1'b0;
-
-  end
-end
-
- 
 ///////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
-    datin_buf <= {112{1'b0}};
+    datin_buf <= 0;
   end else begin
   if ((load_din) == 1'b1) begin
-    datin_buf <= pooling1d_pd_use[111:0];
-  // VCS coverage off
-  end else if ((load_din) == 1'b0) begin
-  end else begin
-    datin_buf <= 'bx;  // spyglass disable STARC-2.10.1.6 W443 NoWidthInBasedNum-ML -- (Constant containing x or z used, Based number `bx contains an X, Width specification missing for based number)
-  // VCS coverage on
+    datin_buf <= pooling1d_pd_use;
   end
   end
 end
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-`ifndef SYNTHESIS
-  // VCS coverage off 
-  nv_assert_no_x #(0,1,0,"No X's allowed on control signals")      zzz_assert_no_x_7x (nvdla_core_clk, `ASSERT_RESET, 1'd1,  (^(load_din))); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`endif
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
     wr_line_end_buf <= 1'b0;
   end else begin
   if ((load_din) == 1'b1) begin
     wr_line_end_buf <= wr_line_dat_done;
-  // VCS coverage off
-  end else if ((load_din) == 1'b0) begin
-  end else begin
-    wr_line_end_buf <= 'bx;  // spyglass disable STARC-2.10.1.6 W443 NoWidthInBasedNum-ML -- (Constant containing x or z used, Based number `bx contains an X, Width specification missing for based number)
-  // VCS coverage on
   end
   end
 end
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-`ifndef SYNTHESIS
-  // VCS coverage off 
-  nv_assert_no_x #(0,1,0,"No X's allowed on control signals")      zzz_assert_no_x_8x (nvdla_core_clk, `ASSERT_RESET, 1'd1,  (^(load_din))); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`endif
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
     wr_surface_dat_done_buf <= 1'b0;
   end else begin
   if ((load_din) == 1'b1) begin
     wr_surface_dat_done_buf <= wr_surface_dat_done;
-  // VCS coverage off
-  end else if ((load_din) == 1'b0) begin
-  end else begin
-    wr_surface_dat_done_buf <= 'bx;  // spyglass disable STARC-2.10.1.6 W443 NoWidthInBasedNum-ML -- (Constant containing x or z used, Based number `bx contains an X, Width specification missing for based number)
-  // VCS coverage on
   end
   end
 end
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-`ifndef SYNTHESIS
-  // VCS coverage off 
-  nv_assert_no_x #(0,1,0,"No X's allowed on control signals")      zzz_assert_no_x_9x (nvdla_core_clk, `ASSERT_RESET, 1'd1,  (^(load_din))); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`endif
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
 
 //////////////////////////////////////////////////////////////////////
 //calculate the real pooling size within one poooling 
 //PerBeg
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-  if (!nvdla_core_rstn) begin
-    unit2d_vsize_cnt_0[2:0] <= {3{1'b0}};
-  end else begin
-
-    if(unit2d_set[0]) 
-
-        unit2d_vsize_cnt_0[2:0] <= 3'd0; 
-
-    else if(unit2d_en[0] & wr_line_dat_done)
-
-        unit2d_vsize_cnt_0[2:0] <= unit2d_vsize_cnt_0[2:0] + 3'd1;
-
-  end
-end
-
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-  if (!nvdla_core_rstn) begin
-    unit2d_vsize_cnt_1[2:0] <= {3{1'b0}};
-  end else begin
-
-    if(unit2d_set[1]) 
-
-        unit2d_vsize_cnt_1[2:0] <= 3'd0; 
-
-    else if(unit2d_en[1] & wr_line_dat_done)
-
-        unit2d_vsize_cnt_1[2:0] <= unit2d_vsize_cnt_1[2:0] + 3'd1;
-
-  end
-end
-
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-  if (!nvdla_core_rstn) begin
-    unit2d_vsize_cnt_2[2:0] <= {3{1'b0}};
-  end else begin
-
-    if(unit2d_set[2]) 
-
-        unit2d_vsize_cnt_2[2:0] <= 3'd0; 
-
-    else if(unit2d_en[2] & wr_line_dat_done)
-
-        unit2d_vsize_cnt_2[2:0] <= unit2d_vsize_cnt_2[2:0] + 3'd1;
-
-  end
-end
-
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-  if (!nvdla_core_rstn) begin
-    unit2d_vsize_cnt_3[2:0] <= {3{1'b0}};
-  end else begin
-
-    if(unit2d_set[3]) 
-
-        unit2d_vsize_cnt_3[2:0] <= 3'd0; 
-
-    else if(unit2d_en[3] & wr_line_dat_done)
-
-        unit2d_vsize_cnt_3[2:0] <= unit2d_vsize_cnt_3[2:0] + 3'd1;
-
-  end
-end
-
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-  if (!nvdla_core_rstn) begin
-    unit2d_vsize_cnt_4[2:0] <= {3{1'b0}};
-  end else begin
-
-    if(unit2d_set[4]) 
-
-        unit2d_vsize_cnt_4[2:0] <= 3'd0; 
-
-    else if(unit2d_en[4] & wr_line_dat_done)
-
-        unit2d_vsize_cnt_4[2:0] <= unit2d_vsize_cnt_4[2:0] + 3'd1;
-
-  end
-end
-
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-  if (!nvdla_core_rstn) begin
-    unit2d_vsize_cnt_5[2:0] <= {3{1'b0}};
-  end else begin
-
-    if(unit2d_set[5]) 
-
-        unit2d_vsize_cnt_5[2:0] <= 3'd0; 
-
-    else if(unit2d_en[5] & wr_line_dat_done)
-
-        unit2d_vsize_cnt_5[2:0] <= unit2d_vsize_cnt_5[2:0] + 3'd1;
-
-  end
-end
-
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-  if (!nvdla_core_rstn) begin
-    unit2d_vsize_cnt_6[2:0] <= {3{1'b0}};
-  end else begin
-
-    if(unit2d_set[6]) 
-
-        unit2d_vsize_cnt_6[2:0] <= 3'd0; 
-
-    else if(unit2d_en[6] & wr_line_dat_done)
-
-        unit2d_vsize_cnt_6[2:0] <= unit2d_vsize_cnt_6[2:0] + 3'd1;
-
-  end
-end
-
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-  if (!nvdla_core_rstn) begin
-    unit2d_vsize_cnt_7[2:0] <= {3{1'b0}};
-  end else begin
-
-    if(unit2d_set[7]) 
-
-        unit2d_vsize_cnt_7[2:0] <= 3'd0; 
-
-    else if(unit2d_en[7] & wr_line_dat_done)
-
-        unit2d_vsize_cnt_7[2:0] <= unit2d_vsize_cnt_7[2:0] + 3'd1;
-
-  end
-end
-
+//: foreach my $i (0..7){
+//: print qq(
+//:     always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
+//:       if (!nvdla_core_rstn)
+//:         unit2d_vsize_cnt_$i <= {3{1'b0}};
+//:       else if(unit2d_set[$i])
+//:           unit2d_vsize_cnt_${i}[2:0] <= 3'd0;
+//:       else if(unit2d_en[$i] & wr_line_dat_done)
+//:           unit2d_vsize_cnt_${i}[2:0] <= unit2d_vsize_cnt_${i}[2:0] + 3'd1;      
+//:     end
+//: );
+//: }
 
 //line buffer number 1
 assign unit2d_vsize1_0 = mem_re1_sel? unit2d_vsize_cnt_0 : 3'd0;
@@ -2987,502 +1999,17 @@ assign unit2d_vsize_4 = unit2d_vsize1_4 | unit2d_vsize2_4 | unit2d_vsize3_4 | un
 assign unit2d_vsize_5 = unit2d_vsize1_5 | unit2d_vsize2_5 | unit2d_vsize3_5 | unit2d_vsize4_5;
 assign unit2d_vsize_6 = unit2d_vsize1_6 | unit2d_vsize2_6 | unit2d_vsize3_6 | unit2d_vsize4_6;
 assign unit2d_vsize_7 = unit2d_vsize1_7 | unit2d_vsize2_7 | unit2d_vsize3_7 | unit2d_vsize4_7;
-                                
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-  if (!nvdla_core_rstn) begin
-    unit2d_vsize_cnt_0_d <= {3{1'b0}};
-  end else begin
-  if ((load_din) == 1'b1) begin
-    unit2d_vsize_cnt_0_d <= unit2d_vsize_0;
-  // VCS coverage off
-  end else if ((load_din) == 1'b0) begin
-  end else begin
-    unit2d_vsize_cnt_0_d <= 'bx;  // spyglass disable STARC-2.10.1.6 W443 NoWidthInBasedNum-ML -- (Constant containing x or z used, Based number `bx contains an X, Width specification missing for based number)
-  // VCS coverage on
-  end
-  end
-end
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-`ifndef SYNTHESIS
-  // VCS coverage off 
-  nv_assert_no_x #(0,1,0,"No X's allowed on control signals")      zzz_assert_no_x_10x (nvdla_core_clk, `ASSERT_RESET, 1'd1,  (^(load_din))); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`endif
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
 
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-  if (!nvdla_core_rstn) begin
-    unit2d_vsize_cnt_1_d <= {3{1'b0}};
-  end else begin
-  if ((load_din) == 1'b1) begin
-    unit2d_vsize_cnt_1_d <= unit2d_vsize_1;
-  // VCS coverage off
-  end else if ((load_din) == 1'b0) begin
-  end else begin
-    unit2d_vsize_cnt_1_d <= 'bx;  // spyglass disable STARC-2.10.1.6 W443 NoWidthInBasedNum-ML -- (Constant containing x or z used, Based number `bx contains an X, Width specification missing for based number)
-  // VCS coverage on
-  end
-  end
-end
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-`ifndef SYNTHESIS
-  // VCS coverage off 
-  nv_assert_no_x #(0,1,0,"No X's allowed on control signals")      zzz_assert_no_x_11x (nvdla_core_clk, `ASSERT_RESET, 1'd1,  (^(load_din))); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`endif
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-  if (!nvdla_core_rstn) begin
-    unit2d_vsize_cnt_2_d <= {3{1'b0}};
-  end else begin
-  if ((load_din) == 1'b1) begin
-    unit2d_vsize_cnt_2_d <= unit2d_vsize_2;
-  // VCS coverage off
-  end else if ((load_din) == 1'b0) begin
-  end else begin
-    unit2d_vsize_cnt_2_d <= 'bx;  // spyglass disable STARC-2.10.1.6 W443 NoWidthInBasedNum-ML -- (Constant containing x or z used, Based number `bx contains an X, Width specification missing for based number)
-  // VCS coverage on
-  end
-  end
-end
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-`ifndef SYNTHESIS
-  // VCS coverage off 
-  nv_assert_no_x #(0,1,0,"No X's allowed on control signals")      zzz_assert_no_x_12x (nvdla_core_clk, `ASSERT_RESET, 1'd1,  (^(load_din))); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`endif
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-  if (!nvdla_core_rstn) begin
-    unit2d_vsize_cnt_3_d <= {3{1'b0}};
-  end else begin
-  if ((load_din) == 1'b1) begin
-    unit2d_vsize_cnt_3_d <= unit2d_vsize_3;
-  // VCS coverage off
-  end else if ((load_din) == 1'b0) begin
-  end else begin
-    unit2d_vsize_cnt_3_d <= 'bx;  // spyglass disable STARC-2.10.1.6 W443 NoWidthInBasedNum-ML -- (Constant containing x or z used, Based number `bx contains an X, Width specification missing for based number)
-  // VCS coverage on
-  end
-  end
-end
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-`ifndef SYNTHESIS
-  // VCS coverage off 
-  nv_assert_no_x #(0,1,0,"No X's allowed on control signals")      zzz_assert_no_x_13x (nvdla_core_clk, `ASSERT_RESET, 1'd1,  (^(load_din))); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`endif
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-  if (!nvdla_core_rstn) begin
-    unit2d_vsize_cnt_4_d <= {3{1'b0}};
-  end else begin
-  if ((load_din) == 1'b1) begin
-    unit2d_vsize_cnt_4_d <= unit2d_vsize_4;
-  // VCS coverage off
-  end else if ((load_din) == 1'b0) begin
-  end else begin
-    unit2d_vsize_cnt_4_d <= 'bx;  // spyglass disable STARC-2.10.1.6 W443 NoWidthInBasedNum-ML -- (Constant containing x or z used, Based number `bx contains an X, Width specification missing for based number)
-  // VCS coverage on
-  end
-  end
-end
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-`ifndef SYNTHESIS
-  // VCS coverage off 
-  nv_assert_no_x #(0,1,0,"No X's allowed on control signals")      zzz_assert_no_x_14x (nvdla_core_clk, `ASSERT_RESET, 1'd1,  (^(load_din))); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`endif
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-  if (!nvdla_core_rstn) begin
-    unit2d_vsize_cnt_5_d <= {3{1'b0}};
-  end else begin
-  if ((load_din) == 1'b1) begin
-    unit2d_vsize_cnt_5_d <= unit2d_vsize_5;
-  // VCS coverage off
-  end else if ((load_din) == 1'b0) begin
-  end else begin
-    unit2d_vsize_cnt_5_d <= 'bx;  // spyglass disable STARC-2.10.1.6 W443 NoWidthInBasedNum-ML -- (Constant containing x or z used, Based number `bx contains an X, Width specification missing for based number)
-  // VCS coverage on
-  end
-  end
-end
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-`ifndef SYNTHESIS
-  // VCS coverage off 
-  nv_assert_no_x #(0,1,0,"No X's allowed on control signals")      zzz_assert_no_x_15x (nvdla_core_clk, `ASSERT_RESET, 1'd1,  (^(load_din))); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`endif
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-  if (!nvdla_core_rstn) begin
-    unit2d_vsize_cnt_6_d <= {3{1'b0}};
-  end else begin
-  if ((load_din) == 1'b1) begin
-    unit2d_vsize_cnt_6_d <= unit2d_vsize_6;
-  // VCS coverage off
-  end else if ((load_din) == 1'b0) begin
-  end else begin
-    unit2d_vsize_cnt_6_d <= 'bx;  // spyglass disable STARC-2.10.1.6 W443 NoWidthInBasedNum-ML -- (Constant containing x or z used, Based number `bx contains an X, Width specification missing for based number)
-  // VCS coverage on
-  end
-  end
-end
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-`ifndef SYNTHESIS
-  // VCS coverage off 
-  nv_assert_no_x #(0,1,0,"No X's allowed on control signals")      zzz_assert_no_x_16x (nvdla_core_clk, `ASSERT_RESET, 1'd1,  (^(load_din))); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`endif
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-  if (!nvdla_core_rstn) begin
-    unit2d_vsize_cnt_7_d <= {3{1'b0}};
-  end else begin
-  if ((load_din) == 1'b1) begin
-    unit2d_vsize_cnt_7_d <= unit2d_vsize_7;
-  // VCS coverage off
-  end else if ((load_din) == 1'b0) begin
-  end else begin
-    unit2d_vsize_cnt_7_d <= 'bx;  // spyglass disable STARC-2.10.1.6 W443 NoWidthInBasedNum-ML -- (Constant containing x or z used, Based number `bx contains an X, Width specification missing for based number)
-  // VCS coverage on
-  end
-  end
-end
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-`ifndef SYNTHESIS
-  // VCS coverage off 
-  nv_assert_no_x #(0,1,0,"No X's allowed on control signals")      zzz_assert_no_x_17x (nvdla_core_clk, `ASSERT_RESET, 1'd1,  (^(load_din))); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`endif
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
+//: foreach my $i (0..7) {
+//: print qq(
+//:     always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
+//:       if (!nvdla_core_rstn)
+//:         unit2d_vsize_cnt_${i}_d <= {3{1'b0}};
+//:       else if (load_din)
+//:         unit2d_vsize_cnt_${i}_d <= unit2d_vsize_$i;
+//:     end
+//: );
+//: }
 
 //============================================================
 
@@ -3663,17 +2190,15 @@ assign last_sub_lbuf_done = ((bank_merge_num-1) =={2'd0,wr_sub_lbuf_cnt}) & sub_
 //--------------------------------------------------------------------
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
-    sub_lbuf_dout_cnt[5:0] <= {6{1'b0}};
+    sub_lbuf_dout_cnt <= {9{1'b0}};
   end else begin
     if(sub_lbuf_dout_done | wr_line_dat_done | line_end)
-          sub_lbuf_dout_cnt[5:0] <= 6'd0;
-    //else if(load_din | (cur_datin_disable & pooling1d_norm_rdy))
+          sub_lbuf_dout_cnt <= 9'd0;
     else if(load_din | (cur_datin_disable & one_width_norm_rdy))
-          sub_lbuf_dout_cnt[5:0] <= sub_lbuf_dout_cnt+ 6'd1;
+          sub_lbuf_dout_cnt <= sub_lbuf_dout_cnt+ 1'd1;
   end
 end
-//assign sub_lbuf_dout_done  = (sub_lbuf_dout_cnt==6'd63) & (load_din | cur_datin_disable);
-assign sub_lbuf_dout_done  = (sub_lbuf_dout_cnt==6'd63) & (load_din | (cur_datin_disable & one_width_norm_rdy));
+assign sub_lbuf_dout_done  = (sub_lbuf_dout_cnt==BANK_DEPTH) & (load_din | (cur_datin_disable & one_width_norm_rdy));
 //==============================================================================================
 //buffer the data from memory  and from UNIT1D
 //
@@ -3683,230 +2208,128 @@ assign sub_lbuf_dout_done  = (sub_lbuf_dout_cnt==6'd63) & (load_din | (cur_datin
  //
  //---- -----------------------------------------------------
 
-function[27:0] pooling_MIN; 
-   input       reg2dp_int8_en;
-   input       reg2dp_int16_en;
-   input       reg2dp_fp16_en;
-   input        data0_valid;
-   input[27:0]  data0;
-   input[27:0]  data1;
-   reg[13:0]  data0_lsb;
-   reg[13:0]  data0_msb;
-   reg[13:0]  data1_lsb;
-   reg[13:0]  data1_msb;
-   reg[27:0]  int16_data0;
-   reg[27:0]  int16_data1;
-   reg[27:0]  fp16_data0;
-   reg[27:0]  fp16_data1;
-   reg[27:0]  min_16int;
-   reg[27:0]  min_fp16;
-   reg[13:0]  min_8int_lsb;
-   reg[13:0]  min_8int_msb;
-   reg        min_8int_lsb_ff;
-   reg        min_8int_msb_ff;
-   reg        min_16int_ff;
+//: my $m = (NVDLA_PDP_BWPE+6);
+//: print qq(
+//:     function[${m}-1:0] pooling_MIN; 
+//:        input        data0_valid;
+//:        input[${m}-1:0]  data0;
+//:        input[${m}-1:0]  data1;
+//: );
+   reg        min_int_ff;
   begin
-      {data0_msb,data0_lsb} = reg2dp_int8_en ? data0 : 0;
-      {data1_msb,data1_lsb} = reg2dp_int8_en ? data1 : 0;
-      int16_data0 = reg2dp_int16_en ? data0 : 0;
-      int16_data1 = reg2dp_int16_en ? data1 : 0;
-      fp16_data0 = reg2dp_fp16_en ? data0 : 0;
-      fp16_data1 = reg2dp_fp16_en ? data1 : 0;
-
-      min_8int_lsb_ff = ($signed(data1_lsb)> $signed(data0_lsb));
-      min_8int_msb_ff = ($signed(data1_msb)> $signed(data0_msb));
-      min_16int_ff    = ($signed(int16_data1)>  $signed(int16_data0)) ;
-      
-      min_8int_lsb = (min_8int_lsb_ff & data0_valid) ? data0_lsb : data1_lsb;
-      min_8int_msb = (min_8int_msb_ff & data0_valid) ? data0_msb : data1_msb;
-      min_16int    = (min_16int_ff    & data0_valid) ? int16_data0 : int16_data1;
-      min_fp16     = ((~fp16_data0[15]) & (~fp16_data1[15]))? ((fp16_data0[14:0]>fp16_data1[14:0])? fp16_data1 : fp16_data0) : 
-                     (((fp16_data0[15]) & ( fp16_data1[15]))?  ((fp16_data0[14:0]>fp16_data1[14:0])? fp16_data0 : fp16_data1) : 
-                     (((fp16_data0[15]) & (~fp16_data1[15]))?  fp16_data0 : fp16_data1));
-
-      pooling_MIN  = reg2dp_fp16_en ? min_fp16 : 
-                    (reg2dp_int16_en ? min_16int : {min_8int_msb,min_8int_lsb});
+      min_int_ff   = ($signed(data1)>  $signed(data0)) ;
+      pooling_MIN  = (min_int_ff    & data0_valid) ? data0 : data1;
   end
  endfunction
 
- function[27:0] pooling_MAX; 
-   input       reg2dp_int8_en;
-   input       reg2dp_int16_en;
-   input       reg2dp_fp16_en;
-   input        data0_valid;
-   input[27:0]  data0;
-   input[27:0]  data1;
-   reg[13:0]  data0_lsb;
-   reg[13:0]  data0_msb;
-   reg[13:0]  data1_lsb;
-   reg[13:0]  data1_msb;
-   reg[27:0]  int16_data0;
-   reg[27:0]  int16_data1;
-   reg[27:0]  fp16_data0;
-   reg[27:0]  fp16_data1;
-   reg[27:0]  max_16int;
-   reg[27:0]  max_fp16;
-   reg[13:0]  max_8int_lsb;
-   reg[13:0]  max_8int_msb;
-   reg        max_8int_lsb_ff;
-   reg        max_8int_msb_ff;
-   reg        max_16int_ff;
+//: my $m = (NVDLA_PDP_BWPE+6);
+//: print qq(
+//:     function[${m}-1:0] pooling_MAX; 
+//:        input        data0_valid;
+//:        input[${m}-1:0]  data0;
+//:        input[${m}-1:0]  data1;
+//: );
+   reg        max_int_ff;
    begin
-      {data0_msb,data0_lsb} = reg2dp_int8_en ? data0 : 0;
-      {data1_msb,data1_lsb} = reg2dp_int8_en ? data1 : 0;
-      int16_data0 = reg2dp_int16_en ? data0 : 0;
-      int16_data1 = reg2dp_int16_en ? data1 : 0;
-      fp16_data0 = reg2dp_fp16_en ? data0 : 0;
-      fp16_data1 = reg2dp_fp16_en ? data1 : 0;
-
-      max_8int_lsb_ff = ($signed(data0_lsb)> $signed(data1_lsb));
-      max_8int_msb_ff = ($signed(data0_msb)> $signed(data1_msb));
-      max_16int_ff    = ($signed(int16_data0)>  $signed(int16_data1))       ;
-      
-      max_8int_lsb = (max_8int_lsb_ff & data0_valid) ? data0_lsb : data1_lsb;
-      max_8int_msb = (max_8int_msb_ff & data0_valid) ? data0_msb : data1_msb;
-      max_16int    = (max_16int_ff    & data0_valid) ? int16_data0 : int16_data1;
-      max_fp16     = ((~fp16_data0[15]) & (~fp16_data1[15]))? ((fp16_data0[14:0]>fp16_data1[14:0])? fp16_data0 : fp16_data1) : 
-                     (((fp16_data0[15]) & (fp16_data1[15]))?  ((fp16_data0[14:0]>fp16_data1[14:0])? fp16_data1 : fp16_data0) : 
-                     (((fp16_data0[15]) & (~fp16_data1[15]))?  fp16_data1 : fp16_data0));
-      pooling_MAX  = reg2dp_fp16_en ? max_fp16 : 
-                    (reg2dp_int16_en ? max_16int : {max_8int_msb,max_8int_lsb});
+      max_int_ff    = ($signed(data0)>  $signed(data1))       ;
+      pooling_MAX   = (max_int_ff    & data0_valid) ? data0 : data1;
   end
  endfunction
 
- function[27:0] pooling_SUM; 
-   input       reg2dp_int8_en;
-   input       reg2dp_int16_en;
-   input        data0_valid;
-   input[27:0]  data0;
-   input[27:0]  data1;
-   reg[13:0]  data0_lsb;
-   reg[13:0]  data0_msb;
-   reg[13:0]  data1_lsb;
-   reg[13:0]  data1_msb;
-   reg[27:0]  int16_data0;
-   reg[27:0]  int16_data1;
-   reg[27:0]  sum_16int;
-   reg[13:0]  sum_8int_lsb;
-   reg[13:0]  sum_8int_msb;
-   reg[13:0]  sum_8int_lsb_ff;
-   reg[13:0]  sum_8int_msb_ff;
-   reg[27:0]  sum_16int_ff;
+//: my $m = (NVDLA_PDP_BWPE+6);
+//: print qq(
+//:     function[${m}-1:0] pooling_SUM; 
+//:        input        data0_valid;
+//:        input[${m}-1:0]  data0;
+//:        input[${m}-1:0]  data1;
+//: );
    begin
-      {data0_msb,data0_lsb} = (reg2dp_int8_en & data0_valid) ? data0 : 0;
-      {data1_msb,data1_lsb} = (reg2dp_int8_en & data0_valid) ? data1 : 0;
-      int16_data0 = (reg2dp_int16_en & data0_valid) ? data0 : 0;
-      int16_data1 = (reg2dp_int16_en & data0_valid) ? data1 : 0;
       //spyglass disable_block W484
-      sum_8int_lsb_ff[13:0] =  ($signed(data1_lsb) + $signed(data0_lsb));
-      sum_8int_msb_ff[13:0] =  ($signed(data1_msb) + $signed(data0_msb));
-      sum_16int_ff[27:0]    =  ($signed(int16_data1) + $signed(int16_data0))        ; 
+      pooling_SUM =  ($signed(data1) + $signed(data0))        ; 
       //spyglass enable_block W484
-      
-      sum_8int_lsb =   sum_8int_lsb_ff ;
-      sum_8int_msb =   sum_8int_msb_ff ;
-      sum_16int    =   sum_16int_ff    ; 
-      pooling_SUM  = reg2dp_int16_en ? sum_16int : {sum_8int_msb,sum_8int_lsb};
   end
  endfunction
 
  //pooling result
-function[111:0] pooling_fun;
-  input       reg2dp_int8_en;
-  input       reg2dp_int16_en;
-  input       reg2dp_fp16_en;
-  input[1:0]  pooling_type;
-  input       data0_valid;
-  input[111:0] data0_in;
-  input[111:0] data1_in;
+//: my $m = NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6);
+//: print qq(
+//:     function[${m}-1:0] pooling_fun; 
+//:        input[1:0]  pooling_type;
+//:        input        data0_valid;
+//:        input[${m}-1:0]  data0_in;
+//:        input[${m}-1:0]  data1_in;
+//: );
   reg    min_pooling;
   reg    max_pooling;
   reg    mean_pooling;
-  reg  [3:0] din0_is_nan;
-  reg  [3:0] din1_is_nan;
-  reg  [3:0] nan_in;
   begin
      min_pooling = (pooling_type== 2'h2 );
      max_pooling = (pooling_type== 2'h1 );
      mean_pooling = (pooling_type== 2'h0 );
-     din0_is_nan[0] = &data0_in[14:10] & (|data0_in[9:0]);
-     din1_is_nan[0] = &data1_in[14:10] & (|data1_in[9:0]);
-     din0_is_nan[1] = &data0_in[42:38] & (|data0_in[37:28]);
-     din1_is_nan[1] = &data1_in[42:38] & (|data1_in[37:28]);
-     din0_is_nan[2] = &data0_in[70:66] & (|data0_in[65:56]);
-     din1_is_nan[2] = &data1_in[70:66] & (|data1_in[65:56]);
-     din0_is_nan[3] = &data0_in[98:94] & (|data0_in[93:84]);
-     din1_is_nan[3] = &data1_in[98:94] & (|data1_in[93:84]);
-     nan_in = din0_is_nan | din1_is_nan;
-     pooling_fun[27:0]  = mean_pooling? pooling_SUM(reg2dp_int8_en,reg2dp_int16_en,data0_valid,data0_in[27:0],data1_in[27:0]) :
-         min_pooling ? (((~reg2dp_fp16_en)| (~nan_in[0] & reg2dp_fp16_en))? pooling_MIN (reg2dp_int8_en,reg2dp_int16_en,reg2dp_fp16_en,data0_valid,data0_in[27:0],data1_in[27:0]) : (din0_is_nan[0]? data0_in[27:0] : data1_in[27:0])) :
-         max_pooling ? (((~reg2dp_fp16_en)| (~nan_in[0] & reg2dp_fp16_en))? pooling_MAX (reg2dp_int8_en,reg2dp_int16_en,reg2dp_fp16_en,data0_valid,data0_in[27:0],data1_in[27:0]) : (din0_is_nan[0]? data0_in[27:0] : data1_in[27:0])) : 0;
-      
-     pooling_fun[55:28] = mean_pooling? pooling_SUM(reg2dp_int8_en,reg2dp_int16_en,data0_valid,data0_in[55:28],data1_in[55:28]) :
-         min_pooling ? (((~reg2dp_fp16_en)| (~nan_in[1] & reg2dp_fp16_en))? pooling_MIN (reg2dp_int8_en,reg2dp_int16_en,reg2dp_fp16_en,data0_valid,data0_in[55:28],data1_in[55:28]) : (din0_is_nan[1]? data0_in[55:28] : data1_in[55:28])):
-         max_pooling ? (((~reg2dp_fp16_en)| (~nan_in[1] & reg2dp_fp16_en))? pooling_MAX (reg2dp_int8_en,reg2dp_int16_en,reg2dp_fp16_en,data0_valid,data0_in[55:28],data1_in[55:28]) : (din0_is_nan[1]? data0_in[55:28] : data1_in[55:28])): 0;
-      
-     pooling_fun[83:56] = mean_pooling? pooling_SUM(reg2dp_int8_en,reg2dp_int16_en,data0_valid,data0_in[83:56],data1_in[83:56]) :
-         min_pooling ? (((~reg2dp_fp16_en)| (~nan_in[2] & reg2dp_fp16_en))? pooling_MIN (reg2dp_int8_en,reg2dp_int16_en,reg2dp_fp16_en,data0_valid,data0_in[83:56],data1_in[83:56]) : (din0_is_nan[2]? data0_in[83:56] : data1_in[83:56])) :
-         max_pooling ? (((~reg2dp_fp16_en)| (~nan_in[2] & reg2dp_fp16_en))? pooling_MAX (reg2dp_int8_en,reg2dp_int16_en,reg2dp_fp16_en,data0_valid,data0_in[83:56],data1_in[83:56]) : (din0_is_nan[2]? data0_in[83:56] : data1_in[83:56])) : 0;
-      
-     pooling_fun[111:84]= mean_pooling? pooling_SUM(reg2dp_int8_en,reg2dp_int16_en,data0_valid,data0_in[111:84],data1_in[111:84]) : 
-         min_pooling ? (((~reg2dp_fp16_en)| (~nan_in[3] & reg2dp_fp16_en))? pooling_MIN (reg2dp_int8_en,reg2dp_int16_en,reg2dp_fp16_en,data0_valid,data0_in[111:84],data1_in[111:84]) : (din0_is_nan[3]? data0_in[111:84] : data1_in[111:84])) :
-         max_pooling ? (((~reg2dp_fp16_en)| (~nan_in[3] & reg2dp_fp16_en))? pooling_MAX (reg2dp_int8_en,reg2dp_int16_en,reg2dp_fp16_en,data0_valid,data0_in[111:84],data1_in[111:84]) : (din0_is_nan[3]? data0_in[111:84] : data1_in[111:84])) : 0;
+
+//: my $k = NVDLA_PDP_THROUGHPUT;
+//: my $m = (NVDLA_PDP_BWPE+6);
+//: foreach my $i (0..$k-1) {
+//:     print qq(
+//:         pooling_fun[${m}*${i}+${m}-1:${m}*${i}]  = mean_pooling?  pooling_SUM(data0_valid,data0_in[${m}*${i}+${m}-1:${m}*${i}],data1_in[${m}*${i}+${m}-1:${m}*${i}]) :
+//:                                                    min_pooling ? (pooling_MIN(data0_valid,data0_in[${m}*${i}+${m}-1:${m}*${i}],data1_in[${m}*${i}+${m}-1:${m}*${i}])) :
+//:                                                    max_pooling ? (pooling_MAX(data0_valid,data0_in[${m}*${i}+${m}-1:${m}*${i}],data1_in[${m}*${i}+${m}-1:${m}*${i}])) : 0;
+//:     );
+//: }
   end
 endfunction
  
  //write memory 
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
-    mem_data0_lst[114:0] <= {115{1'b0}};
-    mem_data1_lst[114:0] <= {115{1'b0}};
-    mem_data2_lst[114:0] <= {115{1'b0}};
-    mem_data3_lst[114:0] <= {115{1'b0}};
-    mem_data4_lst[114:0] <= {115{1'b0}};
-    mem_data5_lst[114:0] <= {115{1'b0}};
-    mem_data6_lst[114:0] <= {115{1'b0}};
-    mem_data7_lst[114:0] <= {115{1'b0}};
+    mem_data0_lst <= 0;
+    mem_data1_lst <= 0;
+    mem_data2_lst <= 0;
+    mem_data3_lst <= 0;
+    mem_data4_lst <= 0;
+    mem_data5_lst <= 0;
+    mem_data6_lst <= 0;
+    mem_data7_lst <= 0;
   end else begin
      if(flush_read_en_d & wr_data_stage0_prdy) begin
-             mem_data0_lst[114:0] <= {mem_rdata_0[114:0]};
-             mem_data1_lst[114:0] <= {mem_rdata_1[114:0]};
-             mem_data2_lst[114:0] <= {mem_rdata_2[114:0]};
-             mem_data3_lst[114:0] <= {mem_rdata_3[114:0]};
-             mem_data4_lst[114:0] <= {mem_rdata_4[114:0]};
-             mem_data5_lst[114:0] <= {mem_rdata_5[114:0]};
-             mem_data6_lst[114:0] <= {mem_rdata_6[114:0]};
-             mem_data7_lst[114:0] <= {mem_rdata_7[114:0]};
+             mem_data0_lst <= {mem_rdata_0[NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)+2:0]};
+             mem_data1_lst <= {mem_rdata_1[NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)+2:0]};
+             mem_data2_lst <= {mem_rdata_2[NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)+2:0]};
+             mem_data3_lst <= {mem_rdata_3[NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)+2:0]};
+             mem_data4_lst <= {mem_rdata_4[NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)+2:0]};
+             mem_data5_lst <= {mem_rdata_5[NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)+2:0]};
+             mem_data6_lst <= {mem_rdata_6[NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)+2:0]};
+             mem_data7_lst <= {mem_rdata_7[NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)+2:0]};
      end
   end
 end
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
-    mem_data0[114:0] <= {115{1'b0}};
-    mem_data1[114:0] <= {115{1'b0}};
-    mem_data2[114:0] <= {115{1'b0}};
-    mem_data3[114:0] <= {115{1'b0}};
-    mem_data4[114:0] <= {115{1'b0}};
-    mem_data5[114:0] <= {115{1'b0}};
-    mem_data6[114:0] <= {115{1'b0}};
-    mem_data7[114:0] <= {115{1'b0}};
+    mem_data0 <= 0;
+    mem_data1 <= 0;
+    mem_data2 <= 0;
+    mem_data3 <= 0;
+    mem_data4 <= 0;
+    mem_data5 <= 0;
+    mem_data6 <= 0;
+    mem_data7 <= 0;
   end else begin
      if(load_wr_stage1) begin//one cycle delay than pooling1d input
-             mem_data0[114:0] <= mem_re_1st_d[0]? {unit2d_vsize_cnt_0_d, datin_buf}: { unit2d_vsize_cnt_0_d,mem_rdata_0[111:0]};
-             mem_data1[114:0] <= mem_re_1st_d[1]? {unit2d_vsize_cnt_1_d, datin_buf}: { unit2d_vsize_cnt_1_d,mem_rdata_1[111:0]};
-             mem_data2[114:0] <= mem_re_1st_d[2]? {unit2d_vsize_cnt_2_d, datin_buf}: { unit2d_vsize_cnt_2_d,mem_rdata_2[111:0]};
-             mem_data3[114:0] <= mem_re_1st_d[3]? {unit2d_vsize_cnt_3_d, datin_buf}: { unit2d_vsize_cnt_3_d,mem_rdata_3[111:0]};
-             mem_data4[114:0] <= mem_re_1st_d[4]? {unit2d_vsize_cnt_4_d, datin_buf}: { unit2d_vsize_cnt_4_d,mem_rdata_4[111:0]};
-             mem_data5[114:0] <= mem_re_1st_d[5]? {unit2d_vsize_cnt_5_d, datin_buf}: { unit2d_vsize_cnt_5_d,mem_rdata_5[111:0]};
-             mem_data6[114:0] <= mem_re_1st_d[6]? {unit2d_vsize_cnt_6_d, datin_buf}: { unit2d_vsize_cnt_6_d,mem_rdata_6[111:0]};
-             mem_data7[114:0] <= mem_re_1st_d[7]? {unit2d_vsize_cnt_7_d, datin_buf}: { unit2d_vsize_cnt_7_d,mem_rdata_7[111:0]};
+             mem_data0 <= mem_re_1st_d[0]? {unit2d_vsize_cnt_0_d, datin_buf}: { unit2d_vsize_cnt_0_d,mem_rdata_0[NVDLA_PDP_THROUGHPUT*(NVDLA_BPE+6)-1:0]};
+             mem_data1 <= mem_re_1st_d[1]? {unit2d_vsize_cnt_1_d, datin_buf}: { unit2d_vsize_cnt_1_d,mem_rdata_1[NVDLA_PDP_THROUGHPUT*(NVDLA_BPE+6)-1:0]};
+             mem_data2 <= mem_re_1st_d[2]? {unit2d_vsize_cnt_2_d, datin_buf}: { unit2d_vsize_cnt_2_d,mem_rdata_2[NVDLA_PDP_THROUGHPUT*(NVDLA_BPE+6)-1:0]};
+             mem_data3 <= mem_re_1st_d[3]? {unit2d_vsize_cnt_3_d, datin_buf}: { unit2d_vsize_cnt_3_d,mem_rdata_3[NVDLA_PDP_THROUGHPUT*(NVDLA_BPE+6)-1:0]};
+             mem_data4 <= mem_re_1st_d[4]? {unit2d_vsize_cnt_4_d, datin_buf}: { unit2d_vsize_cnt_4_d,mem_rdata_4[NVDLA_PDP_THROUGHPUT*(NVDLA_BPE+6)-1:0]};
+             mem_data5 <= mem_re_1st_d[5]? {unit2d_vsize_cnt_5_d, datin_buf}: { unit2d_vsize_cnt_5_d,mem_rdata_5[NVDLA_PDP_THROUGHPUT*(NVDLA_BPE+6)-1:0]};
+             mem_data6 <= mem_re_1st_d[6]? {unit2d_vsize_cnt_6_d, datin_buf}: { unit2d_vsize_cnt_6_d,mem_rdata_6[NVDLA_PDP_THROUGHPUT*(NVDLA_BPE+6)-1:0]};
+             mem_data7 <= mem_re_1st_d[7]? {unit2d_vsize_cnt_7_d, datin_buf}: { unit2d_vsize_cnt_7_d,mem_rdata_7[NVDLA_PDP_THROUGHPUT*(NVDLA_BPE+6)-1:0]};
      end
   end
 end
 
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
-    datin_buf_2d <= {112{1'b0}};
+    datin_buf_2d <= 0;
   end else begin
   if ((load_wr_stage1) == 1'b1) begin
     datin_buf_2d <= datin_buf;
@@ -4028,65 +2451,13 @@ end
 `endif // SPYGLASS_ASSERT_ON
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
-    mem_raddr_2d <= {6{1'b0}};
+    mem_raddr_2d <= {9{1'b0}};
   end else begin
   if ((load_wr_stage1) == 1'b1) begin
     mem_raddr_2d <= mem_raddr_d;
-  // VCS coverage off
-  end else if ((load_wr_stage1) == 1'b0) begin
-  end else begin
-    mem_raddr_2d <= 'bx;  // spyglass disable STARC-2.10.1.6 W443 NoWidthInBasedNum-ML -- (Constant containing x or z used, Based number `bx contains an X, Width specification missing for based number)
-  // VCS coverage on
   end
   end
 end
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-`ifndef SYNTHESIS
-  // VCS coverage off 
-  nv_assert_no_x #(0,1,0,"No X's allowed on control signals")      zzz_assert_no_x_20x (nvdla_core_clk, `ASSERT_RESET, 1'd1,  (^(load_wr_stage1))); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`endif
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
     wr_surface_dat_done_2d <= 1'b0;
@@ -4396,65 +2767,13 @@ end
 `endif // SPYGLASS_ASSERT_ON
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
-    mem_raddr_d <= {6{1'b0}};
+    mem_raddr_d <= {9{1'b0}};
   end else begin
   if (((|mem_re) | (flush_read_en & one_width_norm_rdy)) == 1'b1) begin
     mem_raddr_d <= mem_raddr;
-  // VCS coverage off
-  end else if (((|mem_re) | (flush_read_en & one_width_norm_rdy)) == 1'b0) begin
-  end else begin
-    mem_raddr_d <= 'bx;  // spyglass disable STARC-2.10.1.6 W443 NoWidthInBasedNum-ML -- (Constant containing x or z used, Based number `bx contains an X, Width specification missing for based number)
-  // VCS coverage on
   end
   end
 end
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-`ifndef SYNTHESIS
-  // VCS coverage off 
-  nv_assert_no_x #(0,1,0,"No X's allowed on control signals")      zzz_assert_no_x_26x (nvdla_core_clk, `ASSERT_RESET, 1'd1,  (^((|mem_re) | (flush_read_en & one_width_norm_rdy)))); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`endif
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
 //=========================== 
 //8bits mem_re two cycle delay
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
@@ -4624,7 +2943,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     wr_data_stage2_vld <= 1'b0;
   end else begin
     //if(wr_data_stage1_vld)
-    if(wr_data_stage1_vld & (~fp16_mean_pool_cfg))
+    if(wr_data_stage1_vld )
         wr_data_stage2_vld <= 1'b1;
     else if(pout_data_stage0_prdy)
         wr_data_stage2_vld <= 1'b0;
@@ -4636,55 +2955,39 @@ assign load_wr_stage3 = wr_data_stage2_vld & pout_data_stage0_prdy & (~cur_datin
 // pooling data calculation and write back
 //
 //--------------------------------------------------------------------
-assign pooling_datin = datin_buf_2d[111:0];
+assign pooling_datin = datin_buf_2d;
 //read from memory
 assign  mem_data_valid = load_wr_stage2 ? mem_re_2d : 8'h00;
-//assign pooling_2d_result_0  =  mem_re_1st_2d[0] ? pooling_datin : pooling_fun(reg2dp_int8_en,reg2dp_int16_en,reg2dp_fp16_en,pooling_type_cfg[1:0],mem_data_valid[0],mem_data0[111:0],pooling_datin);
-//assign pooling_2d_result_1  =  mem_re_1st_2d[1] ? pooling_datin : pooling_fun(reg2dp_int8_en,reg2dp_int16_en,reg2dp_fp16_en,pooling_type_cfg[1:0],mem_data_valid[1],mem_data1[111:0],pooling_datin);
-//assign pooling_2d_result_2  =  mem_re_1st_2d[2] ? pooling_datin : pooling_fun(reg2dp_int8_en,reg2dp_int16_en,reg2dp_fp16_en,pooling_type_cfg[1:0],mem_data_valid[2],mem_data2[111:0],pooling_datin);
-//assign pooling_2d_result_3  =  mem_re_1st_2d[3] ? pooling_datin : pooling_fun(reg2dp_int8_en,reg2dp_int16_en,reg2dp_fp16_en,pooling_type_cfg[1:0],mem_data_valid[3],mem_data3[111:0],pooling_datin);
-//assign pooling_2d_result_4  =  mem_re_1st_2d[4] ? pooling_datin : pooling_fun(reg2dp_int8_en,reg2dp_int16_en,reg2dp_fp16_en,pooling_type_cfg[1:0],mem_data_valid[4],mem_data4[111:0],pooling_datin);
-//assign pooling_2d_result_5  =  mem_re_1st_2d[5] ? pooling_datin : pooling_fun(reg2dp_int8_en,reg2dp_int16_en,reg2dp_fp16_en,pooling_type_cfg[1:0],mem_data_valid[5],mem_data5[111:0],pooling_datin);
-//assign pooling_2d_result_6  =  mem_re_1st_2d[6] ? pooling_datin : pooling_fun(reg2dp_int8_en,reg2dp_int16_en,reg2dp_fp16_en,pooling_type_cfg[1:0],mem_data_valid[6],mem_data6[111:0],pooling_datin);
-//assign pooling_2d_result_7  =  mem_re_1st_2d[7] ? pooling_datin : pooling_fun(reg2dp_int8_en,reg2dp_int16_en,reg2dp_fp16_en,pooling_type_cfg[1:0],mem_data_valid[7],mem_data7[111:0],pooling_datin);
-assign pooling_2d_result_0  =  mem_re_1st_2d[0] ? pooling_datin : pooling_fun(reg2dp_int8_en,reg2dp_int16_en,reg2dp_fp16_en,pooling_type_cfg[1:0],mem_data_valid[0]/*,mem_data0[111:0]*/,pooling_datin,mem_data0[111:0]);
-assign pooling_2d_result_1  =  mem_re_1st_2d[1] ? pooling_datin : pooling_fun(reg2dp_int8_en,reg2dp_int16_en,reg2dp_fp16_en,pooling_type_cfg[1:0],mem_data_valid[1]/*,mem_data1[111:0]*/,pooling_datin,mem_data1[111:0]);
-assign pooling_2d_result_2  =  mem_re_1st_2d[2] ? pooling_datin : pooling_fun(reg2dp_int8_en,reg2dp_int16_en,reg2dp_fp16_en,pooling_type_cfg[1:0],mem_data_valid[2]/*,mem_data2[111:0]*/,pooling_datin,mem_data2[111:0]);
-assign pooling_2d_result_3  =  mem_re_1st_2d[3] ? pooling_datin : pooling_fun(reg2dp_int8_en,reg2dp_int16_en,reg2dp_fp16_en,pooling_type_cfg[1:0],mem_data_valid[3]/*,mem_data3[111:0]*/,pooling_datin,mem_data3[111:0]);
-assign pooling_2d_result_4  =  mem_re_1st_2d[4] ? pooling_datin : pooling_fun(reg2dp_int8_en,reg2dp_int16_en,reg2dp_fp16_en,pooling_type_cfg[1:0],mem_data_valid[4]/*,mem_data4[111:0]*/,pooling_datin,mem_data4[111:0]);
-assign pooling_2d_result_5  =  mem_re_1st_2d[5] ? pooling_datin : pooling_fun(reg2dp_int8_en,reg2dp_int16_en,reg2dp_fp16_en,pooling_type_cfg[1:0],mem_data_valid[5]/*,mem_data5[111:0]*/,pooling_datin,mem_data5[111:0]);
-assign pooling_2d_result_6  =  mem_re_1st_2d[6] ? pooling_datin : pooling_fun(reg2dp_int8_en,reg2dp_int16_en,reg2dp_fp16_en,pooling_type_cfg[1:0],mem_data_valid[6]/*,mem_data6[111:0]*/,pooling_datin,mem_data6[111:0]);
-assign pooling_2d_result_7  =  mem_re_1st_2d[7] ? pooling_datin : pooling_fun(reg2dp_int8_en,reg2dp_int16_en,reg2dp_fp16_en,pooling_type_cfg[1:0],mem_data_valid[7]/*,mem_data7[111:0]*/,pooling_datin,mem_data7[111:0]);
-assign pooling_2d_info_0    =  {wr_line_end_2d,mem_data0[114:112]};
-assign pooling_2d_info_1    =  {wr_line_end_2d,mem_data1[114:112]};
-assign pooling_2d_info_2    =  {wr_line_end_2d,mem_data2[114:112]}; 
-assign pooling_2d_info_3    =  {wr_line_end_2d,mem_data3[114:112]};
-assign pooling_2d_info_4    =  {wr_line_end_2d,mem_data4[114:112]};
-assign pooling_2d_info_5    =  {wr_line_end_2d,mem_data5[114:112]};
-assign pooling_2d_info_6    =  {wr_line_end_2d,mem_data6[114:112]};
-assign pooling_2d_info_7    =  {wr_line_end_2d,mem_data7[114:112]};
+assign pooling_2d_result_0  =  mem_re_1st_2d[0] ? pooling_datin : pooling_fun(pooling_type_cfg[1:0],mem_data_valid[0],pooling_datin,mem_data0[NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)-1:0]);
+assign pooling_2d_result_1  =  mem_re_1st_2d[1] ? pooling_datin : pooling_fun(pooling_type_cfg[1:0],mem_data_valid[1],pooling_datin,mem_data1[NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)-1:0]);
+assign pooling_2d_result_2  =  mem_re_1st_2d[2] ? pooling_datin : pooling_fun(pooling_type_cfg[1:0],mem_data_valid[2],pooling_datin,mem_data2[NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)-1:0]);
+assign pooling_2d_result_3  =  mem_re_1st_2d[3] ? pooling_datin : pooling_fun(pooling_type_cfg[1:0],mem_data_valid[3],pooling_datin,mem_data3[NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)-1:0]);
+assign pooling_2d_result_4  =  mem_re_1st_2d[4] ? pooling_datin : pooling_fun(pooling_type_cfg[1:0],mem_data_valid[4],pooling_datin,mem_data4[NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)-1:0]);
+assign pooling_2d_result_5  =  mem_re_1st_2d[5] ? pooling_datin : pooling_fun(pooling_type_cfg[1:0],mem_data_valid[5],pooling_datin,mem_data5[NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)-1:0]);
+assign pooling_2d_result_6  =  mem_re_1st_2d[6] ? pooling_datin : pooling_fun(pooling_type_cfg[1:0],mem_data_valid[6],pooling_datin,mem_data6[NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)-1:0]);
+assign pooling_2d_result_7  =  mem_re_1st_2d[7] ? pooling_datin : pooling_fun(pooling_type_cfg[1:0],mem_data_valid[7],pooling_datin,mem_data7[NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)-1:0]);
+assign pooling_2d_info_0    =  {wr_line_end_2d,mem_data0[NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)+2:NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)]};
+assign pooling_2d_info_1    =  {wr_line_end_2d,mem_data1[NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)+2:NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)]};
+assign pooling_2d_info_2    =  {wr_line_end_2d,mem_data2[NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)+2:NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)]}; 
+assign pooling_2d_info_3    =  {wr_line_end_2d,mem_data3[NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)+2:NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)]};
+assign pooling_2d_info_4    =  {wr_line_end_2d,mem_data4[NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)+2:NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)]};
+assign pooling_2d_info_5    =  {wr_line_end_2d,mem_data5[NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)+2:NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)]};
+assign pooling_2d_info_6    =  {wr_line_end_2d,mem_data6[NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)+2:NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)]};
+assign pooling_2d_info_7    =  {wr_line_end_2d,mem_data7[NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)+2:NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)]};
 
 //memory write data
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
-    int_mem_wdata_0 <= {116{1'b0}};
-    int_mem_wdata_1 <= {116{1'b0}};
-    int_mem_wdata_2 <= {116{1'b0}};
-    int_mem_wdata_3 <= {116{1'b0}};
-    int_mem_wdata_4 <= {116{1'b0}};
-    int_mem_wdata_5 <= {116{1'b0}};
-    int_mem_wdata_6 <= {116{1'b0}};
-    int_mem_wdata_7 <= {116{1'b0}};
+//: my $k = NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)+4;
+//: foreach my $i (0..7){
+//: print "    int_mem_wdata_$i <= ${k}'d0; \n";
+//: }
   end else begin
     if(load_wr_stage2) begin
-       int_mem_wdata_0 <= {pooling_2d_info_0,pooling_2d_result_0};
-       int_mem_wdata_1 <= {pooling_2d_info_1,pooling_2d_result_1};
-       int_mem_wdata_2 <= {pooling_2d_info_2,pooling_2d_result_2};
-       int_mem_wdata_3 <= {pooling_2d_info_3,pooling_2d_result_3};
-       int_mem_wdata_4 <= {pooling_2d_info_4,pooling_2d_result_4};
-       int_mem_wdata_5 <= {pooling_2d_info_5,pooling_2d_result_5};
-       int_mem_wdata_6 <= {pooling_2d_info_6,pooling_2d_result_6};
-       int_mem_wdata_7 <= {pooling_2d_info_7,pooling_2d_result_7};
+//: my $k = NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)+4;
+//: foreach my $i (0..7){
+//: print "    int_mem_wdata_$i <= {pooling_2d_info_${i},pooling_2d_result_$i}; \n";
+//: }
      end
   end
 end
@@ -4753,194 +3056,55 @@ end
 `endif // SPYGLASS_ASSERT_ON
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
-    int_mem_waddr <= {6{1'b0}};
+    int_mem_waddr <= {9{1'b0}};
   end else begin
   if ((load_wr_stage2) == 1'b1) begin
     int_mem_waddr <= mem_raddr_2d;
-  // VCS coverage off
-  end else if ((load_wr_stage2) == 1'b0) begin
-  end else begin
-    int_mem_waddr <= 'bx;  // spyglass disable STARC-2.10.1.6 W443 NoWidthInBasedNum-ML -- (Constant containing x or z used, Based number `bx contains an X, Width specification missing for based number)
-  // VCS coverage on
   end
   end
 end
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-`ifndef SYNTHESIS
-  // VCS coverage off 
-  nv_assert_no_x #(0,1,0,"No X's allowed on control signals")      zzz_assert_no_x_30x (nvdla_core_clk, `ASSERT_RESET, 1'd1,  (^(load_wr_stage2))); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`endif
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-
-assign fp16_mean_pool_cfg = (fp16_en & average_pooling_en);
 
 //memory write select 
-assign mem_wdata_0 = (fp16_mean_pool_cfg)? fp_mem0_wdata : int_mem_wdata_0;
-assign mem_wdata_1 = (fp16_mean_pool_cfg)? fp_mem1_wdata : int_mem_wdata_1;
-assign mem_wdata_2 = (fp16_mean_pool_cfg)? fp_mem2_wdata : int_mem_wdata_2;
-assign mem_wdata_3 = (fp16_mean_pool_cfg)? fp_mem3_wdata : int_mem_wdata_3;
-assign mem_wdata_4 = (fp16_mean_pool_cfg)? fp_mem4_wdata : int_mem_wdata_4;
-assign mem_wdata_5 = (fp16_mean_pool_cfg)? fp_mem5_wdata : int_mem_wdata_5;
-assign mem_wdata_6 = (fp16_mean_pool_cfg)? fp_mem6_wdata : int_mem_wdata_6;
-assign mem_wdata_7 = (fp16_mean_pool_cfg)? fp_mem7_wdata : int_mem_wdata_7;
-assign mem_we      = (fp16_mean_pool_cfg)? fp_mem_we : (int_mem_we & {8{load_wr_stage3}});
-assign mem_waddr_0 = (fp16_mean_pool_cfg)? fp_mem0_waddr : int_mem_waddr;
-assign mem_waddr_1 = (fp16_mean_pool_cfg)? fp_mem1_waddr : int_mem_waddr;
-assign mem_waddr_2 = (fp16_mean_pool_cfg)? fp_mem2_waddr : int_mem_waddr;
-assign mem_waddr_3 = (fp16_mean_pool_cfg)? fp_mem3_waddr : int_mem_waddr;
-assign mem_waddr_4 = (fp16_mean_pool_cfg)? fp_mem4_waddr : int_mem_waddr;
-assign mem_waddr_5 = (fp16_mean_pool_cfg)? fp_mem5_waddr : int_mem_waddr;
-assign mem_waddr_6 = (fp16_mean_pool_cfg)? fp_mem6_waddr : int_mem_waddr;
-assign mem_waddr_7 = (fp16_mean_pool_cfg)? fp_mem7_waddr : int_mem_waddr;
+assign mem_wdata_0 = int_mem_wdata_0;
+assign mem_wdata_1 = int_mem_wdata_1;
+assign mem_wdata_2 = int_mem_wdata_2;
+assign mem_wdata_3 = int_mem_wdata_3;
+assign mem_wdata_4 = int_mem_wdata_4;
+assign mem_wdata_5 = int_mem_wdata_5;
+assign mem_wdata_6 = int_mem_wdata_6;
+assign mem_wdata_7 = int_mem_wdata_7;
+assign mem_we      = (int_mem_we & {8{load_wr_stage3}});
+assign mem_waddr_0 = int_mem_waddr;
+assign mem_waddr_1 = int_mem_waddr;
+assign mem_waddr_2 = int_mem_waddr;
+assign mem_waddr_3 = int_mem_waddr;
+assign mem_waddr_4 = int_mem_waddr;
+assign mem_waddr_5 = int_mem_waddr;
+assign mem_waddr_6 = int_mem_waddr;
+assign mem_waddr_7 = int_mem_waddr;
 
 //=============================================================================
 //memory line buffer instance
 // 
 //-----------------------------------------------------------------------------
-nv_ram_rws_64x116 bank0_uram_0 (
-   .clk                         (nvdla_core_clk)                    //|< i
-  ,.ra                          (mem_raddr[5:0])                    //|< w
-  ,.re                          (mem_re[0] | mem_re_last[0])        //|< ?
-  ,.dout                        (mem_rdata_0[115:0])                //|> w
-  ,.wa                          (mem_waddr_0[5:0])                  //|< w
-  ,.we                          (mem_we[0])                         //|< w
-  ,.di                          (mem_wdata_0[115:0])                //|< w
-  ,.pwrbus_ram_pd               (pwrbus_ram_pd[31:0])               //|< i
-  );
 
-
-
-nv_ram_rws_64x116 bank1_uram_0 (
-   .clk                         (nvdla_core_clk)                    //|< i
-  ,.ra                          (mem_raddr[5:0])                    //|< w
-  ,.re                          (mem_re[1] | mem_re_last[1])        //|< ?
-  ,.dout                        (mem_rdata_1[115:0])                //|> w
-  ,.wa                          (mem_waddr_1[5:0])                  //|< w
-  ,.we                          (mem_we[1])                         //|< w
-  ,.di                          (mem_wdata_1[115:0])                //|< w
-  ,.pwrbus_ram_pd               (pwrbus_ram_pd[31:0])               //|< i
-  );
-
-
-
-nv_ram_rws_64x116 bank2_uram_0 (
-   .clk                         (nvdla_core_clk)                    //|< i
-  ,.ra                          (mem_raddr[5:0])                    //|< w
-  ,.re                          (mem_re[2] | mem_re_last[2])        //|< ?
-  ,.dout                        (mem_rdata_2[115:0])                //|> w
-  ,.wa                          (mem_waddr_2[5:0])                  //|< w
-  ,.we                          (mem_we[2])                         //|< w
-  ,.di                          (mem_wdata_2[115:0])                //|< w
-  ,.pwrbus_ram_pd               (pwrbus_ram_pd[31:0])               //|< i
-  );
-
-
-
-nv_ram_rws_64x116 bank3_uram_0 (
-   .clk                         (nvdla_core_clk)                    //|< i
-  ,.ra                          (mem_raddr[5:0])                    //|< w
-  ,.re                          (mem_re[3] | mem_re_last[3])        //|< ?
-  ,.dout                        (mem_rdata_3[115:0])                //|> w
-  ,.wa                          (mem_waddr_3[5:0])                  //|< w
-  ,.we                          (mem_we[3])                         //|< w
-  ,.di                          (mem_wdata_3[115:0])                //|< w
-  ,.pwrbus_ram_pd               (pwrbus_ram_pd[31:0])               //|< i
-  );
-
-
-
-nv_ram_rws_64x116 bank4_uram_0 (
-   .clk                         (nvdla_core_clk)                    //|< i
-  ,.ra                          (mem_raddr[5:0])                    //|< w
-  ,.re                          (mem_re[4] | mem_re_last[4])        //|< ?
-  ,.dout                        (mem_rdata_4[115:0])                //|> w
-  ,.wa                          (mem_waddr_4[5:0])                  //|< w
-  ,.we                          (mem_we[4])                         //|< w
-  ,.di                          (mem_wdata_4[115:0])                //|< w
-  ,.pwrbus_ram_pd               (pwrbus_ram_pd[31:0])               //|< i
-  );
-
-
-
-nv_ram_rws_64x116 bank5_uram_0 (
-   .clk                         (nvdla_core_clk)                    //|< i
-  ,.ra                          (mem_raddr[5:0])                    //|< w
-  ,.re                          (mem_re[5] | mem_re_last[5])        //|< ?
-  ,.dout                        (mem_rdata_5[115:0])                //|> w
-  ,.wa                          (mem_waddr_5[5:0])                  //|< w
-  ,.we                          (mem_we[5])                         //|< w
-  ,.di                          (mem_wdata_5[115:0])                //|< w
-  ,.pwrbus_ram_pd               (pwrbus_ram_pd[31:0])               //|< i
-  );
-
-
-
-nv_ram_rws_64x116 bank6_uram_0 (
-   .clk                         (nvdla_core_clk)                    //|< i
-  ,.ra                          (mem_raddr[5:0])                    //|< w
-  ,.re                          (mem_re[6] | mem_re_last[6])        //|< ?
-  ,.dout                        (mem_rdata_6[115:0])                //|> w
-  ,.wa                          (mem_waddr_6[5:0])                  //|< w
-  ,.we                          (mem_we[6])                         //|< w
-  ,.di                          (mem_wdata_6[115:0])                //|< w
-  ,.pwrbus_ram_pd               (pwrbus_ram_pd[31:0])               //|< i
-  );
-
-
-
-nv_ram_rws_64x116 bank7_uram_0 (
-   .clk                         (nvdla_core_clk)                    //|< i
-  ,.ra                          (mem_raddr[5:0])                    //|< w
-  ,.re                          (mem_re[7] | mem_re_last[7])        //|< ?
-  ,.dout                        (mem_rdata_7[115:0])                //|> w
-  ,.wa                          (mem_waddr_7[5:0])                  //|< w
-  ,.we                          (mem_we[7])                         //|< w
-  ,.di                          (mem_wdata_7[115:0])                //|< w
-  ,.pwrbus_ram_pd               (pwrbus_ram_pd[31:0])               //|< i
-  );
-
-
+//: my $depth = int(16*(NVDLA_MEMORY_ATOMIC_SIZE/NVDLA_PDP_THROUGHPUT));
+//: my $depth_bw = int( log($depth)/log(2) );
+//: my $width = (NVDLA_PDP_THROUGHPUT*(NVDLA_BPE+6)+4);
+//: foreach my $i (0..7) {
+//:     print qq(
+//:         nv_ram_rws_${depth}x${width} bank${i}_uram_0 (
+//:            .clk                         (nvdla_core_clk)              
+//:           ,.ra                          (mem_raddr[${depth_bw}-1:0])                   
+//:           ,.re                          (mem_re[$i] | mem_re_last[$i])
+//:           ,.dout                        (mem_rdata_$i)          
+//:           ,.wa                          (mem_waddr_${i}[${depth_bw}-1:0])            
+//:           ,.we                          (mem_we[$i])                   
+//:           ,.di                          (mem_wdata_$i)          
+//:           ,.pwrbus_ram_pd               (pwrbus_ram_pd)         
+//:           );
+//:     );
+//: }
 
 
 `ifdef SPYGLASS_ASSERT_ON
@@ -5325,7 +3489,6 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
         mem_re2_sel_last        <= mem_re2_sel;
         mem_re3_sel_last        <= mem_re3_sel;
         mem_re4_sel_last        <= mem_re4_sel;
-    //end else if(((line_end & cur_datin_disable) | (wr_line_dat_done & last_out_en)) & pooling1d_norm_rdy) begin
     end else if(((line_end & cur_datin_disable) | (wr_line_dat_done & last_out_en)) & one_width_norm_rdy) begin
         if(unit2d_cnt_pooling_last_end)
             unit2d_cnt_pooling_last <= 3'd0;
@@ -5336,8 +3499,6 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 end
 assign unit2d_cnt_pooling_last_end = (unit2d_cnt_pooling_last == unit2d_cnt_pooling_max);
 
-//assign flush_read_en = (cur_datin_disable | last_out_en);
-//assign flush_read_en = (cur_datin_disable | last_out_en) & pooling1d_norm_rdy;
 assign flush_read_en = (cur_datin_disable | last_out_en) & one_width_norm_rdy;
 
 assign unit2d_en_last[0] = flush_read_en & (unit2d_cnt_pooling_last == 3'd0);
@@ -6090,15 +4251,17 @@ assign pout_mem_data_sel_3_last[7] = (load_wr_stage2 | (cur_datin_disable_2d & w
  
 assign pout_mem_data_sel_last = pout_mem_data_sel_3_last | pout_mem_data_sel_2_last | pout_mem_data_sel_1_last;
 
-assign pout_mem_data_last = (mem_data0_lst & {115{pout_mem_data_sel_last[0]}}) |
-                            (mem_data1_lst & {115{pout_mem_data_sel_last[1]}}) |
-                            (mem_data2_lst & {115{pout_mem_data_sel_last[2]}}) |
-                            (mem_data3_lst & {115{pout_mem_data_sel_last[3]}}) |
-                            (mem_data4_lst & {115{pout_mem_data_sel_last[4]}}) |
-                            (mem_data5_lst & {115{pout_mem_data_sel_last[5]}}) |
-                            (mem_data6_lst & {115{pout_mem_data_sel_last[6]}}) |
-                            (mem_data7_lst & {115{pout_mem_data_sel_last[7]}}) ;
-
+//: my $k=NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)+3;
+//: print qq(
+//:     assign pout_mem_data_last = (mem_data0_lst & {${k}{pout_mem_data_sel_last[0]}}) |
+//:                                 (mem_data1_lst & {${k}{pout_mem_data_sel_last[1]}}) |
+//:                                 (mem_data2_lst & {${k}{pout_mem_data_sel_last[2]}}) |
+//:                                 (mem_data3_lst & {${k}{pout_mem_data_sel_last[3]}}) |
+//:                                 (mem_data4_lst & {${k}{pout_mem_data_sel_last[4]}}) |
+//:                                 (mem_data5_lst & {${k}{pout_mem_data_sel_last[5]}}) |
+//:                                 (mem_data6_lst & {${k}{pout_mem_data_sel_last[6]}}) |
+//:                                 (mem_data7_lst & {${k}{pout_mem_data_sel_last[7]}}) ;
+//: );
 //==============================================================================
 //unit2d pooling data read out
 //
@@ -6108,10 +4271,10 @@ assign pout_mem_data_last = (mem_data0_lst & {115{pout_mem_data_sel_last[0]}}) |
 assign rd_line_out_done = wr_line_end_2d & rd_line_out;
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
-    rd_line_out_cnt <= {6{1'b0}};
+    rd_line_out_cnt <= {9{1'b0}};
   end else begin
    if(rd_line_out_done | rd_sub_lbuf_end)
-        rd_line_out_cnt <= 6'd0;
+        rd_line_out_cnt <= 9'd0;
    else if(rd_line_out)
         rd_line_out_cnt <= rd_line_out_cnt + 1'd1;
   end
@@ -6150,7 +4313,7 @@ assign rd_line_out = |pout_mem_data_sel;
 assign rd_pout_data_en = (rd_line_out | ((load_wr_stage2 & (|mem_re_last_2d))| (cur_datin_disable_2d & wr_data_stage1_prdy)));
 
 //read output stage
-assign wr_data_stage1_prdy = (fp16_en & average_pooling_en)? fp16_add_in_rdy : (~wr_data_stage2_vld | pout_data_stage0_prdy);
+assign wr_data_stage1_prdy = (~wr_data_stage2_vld | pout_data_stage0_prdy);
 
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
@@ -6158,61 +4321,9 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   end else begin
   if ((load_wr_stage2_all) == 1'b1) begin
     rd_pout_data_en_d <= rd_pout_data_en;
-  // VCS coverage off
-  end else if ((load_wr_stage2_all) == 1'b0) begin
-  end else begin
-    rd_pout_data_en_d <= 'bx;  // spyglass disable STARC-2.10.1.6 W443 NoWidthInBasedNum-ML -- (Constant containing x or z used, Based number `bx contains an X, Width specification missing for based number)
-  // VCS coverage on
   end
   end
 end
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-`ifndef SYNTHESIS
-  // VCS coverage off 
-  nv_assert_no_x #(0,1,0,"No X's allowed on control signals")      zzz_assert_no_x_50x (nvdla_core_clk, `ASSERT_RESET, 1'd1,  (^(load_wr_stage2_all))); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`endif
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
 assign rd_pout_data_stage0 = load_wr_stage3_all & rd_pout_data_en_d;
 
 assign pout_data_stage0_prdy = ~pout_data_stage1_vld | pout_data_stage1_prdy;
@@ -6477,25 +4588,7 @@ assign pout_mem_data_sel_3[7] = mem_re_2d[7] & load_wr_stage2 & (rd_comb_lbuf_cn
 
 assign pout_mem_data_sel = (pout_mem_data_sel_3 | pout_mem_data_sel_2 | pout_mem_data_sel_1 | pout_mem_data_sel_0);
 
-always @(
-  pout_mem_data_sel
-  or pooling_2d_info_0
-  or pooling_2d_result_0
-  or pooling_2d_info_1
-  or pooling_2d_result_1
-  or pooling_2d_info_2
-  or pooling_2d_result_2
-  or pooling_2d_info_3
-  or pooling_2d_result_3
-  or pooling_2d_info_4
-  or pooling_2d_result_4
-  or pooling_2d_info_5
-  or pooling_2d_result_5
-  or pooling_2d_info_6
-  or pooling_2d_result_6
-  or pooling_2d_info_7
-  or pooling_2d_result_7
-  ) begin
+always @(*) begin
     case(pout_mem_data_sel[7:0])
       8'h01: pout_mem_data_act = {pooling_2d_info_0[2:0],pooling_2d_result_0};
       8'h02: pout_mem_data_act = {pooling_2d_info_1[2:0],pooling_2d_result_1};
@@ -6505,30 +4598,32 @@ always @(
       8'h20: pout_mem_data_act = {pooling_2d_info_5[2:0],pooling_2d_result_5};
       8'h40: pout_mem_data_act = {pooling_2d_info_6[2:0],pooling_2d_result_6};
       8'h80: pout_mem_data_act = {pooling_2d_info_7[2:0],pooling_2d_result_7};
-    default: pout_mem_data_act = 115'd0;
+    default: pout_mem_data_act = {(NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)+3){1'd0}};
     endcase
 end
 
 assign int_pout_mem_data = pout_mem_data_act | pout_mem_data_last;
-assign pout_mem_data = (fp16_en & average_pooling_en)? fp16_pout_mem_data : int_pout_mem_data;
+assign pout_mem_data = int_pout_mem_data;
 //=============================================================
 //pooling output data to DMA
 //
 //-------------------------------------------------------------
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
-    pout_mem_data_0 <= {28{1'b0}};
-    pout_mem_data_1 <= {28{1'b0}};
-    pout_mem_data_2 <= {28{1'b0}};
-    pout_mem_data_3 <= {28{1'b0}};
+//: my $k = NVDLA_PDP_THROUGHPUT;
+//: my $m = NVDLA_PDP_BWPE+6;
+//: foreach my $i (0..$k-1) {
+//:     print "    pout_mem_data_$i <= {${m}{1'b0}}; \n";
+//: }
     pout_mem_size_v <= {3{1'b0}};
   end else begin
     if(rd_pout_data_en) begin
-        pout_mem_data_0 <= pout_mem_data[27:0];
-        pout_mem_data_1 <= pout_mem_data[55:28];
-        pout_mem_data_2 <= pout_mem_data[83:56];
-        pout_mem_data_3 <= pout_mem_data[111:84];
-        pout_mem_size_v <= pout_mem_data[114:112];
+//: my $k = NVDLA_PDP_THROUGHPUT;
+//: my $m = NVDLA_PDP_BWPE+6;
+//: foreach my $i (0..$k-1) {
+//:     print "    pout_mem_data_$i <= pout_mem_data[${m}*${i}+${m}-1:${m}*$i]; \n";
+//: }
+//: print "        pout_mem_size_v <= pout_mem_data[${k}*${m}+2:${k}*${m}]; \n";
     end
   end
 end
@@ -6537,7 +4632,7 @@ end
 //adding pad value in v direction
 //-----------------------------------------------------------
 //padding value 1x,2x,3x,4x,5x,6x,7x table
-assign pout_mem_size_v_use = fp16_mean_pool_cfg ? fp_mem_size_v : pout_mem_size_v;
+assign pout_mem_size_v_use =  pout_mem_size_v;
 assign padding_here = average_pooling_en & (pout_mem_size_v_use != pooling_size_v_cfg);
 assign {mon_pad_table_index[0],pad_table_index[2:0]} = pooling_size_v_cfg - pout_mem_size_v_use;
 `ifdef SPYGLASS_ASSERT_ON
@@ -6568,7 +4663,7 @@ assign {mon_pad_table_index[0],pad_table_index[2:0]} = pooling_size_v_cfg - pout
 `endif // SYNTHESIS
 `endif // FV_ASSERT_ON
   // VCS coverage off 
-  nv_assert_never #(0,0,"PDPCore cal2d: pooling size should not less than active num")      zzz_assert_never_54x (nvdla_core_clk, `ASSERT_RESET, ((fp16_mean_pool_cfg? fp16_mulw_in_vld: rd_pout_data_stage0) & mon_pad_table_index & reg2dp_op_en)); // spyglass disable W504 SelfDeterminedExpr-ML 
+  nv_assert_never #(0,0,"PDPCore cal2d: pooling size should not less than active num")      zzz_assert_never_54x (nvdla_core_clk, `ASSERT_RESET, ((rd_pout_data_stage0) & mon_pad_table_index & reg2dp_op_en)); // spyglass disable W504 SelfDeterminedExpr-ML 
   // VCS coverage on
 `undef ASSERT_RESET
 `endif // ASSERT_ON
@@ -6586,16 +4681,7 @@ assign {mon_pad_table_index[0],pad_table_index[2:0]} = pooling_size_v_cfg - pout
 // spyglass enable_block WRN_61 
 `endif // SPYGLASS_ASSERT_ON
 
-always @(
-  pad_table_index
-  or reg2dp_pad_value_1x_cfg
-  or reg2dp_pad_value_2x_cfg
-  or reg2dp_pad_value_3x_cfg
-  or reg2dp_pad_value_4x_cfg
-  or reg2dp_pad_value_5x_cfg
-  or reg2dp_pad_value_6x_cfg
-  or reg2dp_pad_value_7x_cfg
-  ) begin
+always @(*) begin
     case(pad_table_index)
        3'd1: pad_table_out = reg2dp_pad_value_1x_cfg[18:0]; //1x  
        3'd2: pad_table_out = reg2dp_pad_value_2x_cfg[18:0]; //2x
@@ -6610,63 +4696,45 @@ end
 
 assign kernel_width_cfg[3:0] = reg2dp_kernel_width[2:0]+3'd1;
 assign {mon_pad_value,pad_value[21:0]} = $signed(pad_table_out) * $signed({{1{1'b0}}, kernel_width_cfg});
-assign pout_mem_data0 = pout_mem_data_0[21:0];
-assign pout_mem_data1 = pout_mem_data_1[21:0];
-assign pout_mem_data2 = pout_mem_data_2[21:0];
-assign pout_mem_data3 = pout_mem_data_3[21:0];
+// //: my $k = NVDLA_PDP_THROUGHPUT;
+// //: foreach my $i (0..$k-1) {
+// //: print qq(
+// //:     assign pout_mem_data$i = pout_mem_data_$i;
+// //: );
+// //: }
 
-assign {mon_data_16bit_0_ff[0],data_16bit_0_ff[21:0]} = $signed(pout_mem_data0) + $signed(pad_value);
-assign {mon_data_16bit_1_ff[0],data_16bit_1_ff[21:0]} = $signed(pout_mem_data1) + $signed(pad_value);
-assign {mon_data_16bit_2_ff[0],data_16bit_2_ff[21:0]} = $signed(pout_mem_data2) + $signed(pad_value);
-assign {mon_data_16bit_3_ff[0],data_16bit_3_ff[21:0]} = $signed(pout_mem_data3) + $signed(pad_value);
-assign {mon_data_16bit_0[0],data_16bit_0[21:0]} = padding_here ? {mon_data_16bit_0_ff[0],data_16bit_0_ff[21:0]} : {pout_mem_data_0[21],pout_mem_data_0[21:0]};
-assign {mon_data_16bit_1[0],data_16bit_1[21:0]} = padding_here ? {mon_data_16bit_1_ff[0],data_16bit_1_ff[21:0]} : {pout_mem_data_1[21],pout_mem_data_1[21:0]};
-assign {mon_data_16bit_2[0],data_16bit_2[21:0]} = padding_here ? {mon_data_16bit_2_ff[0],data_16bit_2_ff[21:0]} : {pout_mem_data_2[21],pout_mem_data_2[21:0]};
-assign {mon_data_16bit_3[0],data_16bit_3[21:0]} = padding_here ? {mon_data_16bit_3_ff[0],data_16bit_3_ff[21:0]} : {pout_mem_data_3[21],pout_mem_data_3[21:0]};
-                                                                                                                                                                                                     
-assign {mon_data_8bit_0_ff[1:0] ,data_8bit_0_ff[13:0]} = $signed({pout_mem_data_0[13],pout_mem_data_0[13:0] }) + $signed({pad_value[13], pad_value[13:0]});
-assign {mon_data_8bit_1_ff[1:0] ,data_8bit_1_ff[13:0]} = $signed({pout_mem_data_0[27],pout_mem_data_0[27:14]}) + $signed({pad_value[13], pad_value[13:0]});
-assign {mon_data_8bit_2_ff[1:0] ,data_8bit_2_ff[13:0]} = $signed({pout_mem_data_1[13],pout_mem_data_1[13:0] }) + $signed({pad_value[13], pad_value[13:0]});
-assign {mon_data_8bit_3_ff[1:0] ,data_8bit_3_ff[13:0]} = $signed({pout_mem_data_1[27],pout_mem_data_1[27:14]}) + $signed({pad_value[13], pad_value[13:0]});
-assign {mon_data_8bit_4_ff[1:0] ,data_8bit_4_ff[13:0]} = $signed({pout_mem_data_2[13],pout_mem_data_2[13:0] }) + $signed({pad_value[13], pad_value[13:0]});
-assign {mon_data_8bit_5_ff[1:0] ,data_8bit_5_ff[13:0]} = $signed({pout_mem_data_2[27],pout_mem_data_2[27:14]}) + $signed({pad_value[13], pad_value[13:0]});
-assign {mon_data_8bit_6_ff[1:0] ,data_8bit_6_ff[13:0]} = $signed({pout_mem_data_3[13],pout_mem_data_3[13:0] }) + $signed({pad_value[13], pad_value[13:0]});
-assign {mon_data_8bit_7_ff[1:0] ,data_8bit_7_ff[13:0]} = $signed({pout_mem_data_3[27],pout_mem_data_3[27:14]}) + $signed({pad_value[13], pad_value[13:0]});
-assign {mon_data_8bit_0[1:0] ,data_8bit_0[13:0]}  = padding_here ? {mon_data_8bit_0_ff[1:0] ,data_8bit_0_ff[13:0]} : {{2{pout_mem_data_0[13]}},pout_mem_data_0[13:0] };
-assign {mon_data_8bit_1[1:0] ,data_8bit_1[13:0]}  = padding_here ? {mon_data_8bit_1_ff[1:0] ,data_8bit_1_ff[13:0]} : {{2{pout_mem_data_0[27]}},pout_mem_data_0[27:14]};
-assign {mon_data_8bit_2[1:0] ,data_8bit_2[13:0]}  = padding_here ? {mon_data_8bit_2_ff[1:0] ,data_8bit_2_ff[13:0]} : {{2{pout_mem_data_1[13]}},pout_mem_data_1[13:0] };
-assign {mon_data_8bit_3[1:0] ,data_8bit_3[13:0]}  = padding_here ? {mon_data_8bit_3_ff[1:0] ,data_8bit_3_ff[13:0]} : {{2{pout_mem_data_1[27]}},pout_mem_data_1[27:14]};
-assign {mon_data_8bit_4[1:0] ,data_8bit_4[13:0]}  = padding_here ? {mon_data_8bit_4_ff[1:0] ,data_8bit_4_ff[13:0]} : {{2{pout_mem_data_2[13]}},pout_mem_data_2[13:0] };
-assign {mon_data_8bit_5[1:0] ,data_8bit_5[13:0]}  = padding_here ? {mon_data_8bit_5_ff[1:0] ,data_8bit_5_ff[13:0]} : {{2{pout_mem_data_2[27]}},pout_mem_data_2[27:14]};
-assign {mon_data_8bit_6[1:0] ,data_8bit_6[13:0]}  = padding_here ? {mon_data_8bit_6_ff[1:0] ,data_8bit_6_ff[13:0]} : {{2{pout_mem_data_3[13]}},pout_mem_data_3[13:0] };
-assign {mon_data_8bit_7[1:0] ,data_8bit_7[13:0]}  = padding_here ? {mon_data_8bit_7_ff[1:0] ,data_8bit_7_ff[13:0]} : {{2{pout_mem_data_3[27]}},pout_mem_data_3[27:14]};
+//: my $s = "\$signed";
+//: my $k = NVDLA_PDP_THROUGHPUT;
+//: my $m = NVDLA_PDP_BWPE+6;
+//: foreach my $i (0..$k-1) {
+//: print qq(
+//:     assign {mon_data_8bit_${i}_ff ,data_8bit_${i}_ff} = $s({pout_mem_data_${i}[${m}-1],pout_mem_data_$i}) + $s({pad_value[${m}-1], pad_value[${m}-1:0]});
+//:     assign {mon_data_8bit_${i} ,data_8bit_${i}}  = padding_here ? {mon_data_8bit_${i}_ff ,data_8bit_${i}_ff} : {{2{pout_mem_data_${i}[${m}-1]}},pout_mem_data_${i}[${m}-1:0] };
+//: );
+//: }
 
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
-    pout_data_0_0[27:0] <= {28{1'b0}};
-    pout_data_0_1[27:0] <= {28{1'b0}};
-    pout_data_0_2[27:0] <= {28{1'b0}};
-    pout_data_0_3[27:0] <= {28{1'b0}};
+//: my $k = NVDLA_PDP_THROUGHPUT;
+//: my $m = NVDLA_PDP_BWPE+6;
+//: foreach my $i (0..$k-1) {
+//:     print "    pout_data_0_$i <= {${m}{1'b0}}; \n";
+//: }
   end else begin
-   if(~fp16_en & average_pooling_en) begin
+   if(average_pooling_en) begin
         if(rd_pout_data_stage0) begin
-           if(int8_en) begin
-               pout_data_0_0[27:0] <= {data_8bit_1, data_8bit_0};
-               pout_data_0_1[27:0] <= {data_8bit_3, data_8bit_2};
-               pout_data_0_2[27:0] <= {data_8bit_5, data_8bit_4};
-               pout_data_0_3[27:0] <= {data_8bit_7, data_8bit_6};
-           end else begin
-               pout_data_0_0[27:0] <= {{6{data_16bit_0[21]}}, data_16bit_0[21:0]};
-               pout_data_0_1[27:0] <= {{6{data_16bit_1[21]}}, data_16bit_1[21:0]};
-               pout_data_0_2[27:0] <= {{6{data_16bit_2[21]}}, data_16bit_2[21:0]};
-               pout_data_0_3[27:0] <= {{6{data_16bit_3[21]}}, data_16bit_3[21:0]};
-           end
+//: my $k = NVDLA_PDP_THROUGHPUT;
+//: my $m = NVDLA_PDP_BWPE+6;
+//: foreach my $i (0..$k-1) {
+//:     print "    pout_data_0_$i <= data_8bit_$i; \n";
+//: }
         end
    end else if(rd_pout_data_stage0)begin
-        pout_data_0_0[27:0] <= pout_mem_data_0;
-        pout_data_0_1[27:0] <= pout_mem_data_1;
-        pout_data_0_2[27:0] <= pout_mem_data_2;
-        pout_data_0_3[27:0] <= pout_mem_data_3;
+//: my $k = NVDLA_PDP_THROUGHPUT;
+//: my $m = NVDLA_PDP_BWPE+6;
+//: foreach my $i (0..$k-1) {
+//:     print "    pout_data_0_$i <= {pout_mem_data_${i}[${m}-1],pout_mem_data_${i}}; \n";
+//: }
    end
   end
 end
@@ -6689,2810 +4757,126 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   reg2dp_recip_height_use[16:0] <= reg2dp_recip_height_cfg[16:0];
   end
 end
-//16bits
-assign data_hmult_16bit_0_ext_ff[38:0] = $signed(pout_data_0_0[21:0]) * $signed({1'b0,reg2dp_recip_width_use[16:0]});
-assign data_hmult_16bit_1_ext_ff[38:0] = $signed(pout_data_0_1[21:0]) * $signed({1'b0,reg2dp_recip_width_use[16:0]});
-assign data_hmult_16bit_2_ext_ff[38:0] = $signed(pout_data_0_2[21:0]) * $signed({1'b0,reg2dp_recip_width_use[16:0]});
-assign data_hmult_16bit_3_ext_ff[38:0] = $signed(pout_data_0_3[21:0]) * $signed({1'b0,reg2dp_recip_width_use[16:0]});
-assign data_hmult_16bit_0_ext[38:0] = average_pooling_en ? data_hmult_16bit_0_ext_ff[38:0] : {pout_data_0_0[21],pout_data_0_0[21:0],16'd0};
-assign data_hmult_16bit_1_ext[38:0] = average_pooling_en ? data_hmult_16bit_1_ext_ff[38:0] : {pout_data_0_1[21],pout_data_0_1[21:0],16'd0};
-assign data_hmult_16bit_2_ext[38:0] = average_pooling_en ? data_hmult_16bit_2_ext_ff[38:0] : {pout_data_0_2[21],pout_data_0_2[21:0],16'd0};
-assign data_hmult_16bit_3_ext[38:0] = average_pooling_en ? data_hmult_16bit_3_ext_ff[38:0] : {pout_data_0_3[21],pout_data_0_3[21:0],16'd0};
-assign i16_less_neg_0_5_0 = data_hmult_16bit_0_ext[38] & ((data_hmult_16bit_0_ext[15] & (~(|data_hmult_16bit_0_ext[14:0]))) | (~data_hmult_16bit_0_ext[15]));
-assign i16_less_neg_0_5_1 = data_hmult_16bit_1_ext[38] & ((data_hmult_16bit_1_ext[15] & (~(|data_hmult_16bit_1_ext[14:0]))) | (~data_hmult_16bit_1_ext[15]));
-assign i16_less_neg_0_5_2 = data_hmult_16bit_2_ext[38] & ((data_hmult_16bit_2_ext[15] & (~(|data_hmult_16bit_2_ext[14:0]))) | (~data_hmult_16bit_2_ext[15]));
-assign i16_less_neg_0_5_3 = data_hmult_16bit_3_ext[38] & ((data_hmult_16bit_3_ext[15] & (~(|data_hmult_16bit_3_ext[14:0]))) | (~data_hmult_16bit_3_ext[15]));
-assign i16_more_neg_0_5_0 = data_hmult_16bit_0_ext[38] & data_hmult_16bit_0_ext[15] & (|data_hmult_16bit_0_ext[14:0]);
-assign i16_more_neg_0_5_1 = data_hmult_16bit_1_ext[38] & data_hmult_16bit_1_ext[15] & (|data_hmult_16bit_1_ext[14:0]);
-assign i16_more_neg_0_5_2 = data_hmult_16bit_2_ext[38] & data_hmult_16bit_2_ext[15] & (|data_hmult_16bit_2_ext[14:0]);
-assign i16_more_neg_0_5_3 = data_hmult_16bit_3_ext[38] & data_hmult_16bit_3_ext[15] & (|data_hmult_16bit_3_ext[14:0]);
-assign {mon_i16_neg_add1_0,i16_neg_add1_0[18:0]} = data_hmult_16bit_0_ext[34:16]+19'd1; 
-assign {mon_i16_neg_add1_1,i16_neg_add1_1[18:0]} = data_hmult_16bit_1_ext[34:16]+19'd1;
-assign {mon_i16_neg_add1_2,i16_neg_add1_2[18:0]} = data_hmult_16bit_2_ext[34:16]+19'd1;
-assign {mon_i16_neg_add1_3,i16_neg_add1_3[18:0]} = data_hmult_16bit_3_ext[34:16]+19'd1;
-assign data_hmult_16bit_0[18:0] = (i16_less_neg_0_5_0)? data_hmult_16bit_0_ext[34:16] : (i16_more_neg_0_5_0)? i16_neg_add1_0[18:0] : (data_hmult_16bit_0_ext[33:16]+data_hmult_16bit_0_ext[15]);//rounding 0.5=1, -0.5=-1  
-assign data_hmult_16bit_1[18:0] = (i16_less_neg_0_5_1)? data_hmult_16bit_1_ext[34:16] : (i16_more_neg_0_5_1)? i16_neg_add1_1[18:0] : (data_hmult_16bit_1_ext[33:16]+data_hmult_16bit_1_ext[15]);//rounding 0.5=1, -0.5=-1 
-assign data_hmult_16bit_2[18:0] = (i16_less_neg_0_5_2)? data_hmult_16bit_2_ext[34:16] : (i16_more_neg_0_5_2)? i16_neg_add1_2[18:0] : (data_hmult_16bit_2_ext[33:16]+data_hmult_16bit_2_ext[15]);//rounding 0.5=1, -0.5=-1 
-assign data_hmult_16bit_3[18:0] = (i16_less_neg_0_5_3)? data_hmult_16bit_3_ext[34:16] : (i16_more_neg_0_5_3)? i16_neg_add1_3[18:0] : (data_hmult_16bit_3_ext[33:16]+data_hmult_16bit_3_ext[15]);//rounding 0.5=1, -0.5=-1 
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-  // VCS coverage off 
-  nv_assert_never #(0,0,"PDPCore cal2d: the MSB bits should be all same as signed bit")      zzz_assert_never_55x (nvdla_core_clk, `ASSERT_RESET, (rd_pout_data_stage1 & int16_en & ((&data_hmult_16bit_0_ext[38:37]) != (|data_hmult_16bit_0_ext[38:37])))); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-  // VCS coverage off 
-  nv_assert_never #(0,0,"PDPCore cal2d: the MSB bits should be all same as signed bit")      zzz_assert_never_56x (nvdla_core_clk, `ASSERT_RESET, (rd_pout_data_stage1 & int16_en & ((&data_hmult_16bit_1_ext[38:37]) != (|data_hmult_16bit_1_ext[38:37])))); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-  // VCS coverage off 
-  nv_assert_never #(0,0,"PDPCore cal2d: the MSB bits should be all same as signed bit")      zzz_assert_never_57x (nvdla_core_clk, `ASSERT_RESET, (rd_pout_data_stage1 & int16_en & ((&data_hmult_16bit_2_ext[38:37]) != (|data_hmult_16bit_2_ext[38:37])))); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-  // VCS coverage off 
-  nv_assert_never #(0,0,"PDPCore cal2d: the MSB bits should be all same as signed bit")      zzz_assert_never_58x (nvdla_core_clk, `ASSERT_RESET, (rd_pout_data_stage1 & int16_en & ((&data_hmult_16bit_3_ext[38:37]) != (|data_hmult_16bit_3_ext[38:37])))); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
 
 //8bits
-assign data_hmult_8bit_0_lsb_ext_ff[30:0] = $signed(pout_data_0_0[13:0])  * $signed({1'b0,reg2dp_recip_width_use[16:0]});
-assign data_hmult_8bit_0_msb_ext_ff[30:0] = $signed(pout_data_0_0[27:14]) * $signed({1'b0,reg2dp_recip_width_use[16:0]});
-assign data_hmult_8bit_1_lsb_ext_ff[30:0] = $signed(pout_data_0_1[13:0])  * $signed({1'b0,reg2dp_recip_width_use[16:0]});
-assign data_hmult_8bit_1_msb_ext_ff[30:0] = $signed(pout_data_0_1[27:14]) * $signed({1'b0,reg2dp_recip_width_use[16:0]});
-assign data_hmult_8bit_2_lsb_ext_ff[30:0] = $signed(pout_data_0_2[13:0])  * $signed({1'b0,reg2dp_recip_width_use[16:0]});
-assign data_hmult_8bit_2_msb_ext_ff[30:0] = $signed(pout_data_0_2[27:14]) * $signed({1'b0,reg2dp_recip_width_use[16:0]});
-assign data_hmult_8bit_3_lsb_ext_ff[30:0] = $signed(pout_data_0_3[13:0])  * $signed({1'b0,reg2dp_recip_width_use[16:0]});
-assign data_hmult_8bit_3_msb_ext_ff[30:0] = $signed(pout_data_0_3[27:14]) * $signed({1'b0,reg2dp_recip_width_use[16:0]});
-assign data_hmult_8bit_0_lsb_ext[30:0] = average_pooling_en ? data_hmult_8bit_0_lsb_ext_ff : {pout_data_0_0[13],pout_data_0_0[13:0] ,16'd0};
-assign data_hmult_8bit_0_msb_ext[30:0] = average_pooling_en ? data_hmult_8bit_0_msb_ext_ff : {pout_data_0_0[27],pout_data_0_0[27:14],16'd0};
-assign data_hmult_8bit_1_lsb_ext[30:0] = average_pooling_en ? data_hmult_8bit_1_lsb_ext_ff : {pout_data_0_1[13],pout_data_0_1[13:0] ,16'd0};
-assign data_hmult_8bit_1_msb_ext[30:0] = average_pooling_en ? data_hmult_8bit_1_msb_ext_ff : {pout_data_0_1[27],pout_data_0_1[27:14],16'd0};
-assign data_hmult_8bit_2_lsb_ext[30:0] = average_pooling_en ? data_hmult_8bit_2_lsb_ext_ff : {pout_data_0_2[13],pout_data_0_2[13:0] ,16'd0};
-assign data_hmult_8bit_2_msb_ext[30:0] = average_pooling_en ? data_hmult_8bit_2_msb_ext_ff : {pout_data_0_2[27],pout_data_0_2[27:14],16'd0};
-assign data_hmult_8bit_3_lsb_ext[30:0] = average_pooling_en ? data_hmult_8bit_3_lsb_ext_ff : {pout_data_0_3[13],pout_data_0_3[13:0] ,16'd0};
-assign data_hmult_8bit_3_msb_ext[30:0] = average_pooling_en ? data_hmult_8bit_3_msb_ext_ff : {pout_data_0_3[27],pout_data_0_3[27:14],16'd0};
-
-assign i8_less_neg_0_5_0_l = data_hmult_8bit_0_lsb_ext[30] & ((data_hmult_8bit_0_lsb_ext[15] & (~(|data_hmult_8bit_0_lsb_ext[14:0]))) | (~data_hmult_8bit_0_lsb_ext[15]));
-assign i8_less_neg_0_5_0_m = data_hmult_8bit_0_msb_ext[30] & ((data_hmult_8bit_0_msb_ext[15] & (~(|data_hmult_8bit_0_msb_ext[14:0]))) | (~data_hmult_8bit_0_msb_ext[15]));
-assign i8_less_neg_0_5_1_l = data_hmult_8bit_1_lsb_ext[30] & ((data_hmult_8bit_1_lsb_ext[15] & (~(|data_hmult_8bit_1_lsb_ext[14:0]))) | (~data_hmult_8bit_1_lsb_ext[15]));
-assign i8_less_neg_0_5_1_m = data_hmult_8bit_1_msb_ext[30] & ((data_hmult_8bit_1_msb_ext[15] & (~(|data_hmult_8bit_1_msb_ext[14:0]))) | (~data_hmult_8bit_1_msb_ext[15]));
-assign i8_less_neg_0_5_2_l = data_hmult_8bit_2_lsb_ext[30] & ((data_hmult_8bit_2_lsb_ext[15] & (~(|data_hmult_8bit_2_lsb_ext[14:0]))) | (~data_hmult_8bit_2_lsb_ext[15]));
-assign i8_less_neg_0_5_2_m = data_hmult_8bit_2_msb_ext[30] & ((data_hmult_8bit_2_msb_ext[15] & (~(|data_hmult_8bit_2_msb_ext[14:0]))) | (~data_hmult_8bit_2_msb_ext[15]));
-assign i8_less_neg_0_5_3_l = data_hmult_8bit_3_lsb_ext[30] & ((data_hmult_8bit_3_lsb_ext[15] & (~(|data_hmult_8bit_3_lsb_ext[14:0]))) | (~data_hmult_8bit_3_lsb_ext[15]));
-assign i8_less_neg_0_5_3_m = data_hmult_8bit_3_msb_ext[30] & ((data_hmult_8bit_3_msb_ext[15] & (~(|data_hmult_8bit_3_msb_ext[14:0]))) | (~data_hmult_8bit_3_msb_ext[15]));
-assign i8_more_neg_0_5_0_l = data_hmult_8bit_0_lsb_ext[30] & data_hmult_8bit_0_lsb_ext[15] & (|data_hmult_8bit_0_lsb_ext[14:0]);
-assign i8_more_neg_0_5_0_m = data_hmult_8bit_0_msb_ext[30] & data_hmult_8bit_0_msb_ext[15] & (|data_hmult_8bit_0_msb_ext[14:0]);
-assign i8_more_neg_0_5_1_l = data_hmult_8bit_1_lsb_ext[30] & data_hmult_8bit_1_lsb_ext[15] & (|data_hmult_8bit_1_lsb_ext[14:0]);
-assign i8_more_neg_0_5_1_m = data_hmult_8bit_1_msb_ext[30] & data_hmult_8bit_1_msb_ext[15] & (|data_hmult_8bit_1_msb_ext[14:0]);
-assign i8_more_neg_0_5_2_l = data_hmult_8bit_2_lsb_ext[30] & data_hmult_8bit_2_lsb_ext[15] & (|data_hmult_8bit_2_lsb_ext[14:0]);
-assign i8_more_neg_0_5_2_m = data_hmult_8bit_2_msb_ext[30] & data_hmult_8bit_2_msb_ext[15] & (|data_hmult_8bit_2_msb_ext[14:0]);
-assign i8_more_neg_0_5_3_l = data_hmult_8bit_3_lsb_ext[30] & data_hmult_8bit_3_lsb_ext[15] & (|data_hmult_8bit_3_lsb_ext[14:0]);
-assign i8_more_neg_0_5_3_m = data_hmult_8bit_3_msb_ext[30] & data_hmult_8bit_3_msb_ext[15] & (|data_hmult_8bit_3_msb_ext[14:0]);
-assign {mon_i8_neg_add1_0_l,i8_neg_add1_0_l[10:0]} = data_hmult_8bit_0_lsb_ext[26:16]+11'd1; 
-assign {mon_i8_neg_add1_0_m,i8_neg_add1_0_m[10:0]} = data_hmult_8bit_0_msb_ext[26:16]+11'd1; 
-assign {mon_i8_neg_add1_1_l,i8_neg_add1_1_l[10:0]} = data_hmult_8bit_1_lsb_ext[26:16]+11'd1;
-assign {mon_i8_neg_add1_1_m,i8_neg_add1_1_m[10:0]} = data_hmult_8bit_1_msb_ext[26:16]+11'd1;
-assign {mon_i8_neg_add1_2_l,i8_neg_add1_2_l[10:0]} = data_hmult_8bit_2_lsb_ext[26:16]+11'd1;
-assign {mon_i8_neg_add1_2_m,i8_neg_add1_2_m[10:0]} = data_hmult_8bit_2_msb_ext[26:16]+11'd1;
-assign {mon_i8_neg_add1_3_l,i8_neg_add1_3_l[10:0]} = data_hmult_8bit_3_lsb_ext[26:16]+11'd1;
-assign {mon_i8_neg_add1_3_m,i8_neg_add1_3_m[10:0]} = data_hmult_8bit_3_msb_ext[26:16]+11'd1;
-assign hmult_8bit_0_lsb[10:0] = (i8_less_neg_0_5_0_l)? data_hmult_8bit_0_lsb_ext[26:16] : (i8_more_neg_0_5_0_l)? i8_neg_add1_0_l[10:0] : (data_hmult_8bit_0_lsb_ext[25:16]+data_hmult_8bit_0_lsb_ext[15]);//rounding 0.5=1, -0.5=-1
-assign hmult_8bit_0_msb[10:0] = (i8_less_neg_0_5_0_m)? data_hmult_8bit_0_msb_ext[26:16] : (i8_more_neg_0_5_0_m)? i8_neg_add1_0_m[10:0] : (data_hmult_8bit_0_msb_ext[25:16]+data_hmult_8bit_0_msb_ext[15]);//rounding 0.5=1, -0.5=-1
-assign hmult_8bit_1_lsb[10:0] = (i8_less_neg_0_5_1_l)? data_hmult_8bit_1_lsb_ext[26:16] : (i8_more_neg_0_5_1_l)? i8_neg_add1_1_l[10:0] : (data_hmult_8bit_1_lsb_ext[25:16]+data_hmult_8bit_1_lsb_ext[15]);//rounding 0.5=1, -0.5=-1
-assign hmult_8bit_1_msb[10:0] = (i8_less_neg_0_5_1_m)? data_hmult_8bit_1_msb_ext[26:16] : (i8_more_neg_0_5_1_m)? i8_neg_add1_1_m[10:0] : (data_hmult_8bit_1_msb_ext[25:16]+data_hmult_8bit_1_msb_ext[15]);//rounding 0.5=1, -0.5=-1
-assign hmult_8bit_2_lsb[10:0] = (i8_less_neg_0_5_2_l)? data_hmult_8bit_2_lsb_ext[26:16] : (i8_more_neg_0_5_2_l)? i8_neg_add1_2_l[10:0] : (data_hmult_8bit_2_lsb_ext[25:16]+data_hmult_8bit_2_lsb_ext[15]);//rounding 0.5=1, -0.5=-1
-assign hmult_8bit_2_msb[10:0] = (i8_less_neg_0_5_2_m)? data_hmult_8bit_2_msb_ext[26:16] : (i8_more_neg_0_5_2_m)? i8_neg_add1_2_m[10:0] : (data_hmult_8bit_2_msb_ext[25:16]+data_hmult_8bit_2_msb_ext[15]);//rounding 0.5=1, -0.5=-1
-assign hmult_8bit_3_lsb[10:0] = (i8_less_neg_0_5_3_l)? data_hmult_8bit_3_lsb_ext[26:16] : (i8_more_neg_0_5_3_l)? i8_neg_add1_3_l[10:0] : (data_hmult_8bit_3_lsb_ext[25:16]+data_hmult_8bit_3_lsb_ext[15]);//rounding 0.5=1, -0.5=-1
-assign hmult_8bit_3_msb[10:0] = (i8_less_neg_0_5_3_m)? data_hmult_8bit_3_msb_ext[26:16] : (i8_more_neg_0_5_3_m)? i8_neg_add1_3_m[10:0] : (data_hmult_8bit_3_msb_ext[25:16]+data_hmult_8bit_3_msb_ext[15]);//rounding 0.5=1, -0.5=-1
-
-assign data_hmult_8bit_0[21:0]  = {hmult_8bit_0_msb[10:0],hmult_8bit_0_lsb[10:0]};
-assign data_hmult_8bit_1[21:0]  = {hmult_8bit_1_msb[10:0],hmult_8bit_1_lsb[10:0]};
-assign data_hmult_8bit_2[21:0]  = {hmult_8bit_2_msb[10:0],hmult_8bit_2_lsb[10:0]};
-assign data_hmult_8bit_3[21:0]  = {hmult_8bit_3_msb[10:0],hmult_8bit_3_lsb[10:0]};
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-  // VCS coverage off 
-  nv_assert_never #(0,0,"PDPCore cal2d: the MSB bits should be all same as signed bit")      zzz_assert_never_59x (nvdla_core_clk, `ASSERT_RESET, (int8_en & rd_pout_data_stage1 & ((&data_hmult_8bit_0_lsb_ext[30:29]) != (|data_hmult_8bit_0_lsb_ext[30:29])))); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-  // VCS coverage off 
-  nv_assert_never #(0,0,"PDPCore cal2d: the MSB bits should be all same as signed bit")      zzz_assert_never_60x (nvdla_core_clk, `ASSERT_RESET, (int8_en & rd_pout_data_stage1 & ((&data_hmult_8bit_0_msb_ext[30:29]) != (|data_hmult_8bit_0_msb_ext[30:29])))); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-  // VCS coverage off 
-  nv_assert_never #(0,0,"PDPCore cal2d: the MSB bits should be all same as signed bit")      zzz_assert_never_61x (nvdla_core_clk, `ASSERT_RESET, (int8_en & rd_pout_data_stage1 & ((&data_hmult_8bit_1_lsb_ext[30:29]) != (|data_hmult_8bit_1_lsb_ext[30:29])))); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-  // VCS coverage off 
-  nv_assert_never #(0,0,"PDPCore cal2d: the MSB bits should be all same as signed bit")      zzz_assert_never_62x (nvdla_core_clk, `ASSERT_RESET, (int8_en & rd_pout_data_stage1 & ((&data_hmult_8bit_1_msb_ext[30:29]) != (|data_hmult_8bit_1_msb_ext[30:29])))); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-  // VCS coverage off 
-  nv_assert_never #(0,0,"PDPCore cal2d: the MSB bits should be all same as signed bit")      zzz_assert_never_63x (nvdla_core_clk, `ASSERT_RESET, (int8_en & rd_pout_data_stage1 & ((&data_hmult_8bit_2_lsb_ext[30:29]) != (|data_hmult_8bit_2_lsb_ext[30:29])))); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-  // VCS coverage off 
-  nv_assert_never #(0,0,"PDPCore cal2d: the MSB bits should be all same as signed bit")      zzz_assert_never_64x (nvdla_core_clk, `ASSERT_RESET, (int8_en & rd_pout_data_stage1 & ((&data_hmult_8bit_2_msb_ext[30:29]) != (|data_hmult_8bit_2_msb_ext[30:29])))); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-  // VCS coverage off 
-  nv_assert_never #(0,0,"PDPCore cal2d: the MSB bits should be all same as signed bit")      zzz_assert_never_65x (nvdla_core_clk, `ASSERT_RESET, (int8_en & rd_pout_data_stage1 & ((&data_hmult_8bit_3_lsb_ext[30:29]) != (|data_hmult_8bit_3_lsb_ext[30:29])))); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-  // VCS coverage off 
-  nv_assert_never #(0,0,"PDPCore cal2d: the MSB bits should be all same as signed bit")      zzz_assert_never_66x (nvdla_core_clk, `ASSERT_RESET, (int8_en & rd_pout_data_stage1 & ((&data_hmult_8bit_3_msb_ext[30:29]) != (|data_hmult_8bit_3_msb_ext[30:29])))); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-
-assign data_hmult_stage0_in0[21:0] = int8_en ? data_hmult_8bit_0 : ({{3{data_hmult_16bit_0[18]}}, data_hmult_16bit_0[18:0]});
-assign data_hmult_stage0_in1[21:0] = int8_en ? data_hmult_8bit_1 : ({{3{data_hmult_16bit_1[18]}}, data_hmult_16bit_1[18:0]});
-assign data_hmult_stage0_in2[21:0] = int8_en ? data_hmult_8bit_2 : ({{3{data_hmult_16bit_2[18]}}, data_hmult_16bit_2[18:0]});
-assign data_hmult_stage0_in3[21:0] = int8_en ? data_hmult_8bit_3 : ({{3{data_hmult_16bit_3[18]}}, data_hmult_16bit_3[18:0]});
+//: my $s = "\$signed";
+//: my $k = NVDLA_PDP_THROUGHPUT;
+//: my $j = NVDLA_PDP_BWPE+3;
+//: my $m = NVDLA_PDP_BWPE+6;
+//: foreach my $i (0..$k-1) {
+//:   print qq(
+//:     assign data_hmult_8bit_${i}_ext_ff = $s(pout_data_0_${i})* $s({1'b0,reg2dp_recip_width_use[16:0]});
+//:     assign data_hmult_8bit_${i}_ext = average_pooling_en ? data_hmult_8bit_${i}_ext_ff : {pout_data_0_${i}[${m}-1],pout_data_0_${i}[${m}-1:0] ,16'd0};
+//:     assign i8_less_neg_0_5_${i} = data_hmult_8bit_${i}_ext[${m}+16] & ((data_hmult_8bit_${i}_ext[15] & (~(|data_hmult_8bit_${i}_ext[14:0]))) | (~data_hmult_8bit_${i}_ext[15]));
+//:     assign i8_more_neg_0_5_${i} = data_hmult_8bit_${i}_ext[${m}+16] & data_hmult_8bit_${i}_ext[15] & (|data_hmult_8bit_${i}_ext[14:0]);
+//:     assign {mon_i8_neg_add1_${i},i8_neg_add1_${i}} = data_hmult_8bit_${i}_ext[$j+16-1:16]+${j}'d1; 
+//:     assign hmult_8bit_${i} = (i8_less_neg_0_5_${i})? data_hmult_8bit_${i}_ext[$j+16-1:16] : (i8_more_neg_0_5_${i})? i8_neg_add1_${i} : (data_hmult_8bit_${i}_ext[$j+16-2:16]+data_hmult_8bit_${i}_ext[15]);//rounding 0.5=1, -0.5=-1
+//:     assign data_hmult_8bit_$i  = hmult_8bit_$i;
+//:     assign data_hmult_stage0_in${i} = data_hmult_8bit_$i;
+//:   );
+//:   print qq(
+//:     //  &eperl::assert("-type never  -desc 'PDPCore cal2d: the MSB bits should be all same as signed bit' -expr '(rd_pout_data_stage1 & ((&data_hmult_8bit_${i}_ext[${m}+16:$j+16]) != (|data_hmult_8bit_0_ext[${m}+16:$j+16])))' "); 
+//:   );
+//: }
 
 //load data to stage0
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
-    pout_data_stage0_0 <= {22{1'b0}};
-    pout_data_stage0_1 <= {22{1'b0}};
-    pout_data_stage0_2 <= {22{1'b0}};
-    pout_data_stage0_3 <= {22{1'b0}};
+//: my $k = NVDLA_PDP_THROUGHPUT;
+//: my $j = NVDLA_PDP_BWPE+3;
+//: my $m = NVDLA_PDP_BWPE+6;
+//: foreach my $i (0..$k-1) {
+//:     print "    pout_data_stage0_$i <= {${j}{1'b0}}; \n";
+//: }
   end else begin
-   //if(~(fp16_en & average_pooling_en)) begin
-   if(~fp16_en & average_pooling_en) begin
+   if(average_pooling_en) begin
        if(rd_pout_data_stage1) begin
-              pout_data_stage0_0 <=  data_hmult_stage0_in0;
-              pout_data_stage0_1 <=  data_hmult_stage0_in1;
-              pout_data_stage0_2 <=  data_hmult_stage0_in2;
-              pout_data_stage0_3 <=  data_hmult_stage0_in3;
+//: my $k = NVDLA_PDP_THROUGHPUT;
+//: my $j = NVDLA_PDP_BWPE+3;
+//: my $m = NVDLA_PDP_BWPE+6;
+//: foreach my $i (0..$k-1) {
+//:     print "    pout_data_stage0_$i <= data_hmult_stage0_in$i; \n";
+//: }
        end
    end else if(rd_pout_data_stage1)begin
-      if(int8_en) begin
-        pout_data_stage0_0 <= {pout_data_0_0[24:14],pout_data_0_0[10:0]};
-        pout_data_stage0_1 <= {pout_data_0_1[24:14],pout_data_0_1[10:0]};
-        pout_data_stage0_2 <= {pout_data_0_2[24:14],pout_data_0_2[10:0]};
-        pout_data_stage0_3 <= {pout_data_0_3[24:14],pout_data_0_3[10:0]};
-      //end else if(int16_en) begin
-      end else begin
-        pout_data_stage0_0 <= pout_data_0_0[21:0];
-        pout_data_stage0_1 <= pout_data_0_1[21:0];
-        pout_data_stage0_2 <= pout_data_0_2[21:0];
-        pout_data_stage0_3 <= pout_data_0_3[21:0];
-      end
+//: my $k = NVDLA_PDP_THROUGHPUT;
+//: my $j = NVDLA_PDP_BWPE+3;
+//: my $m = NVDLA_PDP_BWPE+6;
+//: foreach my $i (0..$k-1) {
+//:     print "    pout_data_stage0_$i <= pout_data_0_${i}[${j}-1:0]; \n";
+//: }
    end
   end
 end
 
 //===========================================================
 //stage1: (* /kernel_height)
-assign data_vmult_16bit_0_ext_ff[35:0] = $signed(pout_data_stage0_0[18:0]) * $signed({1'b0,reg2dp_recip_height_use[16:0]});
-assign data_vmult_16bit_1_ext_ff[35:0] = $signed(pout_data_stage0_1[18:0]) * $signed({1'b0,reg2dp_recip_height_use[16:0]});
-assign data_vmult_16bit_2_ext_ff[35:0] = $signed(pout_data_stage0_2[18:0]) * $signed({1'b0,reg2dp_recip_height_use[16:0]});
-assign data_vmult_16bit_3_ext_ff[35:0] = $signed(pout_data_stage0_3[18:0]) * $signed({1'b0,reg2dp_recip_height_use[16:0]});
-assign data_vmult_16bit_0_ext[35:0] = average_pooling_en ? data_vmult_16bit_0_ext_ff : {pout_data_stage0_0[18],pout_data_stage0_0[18:0],16'd0};
-assign data_vmult_16bit_1_ext[35:0] = average_pooling_en ? data_vmult_16bit_1_ext_ff : {pout_data_stage0_1[18],pout_data_stage0_1[18:0],16'd0};
-assign data_vmult_16bit_2_ext[35:0] = average_pooling_en ? data_vmult_16bit_2_ext_ff : {pout_data_stage0_2[18],pout_data_stage0_2[18:0],16'd0};
-assign data_vmult_16bit_3_ext[35:0] = average_pooling_en ? data_vmult_16bit_3_ext_ff : {pout_data_stage0_3[18],pout_data_stage0_3[18:0],16'd0};
-assign i16_vless_neg_0_5_0 = data_vmult_16bit_0_ext[35] & ((data_vmult_16bit_0_ext[15] & (~(|data_vmult_16bit_0_ext[14:0]))) | (~data_vmult_16bit_0_ext[15]));
-assign i16_vless_neg_0_5_1 = data_vmult_16bit_1_ext[35] & ((data_vmult_16bit_1_ext[15] & (~(|data_vmult_16bit_1_ext[14:0]))) | (~data_vmult_16bit_1_ext[15]));
-assign i16_vless_neg_0_5_2 = data_vmult_16bit_2_ext[35] & ((data_vmult_16bit_2_ext[15] & (~(|data_vmult_16bit_2_ext[14:0]))) | (~data_vmult_16bit_2_ext[15]));
-assign i16_vless_neg_0_5_3 = data_vmult_16bit_3_ext[35] & ((data_vmult_16bit_3_ext[15] & (~(|data_vmult_16bit_3_ext[14:0]))) | (~data_vmult_16bit_3_ext[15]));
-assign i16_vmore_neg_0_5_0 = data_vmult_16bit_0_ext[35] & data_vmult_16bit_0_ext[15] & (|data_vmult_16bit_0_ext[14:0]);
-assign i16_vmore_neg_0_5_1 = data_vmult_16bit_1_ext[35] & data_vmult_16bit_1_ext[15] & (|data_vmult_16bit_1_ext[14:0]);
-assign i16_vmore_neg_0_5_2 = data_vmult_16bit_2_ext[35] & data_vmult_16bit_2_ext[15] & (|data_vmult_16bit_2_ext[14:0]);
-assign i16_vmore_neg_0_5_3 = data_vmult_16bit_3_ext[35] & data_vmult_16bit_3_ext[15] & (|data_vmult_16bit_3_ext[14:0]);
-assign {mon_i16_neg_vadd1_0,i16_neg_vadd1_0[15:0]} = data_vmult_16bit_0_ext[31:16]+16'd1; 
-assign {mon_i16_neg_vadd1_1,i16_neg_vadd1_1[15:0]} = data_vmult_16bit_1_ext[31:16]+16'd1;
-assign {mon_i16_neg_vadd1_2,i16_neg_vadd1_2[15:0]} = data_vmult_16bit_2_ext[31:16]+16'd1;
-assign {mon_i16_neg_vadd1_3,i16_neg_vadd1_3[15:0]} = data_vmult_16bit_3_ext[31:16]+16'd1;
-assign data_vmult_16bit_0[15:0] = (i16_vless_neg_0_5_0)? data_vmult_16bit_0_ext[31:16] : (i16_vmore_neg_0_5_0)? i16_neg_vadd1_0[15:0]: (data_vmult_16bit_0_ext[30:16]+data_vmult_16bit_0_ext[15]);//rounding 0.5=1, -0.5=-1  
-assign data_vmult_16bit_1[15:0] = (i16_vless_neg_0_5_1)? data_vmult_16bit_1_ext[31:16] : (i16_vmore_neg_0_5_1)? i16_neg_vadd1_1[15:0]: (data_vmult_16bit_1_ext[30:16]+data_vmult_16bit_1_ext[15]);//rounding 0.5=1, -0.5=-1 
-assign data_vmult_16bit_2[15:0] = (i16_vless_neg_0_5_2)? data_vmult_16bit_2_ext[31:16] : (i16_vmore_neg_0_5_2)? i16_neg_vadd1_2[15:0]: (data_vmult_16bit_2_ext[30:16]+data_vmult_16bit_2_ext[15]);//rounding 0.5=1, -0.5=-1 
-assign data_vmult_16bit_3[15:0] = (i16_vless_neg_0_5_3)? data_vmult_16bit_3_ext[31:16] : (i16_vmore_neg_0_5_3)? i16_neg_vadd1_3[15:0]: (data_vmult_16bit_3_ext[30:16]+data_vmult_16bit_3_ext[15]);//rounding 0.5=1, -0.5=-1 
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-  // VCS coverage off 
-  nv_assert_never #(0,0,"PDPCore cal2d: the MSB bits should be all same as signed bit")      zzz_assert_never_67x (nvdla_core_clk, `ASSERT_RESET, (int16_en & rd_pout_data_stage1 & ((&data_vmult_16bit_0_ext[35:34]) != (|data_vmult_16bit_0_ext[35:34])))); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-  // VCS coverage off 
-  nv_assert_never #(0,0,"PDPCore cal2d: the MSB bits should be all same as signed bit")      zzz_assert_never_68x (nvdla_core_clk, `ASSERT_RESET, (int16_en & rd_pout_data_stage1 & ((&data_vmult_16bit_1_ext[35:34]) != (|data_vmult_16bit_1_ext[35:34])))); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-  // VCS coverage off 
-  nv_assert_never #(0,0,"PDPCore cal2d: the MSB bits should be all same as signed bit")      zzz_assert_never_69x (nvdla_core_clk, `ASSERT_RESET, (int16_en & rd_pout_data_stage1 & ((&data_vmult_16bit_2_ext[35:34]) != (|data_vmult_16bit_2_ext[35:34])))); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-  // VCS coverage off 
-  nv_assert_never #(0,0,"PDPCore cal2d: the MSB bits should be all same as signed bit")      zzz_assert_never_70x (nvdla_core_clk, `ASSERT_RESET, (int16_en & rd_pout_data_stage1 & ((&data_vmult_16bit_3_ext[35:34]) != (|data_vmult_16bit_3_ext[35:34])))); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-
 //8bits
-assign data_vmult_8bit_0_lsb_ext_ff[27:0] = $signed(pout_data_stage0_0[10:0])  * $signed({1'b0,reg2dp_recip_height_use[16:0]});
-assign data_vmult_8bit_0_msb_ext_ff[27:0] = $signed(pout_data_stage0_0[21:11]) * $signed({1'b0,reg2dp_recip_height_use[16:0]});
-assign data_vmult_8bit_1_lsb_ext_ff[27:0] = $signed(pout_data_stage0_1[10:0])  * $signed({1'b0,reg2dp_recip_height_use[16:0]});
-assign data_vmult_8bit_1_msb_ext_ff[27:0] = $signed(pout_data_stage0_1[21:11]) * $signed({1'b0,reg2dp_recip_height_use[16:0]});
-assign data_vmult_8bit_2_lsb_ext_ff[27:0] = $signed(pout_data_stage0_2[10:0])  * $signed({1'b0,reg2dp_recip_height_use[16:0]});
-assign data_vmult_8bit_2_msb_ext_ff[27:0] = $signed(pout_data_stage0_2[21:11]) * $signed({1'b0,reg2dp_recip_height_use[16:0]});
-assign data_vmult_8bit_3_lsb_ext_ff[27:0] = $signed(pout_data_stage0_3[10:0])  * $signed({1'b0,reg2dp_recip_height_use[16:0]});
-assign data_vmult_8bit_3_msb_ext_ff[27:0] = $signed(pout_data_stage0_3[21:11]) * $signed({1'b0,reg2dp_recip_height_use[16:0]});
-assign data_vmult_8bit_0_lsb_ext[27:0] = average_pooling_en ? data_vmult_8bit_0_lsb_ext_ff : {pout_data_stage0_0[10],pout_data_stage0_0[10:0] ,16'd0};
-assign data_vmult_8bit_0_msb_ext[27:0] = average_pooling_en ? data_vmult_8bit_0_msb_ext_ff : {pout_data_stage0_0[21],pout_data_stage0_0[21:11],16'd0};
-assign data_vmult_8bit_1_lsb_ext[27:0] = average_pooling_en ? data_vmult_8bit_1_lsb_ext_ff : {pout_data_stage0_1[10],pout_data_stage0_1[10:0] ,16'd0};
-assign data_vmult_8bit_1_msb_ext[27:0] = average_pooling_en ? data_vmult_8bit_1_msb_ext_ff : {pout_data_stage0_1[21],pout_data_stage0_1[21:11],16'd0};
-assign data_vmult_8bit_2_lsb_ext[27:0] = average_pooling_en ? data_vmult_8bit_2_lsb_ext_ff : {pout_data_stage0_2[10],pout_data_stage0_2[10:0] ,16'd0};
-assign data_vmult_8bit_2_msb_ext[27:0] = average_pooling_en ? data_vmult_8bit_2_msb_ext_ff : {pout_data_stage0_2[21],pout_data_stage0_2[21:11],16'd0};
-assign data_vmult_8bit_3_lsb_ext[27:0] = average_pooling_en ? data_vmult_8bit_3_lsb_ext_ff : {pout_data_stage0_3[10],pout_data_stage0_3[10:0] ,16'd0};
-assign data_vmult_8bit_3_msb_ext[27:0] = average_pooling_en ? data_vmult_8bit_3_msb_ext_ff : {pout_data_stage0_3[21],pout_data_stage0_3[21:11],16'd0};
-
-assign i8_vless_neg_0_5_0_l = data_vmult_8bit_0_lsb_ext[27] & ((data_vmult_8bit_0_lsb_ext[15] & (~(|data_vmult_8bit_0_lsb_ext[14:0]))) | (~data_vmult_8bit_0_lsb_ext[15]));
-assign i8_vless_neg_0_5_0_m = data_vmult_8bit_0_msb_ext[27] & ((data_vmult_8bit_0_msb_ext[15] & (~(|data_vmult_8bit_0_msb_ext[14:0]))) | (~data_vmult_8bit_0_msb_ext[15]));
-assign i8_vless_neg_0_5_1_l = data_vmult_8bit_1_lsb_ext[27] & ((data_vmult_8bit_1_lsb_ext[15] & (~(|data_vmult_8bit_1_lsb_ext[14:0]))) | (~data_vmult_8bit_1_lsb_ext[15]));
-assign i8_vless_neg_0_5_1_m = data_vmult_8bit_1_msb_ext[27] & ((data_vmult_8bit_1_msb_ext[15] & (~(|data_vmult_8bit_1_msb_ext[14:0]))) | (~data_vmult_8bit_1_msb_ext[15]));
-assign i8_vless_neg_0_5_2_l = data_vmult_8bit_2_lsb_ext[27] & ((data_vmult_8bit_2_lsb_ext[15] & (~(|data_vmult_8bit_2_lsb_ext[14:0]))) | (~data_vmult_8bit_2_lsb_ext[15]));
-assign i8_vless_neg_0_5_2_m = data_vmult_8bit_2_msb_ext[27] & ((data_vmult_8bit_2_msb_ext[15] & (~(|data_vmult_8bit_2_msb_ext[14:0]))) | (~data_vmult_8bit_2_msb_ext[15]));
-assign i8_vless_neg_0_5_3_l = data_vmult_8bit_3_lsb_ext[27] & ((data_vmult_8bit_3_lsb_ext[15] & (~(|data_vmult_8bit_3_lsb_ext[14:0]))) | (~data_vmult_8bit_3_lsb_ext[15]));
-assign i8_vless_neg_0_5_3_m = data_vmult_8bit_3_msb_ext[27] & ((data_vmult_8bit_3_msb_ext[15] & (~(|data_vmult_8bit_3_msb_ext[14:0]))) | (~data_vmult_8bit_3_msb_ext[15]));
-assign i8_vmore_neg_0_5_0_l = data_vmult_8bit_0_lsb_ext[27] & data_vmult_8bit_0_lsb_ext[15] & (|data_vmult_8bit_0_lsb_ext[14:0]);
-assign i8_vmore_neg_0_5_0_m = data_vmult_8bit_0_msb_ext[27] & data_vmult_8bit_0_msb_ext[15] & (|data_vmult_8bit_0_msb_ext[14:0]);
-assign i8_vmore_neg_0_5_1_l = data_vmult_8bit_1_lsb_ext[27] & data_vmult_8bit_1_lsb_ext[15] & (|data_vmult_8bit_1_lsb_ext[14:0]);
-assign i8_vmore_neg_0_5_1_m = data_vmult_8bit_1_msb_ext[27] & data_vmult_8bit_1_msb_ext[15] & (|data_vmult_8bit_1_msb_ext[14:0]);
-assign i8_vmore_neg_0_5_2_l = data_vmult_8bit_2_lsb_ext[27] & data_vmult_8bit_2_lsb_ext[15] & (|data_vmult_8bit_2_lsb_ext[14:0]);
-assign i8_vmore_neg_0_5_2_m = data_vmult_8bit_2_msb_ext[27] & data_vmult_8bit_2_msb_ext[15] & (|data_vmult_8bit_2_msb_ext[14:0]);
-assign i8_vmore_neg_0_5_3_l = data_vmult_8bit_3_lsb_ext[27] & data_vmult_8bit_3_lsb_ext[15] & (|data_vmult_8bit_3_lsb_ext[14:0]);
-assign i8_vmore_neg_0_5_3_m = data_vmult_8bit_3_msb_ext[27] & data_vmult_8bit_3_msb_ext[15] & (|data_vmult_8bit_3_msb_ext[14:0]);
-assign {mon_i8_neg_vadd1_0_l,i8_neg_vadd1_0_l[7:0]} = data_vmult_8bit_0_lsb_ext[23:16]+8'd1; 
-assign {mon_i8_neg_vadd1_0_m,i8_neg_vadd1_0_m[7:0]} = data_vmult_8bit_0_msb_ext[23:16]+8'd1; 
-assign {mon_i8_neg_vadd1_1_l,i8_neg_vadd1_1_l[7:0]} = data_vmult_8bit_1_lsb_ext[23:16]+8'd1;
-assign {mon_i8_neg_vadd1_1_m,i8_neg_vadd1_1_m[7:0]} = data_vmult_8bit_1_msb_ext[23:16]+8'd1;
-assign {mon_i8_neg_vadd1_2_l,i8_neg_vadd1_2_l[7:0]} = data_vmult_8bit_2_lsb_ext[23:16]+8'd1;
-assign {mon_i8_neg_vadd1_2_m,i8_neg_vadd1_2_m[7:0]} = data_vmult_8bit_2_msb_ext[23:16]+8'd1;
-assign {mon_i8_neg_vadd1_3_l,i8_neg_vadd1_3_l[7:0]} = data_vmult_8bit_3_lsb_ext[23:16]+8'd1;
-assign {mon_i8_neg_vadd1_3_m,i8_neg_vadd1_3_m[7:0]} = data_vmult_8bit_3_msb_ext[23:16]+8'd1;
-assign vmult_8bit_0_lsb[7:0]  = (i8_vless_neg_0_5_0_l)? data_vmult_8bit_0_lsb_ext[23:16] : (i8_vmore_neg_0_5_0_l)? i8_neg_vadd1_0_l[7:0] : (data_vmult_8bit_0_lsb_ext[22:16]+data_vmult_8bit_0_lsb_ext[15]);//rounding 0.5=1, -0.5=-1
-assign vmult_8bit_0_msb[7:0]  = (i8_vless_neg_0_5_0_m)? data_vmult_8bit_0_msb_ext[23:16] : (i8_vmore_neg_0_5_0_m)? i8_neg_vadd1_0_m[7:0] : (data_vmult_8bit_0_msb_ext[22:16]+data_vmult_8bit_0_msb_ext[15]);//rounding 0.5=1, -0.5=-1
-assign vmult_8bit_1_lsb[7:0]  = (i8_vless_neg_0_5_1_l)? data_vmult_8bit_1_lsb_ext[23:16] : (i8_vmore_neg_0_5_1_l)? i8_neg_vadd1_1_l[7:0] : (data_vmult_8bit_1_lsb_ext[22:16]+data_vmult_8bit_1_lsb_ext[15]);//rounding 0.5=1, -0.5=-1
-assign vmult_8bit_1_msb[7:0]  = (i8_vless_neg_0_5_1_m)? data_vmult_8bit_1_msb_ext[23:16] : (i8_vmore_neg_0_5_1_m)? i8_neg_vadd1_1_m[7:0] : (data_vmult_8bit_1_msb_ext[22:16]+data_vmult_8bit_1_msb_ext[15]);//rounding 0.5=1, -0.5=-1
-assign vmult_8bit_2_lsb[7:0]  = (i8_vless_neg_0_5_2_l)? data_vmult_8bit_2_lsb_ext[23:16] : (i8_vmore_neg_0_5_2_l)? i8_neg_vadd1_2_l[7:0] : (data_vmult_8bit_2_lsb_ext[22:16]+data_vmult_8bit_2_lsb_ext[15]);//rounding 0.5=1, -0.5=-1
-assign vmult_8bit_2_msb[7:0]  = (i8_vless_neg_0_5_2_m)? data_vmult_8bit_2_msb_ext[23:16] : (i8_vmore_neg_0_5_2_m)? i8_neg_vadd1_2_m[7:0] : (data_vmult_8bit_2_msb_ext[22:16]+data_vmult_8bit_2_msb_ext[15]);//rounding 0.5=1, -0.5=-1
-assign vmult_8bit_3_lsb[7:0]  = (i8_vless_neg_0_5_3_l)? data_vmult_8bit_3_lsb_ext[23:16] : (i8_vmore_neg_0_5_3_l)? i8_neg_vadd1_3_l[7:0] : (data_vmult_8bit_3_lsb_ext[22:16]+data_vmult_8bit_3_lsb_ext[15]);//rounding 0.5=1, -0.5=-1
-assign vmult_8bit_3_msb[7:0]  = (i8_vless_neg_0_5_3_m)? data_vmult_8bit_3_msb_ext[23:16] : (i8_vmore_neg_0_5_3_m)? i8_neg_vadd1_3_m[7:0] : (data_vmult_8bit_3_msb_ext[22:16]+data_vmult_8bit_3_msb_ext[15]);//rounding 0.5=1, -0.5=-1
-
-assign data_vmult_8bit_0[15:0] = {vmult_8bit_0_msb[7:0],vmult_8bit_0_lsb[7:0]};
-assign data_vmult_8bit_1[15:0] = {vmult_8bit_1_msb[7:0],vmult_8bit_1_lsb[7:0]};
-assign data_vmult_8bit_2[15:0] = {vmult_8bit_2_msb[7:0],vmult_8bit_2_lsb[7:0]};
-assign data_vmult_8bit_3[15:0] = {vmult_8bit_3_msb[7:0],vmult_8bit_3_lsb[7:0]};
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-  // VCS coverage off 
-  nv_assert_never #(0,0,"PDPCore cal2d: the MSB 4bits should be all same as signed bit")      zzz_assert_never_71x (nvdla_core_clk, `ASSERT_RESET, (int8_en & rd_pout_data_stage1 & ((&data_vmult_8bit_0_lsb_ext[27:26]) != (|data_vmult_8bit_0_lsb_ext[27:26])))); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-  // VCS coverage off 
-  nv_assert_never #(0,0,"PDPCore cal2d: the MSB 4bits should be all same as signed bit")      zzz_assert_never_72x (nvdla_core_clk, `ASSERT_RESET, (int8_en & rd_pout_data_stage1 & ((&data_vmult_8bit_0_msb_ext[27:26]) != (|data_vmult_8bit_0_msb_ext[27:26])))); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-  // VCS coverage off 
-  nv_assert_never #(0,0,"PDPCore cal2d: the MSB 4bits should be all same as signed bit")      zzz_assert_never_73x (nvdla_core_clk, `ASSERT_RESET, (int8_en & rd_pout_data_stage1 & ((&data_vmult_8bit_1_lsb_ext[27:26]) != (|data_vmult_8bit_1_lsb_ext[27:26])))); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-  // VCS coverage off 
-  nv_assert_never #(0,0,"PDPCore cal2d: the MSB 4bits should be all same as signed bit")      zzz_assert_never_74x (nvdla_core_clk, `ASSERT_RESET, (int8_en & rd_pout_data_stage1 & ((&data_vmult_8bit_1_msb_ext[27:26]) != (|data_vmult_8bit_1_msb_ext[27:26])))); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-  // VCS coverage off 
-  nv_assert_never #(0,0,"PDPCore cal2d: the MSB 4bits should be all same as signed bit")      zzz_assert_never_75x (nvdla_core_clk, `ASSERT_RESET, (int8_en & rd_pout_data_stage1 & ((&data_vmult_8bit_2_lsb_ext[27:26]) != (|data_vmult_8bit_2_lsb_ext[27:26])))); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-  // VCS coverage off 
-  nv_assert_never #(0,0,"PDPCore cal2d: the MSB 4bits should be all same as signed bit")      zzz_assert_never_76x (nvdla_core_clk, `ASSERT_RESET, (int8_en & rd_pout_data_stage1 & ((&data_vmult_8bit_2_msb_ext[27:26]) != (|data_vmult_8bit_2_msb_ext[27:26])))); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-  // VCS coverage off 
-  nv_assert_never #(0,0,"PDPCore cal2d: the MSB 4bits should be all same as signed bit")      zzz_assert_never_77x (nvdla_core_clk, `ASSERT_RESET, (int8_en & rd_pout_data_stage1 & ((&data_vmult_8bit_3_lsb_ext[27:26]) != (|data_vmult_8bit_3_lsb_ext[27:26])))); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-  // VCS coverage off 
-  nv_assert_never #(0,0,"PDPCore cal2d: the MSB 4bits should be all same as signed bit")      zzz_assert_never_78x (nvdla_core_clk, `ASSERT_RESET, (int8_en & rd_pout_data_stage1 & ((&data_vmult_8bit_3_msb_ext[27:26]) != (|data_vmult_8bit_3_msb_ext[27:26])))); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-
-assign data_mult_stage1_in0[15:0]     = int8_en ? data_vmult_8bit_0 : data_vmult_16bit_0;
-assign data_mult_stage1_in1[15:0]     = int8_en ? data_vmult_8bit_1 : data_vmult_16bit_1;
-assign data_mult_stage1_in2[15:0]     = int8_en ? data_vmult_8bit_2 : data_vmult_16bit_2;
-assign data_mult_stage1_in3[15:0]     = int8_en ? data_vmult_8bit_3 : data_vmult_16bit_3;
+//: my $s = "\$signed";
+//: my $k = NVDLA_PDP_THROUGHPUT;
+//: my $x = NVDLA_PDP_BWPE;
+//: my $j = NVDLA_PDP_BWPE+3;
+//: my $m = NVDLA_PDP_BWPE+6;
+//: foreach my $i (0..$k-1) {
+//:   print qq(
+//:     assign data_vmult_8bit_${i}_ext_ff = $s(pout_data_stage0_${i})  * $s({1'b0,reg2dp_recip_height_use[16:0]});
+//:     assign data_vmult_8bit_${i}_ext = average_pooling_en ? data_vmult_8bit_${i}_ext_ff : {pout_data_stage0_${i}[${j}-1],pout_data_stage0_${i} ,16'd0};
+//:     assign i8_vless_neg_0_5_$i = data_vmult_8bit_${i}_ext[${j}+16] & ((data_vmult_8bit_${i}_ext[15] & (~(|data_vmult_8bit_${i}_ext[14:0]))) | (~data_vmult_8bit_${i}_ext[15]));
+//:     assign i8_vmore_neg_0_5_$i = data_vmult_8bit_${i}_ext[${j}+16] & data_vmult_8bit_${i}_ext[15] & (|data_vmult_8bit_${i}_ext[14:0]);
+//:     assign {mon_i8_neg_vadd1_${i},i8_neg_vadd1_${i}[${x}-1:0]} = data_vmult_8bit_${i}_ext[${x}+16-1:16]+ ${x}'d1; 
+//:     assign vmult_8bit_${i}  = (i8_vless_neg_0_5_$i)? data_vmult_8bit_${i}_ext[${x}+16-1:16] : (i8_vmore_neg_0_5_$i)? i8_neg_vadd1_$i : (data_vmult_8bit_${i}_ext[${x}+16-2:16]+data_vmult_8bit_${i}_ext[15]);//rounding 0.5=1, -0.5=-1
+//:     assign data_vmult_8bit_$i = vmult_8bit_$i;
+//:     assign data_mult_stage1_in$i = data_vmult_8bit_$i;
+//:   );
+//:   print qq(
+//:     //  &eperl::assert("-type never  -desc 'PDPCore cal2d: the MSB 4bits should be all same as signed bit' -expr '(rd_pout_data_stage1 & ((&data_vmult_8bit_${i}_ext[${j}+16:${x}+16-1]) != (|data_vmult_8bit_${i}_ext[${j}+16:${x}+16-1])))' "); 
+//:   );
+//: }
 
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
-    pout_data_stage1_0 <= {16{1'b0}};
-    pout_data_stage1_1 <= {16{1'b0}};
-    pout_data_stage1_2 <= {16{1'b0}};
-    pout_data_stage1_3 <= {16{1'b0}};
+//: my $k = NVDLA_PDP_THROUGHPUT;
+//: my $x = NVDLA_PDP_BWPE;
+//: foreach my $i (0..$k-1) {
+//:     print "    pout_data_stage1_$i <= {${x}{1'b0}}; \n";
+//: }
   end else begin
-   if(~fp16_en & average_pooling_en) begin
+   if(average_pooling_en) begin
        if(rd_pout_data_stage2) begin
-           pout_data_stage1_0       <= data_mult_stage1_in0;
-           pout_data_stage1_1       <= data_mult_stage1_in1;
-           pout_data_stage1_2       <= data_mult_stage1_in2;
-           pout_data_stage1_3       <= data_mult_stage1_in3;
+//: my $k = NVDLA_PDP_THROUGHPUT;
+//: my $x = NVDLA_PDP_BWPE;
+//: foreach my $i (0..$k-1) {
+//:     print "    pout_data_stage1_$i <= data_mult_stage1_in$i; \n";
+//: }
        end
    end else if(rd_pout_data_stage2) begin
-      if(int8_en) begin
-        pout_data_stage1_0       <= {pout_data_stage0_0[18:11],pout_data_stage0_0[7:0]};
-        pout_data_stage1_1       <= {pout_data_stage0_1[18:11],pout_data_stage0_1[7:0]};
-        pout_data_stage1_2       <= {pout_data_stage0_2[18:11],pout_data_stage0_2[7:0]};
-        pout_data_stage1_3       <= {pout_data_stage0_3[18:11],pout_data_stage0_3[7:0]};
-      //end else if(int16_en) begin
-      end else begin
-        pout_data_stage1_0       <= pout_data_stage0_0[15:0];
-        pout_data_stage1_1       <= pout_data_stage0_1[15:0];
-        pout_data_stage1_2       <= pout_data_stage0_2[15:0];
-        pout_data_stage1_3       <= pout_data_stage0_3[15:0];
-      end
+//: my $k = NVDLA_PDP_THROUGHPUT;
+//: my $x = NVDLA_PDP_BWPE;
+//: foreach my $i (0..$k-1) {
+//:     print "    pout_data_stage1_$i <= pout_data_stage0_${i}[${x}-1:0]; \n";
+//: }
    end
   end
 end
-assign int_dp2wdma_pd = {pout_data_stage1_3,pout_data_stage1_2,pout_data_stage1_1,pout_data_stage1_0};
-//assign int_dp2wdma_valid = pout_data_stage3_vld;
+
+assign int_dp2wdma_pd = {
+//: my $k = NVDLA_PDP_THROUGHPUT;
+//: if($k > 1) {
+//:     foreach my $i (0..$k-2) {
+//:         my $j = $k -$i -1;
+//:         print "pout_data_stage1_${j}, \n";
+//:     }
+//: }
+pout_data_stage1_0};
 assign int_dp2wdma_valid = pout_data_stage3_vld & rd_pout_data_en_4d;
-assign pout_data_stage3_prdy = (fp16_en & average_pooling_en) ? 1'b0 : pdp_dp2wdma_ready;
+assign pout_data_stage3_prdy =  pdp_dp2wdma_ready;
 
-//======================================
-//fp16 average process
-//--------------------------------------
-
-////=============================
-////FP16 average mode, sum process
-////-----------------------------
-//assign fp16_add_in_rdy = fp16_mean_pool_cfg ? din_rdy : 1'b1;
-/////////////////////////////////////////////////
-////fp16 adder input data
-//assign fp16_add_in_a = {pooling_datin[100:84],pooling_datin[72:56],pooling_datin[44:28],pooling_datin[16:0]};
-//&PerlBeg;
-//  for($i=0;$i<8; $i=$i+1){
-//    vprintl( " assign fp16_add_in_b${i} = {mem_data${i}[100:84],mem_data${i}[72:56],mem_data${i}[44:28],mem_data${i}[16:0]}; ");
-//    }
-//&PerlEnd;
-////fp16 adder, input valid, calculate valid
-//&PerlBeg;
-//  for($i=0;$i<8; $i=$i+1){
-//    vprintl( " assign fp16_add_in_vld[$i] = fp16_mean_pool_cfg & (mem_re_2d[$i] & load_wr_stage2); ");
-//    }
-//&PerlEnd;
-//&PerlBeg;
-//  for($i=0;$i<8; $i=$i+1){
-//    vprintl( "&Instance fp16_4add u_fp16_cal2d_pooling_sum_$i; ");
-//    vprintl( " &Connect nvdla_core_clk        nvdla_op_gated_clk_fp16; ");
-//    vprintl( " &Connect fp16_add_in_pvld      fp16_add_in_vld[$i];   ");
-//    vprintl( " &Connect fp16_add_in_prdy      ;   ");
-//    vprintl( " &Connect fp16_add_in_a         fp16_add_in_a;     ");
-//    vprintl( " &Connect fp16_add_in_b         fp16_add_in_b${i}; ");
-//    vprintl( " &Connect fp16_add_out_prdy     1'b1; ");
-//    vprintl( " &Connect fp16_add_out_pvld     ;//fp_pooling_result_vld_$i; ");
-//    vprintl( " &Connect fp16_add_out_dp       fp_pooling_result_dp_$i; ");
-//    }
-//&PerlEnd;
-//
-////data related info need sync with HLS fp17 adder latency
-//assign din_vld = fp16_mean_pool_cfg & wr_data_stage1_vld;
-//assign pooling_2d_info[31:0] = {pooling_2d_info_7[3:0],pooling_2d_info_6[3:0],pooling_2d_info_5[3:0],pooling_2d_info_4[3:0],
-//                                pooling_2d_info_3[3:0],pooling_2d_info_2[3:0],pooling_2d_info_1[3:0],pooling_2d_info_0[3:0]};
-//assign din_pd = {one_width_disable_2d,mem_re_2d[7:0],cur_datin_disable_2d,fp16_add_in_a[67:0],mem_re_1st_2d[7:0],pout_mem_data_sel_last[7:0],pooling_2d_info[31:0], pout_mem_data_sel[7:0], mem_raddr_2d[5:0], pout_mem_data_last[114:0]};
-////pipe
-//
-//assign one_width_disable_2d_sync = dout_pd[254];
-//assign mem_re_2d_sync = dout_pd[253:246];
-//assign cur_datin_disable_2d_sync = dout_pd[245];
-//assign fp16_add_in_a_sync = dout_pd[244:177];
-//assign mem_re_1st_2d_sync = dout_pd[176:169];
-//assign pout_mem_data_sel_last_sync = dout_pd[168:161];
-//assign pooling_2d_info_sync = dout_pd[160:129];
-//assign pout_mem_data_sel_sync = dout_pd[128:121];
-//assign mem_raddr_2d_sync = dout_pd[120:115];
-//assign pout_mem_data_last_sync = dout_pd[114:0];
-//
-//assign dout_rdy = fp16_mul_pad_line_prdy;
-//assign fp_add_out_vld = dout_vld;
-//assign fp_add_out_load = dout_vld & dout_rdy & (~cur_datin_disable_2d_sync) & (~one_width_disable_2d_sync);
-////////////////////////////////////////////////
-//assign pooling_datin_ext = {11'd0,fp16_add_in_a_sync[67:51],11'd0,fp16_add_in_a_sync[50:34],11'd0,fp16_add_in_a_sync[33:17],11'd0,fp16_add_in_a_sync[16:0]};
-//&PerlBeg;
-//  for($i=0;$i<8; $i=$i+1){
-//    vprintl( " assign fp_add_out_dp_ext_$i = {11'd0,fp_pooling_result_dp_${i}[67:51],11'd0,fp_pooling_result_dp_${i}[50:34],11'd0,fp_pooling_result_dp_${i}[33:17],11'd0,fp_pooling_result_dp_${i}[16:0]}; ");
-//    vprintl( " assign fp_pooling_result${i} = mem_re_1st_2d_sync[$i] ? {pooling_2d_info_sync[$i*4+3:$i*4],pooling_datin_ext} : {pooling_2d_info_sync[$i*4+3:$i*4],fp_add_out_dp_ext_$i}; ");
-//    vprintl( " assign fp_mem_we[$i] = fp_add_out_load & mem_re_2d_sync[$i]; ");
-//    vprintl( " assign fp_mem${i}_waddr = mem_raddr_2d_sync[5:0]; ");
-//    vprintl( " assign fp_mem${i}_wdata = fp_pooling_result${i}; ");
-//    }
-//&PerlEnd;
-//////////////////////////////////////////////////////////////////////////////
-//&PerlBeg;
-//  for($i=0;$i<8; $i=$i+1){
-//    vprintl( " assign fp_pout_mem_data_sel[$i] = pout_mem_data_sel_sync[$i]; ");
-//    vprintl( " assign fp_pout_mem_data_sel_last[$i] = pout_mem_data_sel_last_sync[$i]; ");
-//    }
-//&PerlEnd;
-//assign fp_pout_mem_data_act = (fp_add_out_vld ? (fp_pooling_result0[114:0] & {115{fp_pout_mem_data_sel[0]}}) : 115'd0)
-//                            | (fp_add_out_vld ? (fp_pooling_result1[114:0] & {115{fp_pout_mem_data_sel[1]}}) : 115'd0)
-//                            | (fp_add_out_vld ? (fp_pooling_result2[114:0] & {115{fp_pout_mem_data_sel[2]}}) : 115'd0)
-//                            | (fp_add_out_vld ? (fp_pooling_result3[114:0] & {115{fp_pout_mem_data_sel[3]}}) : 115'd0)
-//                            | (fp_add_out_vld ? (fp_pooling_result4[114:0] & {115{fp_pout_mem_data_sel[4]}}) : 115'd0)
-//                            | (fp_add_out_vld ? (fp_pooling_result5[114:0] & {115{fp_pout_mem_data_sel[5]}}) : 115'd0)
-//                            | (fp_add_out_vld ? (fp_pooling_result6[114:0] & {115{fp_pout_mem_data_sel[6]}}) : 115'd0)
-//                            | (fp_add_out_vld ? (fp_pooling_result7[114:0] & {115{fp_pout_mem_data_sel[7]}}) : 115'd0);
-//
-//assign fp_pout_mem_data_last = (fp_add_out_vld ? (pout_mem_data_last_sync[114:0] & {115{fp_pout_mem_data_sel_last[0]}}) : 115'd0)
-//                             | (fp_add_out_vld ? (pout_mem_data_last_sync[114:0] & {115{fp_pout_mem_data_sel_last[1]}}) : 115'd0)
-//                             | (fp_add_out_vld ? (pout_mem_data_last_sync[114:0] & {115{fp_pout_mem_data_sel_last[2]}}) : 115'd0)
-//                             | (fp_add_out_vld ? (pout_mem_data_last_sync[114:0] & {115{fp_pout_mem_data_sel_last[3]}}) : 115'd0)
-//                             | (fp_add_out_vld ? (pout_mem_data_last_sync[114:0] & {115{fp_pout_mem_data_sel_last[4]}}) : 115'd0)
-//                             | (fp_add_out_vld ? (pout_mem_data_last_sync[114:0] & {115{fp_pout_mem_data_sel_last[5]}}) : 115'd0)
-//                             | (fp_add_out_vld ? (pout_mem_data_last_sync[114:0] & {115{fp_pout_mem_data_sel_last[6]}}) : 115'd0)
-//                             | (fp_add_out_vld ? (pout_mem_data_last_sync[114:0] & {115{fp_pout_mem_data_sel_last[7]}}) : 115'd0);
-//
-//
-//assign fp_pout_mem_data = fp_pout_mem_data_act | fp_pout_mem_data_last;
-//
-//
-//////////////////////////////////////////////////////////////////////////////
-////-----------------------------
-//assign fp16_mulw_in_vld_f = (fp_add_out_vld ? (|(fp_pout_mem_data_sel | fp_pout_mem_data_sel_last)) : 1'b0);
-//assign fp16_mulw_in_vld = fp16_mulw_in_vld_f;
-////
-////=============================
-//=============================
-//FP16 average mode, sum process
-//-----------------------------
-assign fp16_add_in_rdy = fp16_mean_pool_cfg ? (din_rdy & (&fp16_4add_in_prdy)) : 1'b1;
-///////////////////////////////////////////////
-assign fp16_mean_pool_valid =  fp16_mean_pool_cfg & wr_data_stage1_vld;
-
-assign fp16_4add_in_pvld[0] = fp16_mean_pool_valid & (&{fp16_4add_in_prdy[7:1]                        }) & din_rdy;
-assign fp16_4add_in_pvld[1] = fp16_mean_pool_valid & (&{fp16_4add_in_prdy[7:2], fp16_4add_in_prdy[0  ]}) & din_rdy;
-assign fp16_4add_in_pvld[2] = fp16_mean_pool_valid & (&{fp16_4add_in_prdy[7:3], fp16_4add_in_prdy[1:0]}) & din_rdy;
-assign fp16_4add_in_pvld[3] = fp16_mean_pool_valid & (&{fp16_4add_in_prdy[7:4], fp16_4add_in_prdy[2:0]}) & din_rdy;
-assign fp16_4add_in_pvld[4] = fp16_mean_pool_valid & (&{fp16_4add_in_prdy[7:5], fp16_4add_in_prdy[3:0]}) & din_rdy;
-assign fp16_4add_in_pvld[5] = fp16_mean_pool_valid & (&{fp16_4add_in_prdy[7:6], fp16_4add_in_prdy[4:0]}) & din_rdy;
-assign fp16_4add_in_pvld[6] = fp16_mean_pool_valid & (&{fp16_4add_in_prdy[7  ], fp16_4add_in_prdy[5:0]}) & din_rdy;
-assign fp16_4add_in_pvld[7] = fp16_mean_pool_valid & (&{                        fp16_4add_in_prdy[6:0]}) & din_rdy;
-
-assign din_vld = fp16_mean_pool_valid & (&fp16_4add_in_prdy);
-
-//fp16 adder input data
-assign fp16_add_in_a = {pooling_datin[100:84],pooling_datin[72:56],pooling_datin[44:28],pooling_datin[16:0]};
- assign fp16_add_in_b0 = {mem_data0[100:84],mem_data0[72:56],mem_data0[44:28],mem_data0[16:0]}; 
- assign fp16_add_in_b1 = {mem_data1[100:84],mem_data1[72:56],mem_data1[44:28],mem_data1[16:0]}; 
- assign fp16_add_in_b2 = {mem_data2[100:84],mem_data2[72:56],mem_data2[44:28],mem_data2[16:0]}; 
- assign fp16_add_in_b3 = {mem_data3[100:84],mem_data3[72:56],mem_data3[44:28],mem_data3[16:0]}; 
- assign fp16_add_in_b4 = {mem_data4[100:84],mem_data4[72:56],mem_data4[44:28],mem_data4[16:0]}; 
- assign fp16_add_in_b5 = {mem_data5[100:84],mem_data5[72:56],mem_data5[44:28],mem_data5[16:0]}; 
- assign fp16_add_in_b6 = {mem_data6[100:84],mem_data6[72:56],mem_data6[44:28],mem_data6[16:0]}; 
- assign fp16_add_in_b7 = {mem_data7[100:84],mem_data7[72:56],mem_data7[44:28],mem_data7[16:0]}; 
-fp16_4add u_fp16_cal2d_pooling_sum_0 (
-   .fp16_add_in_a               (fp16_add_in_a[67:0])               //|< w
-  ,.fp16_add_in_b               (fp16_add_in_b0[67:0])              //|< w
-  ,.fp16_add_in_pvld            (fp16_4add_in_pvld[0])              //|< w
-  ,.fp16_add_out_prdy           (fp16_4add_out_prdy[0])             //|< w
-  ,.nvdla_core_clk              (nvdla_op_gated_clk_fp16)           //|< i
-  ,.nvdla_core_rstn             (nvdla_core_rstn)                   //|< i
-  ,.fp16_add_in_prdy            (fp16_4add_in_prdy[0])              //|> w
-  ,.fp16_add_out_dp             (fp_pooling_result_dp_0[67:0])      //|> w
-  ,.fp16_add_out_pvld           (fp16_4add_out_pvld[0])             //|> w
-  );
-fp16_4add u_fp16_cal2d_pooling_sum_1 (
-   .fp16_add_in_a               (fp16_add_in_a[67:0])               //|< w
-  ,.fp16_add_in_b               (fp16_add_in_b1[67:0])              //|< w
-  ,.fp16_add_in_pvld            (fp16_4add_in_pvld[1])              //|< w
-  ,.fp16_add_out_prdy           (fp16_4add_out_prdy[1])             //|< w
-  ,.nvdla_core_clk              (nvdla_op_gated_clk_fp16)           //|< i
-  ,.nvdla_core_rstn             (nvdla_core_rstn)                   //|< i
-  ,.fp16_add_in_prdy            (fp16_4add_in_prdy[1])              //|> w
-  ,.fp16_add_out_dp             (fp_pooling_result_dp_1[67:0])      //|> w
-  ,.fp16_add_out_pvld           (fp16_4add_out_pvld[1])             //|> w
-  );
-fp16_4add u_fp16_cal2d_pooling_sum_2 (
-   .fp16_add_in_a               (fp16_add_in_a[67:0])               //|< w
-  ,.fp16_add_in_b               (fp16_add_in_b2[67:0])              //|< w
-  ,.fp16_add_in_pvld            (fp16_4add_in_pvld[2])              //|< w
-  ,.fp16_add_out_prdy           (fp16_4add_out_prdy[2])             //|< w
-  ,.nvdla_core_clk              (nvdla_op_gated_clk_fp16)           //|< i
-  ,.nvdla_core_rstn             (nvdla_core_rstn)                   //|< i
-  ,.fp16_add_in_prdy            (fp16_4add_in_prdy[2])              //|> w
-  ,.fp16_add_out_dp             (fp_pooling_result_dp_2[67:0])      //|> w
-  ,.fp16_add_out_pvld           (fp16_4add_out_pvld[2])             //|> w
-  );
-fp16_4add u_fp16_cal2d_pooling_sum_3 (
-   .fp16_add_in_a               (fp16_add_in_a[67:0])               //|< w
-  ,.fp16_add_in_b               (fp16_add_in_b3[67:0])              //|< w
-  ,.fp16_add_in_pvld            (fp16_4add_in_pvld[3])              //|< w
-  ,.fp16_add_out_prdy           (fp16_4add_out_prdy[3])             //|< w
-  ,.nvdla_core_clk              (nvdla_op_gated_clk_fp16)           //|< i
-  ,.nvdla_core_rstn             (nvdla_core_rstn)                   //|< i
-  ,.fp16_add_in_prdy            (fp16_4add_in_prdy[3])              //|> w
-  ,.fp16_add_out_dp             (fp_pooling_result_dp_3[67:0])      //|> w
-  ,.fp16_add_out_pvld           (fp16_4add_out_pvld[3])             //|> w
-  );
-fp16_4add u_fp16_cal2d_pooling_sum_4 (
-   .fp16_add_in_a               (fp16_add_in_a[67:0])               //|< w
-  ,.fp16_add_in_b               (fp16_add_in_b4[67:0])              //|< w
-  ,.fp16_add_in_pvld            (fp16_4add_in_pvld[4])              //|< w
-  ,.fp16_add_out_prdy           (fp16_4add_out_prdy[4])             //|< w
-  ,.nvdla_core_clk              (nvdla_op_gated_clk_fp16)           //|< i
-  ,.nvdla_core_rstn             (nvdla_core_rstn)                   //|< i
-  ,.fp16_add_in_prdy            (fp16_4add_in_prdy[4])              //|> w
-  ,.fp16_add_out_dp             (fp_pooling_result_dp_4[67:0])      //|> w
-  ,.fp16_add_out_pvld           (fp16_4add_out_pvld[4])             //|> w
-  );
-fp16_4add u_fp16_cal2d_pooling_sum_5 (
-   .fp16_add_in_a               (fp16_add_in_a[67:0])               //|< w
-  ,.fp16_add_in_b               (fp16_add_in_b5[67:0])              //|< w
-  ,.fp16_add_in_pvld            (fp16_4add_in_pvld[5])              //|< w
-  ,.fp16_add_out_prdy           (fp16_4add_out_prdy[5])             //|< w
-  ,.nvdla_core_clk              (nvdla_op_gated_clk_fp16)           //|< i
-  ,.nvdla_core_rstn             (nvdla_core_rstn)                   //|< i
-  ,.fp16_add_in_prdy            (fp16_4add_in_prdy[5])              //|> w
-  ,.fp16_add_out_dp             (fp_pooling_result_dp_5[67:0])      //|> w
-  ,.fp16_add_out_pvld           (fp16_4add_out_pvld[5])             //|> w
-  );
-fp16_4add u_fp16_cal2d_pooling_sum_6 (
-   .fp16_add_in_a               (fp16_add_in_a[67:0])               //|< w
-  ,.fp16_add_in_b               (fp16_add_in_b6[67:0])              //|< w
-  ,.fp16_add_in_pvld            (fp16_4add_in_pvld[6])              //|< w
-  ,.fp16_add_out_prdy           (fp16_4add_out_prdy[6])             //|< w
-  ,.nvdla_core_clk              (nvdla_op_gated_clk_fp16)           //|< i
-  ,.nvdla_core_rstn             (nvdla_core_rstn)                   //|< i
-  ,.fp16_add_in_prdy            (fp16_4add_in_prdy[6])              //|> w
-  ,.fp16_add_out_dp             (fp_pooling_result_dp_6[67:0])      //|> w
-  ,.fp16_add_out_pvld           (fp16_4add_out_pvld[6])             //|> w
-  );
-fp16_4add u_fp16_cal2d_pooling_sum_7 (
-   .fp16_add_in_a               (fp16_add_in_a[67:0])               //|< w
-  ,.fp16_add_in_b               (fp16_add_in_b7[67:0])              //|< w
-  ,.fp16_add_in_pvld            (fp16_4add_in_pvld[7])              //|< w
-  ,.fp16_add_out_prdy           (fp16_4add_out_prdy[7])             //|< w
-  ,.nvdla_core_clk              (nvdla_op_gated_clk_fp16)           //|< i
-  ,.nvdla_core_rstn             (nvdla_core_rstn)                   //|< i
-  ,.fp16_add_in_prdy            (fp16_4add_in_prdy[7])              //|> w
-  ,.fp16_add_out_dp             (fp_pooling_result_dp_7[67:0])      //|> w
-  ,.fp16_add_out_pvld           (fp16_4add_out_pvld[7])             //|> w
-  );
-
-//data related info need sync with HLS fp17 adder latency
-assign pooling_2d_info[31:0] = {pooling_2d_info_7[3:0],pooling_2d_info_6[3:0],pooling_2d_info_5[3:0],pooling_2d_info_4[3:0],
-                                pooling_2d_info_3[3:0],pooling_2d_info_2[3:0],pooling_2d_info_1[3:0],pooling_2d_info_0[3:0]};
-assign din_pd = {one_width_disable_2d,mem_re_2d[7:0],cur_datin_disable_2d,fp16_add_in_a[67:0],mem_re_1st_2d[7:0],pout_mem_data_sel_last[7:0],pooling_2d_info[31:0], pout_mem_data_sel[7:0], mem_raddr_2d[5:0], pout_mem_data_last[114:0]};
-//pipe
-
-assign din_vld_d0 = din_vld;
-assign din_rdy = din_rdy_d0;
-assign din_pd_d0[254:0] = din_pd[254:0];
-NV_NVDLA_PDP_CORE_CAL2D_pipe_p1 pipe_p1 (
-   .nvdla_op_gated_clk_fp16     (nvdla_op_gated_clk_fp16)           //|< i
-  ,.nvdla_core_rstn             (nvdla_core_rstn)                   //|< i
-  ,.din_pd_d0                   (din_pd_d0[254:0])                  //|< w
-  ,.din_rdy_d1                  (din_rdy_d1)                        //|< w
-  ,.din_vld_d0                  (din_vld_d0)                        //|< w
-  ,.din_pd_d1                   (din_pd_d1[254:0])                  //|> w
-  ,.din_rdy_d0                  (din_rdy_d0)                        //|> w
-  ,.din_vld_d1                  (din_vld_d1)                        //|> w
-  );
-NV_NVDLA_PDP_CORE_CAL2D_pipe_p2 pipe_p2 (
-   .nvdla_op_gated_clk_fp16     (nvdla_op_gated_clk_fp16)           //|< i
-  ,.nvdla_core_rstn             (nvdla_core_rstn)                   //|< i
-  ,.din_pd_d1                   (din_pd_d1[254:0])                  //|< w
-  ,.din_rdy_d2                  (din_rdy_d2)                        //|< w
-  ,.din_vld_d1                  (din_vld_d1)                        //|< w
-  ,.din_pd_d2                   (din_pd_d2[254:0])                  //|> w
-  ,.din_rdy_d1                  (din_rdy_d1)                        //|> w
-  ,.din_vld_d2                  (din_vld_d2)                        //|> w
-  );
-NV_NVDLA_PDP_CORE_CAL2D_pipe_p3 pipe_p3 (
-   .nvdla_op_gated_clk_fp16     (nvdla_op_gated_clk_fp16)           //|< i
-  ,.nvdla_core_rstn             (nvdla_core_rstn)                   //|< i
-  ,.din_pd_d2                   (din_pd_d2[254:0])                  //|< w
-  ,.din_rdy_d3                  (din_rdy_d3)                        //|< w
-  ,.din_vld_d2                  (din_vld_d2)                        //|< w
-  ,.din_pd_d3                   (din_pd_d3[254:0])                  //|> w
-  ,.din_rdy_d2                  (din_rdy_d2)                        //|> w
-  ,.din_vld_d3                  (din_vld_d3)                        //|> w
-  );
-NV_NVDLA_PDP_CORE_CAL2D_pipe_p4 pipe_p4 (
-   .nvdla_op_gated_clk_fp16     (nvdla_op_gated_clk_fp16)           //|< i
-  ,.nvdla_core_rstn             (nvdla_core_rstn)                   //|< i
-  ,.din_pd_d3                   (din_pd_d3[254:0])                  //|< w
-  ,.din_rdy_d4                  (din_rdy_d4)                        //|< w
-  ,.din_vld_d3                  (din_vld_d3)                        //|< w
-  ,.din_pd_d4                   (din_pd_d4[254:0])                  //|> w
-  ,.din_rdy_d3                  (din_rdy_d3)                        //|> w
-  ,.din_vld_d4                  (din_vld_d4)                        //|> w
-  );
-assign dout_vld = din_vld_d4;
-assign din_rdy_d4 = dout_rdy;
-assign dout_pd[254:0] = din_pd_d4[254:0];
-
-
-assign one_width_disable_2d_sync = dout_pd[254];
-assign mem_re_2d_sync = dout_pd[253:246];
-assign cur_datin_disable_2d_sync = dout_pd[245];
-assign fp16_add_in_a_sync = dout_pd[244:177];
-assign mem_re_1st_2d_sync = dout_pd[176:169];
-assign pout_mem_data_sel_last_sync = dout_pd[168:161];
-assign pooling_2d_info_sync = dout_pd[160:129];
-assign pout_mem_data_sel_sync = dout_pd[128:121];
-assign mem_raddr_2d_sync = dout_pd[120:115];
-assign pout_mem_data_last_sync = dout_pd[114:0];
-
-assign dout_rdy = fp16_mul_pad_line_prdy & (&fp16_4add_out_pvld);
-assign fp16_4add_out_prdy[0] = fp16_mul_pad_line_prdy & (&{fp16_4add_out_pvld[7:1]}) & dout_vld;
-assign fp16_4add_out_prdy[1] = fp16_mul_pad_line_prdy & (&{fp16_4add_out_pvld[7:2],fp16_4add_out_pvld[0  ]}) & dout_vld;
-assign fp16_4add_out_prdy[2] = fp16_mul_pad_line_prdy & (&{fp16_4add_out_pvld[7:3],fp16_4add_out_pvld[1:0]}) & dout_vld;
-assign fp16_4add_out_prdy[3] = fp16_mul_pad_line_prdy & (&{fp16_4add_out_pvld[7:4],fp16_4add_out_pvld[2:0]}) & dout_vld;
-assign fp16_4add_out_prdy[4] = fp16_mul_pad_line_prdy & (&{fp16_4add_out_pvld[7:5],fp16_4add_out_pvld[3:0]}) & dout_vld;
-assign fp16_4add_out_prdy[5] = fp16_mul_pad_line_prdy & (&{fp16_4add_out_pvld[7:6],fp16_4add_out_pvld[4:0]}) & dout_vld;
-assign fp16_4add_out_prdy[6] = fp16_mul_pad_line_prdy & (&{fp16_4add_out_pvld[7  ],fp16_4add_out_pvld[5:0]}) & dout_vld;
-assign fp16_4add_out_prdy[7] = fp16_mul_pad_line_prdy & (&{                        fp16_4add_out_pvld[6:0]}) & dout_vld;
-
-assign fp_add_out_vld = dout_vld & (&fp16_4add_out_pvld);
-
-//assign fp_add_out_load = dout_vld & dout_rdy & (~cur_datin_disable_2d_sync) & (~one_width_disable_2d_sync);
-assign fp_add_out_load = fp_add_out_vld & fp16_mul_pad_line_prdy & (~cur_datin_disable_2d_sync) & (~one_width_disable_2d_sync);
-//////////////////////////////////////////////
-assign pooling_datin_ext = {11'd0,fp16_add_in_a_sync[67:51],11'd0,fp16_add_in_a_sync[50:34],11'd0,fp16_add_in_a_sync[33:17],11'd0,fp16_add_in_a_sync[16:0]};
- assign fp_add_out_dp_ext_0 = {11'd0,fp_pooling_result_dp_0[67:51],11'd0,fp_pooling_result_dp_0[50:34],11'd0,fp_pooling_result_dp_0[33:17],11'd0,fp_pooling_result_dp_0[16:0]}; 
- assign fp_pooling_result0 = mem_re_1st_2d_sync[0] ? {pooling_2d_info_sync[0*4+3:0*4],pooling_datin_ext} : {pooling_2d_info_sync[0*4+3:0*4],fp_add_out_dp_ext_0}; 
- assign fp_mem_we[0] = fp_add_out_load & mem_re_2d_sync[0]; 
- assign fp_mem0_waddr = mem_raddr_2d_sync[5:0]; 
- assign fp_mem0_wdata = fp_pooling_result0; 
- assign fp_add_out_dp_ext_1 = {11'd0,fp_pooling_result_dp_1[67:51],11'd0,fp_pooling_result_dp_1[50:34],11'd0,fp_pooling_result_dp_1[33:17],11'd0,fp_pooling_result_dp_1[16:0]}; 
- assign fp_pooling_result1 = mem_re_1st_2d_sync[1] ? {pooling_2d_info_sync[1*4+3:1*4],pooling_datin_ext} : {pooling_2d_info_sync[1*4+3:1*4],fp_add_out_dp_ext_1}; 
- assign fp_mem_we[1] = fp_add_out_load & mem_re_2d_sync[1]; 
- assign fp_mem1_waddr = mem_raddr_2d_sync[5:0]; 
- assign fp_mem1_wdata = fp_pooling_result1; 
- assign fp_add_out_dp_ext_2 = {11'd0,fp_pooling_result_dp_2[67:51],11'd0,fp_pooling_result_dp_2[50:34],11'd0,fp_pooling_result_dp_2[33:17],11'd0,fp_pooling_result_dp_2[16:0]}; 
- assign fp_pooling_result2 = mem_re_1st_2d_sync[2] ? {pooling_2d_info_sync[2*4+3:2*4],pooling_datin_ext} : {pooling_2d_info_sync[2*4+3:2*4],fp_add_out_dp_ext_2}; 
- assign fp_mem_we[2] = fp_add_out_load & mem_re_2d_sync[2]; 
- assign fp_mem2_waddr = mem_raddr_2d_sync[5:0]; 
- assign fp_mem2_wdata = fp_pooling_result2; 
- assign fp_add_out_dp_ext_3 = {11'd0,fp_pooling_result_dp_3[67:51],11'd0,fp_pooling_result_dp_3[50:34],11'd0,fp_pooling_result_dp_3[33:17],11'd0,fp_pooling_result_dp_3[16:0]}; 
- assign fp_pooling_result3 = mem_re_1st_2d_sync[3] ? {pooling_2d_info_sync[3*4+3:3*4],pooling_datin_ext} : {pooling_2d_info_sync[3*4+3:3*4],fp_add_out_dp_ext_3}; 
- assign fp_mem_we[3] = fp_add_out_load & mem_re_2d_sync[3]; 
- assign fp_mem3_waddr = mem_raddr_2d_sync[5:0]; 
- assign fp_mem3_wdata = fp_pooling_result3; 
- assign fp_add_out_dp_ext_4 = {11'd0,fp_pooling_result_dp_4[67:51],11'd0,fp_pooling_result_dp_4[50:34],11'd0,fp_pooling_result_dp_4[33:17],11'd0,fp_pooling_result_dp_4[16:0]}; 
- assign fp_pooling_result4 = mem_re_1st_2d_sync[4] ? {pooling_2d_info_sync[4*4+3:4*4],pooling_datin_ext} : {pooling_2d_info_sync[4*4+3:4*4],fp_add_out_dp_ext_4}; 
- assign fp_mem_we[4] = fp_add_out_load & mem_re_2d_sync[4]; 
- assign fp_mem4_waddr = mem_raddr_2d_sync[5:0]; 
- assign fp_mem4_wdata = fp_pooling_result4; 
- assign fp_add_out_dp_ext_5 = {11'd0,fp_pooling_result_dp_5[67:51],11'd0,fp_pooling_result_dp_5[50:34],11'd0,fp_pooling_result_dp_5[33:17],11'd0,fp_pooling_result_dp_5[16:0]}; 
- assign fp_pooling_result5 = mem_re_1st_2d_sync[5] ? {pooling_2d_info_sync[5*4+3:5*4],pooling_datin_ext} : {pooling_2d_info_sync[5*4+3:5*4],fp_add_out_dp_ext_5}; 
- assign fp_mem_we[5] = fp_add_out_load & mem_re_2d_sync[5]; 
- assign fp_mem5_waddr = mem_raddr_2d_sync[5:0]; 
- assign fp_mem5_wdata = fp_pooling_result5; 
- assign fp_add_out_dp_ext_6 = {11'd0,fp_pooling_result_dp_6[67:51],11'd0,fp_pooling_result_dp_6[50:34],11'd0,fp_pooling_result_dp_6[33:17],11'd0,fp_pooling_result_dp_6[16:0]}; 
- assign fp_pooling_result6 = mem_re_1st_2d_sync[6] ? {pooling_2d_info_sync[6*4+3:6*4],pooling_datin_ext} : {pooling_2d_info_sync[6*4+3:6*4],fp_add_out_dp_ext_6}; 
- assign fp_mem_we[6] = fp_add_out_load & mem_re_2d_sync[6]; 
- assign fp_mem6_waddr = mem_raddr_2d_sync[5:0]; 
- assign fp_mem6_wdata = fp_pooling_result6; 
- assign fp_add_out_dp_ext_7 = {11'd0,fp_pooling_result_dp_7[67:51],11'd0,fp_pooling_result_dp_7[50:34],11'd0,fp_pooling_result_dp_7[33:17],11'd0,fp_pooling_result_dp_7[16:0]}; 
- assign fp_pooling_result7 = mem_re_1st_2d_sync[7] ? {pooling_2d_info_sync[7*4+3:7*4],pooling_datin_ext} : {pooling_2d_info_sync[7*4+3:7*4],fp_add_out_dp_ext_7}; 
- assign fp_mem_we[7] = fp_add_out_load & mem_re_2d_sync[7]; 
- assign fp_mem7_waddr = mem_raddr_2d_sync[5:0]; 
- assign fp_mem7_wdata = fp_pooling_result7; 
-////////////////////////////////////////////////////////////////////////////
- assign fp_pout_mem_data_sel[0] = pout_mem_data_sel_sync[0]; 
- assign fp_pout_mem_data_sel_last[0] = pout_mem_data_sel_last_sync[0]; 
- assign fp_pout_mem_data_sel[1] = pout_mem_data_sel_sync[1]; 
- assign fp_pout_mem_data_sel_last[1] = pout_mem_data_sel_last_sync[1]; 
- assign fp_pout_mem_data_sel[2] = pout_mem_data_sel_sync[2]; 
- assign fp_pout_mem_data_sel_last[2] = pout_mem_data_sel_last_sync[2]; 
- assign fp_pout_mem_data_sel[3] = pout_mem_data_sel_sync[3]; 
- assign fp_pout_mem_data_sel_last[3] = pout_mem_data_sel_last_sync[3]; 
- assign fp_pout_mem_data_sel[4] = pout_mem_data_sel_sync[4]; 
- assign fp_pout_mem_data_sel_last[4] = pout_mem_data_sel_last_sync[4]; 
- assign fp_pout_mem_data_sel[5] = pout_mem_data_sel_sync[5]; 
- assign fp_pout_mem_data_sel_last[5] = pout_mem_data_sel_last_sync[5]; 
- assign fp_pout_mem_data_sel[6] = pout_mem_data_sel_sync[6]; 
- assign fp_pout_mem_data_sel_last[6] = pout_mem_data_sel_last_sync[6]; 
- assign fp_pout_mem_data_sel[7] = pout_mem_data_sel_sync[7]; 
- assign fp_pout_mem_data_sel_last[7] = pout_mem_data_sel_last_sync[7]; 
-assign fp_pout_mem_data_act = (fp_add_out_vld ? (fp_pooling_result0[114:0] & {115{fp_pout_mem_data_sel[0]}}) : 115'd0)
-                            | (fp_add_out_vld ? (fp_pooling_result1[114:0] & {115{fp_pout_mem_data_sel[1]}}) : 115'd0)
-                            | (fp_add_out_vld ? (fp_pooling_result2[114:0] & {115{fp_pout_mem_data_sel[2]}}) : 115'd0)
-                            | (fp_add_out_vld ? (fp_pooling_result3[114:0] & {115{fp_pout_mem_data_sel[3]}}) : 115'd0)
-                            | (fp_add_out_vld ? (fp_pooling_result4[114:0] & {115{fp_pout_mem_data_sel[4]}}) : 115'd0)
-                            | (fp_add_out_vld ? (fp_pooling_result5[114:0] & {115{fp_pout_mem_data_sel[5]}}) : 115'd0)
-                            | (fp_add_out_vld ? (fp_pooling_result6[114:0] & {115{fp_pout_mem_data_sel[6]}}) : 115'd0)
-                            | (fp_add_out_vld ? (fp_pooling_result7[114:0] & {115{fp_pout_mem_data_sel[7]}}) : 115'd0);
-
-assign fp_pout_mem_data_last = (fp_add_out_vld ? (pout_mem_data_last_sync[114:0] & {115{fp_pout_mem_data_sel_last[0]}}) : 115'd0)
-                             | (fp_add_out_vld ? (pout_mem_data_last_sync[114:0] & {115{fp_pout_mem_data_sel_last[1]}}) : 115'd0)
-                             | (fp_add_out_vld ? (pout_mem_data_last_sync[114:0] & {115{fp_pout_mem_data_sel_last[2]}}) : 115'd0)
-                             | (fp_add_out_vld ? (pout_mem_data_last_sync[114:0] & {115{fp_pout_mem_data_sel_last[3]}}) : 115'd0)
-                             | (fp_add_out_vld ? (pout_mem_data_last_sync[114:0] & {115{fp_pout_mem_data_sel_last[4]}}) : 115'd0)
-                             | (fp_add_out_vld ? (pout_mem_data_last_sync[114:0] & {115{fp_pout_mem_data_sel_last[5]}}) : 115'd0)
-                             | (fp_add_out_vld ? (pout_mem_data_last_sync[114:0] & {115{fp_pout_mem_data_sel_last[6]}}) : 115'd0)
-                             | (fp_add_out_vld ? (pout_mem_data_last_sync[114:0] & {115{fp_pout_mem_data_sel_last[7]}}) : 115'd0);
-
-assign fp_pout_mem_data = fp_pout_mem_data_act | fp_pout_mem_data_last;
-
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-  // VCS coverage off 
-  nv_assert_never #(0,0,"PDP cal2d: line buffers shouldn't output at same time")      zzz_assert_never_79x (nvdla_op_gated_clk_fp16, `ASSERT_RESET, fp_pout_mem_data_sel[0]&(|{|fp_pout_mem_data_sel_last,fp_pout_mem_data_sel[7:1]})); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-  // VCS coverage off 
-  nv_assert_never #(0,0,"PDP cal2d: line buffers shouldn't output at same time")      zzz_assert_never_80x (nvdla_op_gated_clk_fp16, `ASSERT_RESET, fp_pout_mem_data_sel[1]&(|{|fp_pout_mem_data_sel_last,fp_pout_mem_data_sel[7:2],fp_pout_mem_data_sel[0]})); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-  // VCS coverage off 
-  nv_assert_never #(0,0,"PDP cal2d: line buffers shouldn't output at same time")      zzz_assert_never_81x (nvdla_op_gated_clk_fp16, `ASSERT_RESET, fp_pout_mem_data_sel[2]&(|{|fp_pout_mem_data_sel_last,fp_pout_mem_data_sel[7:3],fp_pout_mem_data_sel[1:0]})); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-  // VCS coverage off 
-  nv_assert_never #(0,0,"PDP cal2d: line buffers shouldn't output at same time")      zzz_assert_never_82x (nvdla_op_gated_clk_fp16, `ASSERT_RESET, fp_pout_mem_data_sel[3]&(|{|fp_pout_mem_data_sel_last,fp_pout_mem_data_sel[7:4],fp_pout_mem_data_sel[2:0]})); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-  // VCS coverage off 
-  nv_assert_never #(0,0,"PDP cal2d: line buffers shouldn't output at same time")      zzz_assert_never_83x (nvdla_op_gated_clk_fp16, `ASSERT_RESET, fp_pout_mem_data_sel[4]&(|{|fp_pout_mem_data_sel_last,fp_pout_mem_data_sel[7:5],fp_pout_mem_data_sel[3:0]})); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-  // VCS coverage off 
-  nv_assert_never #(0,0,"PDP cal2d: line buffers shouldn't output at same time")      zzz_assert_never_84x (nvdla_op_gated_clk_fp16, `ASSERT_RESET, fp_pout_mem_data_sel[5]&(|{|fp_pout_mem_data_sel_last,fp_pout_mem_data_sel[7:6],fp_pout_mem_data_sel[4:0]})); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-  // VCS coverage off 
-  nv_assert_never #(0,0,"PDP cal2d: line buffers shouldn't output at same time")      zzz_assert_never_85x (nvdla_op_gated_clk_fp16, `ASSERT_RESET, fp_pout_mem_data_sel[6]&(|{|fp_pout_mem_data_sel_last,fp_pout_mem_data_sel[7  ],fp_pout_mem_data_sel[5:0]})); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-  // VCS coverage off 
-  nv_assert_never #(0,0,"PDP cal2d: line buffers shouldn't output at same time")      zzz_assert_never_86x (nvdla_op_gated_clk_fp16, `ASSERT_RESET, fp_pout_mem_data_sel[7]&(|{|fp_pout_mem_data_sel_last,fp_pout_mem_data_sel[6:0]})); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-  // VCS coverage off 
-  nv_assert_never #(0,0,"PDP cal2d: line buffers shouldn't output at same time")      zzz_assert_never_87x (nvdla_op_gated_clk_fp16, `ASSERT_RESET, fp_pout_mem_data_sel_last[0]&(|{|fp_pout_mem_data_sel,fp_pout_mem_data_sel_last[7:1]})); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-  // VCS coverage off 
-  nv_assert_never #(0,0,"PDP cal2d: line buffers shouldn't output at same time")      zzz_assert_never_88x (nvdla_op_gated_clk_fp16, `ASSERT_RESET, fp_pout_mem_data_sel_last[1]&(|{|fp_pout_mem_data_sel,fp_pout_mem_data_sel_last[7:2],fp_pout_mem_data_sel_last[0]})); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-  // VCS coverage off 
-  nv_assert_never #(0,0,"PDP cal2d: line buffers shouldn't output at same time")      zzz_assert_never_89x (nvdla_op_gated_clk_fp16, `ASSERT_RESET, fp_pout_mem_data_sel_last[2]&(|{|fp_pout_mem_data_sel,fp_pout_mem_data_sel_last[7:3],fp_pout_mem_data_sel_last[1:0]})); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-  // VCS coverage off 
-  nv_assert_never #(0,0,"PDP cal2d: line buffers shouldn't output at same time")      zzz_assert_never_90x (nvdla_op_gated_clk_fp16, `ASSERT_RESET, fp_pout_mem_data_sel_last[3]&(|{|fp_pout_mem_data_sel,fp_pout_mem_data_sel_last[7:4],fp_pout_mem_data_sel_last[2:0]})); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-  // VCS coverage off 
-  nv_assert_never #(0,0,"PDP cal2d: line buffers shouldn't output at same time")      zzz_assert_never_91x (nvdla_op_gated_clk_fp16, `ASSERT_RESET, fp_pout_mem_data_sel_last[4]&(|{|fp_pout_mem_data_sel,fp_pout_mem_data_sel_last[7:5],fp_pout_mem_data_sel_last[3:0]})); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-  // VCS coverage off 
-  nv_assert_never #(0,0,"PDP cal2d: line buffers shouldn't output at same time")      zzz_assert_never_92x (nvdla_op_gated_clk_fp16, `ASSERT_RESET, fp_pout_mem_data_sel_last[5]&(|{|fp_pout_mem_data_sel,fp_pout_mem_data_sel_last[7:6],fp_pout_mem_data_sel_last[4:0]})); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-  // VCS coverage off 
-  nv_assert_never #(0,0,"PDP cal2d: line buffers shouldn't output at same time")      zzz_assert_never_93x (nvdla_op_gated_clk_fp16, `ASSERT_RESET, fp_pout_mem_data_sel_last[6]&(|{|fp_pout_mem_data_sel,fp_pout_mem_data_sel_last[7  ],fp_pout_mem_data_sel_last[5:0]})); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-  // VCS coverage off 
-  nv_assert_never #(0,0,"PDP cal2d: line buffers shouldn't output at same time")      zzz_assert_never_94x (nvdla_op_gated_clk_fp16, `ASSERT_RESET, fp_pout_mem_data_sel_last[7]&(|{|fp_pout_mem_data_sel,fp_pout_mem_data_sel_last[6:0]})); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-
-////////////////////////////////////////////////////////////////////////////
-//-----------------------------
-assign fp16_mulw_in_vld = (fp_add_out_vld ? (|(fp_pout_mem_data_sel | fp_pout_mem_data_sel_last)) : 1'b0);
-
-//
-//=============================
-
-//=============================
-//pad_value_x * kernel_width
-//-----------------------------
-//kernel_width config in fp17 mode
-always @(
-  reg2dp_kernel_width
-  ) begin
-    case(reg2dp_kernel_width[2:0])
-    3'h0: kernel_width_fp17 = 17'h7c00;
-    3'h1: kernel_width_fp17 = 17'h8000;
-    3'h2: kernel_width_fp17 = 17'h8200;
-    3'h3: kernel_width_fp17 = 17'h8400;
-    3'h4: kernel_width_fp17 = 17'h8500;
-    3'h5: kernel_width_fp17 = 17'h8600;
-    3'h6: kernel_width_fp17 = 17'h8700;
-    3'h7: kernel_width_fp17 = 17'h8800;
-  //VCS coverage off
-    default: kernel_width_fp17 = 17'h0;
-  //VCS coverage on
-    endcase
-end
-
-//valid/ready control
-assign fp16_mul_pad_line_prdy = &fp16_mul_pad_line_rdy[1:0] & fp16_mul_pad_line_in_rdy;
-
-assign fp16_mul_pad_line_vld[0] = fp16_mulw_in_vld & fp16_mul_pad_line_rdy[1] & fp16_mul_pad_line_in_rdy;
-assign fp16_mul_pad_line_vld[1] = fp16_mulw_in_vld & fp16_mul_pad_line_rdy[0] & fp16_mul_pad_line_in_rdy;
-assign fp16_mul_pad_line_in_vld[0] = fp16_mulw_in_vld & (&fp16_mul_pad_line_rdy[1:0]);
-
-assign fp16_mul_pad_line_in_pd = fp_pout_mem_data;
-assign fp_mem_size_v = fp_pout_mem_data[114:112];
-
-HLS_fp17_mul mul_padx_kwidth (
-   .nvdla_core_clk              (nvdla_op_gated_clk_fp16)           //|< i
-  ,.nvdla_core_rstn             (nvdla_core_rstn)                   //|< i
-  ,.chn_a_rsc_z                 (pad_table_out[16:0])               //|< r
-  ,.chn_a_rsc_vz                (fp16_mul_pad_line_vld[0])          //|< w
-  ,.chn_a_rsc_lz                (fp16_mul_pad_line_rdy[0])          //|> w
-  ,.chn_b_rsc_z                 (kernel_width_fp17[16:0])           //|< r
-  ,.chn_b_rsc_vz                (fp16_mul_pad_line_vld[1])          //|< w
-  ,.chn_b_rsc_lz                (fp16_mul_pad_line_rdy[1])          //|> w
-  ,.chn_o_rsc_z                 (pad_line_sum[16:0])                //|> w
-  ,.chn_o_rsc_vz                (pad_line_sum_prdy)                 //|< w
-  ,.chn_o_rsc_lz                (pad_line_sum_pvld)                 //|> w
-  );
-
-
-assign fp16_mul_pad_line_in_vld_d0 = fp16_mul_pad_line_in_vld;
-assign fp16_mul_pad_line_in_rdy = fp16_mul_pad_line_in_rdy_d0;
-assign fp16_mul_pad_line_in_pd_d0[114:0] = fp16_mul_pad_line_in_pd[114:0];
-NV_NVDLA_PDP_CORE_CAL2D_pipe_p5 pipe_p5 (
-   .nvdla_op_gated_clk_fp16     (nvdla_op_gated_clk_fp16)           //|< i
-  ,.nvdla_core_rstn             (nvdla_core_rstn)                   //|< i
-  ,.fp16_mul_pad_line_in_pd_d0  (fp16_mul_pad_line_in_pd_d0[114:0]) //|< w
-  ,.fp16_mul_pad_line_in_rdy_d1 (fp16_mul_pad_line_in_rdy_d1)       //|< w
-  ,.fp16_mul_pad_line_in_vld_d0 (fp16_mul_pad_line_in_vld_d0)       //|< w
-  ,.fp16_mul_pad_line_in_pd_d1  (fp16_mul_pad_line_in_pd_d1[114:0]) //|> w
-  ,.fp16_mul_pad_line_in_rdy_d0 (fp16_mul_pad_line_in_rdy_d0)       //|> w
-  ,.fp16_mul_pad_line_in_vld_d1 (fp16_mul_pad_line_in_vld_d1)       //|> w
-  );
-NV_NVDLA_PDP_CORE_CAL2D_pipe_p6 pipe_p6 (
-   .nvdla_op_gated_clk_fp16     (nvdla_op_gated_clk_fp16)           //|< i
-  ,.nvdla_core_rstn             (nvdla_core_rstn)                   //|< i
-  ,.fp16_mul_pad_line_in_pd_d1  (fp16_mul_pad_line_in_pd_d1[114:0]) //|< w
-  ,.fp16_mul_pad_line_in_rdy_d2 (fp16_mul_pad_line_in_rdy_d2)       //|< w
-  ,.fp16_mul_pad_line_in_vld_d1 (fp16_mul_pad_line_in_vld_d1)       //|< w
-  ,.fp16_mul_pad_line_in_pd_d2  (fp16_mul_pad_line_in_pd_d2[114:0]) //|> w
-  ,.fp16_mul_pad_line_in_rdy_d1 (fp16_mul_pad_line_in_rdy_d1)       //|> w
-  ,.fp16_mul_pad_line_in_vld_d2 (fp16_mul_pad_line_in_vld_d2)       //|> w
-  );
-NV_NVDLA_PDP_CORE_CAL2D_pipe_p7 pipe_p7 (
-   .nvdla_op_gated_clk_fp16     (nvdla_op_gated_clk_fp16)           //|< i
-  ,.nvdla_core_rstn             (nvdla_core_rstn)                   //|< i
-  ,.fp16_mul_pad_line_in_pd_d2  (fp16_mul_pad_line_in_pd_d2[114:0]) //|< w
-  ,.fp16_mul_pad_line_in_rdy_d3 (fp16_mul_pad_line_in_rdy_d3)       //|< w
-  ,.fp16_mul_pad_line_in_vld_d2 (fp16_mul_pad_line_in_vld_d2)       //|< w
-  ,.fp16_mul_pad_line_in_pd_d3  (fp16_mul_pad_line_in_pd_d3[114:0]) //|> w
-  ,.fp16_mul_pad_line_in_rdy_d2 (fp16_mul_pad_line_in_rdy_d2)       //|> w
-  ,.fp16_mul_pad_line_in_vld_d3 (fp16_mul_pad_line_in_vld_d3)       //|> w
-  );
-assign fp16_mul_pad_line_out_vld = fp16_mul_pad_line_in_vld_d3;
-assign fp16_mul_pad_line_in_rdy_d3 = fp16_mul_pad_line_out_rdy;
-assign fp16_mul_pad_line_out_pd[114:0] = fp16_mul_pad_line_in_pd_d3[114:0];
-
-
-assign fp16_mul_pad_line_out_rdy = fp_mulw_prdy & pad_line_sum_pvld;
-assign pad_line_sum_prdy = fp_mulw_prdy & fp16_mul_pad_line_out_vld;
-
-assign fp16_mul_pad_line_pvld = pad_line_sum_pvld & fp16_mul_pad_line_out_vld;
-
-assign fp16_pout_mem_data = fp16_mul_pad_line_out_pd[114:0];
-//=============================
-//FP16 process for (+ pad_value_x)
-//-----------------------------
-assign fp_mulw_prdy     = &{fp16_add_pad_in_a_rdy, fp16_add_pad_in_b_rdy} ; 
-assign fp16_add_pad_in_a_vld[0] = fp16_mul_pad_line_pvld & (&{fp16_add_pad_in_b_rdy,fp16_add_pad_in_a_rdy[3:1]});
-assign fp16_add_pad_in_a_vld[1] = fp16_mul_pad_line_pvld & (&{fp16_add_pad_in_b_rdy,fp16_add_pad_in_a_rdy[3:2],fp16_add_pad_in_a_rdy[0]});
-assign fp16_add_pad_in_a_vld[2] = fp16_mul_pad_line_pvld & (&{fp16_add_pad_in_b_rdy,fp16_add_pad_in_a_rdy[3]  ,fp16_add_pad_in_a_rdy[1:0]});
-assign fp16_add_pad_in_a_vld[3] = fp16_mul_pad_line_pvld & (&{fp16_add_pad_in_b_rdy,fp16_add_pad_in_a_rdy[2:0]});
-assign fp16_add_pad_in_b_vld[0] = fp16_mul_pad_line_pvld & (&{fp16_add_pad_in_a_rdy,fp16_add_pad_in_b_rdy[3:1]});
-assign fp16_add_pad_in_b_vld[1] = fp16_mul_pad_line_pvld & (&{fp16_add_pad_in_a_rdy,fp16_add_pad_in_b_rdy[3:2],fp16_add_pad_in_b_rdy[0]});
-assign fp16_add_pad_in_b_vld[2] = fp16_mul_pad_line_pvld & (&{fp16_add_pad_in_a_rdy,fp16_add_pad_in_b_rdy[3]  ,fp16_add_pad_in_b_rdy[1:0]});
-assign fp16_add_pad_in_b_vld[3] = fp16_mul_pad_line_pvld & (&{fp16_add_pad_in_a_rdy,fp16_add_pad_in_b_rdy[2:0]});
-
- HLS_fp17_add u_HLS_fp17_add_0 (
-    .nvdla_core_clk              (nvdla_op_gated_clk_fp16)           //|< i
-   ,.nvdla_core_rstn             (nvdla_core_rstn)                   //|< i
-   ,.chn_a_rsc_z                 (fp16_pout_mem_data[16:0])          //|< w
-   ,.chn_a_rsc_vz                (fp16_add_pad_in_a_vld[0])          //|< w
-   ,.chn_a_rsc_lz                (fp16_add_pad_in_a_rdy[0])          //|> w
-   ,.chn_b_rsc_z                 (pad_line_sum[16:0])                //|< w
-   ,.chn_b_rsc_vz                (fp16_add_pad_in_b_vld[0])          //|< w
-   ,.chn_b_rsc_lz                (fp16_add_pad_in_b_rdy[0])          //|> w
-   ,.chn_o_rsc_z                 (fp16_add_pad_out0[16:0])           //|> w
-   ,.chn_o_rsc_vz                (fp16_add_pad_out_rdy[0])           //|< w
-   ,.chn_o_rsc_lz                (fp16_add_pad_out_vld[0])           //|> w
-   );
- HLS_fp17_add u_HLS_fp17_add_1 (
-    .nvdla_core_clk              (nvdla_op_gated_clk_fp16)           //|< i
-   ,.nvdla_core_rstn             (nvdla_core_rstn)                   //|< i
-   ,.chn_a_rsc_z                 (fp16_pout_mem_data[44:28])         //|< w
-   ,.chn_a_rsc_vz                (fp16_add_pad_in_a_vld[1])          //|< w
-   ,.chn_a_rsc_lz                (fp16_add_pad_in_a_rdy[1])          //|> w
-   ,.chn_b_rsc_z                 (pad_line_sum[16:0])                //|< w
-   ,.chn_b_rsc_vz                (fp16_add_pad_in_b_vld[1])          //|< w
-   ,.chn_b_rsc_lz                (fp16_add_pad_in_b_rdy[1])          //|> w
-   ,.chn_o_rsc_z                 (fp16_add_pad_out1[16:0])           //|> w
-   ,.chn_o_rsc_vz                (fp16_add_pad_out_rdy[1])           //|< w
-   ,.chn_o_rsc_lz                (fp16_add_pad_out_vld[1])           //|> w
-   );
- HLS_fp17_add u_HLS_fp17_add_2 (
-    .nvdla_core_clk              (nvdla_op_gated_clk_fp16)           //|< i
-   ,.nvdla_core_rstn             (nvdla_core_rstn)                   //|< i
-   ,.chn_a_rsc_z                 (fp16_pout_mem_data[72:56])         //|< w
-   ,.chn_a_rsc_vz                (fp16_add_pad_in_a_vld[2])          //|< w
-   ,.chn_a_rsc_lz                (fp16_add_pad_in_a_rdy[2])          //|> w
-   ,.chn_b_rsc_z                 (pad_line_sum[16:0])                //|< w
-   ,.chn_b_rsc_vz                (fp16_add_pad_in_b_vld[2])          //|< w
-   ,.chn_b_rsc_lz                (fp16_add_pad_in_b_rdy[2])          //|> w
-   ,.chn_o_rsc_z                 (fp16_add_pad_out2[16:0])           //|> w
-   ,.chn_o_rsc_vz                (fp16_add_pad_out_rdy[2])           //|< w
-   ,.chn_o_rsc_lz                (fp16_add_pad_out_vld[2])           //|> w
-   );
- HLS_fp17_add u_HLS_fp17_add_3 (
-    .nvdla_core_clk              (nvdla_op_gated_clk_fp16)           //|< i
-   ,.nvdla_core_rstn             (nvdla_core_rstn)                   //|< i
-   ,.chn_a_rsc_z                 (fp16_pout_mem_data[100:84])        //|< w
-   ,.chn_a_rsc_vz                (fp16_add_pad_in_a_vld[3])          //|< w
-   ,.chn_a_rsc_lz                (fp16_add_pad_in_a_rdy[3])          //|> w
-   ,.chn_b_rsc_z                 (pad_line_sum[16:0])                //|< w
-   ,.chn_b_rsc_vz                (fp16_add_pad_in_b_vld[3])          //|< w
-   ,.chn_b_rsc_lz                (fp16_add_pad_in_b_rdy[3])          //|> w
-   ,.chn_o_rsc_z                 (fp16_add_pad_out3[16:0])           //|> w
-   ,.chn_o_rsc_vz                (fp16_add_pad_out_rdy[3])           //|< w
-   ,.chn_o_rsc_lz                (fp16_add_pad_out_vld[3])           //|> w
-   );
-
-assign fp16_add_pad_out_rdy[0] = fp16_mulw_rdy & (&{fp16_add_pad_out_vld[3:1]});
-assign fp16_add_pad_out_rdy[1] = fp16_mulw_rdy & (&{fp16_add_pad_out_vld[3:2], fp16_add_pad_out_vld[0]});
-assign fp16_add_pad_out_rdy[2] = fp16_mulw_rdy & (&{fp16_add_pad_out_vld[3], fp16_add_pad_out_vld[1:0]});
-assign fp16_add_pad_out_rdy[3] = fp16_mulw_rdy & (&{fp16_add_pad_out_vld[2:0]});
-
-assign fp16_add_pad_out_pvld = &fp16_add_pad_out_vld[3:0];
-//-----------------------------
-//
-//=============================
-
-//=============================
-//FP16 process for (* 1/kernel_width)
-//-----------------------------
-assign fp16_en = (reg2dp_input_data[1:0] == 2'h2 );
-
-assign fp16_mulw_in_a_vld[0] = fp16_add_pad_out_pvld & (&{fp16_mulw_in_b_rdy[3:0], fp16_mulw_in_a_rdy[3:1]});
-assign fp16_mulw_in_a_vld[1] = fp16_add_pad_out_pvld & (&{fp16_mulw_in_b_rdy[3:0], fp16_mulw_in_a_rdy[3:2], fp16_mulw_in_a_rdy[0]});
-assign fp16_mulw_in_a_vld[2] = fp16_add_pad_out_pvld & (&{fp16_mulw_in_b_rdy[3:0], fp16_mulw_in_a_rdy[3]  , fp16_mulw_in_a_rdy[1:0]});
-assign fp16_mulw_in_a_vld[3] = fp16_add_pad_out_pvld & (&{fp16_mulw_in_b_rdy[3:0], fp16_mulw_in_a_rdy[2:0]});
-assign fp16_mulw_in_b_vld[0] = fp16_add_pad_out_pvld & (&{fp16_mulw_in_a_rdy[3:0], fp16_mulw_in_b_rdy[3:1]});
-assign fp16_mulw_in_b_vld[1] = fp16_add_pad_out_pvld & (&{fp16_mulw_in_a_rdy[3:0], fp16_mulw_in_b_rdy[3:2], fp16_mulw_in_b_rdy[0]});
-assign fp16_mulw_in_b_vld[2] = fp16_add_pad_out_pvld & (&{fp16_mulw_in_a_rdy[3:0], fp16_mulw_in_b_rdy[3]  , fp16_mulw_in_b_rdy[1:0]});
-assign fp16_mulw_in_b_vld[3] = fp16_add_pad_out_pvld & (&{fp16_mulw_in_a_rdy[3:0], fp16_mulw_in_b_rdy[2:0]});
-
-assign fp16_mulw_rdy = &{fp16_mulw_in_a_rdy, fp16_mulw_in_b_rdy};
-
- HLS_fp17_mul u_HLS_fp17_mulw_0 (
-    .nvdla_core_clk              (nvdla_op_gated_clk_fp16)           //|< i
-   ,.nvdla_core_rstn             (nvdla_core_rstn)                   //|< i
-   ,.chn_a_rsc_z                 (fp16_add_pad_out0[16:0])           //|< w
-   ,.chn_a_rsc_vz                (fp16_mulw_in_a_vld[0])             //|< w
-   ,.chn_a_rsc_lz                (fp16_mulw_in_a_rdy[0])             //|> w
-   ,.chn_b_rsc_z                 (reg2dp_recip_width_cfg[16:0])      //|< i
-   ,.chn_b_rsc_vz                (fp16_mulw_in_b_vld[0])             //|< w
-   ,.chn_b_rsc_lz                (fp16_mulw_in_b_rdy[0])             //|> w
-   ,.chn_o_rsc_z                 (fp16_mulw_out0[16:0])              //|> w
-   ,.chn_o_rsc_vz                (fp16_mulw_out_rdy[0])              //|< w
-   ,.chn_o_rsc_lz                (fp16_mulw_out_vld[0])              //|> w
-   );
- HLS_fp17_mul u_HLS_fp17_mulw_1 (
-    .nvdla_core_clk              (nvdla_op_gated_clk_fp16)           //|< i
-   ,.nvdla_core_rstn             (nvdla_core_rstn)                   //|< i
-   ,.chn_a_rsc_z                 (fp16_add_pad_out1[16:0])           //|< w
-   ,.chn_a_rsc_vz                (fp16_mulw_in_a_vld[1])             //|< w
-   ,.chn_a_rsc_lz                (fp16_mulw_in_a_rdy[1])             //|> w
-   ,.chn_b_rsc_z                 (reg2dp_recip_width_cfg[16:0])      //|< i
-   ,.chn_b_rsc_vz                (fp16_mulw_in_b_vld[1])             //|< w
-   ,.chn_b_rsc_lz                (fp16_mulw_in_b_rdy[1])             //|> w
-   ,.chn_o_rsc_z                 (fp16_mulw_out1[16:0])              //|> w
-   ,.chn_o_rsc_vz                (fp16_mulw_out_rdy[1])              //|< w
-   ,.chn_o_rsc_lz                (fp16_mulw_out_vld[1])              //|> w
-   );
- HLS_fp17_mul u_HLS_fp17_mulw_2 (
-    .nvdla_core_clk              (nvdla_op_gated_clk_fp16)           //|< i
-   ,.nvdla_core_rstn             (nvdla_core_rstn)                   //|< i
-   ,.chn_a_rsc_z                 (fp16_add_pad_out2[16:0])           //|< w
-   ,.chn_a_rsc_vz                (fp16_mulw_in_a_vld[2])             //|< w
-   ,.chn_a_rsc_lz                (fp16_mulw_in_a_rdy[2])             //|> w
-   ,.chn_b_rsc_z                 (reg2dp_recip_width_cfg[16:0])      //|< i
-   ,.chn_b_rsc_vz                (fp16_mulw_in_b_vld[2])             //|< w
-   ,.chn_b_rsc_lz                (fp16_mulw_in_b_rdy[2])             //|> w
-   ,.chn_o_rsc_z                 (fp16_mulw_out2[16:0])              //|> w
-   ,.chn_o_rsc_vz                (fp16_mulw_out_rdy[2])              //|< w
-   ,.chn_o_rsc_lz                (fp16_mulw_out_vld[2])              //|> w
-   );
- HLS_fp17_mul u_HLS_fp17_mulw_3 (
-    .nvdla_core_clk              (nvdla_op_gated_clk_fp16)           //|< i
-   ,.nvdla_core_rstn             (nvdla_core_rstn)                   //|< i
-   ,.chn_a_rsc_z                 (fp16_add_pad_out3[16:0])           //|< w
-   ,.chn_a_rsc_vz                (fp16_mulw_in_a_vld[3])             //|< w
-   ,.chn_a_rsc_lz                (fp16_mulw_in_a_rdy[3])             //|> w
-   ,.chn_b_rsc_z                 (reg2dp_recip_width_cfg[16:0])      //|< i
-   ,.chn_b_rsc_vz                (fp16_mulw_in_b_vld[3])             //|< w
-   ,.chn_b_rsc_lz                (fp16_mulw_in_b_rdy[3])             //|> w
-   ,.chn_o_rsc_z                 (fp16_mulw_out3[16:0])              //|> w
-   ,.chn_o_rsc_vz                (fp16_mulw_out_rdy[3])              //|< w
-   ,.chn_o_rsc_lz                (fp16_mulw_out_vld[3])              //|> w
-   );
-
-assign fp16_mulw_out_rdy[0] = fp16_mulv_rdy & (&{fp16_mulw_out_vld[3:1]                      });
-assign fp16_mulw_out_rdy[1] = fp16_mulv_rdy & (&{fp16_mulw_out_vld[3:2], fp16_mulw_out_vld[0]});
-assign fp16_mulw_out_rdy[2] = fp16_mulv_rdy & (&{fp16_mulw_out_vld[3  ], fp16_mulw_out_vld[1:0]});
-assign fp16_mulw_out_rdy[3] = fp16_mulv_rdy & (&{                        fp16_mulw_out_vld[2:0]});
-
-//=============================
-assign fp16_mulw_out_pvld = &fp16_mulw_out_vld;
-//=============================
-
-//=============================
-//FP16 process for (* 1/kernel_height)
-//-----------------------------
-assign fp16_mulv_in_vld = fp16_mulw_out_pvld;
-
-assign fp16_mulv_in_a_vld[0] = fp16_mulv_in_vld & (&{fp16_mulv_in_b_rdy, fp16_mulv_in_a_rdy[3:1]});
-assign fp16_mulv_in_a_vld[1] = fp16_mulv_in_vld & (&{fp16_mulv_in_b_rdy, fp16_mulv_in_a_rdy[3:2], fp16_mulv_in_a_rdy[0]});
-assign fp16_mulv_in_a_vld[2] = fp16_mulv_in_vld & (&{fp16_mulv_in_b_rdy, fp16_mulv_in_a_rdy[3  ], fp16_mulv_in_a_rdy[1:0]});
-assign fp16_mulv_in_a_vld[3] = fp16_mulv_in_vld & (&{fp16_mulv_in_b_rdy, fp16_mulv_in_a_rdy[2:0]});
-assign fp16_mulv_in_b_vld[0] = fp16_mulv_in_vld & (&{fp16_mulv_in_a_rdy, fp16_mulv_in_b_rdy[3:1]});
-assign fp16_mulv_in_b_vld[1] = fp16_mulv_in_vld & (&{fp16_mulv_in_a_rdy, fp16_mulv_in_b_rdy[3:2], fp16_mulv_in_b_rdy[0]});
-assign fp16_mulv_in_b_vld[2] = fp16_mulv_in_vld & (&{fp16_mulv_in_a_rdy, fp16_mulv_in_b_rdy[3  ], fp16_mulv_in_b_rdy[1:0]});
-assign fp16_mulv_in_b_vld[3] = fp16_mulv_in_vld & (&{fp16_mulv_in_a_rdy, fp16_mulv_in_b_rdy[2:0]});
-
-assign fp16_mulv_rdy = &{fp16_mulv_in_a_rdy, fp16_mulv_in_b_rdy};
-
- HLS_fp17_mul u_HLS_fp17_mulv_0 (
-    .nvdla_core_clk              (nvdla_op_gated_clk_fp16)           //|< i
-   ,.nvdla_core_rstn             (nvdla_core_rstn)                   //|< i
-   ,.chn_a_rsc_z                 (fp16_mulw_out0[16:0])              //|< w
-   ,.chn_a_rsc_vz                (fp16_mulv_in_a_vld[0])             //|< w
-   ,.chn_a_rsc_lz                (fp16_mulv_in_a_rdy[0])             //|> w
-   ,.chn_b_rsc_z                 (reg2dp_recip_height_cfg[16:0])     //|< i
-   ,.chn_b_rsc_vz                (fp16_mulv_in_b_vld[0])             //|< w
-   ,.chn_b_rsc_lz                (fp16_mulv_in_b_rdy[0])             //|> w
-   ,.chn_o_rsc_z                 (fp16_mulv_out0[16:0])              //|> w
-   ,.chn_o_rsc_vz                (fp16_mulv_out_rdy[0])              //|< w
-   ,.chn_o_rsc_lz                (fp16_mulv_out_vld[0])              //|> w
-   );
- HLS_fp17_mul u_HLS_fp17_mulv_1 (
-    .nvdla_core_clk              (nvdla_op_gated_clk_fp16)           //|< i
-   ,.nvdla_core_rstn             (nvdla_core_rstn)                   //|< i
-   ,.chn_a_rsc_z                 (fp16_mulw_out1[16:0])              //|< w
-   ,.chn_a_rsc_vz                (fp16_mulv_in_a_vld[1])             //|< w
-   ,.chn_a_rsc_lz                (fp16_mulv_in_a_rdy[1])             //|> w
-   ,.chn_b_rsc_z                 (reg2dp_recip_height_cfg[16:0])     //|< i
-   ,.chn_b_rsc_vz                (fp16_mulv_in_b_vld[1])             //|< w
-   ,.chn_b_rsc_lz                (fp16_mulv_in_b_rdy[1])             //|> w
-   ,.chn_o_rsc_z                 (fp16_mulv_out1[16:0])              //|> w
-   ,.chn_o_rsc_vz                (fp16_mulv_out_rdy[1])              //|< w
-   ,.chn_o_rsc_lz                (fp16_mulv_out_vld[1])              //|> w
-   );
- HLS_fp17_mul u_HLS_fp17_mulv_2 (
-    .nvdla_core_clk              (nvdla_op_gated_clk_fp16)           //|< i
-   ,.nvdla_core_rstn             (nvdla_core_rstn)                   //|< i
-   ,.chn_a_rsc_z                 (fp16_mulw_out2[16:0])              //|< w
-   ,.chn_a_rsc_vz                (fp16_mulv_in_a_vld[2])             //|< w
-   ,.chn_a_rsc_lz                (fp16_mulv_in_a_rdy[2])             //|> w
-   ,.chn_b_rsc_z                 (reg2dp_recip_height_cfg[16:0])     //|< i
-   ,.chn_b_rsc_vz                (fp16_mulv_in_b_vld[2])             //|< w
-   ,.chn_b_rsc_lz                (fp16_mulv_in_b_rdy[2])             //|> w
-   ,.chn_o_rsc_z                 (fp16_mulv_out2[16:0])              //|> w
-   ,.chn_o_rsc_vz                (fp16_mulv_out_rdy[2])              //|< w
-   ,.chn_o_rsc_lz                (fp16_mulv_out_vld[2])              //|> w
-   );
- HLS_fp17_mul u_HLS_fp17_mulv_3 (
-    .nvdla_core_clk              (nvdla_op_gated_clk_fp16)           //|< i
-   ,.nvdla_core_rstn             (nvdla_core_rstn)                   //|< i
-   ,.chn_a_rsc_z                 (fp16_mulw_out3[16:0])              //|< w
-   ,.chn_a_rsc_vz                (fp16_mulv_in_a_vld[3])             //|< w
-   ,.chn_a_rsc_lz                (fp16_mulv_in_a_rdy[3])             //|> w
-   ,.chn_b_rsc_z                 (reg2dp_recip_height_cfg[16:0])     //|< i
-   ,.chn_b_rsc_vz                (fp16_mulv_in_b_vld[3])             //|< w
-   ,.chn_b_rsc_lz                (fp16_mulv_in_b_rdy[3])             //|> w
-   ,.chn_o_rsc_z                 (fp16_mulv_out3[16:0])              //|> w
-   ,.chn_o_rsc_vz                (fp16_mulv_out_rdy[3])              //|< w
-   ,.chn_o_rsc_lz                (fp16_mulv_out_vld[3])              //|> w
-   );
-
-//-----------------------------
-//
-//=============================
-//fp17 to fp16 convertor
-  HLS_fp17_to_fp16 u_HLS_fp17_to_fp16_0 (
-     .nvdla_core_clk              (nvdla_op_gated_clk_fp16)           //|< i
-    ,.nvdla_core_rstn             (nvdla_core_rstn)                   //|< i
-    ,.chn_a_rsc_z                 (fp16_mulv_out0[16:0])              //|< w
-    ,.chn_a_rsc_vz                (fp16_mulv_out_vld[0])              //|< w
-    ,.chn_a_rsc_lz                (fp16_mulv_out_rdy[0])              //|> w
-    ,.chn_o_rsc_z                 (fp17T16_out0[15:0])                //|> w
-    ,.chn_o_rsc_vz                (fp17T16_out_rdy[0])                //|< w
-    ,.chn_o_rsc_lz                (fp17T16_out_vld[0])                //|> w
-    );
-  HLS_fp17_to_fp16 u_HLS_fp17_to_fp16_1 (
-     .nvdla_core_clk              (nvdla_op_gated_clk_fp16)           //|< i
-    ,.nvdla_core_rstn             (nvdla_core_rstn)                   //|< i
-    ,.chn_a_rsc_z                 (fp16_mulv_out1[16:0])              //|< w
-    ,.chn_a_rsc_vz                (fp16_mulv_out_vld[1])              //|< w
-    ,.chn_a_rsc_lz                (fp16_mulv_out_rdy[1])              //|> w
-    ,.chn_o_rsc_z                 (fp17T16_out1[15:0])                //|> w
-    ,.chn_o_rsc_vz                (fp17T16_out_rdy[1])                //|< w
-    ,.chn_o_rsc_lz                (fp17T16_out_vld[1])                //|> w
-    );
-  HLS_fp17_to_fp16 u_HLS_fp17_to_fp16_2 (
-     .nvdla_core_clk              (nvdla_op_gated_clk_fp16)           //|< i
-    ,.nvdla_core_rstn             (nvdla_core_rstn)                   //|< i
-    ,.chn_a_rsc_z                 (fp16_mulv_out2[16:0])              //|< w
-    ,.chn_a_rsc_vz                (fp16_mulv_out_vld[2])              //|< w
-    ,.chn_a_rsc_lz                (fp16_mulv_out_rdy[2])              //|> w
-    ,.chn_o_rsc_z                 (fp17T16_out2[15:0])                //|> w
-    ,.chn_o_rsc_vz                (fp17T16_out_rdy[2])                //|< w
-    ,.chn_o_rsc_lz                (fp17T16_out_vld[2])                //|> w
-    );
-  HLS_fp17_to_fp16 u_HLS_fp17_to_fp16_3 (
-     .nvdla_core_clk              (nvdla_op_gated_clk_fp16)           //|< i
-    ,.nvdla_core_rstn             (nvdla_core_rstn)                   //|< i
-    ,.chn_a_rsc_z                 (fp16_mulv_out3[16:0])              //|< w
-    ,.chn_a_rsc_vz                (fp16_mulv_out_vld[3])              //|< w
-    ,.chn_a_rsc_lz                (fp16_mulv_out_rdy[3])              //|> w
-    ,.chn_o_rsc_z                 (fp17T16_out3[15:0])                //|> w
-    ,.chn_o_rsc_vz                (fp17T16_out_rdy[3])                //|< w
-    ,.chn_o_rsc_lz                (fp17T16_out_vld[3])                //|> w
-    );
-
-assign fp17T16_out_rdy[0] = fp_dp2wdma_prdy & (&{fp17T16_out_vld[3:1]});
-assign fp17T16_out_rdy[1] = fp_dp2wdma_prdy & (&{fp17T16_out_vld[3:2],fp17T16_out_vld[0]});
-assign fp17T16_out_rdy[2] = fp_dp2wdma_prdy & (&{fp17T16_out_vld[3  ],fp17T16_out_vld[1:0]});
-assign fp17T16_out_rdy[3] = fp_dp2wdma_prdy & (&{fp17T16_out_vld[2:0]});
-
-assign fp_dp2wdma_dp   = {fp17T16_out3,fp17T16_out2,fp17T16_out1,fp17T16_out0};
-assign fp_dp2wdma_pvld = &fp17T16_out_vld ;
-assign fp_dp2wdma_prdy = (fp16_en & average_pooling_en) & pdp_dp2wdma_ready;
-//-----------------------------
-//
 //=============================
 
 //======================================
 //interface between POOLING data and DMA
-assign pdp_dp2wdma_pd    =  (fp16_en & average_pooling_en) ? fp_dp2wdma_dp : int_dp2wdma_pd;
-assign pdp_dp2wdma_valid  = (fp16_en & average_pooling_en) ? fp_dp2wdma_pvld : int_dp2wdma_valid;
+assign pdp_dp2wdma_pd    =  int_dp2wdma_pd;
+assign pdp_dp2wdma_valid  = int_dp2wdma_valid;
 //==============
 //function points
 //==============
@@ -9532,1146 +4916,5 @@ assign pdp_dp2wdma_valid  = (fp16_en & average_pooling_en) ? fp_dp2wdma_pvld : i
 //assign obs_bus_pdp_cal2d_bubble  = cur_datin_disable;
 
 endmodule // NV_NVDLA_PDP_CORE_cal2d
-
-
-
-// **************************************************************************************************************
-// Generated by ::pipe -m -bc  -rand none din_pd_d1[254:0] (din_vld_d1,din_rdy_d1) <= din_pd_d0[254:0] (din_vld_d0,din_rdy_d0)
-// **************************************************************************************************************
-module NV_NVDLA_PDP_CORE_CAL2D_pipe_p1 (
-   nvdla_op_gated_clk_fp16
-  ,nvdla_core_rstn
-  ,din_pd_d0
-  ,din_rdy_d1
-  ,din_vld_d0
-  ,din_pd_d1
-  ,din_rdy_d0
-  ,din_vld_d1
-  );
-input          nvdla_op_gated_clk_fp16;
-input          nvdla_core_rstn;
-input  [254:0] din_pd_d0;
-input          din_rdy_d1;
-input          din_vld_d0;
-output [254:0] din_pd_d1;
-output         din_rdy_d0;
-output         din_vld_d1;
-reg    [254:0] din_pd_d1;
-reg            din_rdy_d0;
-reg            din_vld_d1;
-reg    [254:0] p1_pipe_data;
-reg            p1_pipe_ready;
-reg            p1_pipe_ready_bc;
-reg            p1_pipe_valid;
-//## pipe (1) valid-ready-bubble-collapse
-always @(
-  p1_pipe_ready
-  or p1_pipe_valid
-  ) begin
-  p1_pipe_ready_bc = p1_pipe_ready || !p1_pipe_valid;
-end
-always @(posedge nvdla_op_gated_clk_fp16 or negedge nvdla_core_rstn) begin
-  if (!nvdla_core_rstn) begin
-    p1_pipe_valid <= 1'b0;
-  end else begin
-  p1_pipe_valid <= (p1_pipe_ready_bc)? din_vld_d0 : 1'd1;
-  end
-end
-always @(posedge nvdla_op_gated_clk_fp16) begin
-  // VCS sop_coverage_off start
-  p1_pipe_data <= (p1_pipe_ready_bc && din_vld_d0)? din_pd_d0[254:0] : p1_pipe_data;
-  // VCS sop_coverage_off end
-end
-always @(
-  p1_pipe_ready_bc
-  ) begin
-  din_rdy_d0 = p1_pipe_ready_bc;
-end
-//## pipe (1) output
-always @(
-  p1_pipe_valid
-  or din_rdy_d1
-  or p1_pipe_data
-  ) begin
-  din_vld_d1 = p1_pipe_valid;
-  p1_pipe_ready = din_rdy_d1;
-  din_pd_d1[254:0] = p1_pipe_data;
-end
-//## pipe (1) assertions/testpoints
-`ifndef VIVA_PLUGIN_PIPE_DISABLE_ASSERTIONS
-wire p1_assert_clk = nvdla_op_gated_clk_fp16;
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-`ifndef SYNTHESIS
-  // VCS coverage off 
-  nv_assert_no_x #(0,1,0,"No X's allowed on control signals")      zzz_assert_no_x_95x (nvdla_op_gated_clk_fp16, `ASSERT_RESET, nvdla_core_rstn, (din_vld_d1^din_rdy_d1^din_vld_d0^din_rdy_d0)); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`endif
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-  // VCS coverage off 
-  nv_assert_hold_throughout_event_interval #(0,1,0,"valid removed before ready")      zzz_assert_hold_throughout_event_interval_96x (nvdla_op_gated_clk_fp16, `ASSERT_RESET, (din_vld_d0 && !din_rdy_d0), (din_vld_d0), (din_rdy_d0)); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`endif
-endmodule // NV_NVDLA_PDP_CORE_CAL2D_pipe_p1
-
-
-
-
-// **************************************************************************************************************
-// Generated by ::pipe -m -bc  -rand none din_pd_d2[254:0] (din_vld_d2,din_rdy_d2) <= din_pd_d1[254:0] (din_vld_d1,din_rdy_d1)
-// **************************************************************************************************************
-module NV_NVDLA_PDP_CORE_CAL2D_pipe_p2 (
-   nvdla_op_gated_clk_fp16
-  ,nvdla_core_rstn
-  ,din_pd_d1
-  ,din_rdy_d2
-  ,din_vld_d1
-  ,din_pd_d2
-  ,din_rdy_d1
-  ,din_vld_d2
-  );
-input          nvdla_op_gated_clk_fp16;
-input          nvdla_core_rstn;
-input  [254:0] din_pd_d1;
-input          din_rdy_d2;
-input          din_vld_d1;
-output [254:0] din_pd_d2;
-output         din_rdy_d1;
-output         din_vld_d2;
-reg    [254:0] din_pd_d2;
-reg            din_rdy_d1;
-reg            din_vld_d2;
-reg    [254:0] p2_pipe_data;
-reg            p2_pipe_ready;
-reg            p2_pipe_ready_bc;
-reg            p2_pipe_valid;
-//## pipe (2) valid-ready-bubble-collapse
-always @(
-  p2_pipe_ready
-  or p2_pipe_valid
-  ) begin
-  p2_pipe_ready_bc = p2_pipe_ready || !p2_pipe_valid;
-end
-always @(posedge nvdla_op_gated_clk_fp16 or negedge nvdla_core_rstn) begin
-  if (!nvdla_core_rstn) begin
-    p2_pipe_valid <= 1'b0;
-  end else begin
-  p2_pipe_valid <= (p2_pipe_ready_bc)? din_vld_d1 : 1'd1;
-  end
-end
-always @(posedge nvdla_op_gated_clk_fp16) begin
-  // VCS sop_coverage_off start
-  p2_pipe_data <= (p2_pipe_ready_bc && din_vld_d1)? din_pd_d1[254:0] : p2_pipe_data;
-  // VCS sop_coverage_off end
-end
-always @(
-  p2_pipe_ready_bc
-  ) begin
-  din_rdy_d1 = p2_pipe_ready_bc;
-end
-//## pipe (2) output
-always @(
-  p2_pipe_valid
-  or din_rdy_d2
-  or p2_pipe_data
-  ) begin
-  din_vld_d2 = p2_pipe_valid;
-  p2_pipe_ready = din_rdy_d2;
-  din_pd_d2[254:0] = p2_pipe_data;
-end
-//## pipe (2) assertions/testpoints
-`ifndef VIVA_PLUGIN_PIPE_DISABLE_ASSERTIONS
-wire p2_assert_clk = nvdla_op_gated_clk_fp16;
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-`ifndef SYNTHESIS
-  // VCS coverage off 
-  nv_assert_no_x #(0,1,0,"No X's allowed on control signals")      zzz_assert_no_x_97x (nvdla_op_gated_clk_fp16, `ASSERT_RESET, nvdla_core_rstn, (din_vld_d2^din_rdy_d2^din_vld_d1^din_rdy_d1)); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`endif
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-  // VCS coverage off 
-  nv_assert_hold_throughout_event_interval #(0,1,0,"valid removed before ready")      zzz_assert_hold_throughout_event_interval_98x (nvdla_op_gated_clk_fp16, `ASSERT_RESET, (din_vld_d1 && !din_rdy_d1), (din_vld_d1), (din_rdy_d1)); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`endif
-endmodule // NV_NVDLA_PDP_CORE_CAL2D_pipe_p2
-
-
-
-
-// **************************************************************************************************************
-// Generated by ::pipe -m -bc  -rand none din_pd_d3[254:0] (din_vld_d3,din_rdy_d3) <= din_pd_d2[254:0] (din_vld_d2,din_rdy_d2)
-// **************************************************************************************************************
-module NV_NVDLA_PDP_CORE_CAL2D_pipe_p3 (
-   nvdla_op_gated_clk_fp16
-  ,nvdla_core_rstn
-  ,din_pd_d2
-  ,din_rdy_d3
-  ,din_vld_d2
-  ,din_pd_d3
-  ,din_rdy_d2
-  ,din_vld_d3
-  );
-input          nvdla_op_gated_clk_fp16;
-input          nvdla_core_rstn;
-input  [254:0] din_pd_d2;
-input          din_rdy_d3;
-input          din_vld_d2;
-output [254:0] din_pd_d3;
-output         din_rdy_d2;
-output         din_vld_d3;
-reg    [254:0] din_pd_d3;
-reg            din_rdy_d2;
-reg            din_vld_d3;
-reg    [254:0] p3_pipe_data;
-reg            p3_pipe_ready;
-reg            p3_pipe_ready_bc;
-reg            p3_pipe_valid;
-//## pipe (3) valid-ready-bubble-collapse
-always @(
-  p3_pipe_ready
-  or p3_pipe_valid
-  ) begin
-  p3_pipe_ready_bc = p3_pipe_ready || !p3_pipe_valid;
-end
-always @(posedge nvdla_op_gated_clk_fp16 or negedge nvdla_core_rstn) begin
-  if (!nvdla_core_rstn) begin
-    p3_pipe_valid <= 1'b0;
-  end else begin
-  p3_pipe_valid <= (p3_pipe_ready_bc)? din_vld_d2 : 1'd1;
-  end
-end
-always @(posedge nvdla_op_gated_clk_fp16) begin
-  // VCS sop_coverage_off start
-  p3_pipe_data <= (p3_pipe_ready_bc && din_vld_d2)? din_pd_d2[254:0] : p3_pipe_data;
-  // VCS sop_coverage_off end
-end
-always @(
-  p3_pipe_ready_bc
-  ) begin
-  din_rdy_d2 = p3_pipe_ready_bc;
-end
-//## pipe (3) output
-always @(
-  p3_pipe_valid
-  or din_rdy_d3
-  or p3_pipe_data
-  ) begin
-  din_vld_d3 = p3_pipe_valid;
-  p3_pipe_ready = din_rdy_d3;
-  din_pd_d3[254:0] = p3_pipe_data;
-end
-//## pipe (3) assertions/testpoints
-`ifndef VIVA_PLUGIN_PIPE_DISABLE_ASSERTIONS
-wire p3_assert_clk = nvdla_op_gated_clk_fp16;
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-`ifndef SYNTHESIS
-  // VCS coverage off 
-  nv_assert_no_x #(0,1,0,"No X's allowed on control signals")      zzz_assert_no_x_99x (nvdla_op_gated_clk_fp16, `ASSERT_RESET, nvdla_core_rstn, (din_vld_d3^din_rdy_d3^din_vld_d2^din_rdy_d2)); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`endif
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-  // VCS coverage off 
-  nv_assert_hold_throughout_event_interval #(0,1,0,"valid removed before ready")      zzz_assert_hold_throughout_event_interval_100x (nvdla_op_gated_clk_fp16, `ASSERT_RESET, (din_vld_d2 && !din_rdy_d2), (din_vld_d2), (din_rdy_d2)); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`endif
-endmodule // NV_NVDLA_PDP_CORE_CAL2D_pipe_p3
-
-
-
-
-// **************************************************************************************************************
-// Generated by ::pipe -m -bc  -rand none din_pd_d4[254:0] (din_vld_d4,din_rdy_d4) <= din_pd_d3[254:0] (din_vld_d3,din_rdy_d3)
-// **************************************************************************************************************
-module NV_NVDLA_PDP_CORE_CAL2D_pipe_p4 (
-   nvdla_op_gated_clk_fp16
-  ,nvdla_core_rstn
-  ,din_pd_d3
-  ,din_rdy_d4
-  ,din_vld_d3
-  ,din_pd_d4
-  ,din_rdy_d3
-  ,din_vld_d4
-  );
-input          nvdla_op_gated_clk_fp16;
-input          nvdla_core_rstn;
-input  [254:0] din_pd_d3;
-input          din_rdy_d4;
-input          din_vld_d3;
-output [254:0] din_pd_d4;
-output         din_rdy_d3;
-output         din_vld_d4;
-reg    [254:0] din_pd_d4;
-reg            din_rdy_d3;
-reg            din_vld_d4;
-reg    [254:0] p4_pipe_data;
-reg            p4_pipe_ready;
-reg            p4_pipe_ready_bc;
-reg            p4_pipe_valid;
-//## pipe (4) valid-ready-bubble-collapse
-always @(
-  p4_pipe_ready
-  or p4_pipe_valid
-  ) begin
-  p4_pipe_ready_bc = p4_pipe_ready || !p4_pipe_valid;
-end
-always @(posedge nvdla_op_gated_clk_fp16 or negedge nvdla_core_rstn) begin
-  if (!nvdla_core_rstn) begin
-    p4_pipe_valid <= 1'b0;
-  end else begin
-  p4_pipe_valid <= (p4_pipe_ready_bc)? din_vld_d3 : 1'd1;
-  end
-end
-always @(posedge nvdla_op_gated_clk_fp16) begin
-  // VCS sop_coverage_off start
-  p4_pipe_data <= (p4_pipe_ready_bc && din_vld_d3)? din_pd_d3[254:0] : p4_pipe_data;
-  // VCS sop_coverage_off end
-end
-always @(
-  p4_pipe_ready_bc
-  ) begin
-  din_rdy_d3 = p4_pipe_ready_bc;
-end
-//## pipe (4) output
-always @(
-  p4_pipe_valid
-  or din_rdy_d4
-  or p4_pipe_data
-  ) begin
-  din_vld_d4 = p4_pipe_valid;
-  p4_pipe_ready = din_rdy_d4;
-  din_pd_d4[254:0] = p4_pipe_data;
-end
-//## pipe (4) assertions/testpoints
-`ifndef VIVA_PLUGIN_PIPE_DISABLE_ASSERTIONS
-wire p4_assert_clk = nvdla_op_gated_clk_fp16;
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-`ifndef SYNTHESIS
-  // VCS coverage off 
-  nv_assert_no_x #(0,1,0,"No X's allowed on control signals")      zzz_assert_no_x_101x (nvdla_op_gated_clk_fp16, `ASSERT_RESET, nvdla_core_rstn, (din_vld_d4^din_rdy_d4^din_vld_d3^din_rdy_d3)); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`endif
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-  // VCS coverage off 
-  nv_assert_hold_throughout_event_interval #(0,1,0,"valid removed before ready")      zzz_assert_hold_throughout_event_interval_102x (nvdla_op_gated_clk_fp16, `ASSERT_RESET, (din_vld_d3 && !din_rdy_d3), (din_vld_d3), (din_rdy_d3)); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`endif
-endmodule // NV_NVDLA_PDP_CORE_CAL2D_pipe_p4
-
-
-
-
-// **************************************************************************************************************
-// Generated by ::pipe -m -bc  -rand none fp16_mul_pad_line_in_pd_d1[114:0] (fp16_mul_pad_line_in_vld_d1,fp16_mul_pad_line_in_rdy_d1) <= fp16_mul_pad_line_in_pd_d0[114:0] (fp16_mul_pad_line_in_vld_d0,fp16_mul_pad_line_in_rdy_d0)
-// **************************************************************************************************************
-module NV_NVDLA_PDP_CORE_CAL2D_pipe_p5 (
-   nvdla_op_gated_clk_fp16
-  ,nvdla_core_rstn
-  ,fp16_mul_pad_line_in_pd_d0
-  ,fp16_mul_pad_line_in_rdy_d1
-  ,fp16_mul_pad_line_in_vld_d0
-  ,fp16_mul_pad_line_in_pd_d1
-  ,fp16_mul_pad_line_in_rdy_d0
-  ,fp16_mul_pad_line_in_vld_d1
-  );
-input          nvdla_op_gated_clk_fp16;
-input          nvdla_core_rstn;
-input  [114:0] fp16_mul_pad_line_in_pd_d0;
-input          fp16_mul_pad_line_in_rdy_d1;
-input          fp16_mul_pad_line_in_vld_d0;
-output [114:0] fp16_mul_pad_line_in_pd_d1;
-output         fp16_mul_pad_line_in_rdy_d0;
-output         fp16_mul_pad_line_in_vld_d1;
-reg    [114:0] fp16_mul_pad_line_in_pd_d1;
-reg            fp16_mul_pad_line_in_rdy_d0;
-reg            fp16_mul_pad_line_in_vld_d1;
-reg    [114:0] p5_pipe_data;
-reg            p5_pipe_ready;
-reg            p5_pipe_ready_bc;
-reg            p5_pipe_valid;
-//## pipe (5) valid-ready-bubble-collapse
-always @(
-  p5_pipe_ready
-  or p5_pipe_valid
-  ) begin
-  p5_pipe_ready_bc = p5_pipe_ready || !p5_pipe_valid;
-end
-always @(posedge nvdla_op_gated_clk_fp16 or negedge nvdla_core_rstn) begin
-  if (!nvdla_core_rstn) begin
-    p5_pipe_valid <= 1'b0;
-  end else begin
-  p5_pipe_valid <= (p5_pipe_ready_bc)? fp16_mul_pad_line_in_vld_d0 : 1'd1;
-  end
-end
-always @(posedge nvdla_op_gated_clk_fp16) begin
-  // VCS sop_coverage_off start
-  p5_pipe_data <= (p5_pipe_ready_bc && fp16_mul_pad_line_in_vld_d0)? fp16_mul_pad_line_in_pd_d0[114:0] : p5_pipe_data;
-  // VCS sop_coverage_off end
-end
-always @(
-  p5_pipe_ready_bc
-  ) begin
-  fp16_mul_pad_line_in_rdy_d0 = p5_pipe_ready_bc;
-end
-//## pipe (5) output
-always @(
-  p5_pipe_valid
-  or fp16_mul_pad_line_in_rdy_d1
-  or p5_pipe_data
-  ) begin
-  fp16_mul_pad_line_in_vld_d1 = p5_pipe_valid;
-  p5_pipe_ready = fp16_mul_pad_line_in_rdy_d1;
-  fp16_mul_pad_line_in_pd_d1[114:0] = p5_pipe_data;
-end
-//## pipe (5) assertions/testpoints
-`ifndef VIVA_PLUGIN_PIPE_DISABLE_ASSERTIONS
-wire p5_assert_clk = nvdla_op_gated_clk_fp16;
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-`ifndef SYNTHESIS
-  // VCS coverage off 
-  nv_assert_no_x #(0,1,0,"No X's allowed on control signals")      zzz_assert_no_x_103x (nvdla_op_gated_clk_fp16, `ASSERT_RESET, nvdla_core_rstn, (fp16_mul_pad_line_in_vld_d1^fp16_mul_pad_line_in_rdy_d1^fp16_mul_pad_line_in_vld_d0^fp16_mul_pad_line_in_rdy_d0)); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`endif
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-  // VCS coverage off 
-  nv_assert_hold_throughout_event_interval #(0,1,0,"valid removed before ready")      zzz_assert_hold_throughout_event_interval_104x (nvdla_op_gated_clk_fp16, `ASSERT_RESET, (fp16_mul_pad_line_in_vld_d0 && !fp16_mul_pad_line_in_rdy_d0), (fp16_mul_pad_line_in_vld_d0), (fp16_mul_pad_line_in_rdy_d0)); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`endif
-endmodule // NV_NVDLA_PDP_CORE_CAL2D_pipe_p5
-
-
-
-
-// **************************************************************************************************************
-// Generated by ::pipe -m -bc  -rand none fp16_mul_pad_line_in_pd_d2[114:0] (fp16_mul_pad_line_in_vld_d2,fp16_mul_pad_line_in_rdy_d2) <= fp16_mul_pad_line_in_pd_d1[114:0] (fp16_mul_pad_line_in_vld_d1,fp16_mul_pad_line_in_rdy_d1)
-// **************************************************************************************************************
-module NV_NVDLA_PDP_CORE_CAL2D_pipe_p6 (
-   nvdla_op_gated_clk_fp16
-  ,nvdla_core_rstn
-  ,fp16_mul_pad_line_in_pd_d1
-  ,fp16_mul_pad_line_in_rdy_d2
-  ,fp16_mul_pad_line_in_vld_d1
-  ,fp16_mul_pad_line_in_pd_d2
-  ,fp16_mul_pad_line_in_rdy_d1
-  ,fp16_mul_pad_line_in_vld_d2
-  );
-input          nvdla_op_gated_clk_fp16;
-input          nvdla_core_rstn;
-input  [114:0] fp16_mul_pad_line_in_pd_d1;
-input          fp16_mul_pad_line_in_rdy_d2;
-input          fp16_mul_pad_line_in_vld_d1;
-output [114:0] fp16_mul_pad_line_in_pd_d2;
-output         fp16_mul_pad_line_in_rdy_d1;
-output         fp16_mul_pad_line_in_vld_d2;
-reg    [114:0] fp16_mul_pad_line_in_pd_d2;
-reg            fp16_mul_pad_line_in_rdy_d1;
-reg            fp16_mul_pad_line_in_vld_d2;
-reg    [114:0] p6_pipe_data;
-reg            p6_pipe_ready;
-reg            p6_pipe_ready_bc;
-reg            p6_pipe_valid;
-//## pipe (6) valid-ready-bubble-collapse
-always @(
-  p6_pipe_ready
-  or p6_pipe_valid
-  ) begin
-  p6_pipe_ready_bc = p6_pipe_ready || !p6_pipe_valid;
-end
-always @(posedge nvdla_op_gated_clk_fp16 or negedge nvdla_core_rstn) begin
-  if (!nvdla_core_rstn) begin
-    p6_pipe_valid <= 1'b0;
-  end else begin
-  p6_pipe_valid <= (p6_pipe_ready_bc)? fp16_mul_pad_line_in_vld_d1 : 1'd1;
-  end
-end
-always @(posedge nvdla_op_gated_clk_fp16) begin
-  // VCS sop_coverage_off start
-  p6_pipe_data <= (p6_pipe_ready_bc && fp16_mul_pad_line_in_vld_d1)? fp16_mul_pad_line_in_pd_d1[114:0] : p6_pipe_data;
-  // VCS sop_coverage_off end
-end
-always @(
-  p6_pipe_ready_bc
-  ) begin
-  fp16_mul_pad_line_in_rdy_d1 = p6_pipe_ready_bc;
-end
-//## pipe (6) output
-always @(
-  p6_pipe_valid
-  or fp16_mul_pad_line_in_rdy_d2
-  or p6_pipe_data
-  ) begin
-  fp16_mul_pad_line_in_vld_d2 = p6_pipe_valid;
-  p6_pipe_ready = fp16_mul_pad_line_in_rdy_d2;
-  fp16_mul_pad_line_in_pd_d2[114:0] = p6_pipe_data;
-end
-//## pipe (6) assertions/testpoints
-`ifndef VIVA_PLUGIN_PIPE_DISABLE_ASSERTIONS
-wire p6_assert_clk = nvdla_op_gated_clk_fp16;
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-`ifndef SYNTHESIS
-  // VCS coverage off 
-  nv_assert_no_x #(0,1,0,"No X's allowed on control signals")      zzz_assert_no_x_105x (nvdla_op_gated_clk_fp16, `ASSERT_RESET, nvdla_core_rstn, (fp16_mul_pad_line_in_vld_d2^fp16_mul_pad_line_in_rdy_d2^fp16_mul_pad_line_in_vld_d1^fp16_mul_pad_line_in_rdy_d1)); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`endif
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-  // VCS coverage off 
-  nv_assert_hold_throughout_event_interval #(0,1,0,"valid removed before ready")      zzz_assert_hold_throughout_event_interval_106x (nvdla_op_gated_clk_fp16, `ASSERT_RESET, (fp16_mul_pad_line_in_vld_d1 && !fp16_mul_pad_line_in_rdy_d1), (fp16_mul_pad_line_in_vld_d1), (fp16_mul_pad_line_in_rdy_d1)); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`endif
-endmodule // NV_NVDLA_PDP_CORE_CAL2D_pipe_p6
-
-
-
-
-// **************************************************************************************************************
-// Generated by ::pipe -m -bc  -rand none fp16_mul_pad_line_in_pd_d3[114:0] (fp16_mul_pad_line_in_vld_d3,fp16_mul_pad_line_in_rdy_d3) <= fp16_mul_pad_line_in_pd_d2[114:0] (fp16_mul_pad_line_in_vld_d2,fp16_mul_pad_line_in_rdy_d2)
-// **************************************************************************************************************
-module NV_NVDLA_PDP_CORE_CAL2D_pipe_p7 (
-   nvdla_op_gated_clk_fp16
-  ,nvdla_core_rstn
-  ,fp16_mul_pad_line_in_pd_d2
-  ,fp16_mul_pad_line_in_rdy_d3
-  ,fp16_mul_pad_line_in_vld_d2
-  ,fp16_mul_pad_line_in_pd_d3
-  ,fp16_mul_pad_line_in_rdy_d2
-  ,fp16_mul_pad_line_in_vld_d3
-  );
-input          nvdla_op_gated_clk_fp16;
-input          nvdla_core_rstn;
-input  [114:0] fp16_mul_pad_line_in_pd_d2;
-input          fp16_mul_pad_line_in_rdy_d3;
-input          fp16_mul_pad_line_in_vld_d2;
-output [114:0] fp16_mul_pad_line_in_pd_d3;
-output         fp16_mul_pad_line_in_rdy_d2;
-output         fp16_mul_pad_line_in_vld_d3;
-reg    [114:0] fp16_mul_pad_line_in_pd_d3;
-reg            fp16_mul_pad_line_in_rdy_d2;
-reg            fp16_mul_pad_line_in_vld_d3;
-reg    [114:0] p7_pipe_data;
-reg            p7_pipe_ready;
-reg            p7_pipe_ready_bc;
-reg            p7_pipe_valid;
-//## pipe (7) valid-ready-bubble-collapse
-always @(
-  p7_pipe_ready
-  or p7_pipe_valid
-  ) begin
-  p7_pipe_ready_bc = p7_pipe_ready || !p7_pipe_valid;
-end
-always @(posedge nvdla_op_gated_clk_fp16 or negedge nvdla_core_rstn) begin
-  if (!nvdla_core_rstn) begin
-    p7_pipe_valid <= 1'b0;
-  end else begin
-  p7_pipe_valid <= (p7_pipe_ready_bc)? fp16_mul_pad_line_in_vld_d2 : 1'd1;
-  end
-end
-always @(posedge nvdla_op_gated_clk_fp16) begin
-  // VCS sop_coverage_off start
-  p7_pipe_data <= (p7_pipe_ready_bc && fp16_mul_pad_line_in_vld_d2)? fp16_mul_pad_line_in_pd_d2[114:0] : p7_pipe_data;
-  // VCS sop_coverage_off end
-end
-always @(
-  p7_pipe_ready_bc
-  ) begin
-  fp16_mul_pad_line_in_rdy_d2 = p7_pipe_ready_bc;
-end
-//## pipe (7) output
-always @(
-  p7_pipe_valid
-  or fp16_mul_pad_line_in_rdy_d3
-  or p7_pipe_data
-  ) begin
-  fp16_mul_pad_line_in_vld_d3 = p7_pipe_valid;
-  p7_pipe_ready = fp16_mul_pad_line_in_rdy_d3;
-  fp16_mul_pad_line_in_pd_d3[114:0] = p7_pipe_data;
-end
-//## pipe (7) assertions/testpoints
-`ifndef VIVA_PLUGIN_PIPE_DISABLE_ASSERTIONS
-wire p7_assert_clk = nvdla_op_gated_clk_fp16;
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-`ifndef SYNTHESIS
-  // VCS coverage off 
-  nv_assert_no_x #(0,1,0,"No X's allowed on control signals")      zzz_assert_no_x_107x (nvdla_op_gated_clk_fp16, `ASSERT_RESET, nvdla_core_rstn, (fp16_mul_pad_line_in_vld_d3^fp16_mul_pad_line_in_rdy_d3^fp16_mul_pad_line_in_vld_d2^fp16_mul_pad_line_in_rdy_d2)); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`endif
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass disable_block NoWidthInBasedNum-ML 
-// spyglass disable_block STARC-2.10.3.2a 
-// spyglass disable_block STARC05-2.1.3.1 
-// spyglass disable_block STARC-2.1.4.6 
-// spyglass disable_block W116 
-// spyglass disable_block W154 
-// spyglass disable_block W239 
-// spyglass disable_block W362 
-// spyglass disable_block WRN_58 
-// spyglass disable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`ifdef ASSERT_ON
-`ifdef FV_ASSERT_ON
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef SYNTHESIS
-`define ASSERT_RESET nvdla_core_rstn
-`else
-`ifdef ASSERT_OFF_RESET_IS_X
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b0 : nvdla_core_rstn)
-`else
-`define ASSERT_RESET ((1'bx === nvdla_core_rstn) ? 1'b1 : nvdla_core_rstn)
-`endif // ASSERT_OFF_RESET_IS_X
-`endif // SYNTHESIS
-`endif // FV_ASSERT_ON
-  // VCS coverage off 
-  nv_assert_hold_throughout_event_interval #(0,1,0,"valid removed before ready")      zzz_assert_hold_throughout_event_interval_108x (nvdla_op_gated_clk_fp16, `ASSERT_RESET, (fp16_mul_pad_line_in_vld_d2 && !fp16_mul_pad_line_in_rdy_d2), (fp16_mul_pad_line_in_vld_d2), (fp16_mul_pad_line_in_rdy_d2)); // spyglass disable W504 SelfDeterminedExpr-ML 
-  // VCS coverage on
-`undef ASSERT_RESET
-`endif // ASSERT_ON
-`ifdef SPYGLASS_ASSERT_ON
-`else
-// spyglass enable_block NoWidthInBasedNum-ML 
-// spyglass enable_block STARC-2.10.3.2a 
-// spyglass enable_block STARC05-2.1.3.1 
-// spyglass enable_block STARC-2.1.4.6 
-// spyglass enable_block W116 
-// spyglass enable_block W154 
-// spyglass enable_block W239 
-// spyglass enable_block W362 
-// spyglass enable_block WRN_58 
-// spyglass enable_block WRN_61 
-`endif // SPYGLASS_ASSERT_ON
-`endif
-endmodule // NV_NVDLA_PDP_CORE_CAL2D_pipe_p7
-
 
 

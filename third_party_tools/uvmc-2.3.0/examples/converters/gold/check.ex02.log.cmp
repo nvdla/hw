@@ -1,0 +1,125 @@
+# UVM_INFO @ 0: reporter [RNTST] Running test ...
+# ----------------------------------------------------------------
+# UVMC-2.3
+# (C) 2009-2014 Mentor Graphics Corporation
+# ----------------------------------------------------------------
+# Registering SV-side 'env.prod.out' and lookup string 'stimulus' for later connection with SC
+# Connected SC-side 'sc_main/env/cons/in' to SV-side 'env.prod.out'
+# UVM_INFO producer.sv(63) @ 0: env.prod [PRODUCER/PKT/SEND_REQ] SV producer request:
+#    cmd:READ addr:fcf21086 data:'{-119, 35, -28, 54, -23, 89, 5, -104} extra_int:06b58d4e
+# 0 s SC consumer executing packet:
+#   '{cmd:1 addr:fcf21086 data:'{89, 23, e4, 36, e9, 59, 5, 98} extra_int:6b58d4e }
+# 1 ns SC consumer packet executed:
+#   '{cmd:1 addr:30def79 data:'{76, dc, 1b, c9, 16, a6, fa, 67} extra_int:6b58d4e }
+# UVM_INFO producer.sv(68) @ 1000: env.prod [PRODUCER/PKT/RECV_RSP] SV producer response:
+#    cmd:READ addr:030def79 data:'{118, -36, 27, -55, 22, -90, -6, 103} extra_int:06b58d4e
+# 
+# UVM_INFO producer.sv(63) @ 1000: env.prod [PRODUCER/PKT/SEND_REQ] SV producer request:
+#    cmd:NOOP addr:3350492a data:'{-73} extra_int:df2e2ab0
+# 1 ns SC consumer executing packet:
+#   '{cmd:2 addr:3350492a data:'{b7} extra_int:df2e2ab0 }
+# 2 ns SC consumer packet executed:
+#   '{cmd:2 addr:ccafb6d5 data:'{48} extra_int:df2e2ab0 }
+# UVM_INFO producer.sv(68) @ 2000: env.prod [PRODUCER/PKT/RECV_RSP] SV producer response:
+#    cmd:NOOP addr:ccafb6d5 data:'{72} extra_int:df2e2ab0
+# 
+# UVM_INFO producer.sv(63) @ 2000: env.prod [PRODUCER/PKT/SEND_REQ] SV producer request:
+#    cmd:NOOP addr:d4af0f08 data:'{-34} extra_int:77d571d9
+# 2 ns SC consumer executing packet:
+#   '{cmd:2 addr:d4af0f08 data:'{de} extra_int:77d571d9 }
+# 3 ns SC consumer packet executed:
+#   '{cmd:2 addr:2b50f0f7 data:'{21} extra_int:77d571d9 }
+# UVM_INFO producer.sv(68) @ 3000: env.prod [PRODUCER/PKT/RECV_RSP] SV producer response:
+#    cmd:NOOP addr:2b50f0f7 data:'{33} extra_int:77d571d9
+# 
+# UVM_INFO producer.sv(63) @ 3000: env.prod [PRODUCER/PKT/SEND_REQ] SV producer request:
+#    cmd:READ addr:d6e97792 data:'{-106, -116, 0, 11} extra_int:15f17b6f
+# 3 ns SC consumer executing packet:
+#   '{cmd:1 addr:d6e97792 data:'{96, 8c, 0, b} extra_int:15f17b6f }
+# 4 ns SC consumer packet executed:
+#   '{cmd:1 addr:2916886d data:'{69, 73, ff, f4} extra_int:15f17b6f }
+# UVM_INFO producer.sv(68) @ 4000: env.prod [PRODUCER/PKT/RECV_RSP] SV producer response:
+#    cmd:READ addr:2916886d data:'{105, 115, -1, -12} extra_int:15f17b6f
+# 
+# UVM_INFO producer.sv(63) @ 4000: env.prod [PRODUCER/PKT/SEND_REQ] SV producer request:
+#    cmd:READ addr:54ff1fe9 data:'{123} extra_int:1222a645
+# 4 ns SC consumer executing packet:
+#   '{cmd:1 addr:54ff1fe9 data:'{7b} extra_int:1222a645 }
+# 5 ns SC consumer packet executed:
+#   '{cmd:1 addr:ab00e016 data:'{84} extra_int:1222a645 }
+# UVM_INFO producer.sv(68) @ 5000: env.prod [PRODUCER/PKT/RECV_RSP] SV producer response:
+#    cmd:READ addr:ab00e016 data:'{-124} extra_int:1222a645
+# 
+# UVM_INFO producer.sv(63) @ 5000: env.prod [PRODUCER/PKT/SEND_REQ] SV producer request:
+#    cmd:READ addr:9a5e39dc data:'{39, -106, 124, -37, 19, -56, 80} extra_int:6d5ad12c
+# 5 ns SC consumer executing packet:
+#   '{cmd:1 addr:9a5e39dc data:'{27, 96, 7c, db, 13, c8, 50} extra_int:6d5ad12c }
+# 6 ns SC consumer packet executed:
+#   '{cmd:1 addr:65a1c623 data:'{d8, 69, 83, 24, ec, 37, af} extra_int:6d5ad12c }
+# UVM_INFO producer.sv(68) @ 6000: env.prod [PRODUCER/PKT/RECV_RSP] SV producer response:
+#    cmd:READ addr:65a1c623 data:'{-40, 105, -125, 36, -20, 55, -81} extra_int:6d5ad12c
+# 
+# UVM_INFO producer.sv(63) @ 6000: env.prod [PRODUCER/PKT/SEND_REQ] SV producer request:
+#    cmd:WRITE addr:ee4ca9a1 data:'{72, 22, -1, -128, -32, 21, -50, 35} extra_int:5c2b25cb
+# 6 ns SC consumer executing packet:
+#   '{cmd:0 addr:ee4ca9a1 data:'{48, 16, ff, 80, e0, 15, ce, 23} extra_int:5c2b25cb }
+# 7 ns SC consumer packet executed:
+#   '{cmd:0 addr:11b3565e data:'{b7, e9, 0, 7f, 1f, ea, 31, dc} extra_int:5c2b25cb }
+# UVM_INFO producer.sv(68) @ 7000: env.prod [PRODUCER/PKT/RECV_RSP] SV producer response:
+#    cmd:WRITE addr:11b3565e data:'{-73, -23, 0, 127, 31, -22, 49, -36} extra_int:5c2b25cb
+# 
+# UVM_INFO producer.sv(63) @ 7000: env.prod [PRODUCER/PKT/SEND_REQ] SV producer request:
+#    cmd:READ addr:4cbc970d data:'{-4, -53, 31, 74, 116, 98, -80} extra_int:5c2c2714
+# 7 ns SC consumer executing packet:
+#   '{cmd:1 addr:4cbc970d data:'{fc, cb, 1f, 4a, 74, 62, b0} extra_int:5c2c2714 }
+# 8 ns SC consumer packet executed:
+#   '{cmd:1 addr:b34368f2 data:'{3, 34, e0, b5, 8b, 9d, 4f} extra_int:5c2c2714 }
+# UVM_INFO producer.sv(68) @ 8000: env.prod [PRODUCER/PKT/RECV_RSP] SV producer response:
+#    cmd:READ addr:b34368f2 data:'{3, 52, -32, -75, -117, -99, 79} extra_int:5c2c2714
+# 
+# UVM_INFO producer.sv(63) @ 8000: env.prod [PRODUCER/PKT/SEND_REQ] SV producer request:
+#    cmd:READ addr:2dc92900 data:'{-13, 103, 125, 45, -20, -30, -36, -101, -51, 122} extra_int:5f300459
+# 8 ns SC consumer executing packet:
+#   '{cmd:1 addr:2dc92900 data:'{f3, 67, 7d, 2d, ec, e2, dc, 9b, cd, 7a} extra_int:5f300459 }
+# 9 ns SC consumer packet executed:
+#   '{cmd:1 addr:d236d6ff data:'{c, 98, 82, d2, 13, 1d, 23, 64, 32, 85} extra_int:5f300459 }
+# UVM_INFO producer.sv(68) @ 9000: env.prod [PRODUCER/PKT/RECV_RSP] SV producer response:
+#    cmd:READ addr:d236d6ff data:'{12, -104, -126, -46, 19, 29, 35, 100, 50, -123} extra_int:5f300459
+# 
+# UVM_INFO producer.sv(63) @ 9000: env.prod [PRODUCER/PKT/SEND_REQ] SV producer request:
+#    cmd:READ addr:6d5e11bd data:'{-97, 31} extra_int:9db6b81d
+# 9 ns SC consumer executing packet:
+#   '{cmd:1 addr:6d5e11bd data:'{9f, 1f} extra_int:9db6b81d }
+# 10 ns SC consumer packet executed:
+#   '{cmd:1 addr:92a1ee42 data:'{60, e0} extra_int:9db6b81d }
+# UVM_INFO producer.sv(68) @ 10000: env.prod [PRODUCER/PKT/RECV_RSP] SV producer response:
+#    cmd:READ addr:92a1ee42 data:'{96, -32} extra_int:9db6b81d
+# 
+# UVM_INFO producer.sv(81) @ 10000: env.prod [PRODUCER/END_TEST] Dropping objection to ending the test
+# UVM_INFO uvm_objection.svh(1268) @ 10000: reporter [TEST_DONE] 'run' phase is ready to proceed to the 'extract' phase
+# 
+# --- UVM Report catcher Summary ---
+# 
+# 
+# Number of demoted UVM_FATAL reports  :    0
+# Number of demoted UVM_ERROR reports  :    0
+# Number of demoted UVM_WARNING reports:    0
+# Number of caught UVM_FATAL reports   :    1
+# Number of caught UVM_ERROR reports   :    0
+# Number of caught UVM_WARNING reports :    0
+# 
+# --- UVM Report Summary ---
+# 
+# ** Report counts by severity
+# UVM_INFO :   23
+# UVM_WARNING :    0
+# UVM_ERROR :    0
+# UVM_FATAL :    0
+# ** Report counts by id
+# [PRODUCER/END_TEST]     1
+# [PRODUCER/PKT/RECV_RSP]    10
+# [PRODUCER/PKT/SEND_REQ]    10
+# [RNTST]     1
+# [TEST_DONE]     1
+# ** Note: $finish    : uvm_root.svh(430)
+#    Time: 10 ns  Iteration: 55  Instance: /sv_main

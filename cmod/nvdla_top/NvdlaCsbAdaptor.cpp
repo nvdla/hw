@@ -9,7 +9,7 @@
 // File Name: NvdlaCsbAdaptor.cpp
 
 #include "NvdlaCsbAdaptor.h"
-#include "arnvdla.h"
+#include "opendla.h"
 #include "log.h"
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>

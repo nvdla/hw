@@ -8,6 +8,7 @@
 
 // File Name: NV_NVDLA_SDP_REG_dual.v
 
+#include "NV_NVDLA_SDP_define.h"
 module NV_NVDLA_SDP_REG_dual (
    reg_rd_data
   ,reg_offset
@@ -213,11 +214,11 @@ output [5:0]  ew_mul_cvt_truncate;
 output [31:0] ew_mul_operand;
 output [9:0]  ew_truncate;
 output [31:0] dst_base_addr_high;
-output [26:0] dst_base_addr_low;
-output [26:0] dst_batch_stride;
+output [31:0] dst_base_addr_low;
+output [31:0] dst_batch_stride;
 output        dst_ram_type;
-output [26:0] dst_line_stride;
-output [26:0] dst_surface_stride;
+output [31:0] dst_line_stride;
+output [31:0] dst_surface_stride;
 output [4:0]  batch_number;
 output        flying_mode;
 output        nan_to_zero;
@@ -282,11 +283,11 @@ reg    [31:0] cvt_offset;
 reg    [15:0] cvt_scale;
 reg     [5:0] cvt_shift;
 reg    [31:0] dst_base_addr_high;
-reg    [26:0] dst_base_addr_low;
-reg    [26:0] dst_batch_stride;
-reg    [26:0] dst_line_stride;
+reg    [31:0] dst_base_addr_low;
+reg    [31:0] dst_batch_stride;
+reg    [31:0] dst_line_stride;
 reg           dst_ram_type;
-reg    [26:0] dst_surface_stride;
+reg    [31:0] dst_surface_stride;
 reg     [1:0] ew_alu_algo;
 reg           ew_alu_bypass;
 reg           ew_alu_cvt_bypass;
@@ -404,11 +405,11 @@ assign nvdla_sdp_d_dp_ew_mul_cvt_truncate_value_0_out[31:0] = { 26'b0, ew_mul_cv
 assign nvdla_sdp_d_dp_ew_mul_src_value_0_out[31:0] = { ew_mul_operand };
 assign nvdla_sdp_d_dp_ew_truncate_value_0_out[31:0] = { 22'b0, ew_truncate };
 assign nvdla_sdp_d_dst_base_addr_high_0_out[31:0] = { dst_base_addr_high };
-assign nvdla_sdp_d_dst_base_addr_low_0_out[31:0] = { dst_base_addr_low, 5'b0 };
-assign nvdla_sdp_d_dst_batch_stride_0_out[31:0] = { dst_batch_stride, 5'b0 };
+assign nvdla_sdp_d_dst_base_addr_low_0_out[31:0] = { dst_base_addr_low};
+assign nvdla_sdp_d_dst_batch_stride_0_out[31:0] = { dst_batch_stride};
 assign nvdla_sdp_d_dst_dma_cfg_0_out[31:0] = { 31'b0, dst_ram_type };
-assign nvdla_sdp_d_dst_line_stride_0_out[31:0] = { dst_line_stride, 5'b0 };
-assign nvdla_sdp_d_dst_surface_stride_0_out[31:0] = { dst_surface_stride, 5'b0 };
+assign nvdla_sdp_d_dst_line_stride_0_out[31:0] = { dst_line_stride};
+assign nvdla_sdp_d_dst_surface_stride_0_out[31:0] = { dst_surface_stride};
 assign nvdla_sdp_d_feature_mode_cfg_0_out[31:0] = { 19'b0, batch_number, 4'b0, nan_to_zero, winograd, output_dst, flying_mode };
 assign nvdla_sdp_d_op_enable_0_out[31:0] = { 31'b0, op_en };
 assign nvdla_sdp_d_perf_enable_0_out[31:0] = { 28'b0, perf_nan_inf_count_en, perf_sat_en, perf_lut_en, perf_dma_en };
@@ -640,7 +641,7 @@ end
 // Register flop declarations
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
-    cvt_offset[31:0] <= 32'b00000000000000000000000000000000;
+    cvt_offset[31:0] <= 32'h0;
     cvt_scale[15:0] <= 16'b0000000000000000;
     cvt_shift[5:0] <= 6'b000000;
     channel[12:0] <= 13'b0000000000000;
@@ -674,10 +675,10 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     bs_mul_operand[15:0] <= 16'b0000000000000000;
     ew_alu_cvt_bypass <= 1'b0;
     ew_alu_src <= 1'b0;
-    ew_alu_cvt_offset[31:0] <= 32'b00000000000000000000000000000000;
+    ew_alu_cvt_offset[31:0] <= 32'h0;
     ew_alu_cvt_scale[15:0] <= 16'b0000000000000000;
     ew_alu_cvt_truncate[5:0] <= 6'b000000;
-    ew_alu_operand[31:0] <= 32'b00000000000000000000000000000000;
+    ew_alu_operand[31:0] <= 32'h0;
     ew_alu_algo[1:0] <= 2'b00;
     ew_alu_bypass <= 1'b0;
     ew_bypass <= 1'b0;
@@ -686,17 +687,17 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     ew_mul_prelu <= 1'b0;
     ew_mul_cvt_bypass <= 1'b0;
     ew_mul_src <= 1'b0;
-    ew_mul_cvt_offset[31:0] <= 32'b00000000000000000000000000000000;
+    ew_mul_cvt_offset[31:0] <= 32'h0;
     ew_mul_cvt_scale[15:0] <= 16'b0000000000000000;
     ew_mul_cvt_truncate[5:0] <= 6'b000000;
-    ew_mul_operand[31:0] <= 32'b00000000000000000000000000000000;
+    ew_mul_operand[31:0] <= 32'h0;
     ew_truncate[9:0] <= 10'b0000000000;
-    dst_base_addr_high[31:0] <= 32'b00000000000000000000000000000000;
-    dst_base_addr_low[26:0] <= 27'b000000000000000000000000000;
-    dst_batch_stride[26:0] <= 27'b000000000000000000000000000;
+    dst_base_addr_high[31:0] <= 32'h0;
+    dst_base_addr_low[31:0] <= {(32){1'b0}};
+    dst_batch_stride[31:0] <= {(32){1'b0}};
     dst_ram_type <= 1'b0;
-    dst_line_stride[26:0] <= 27'b000000000000000000000000000;
-    dst_surface_stride[26:0] <= 27'b000000000000000000000000000;
+    dst_line_stride[31:0] <= {(32){1'b0}};
+    dst_surface_stride[31:0] <= {(32){1'b0}};
     batch_number[4:0] <= 5'b00000;
     flying_mode <= 1'b0;
     nan_to_zero <= 1'b0;
@@ -969,12 +970,12 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 
   // Register: NVDLA_SDP_D_DST_BASE_ADDR_LOW_0    Field: dst_base_addr_low
   if (nvdla_sdp_d_dst_base_addr_low_0_wren) begin
-    dst_base_addr_low[26:0] <= reg_wr_data[31:5];
+    dst_base_addr_low[31:0] <= reg_wr_data[31:0];
   end
 
   // Register: NVDLA_SDP_D_DST_BATCH_STRIDE_0    Field: dst_batch_stride
   if (nvdla_sdp_d_dst_batch_stride_0_wren) begin
-    dst_batch_stride[26:0] <= reg_wr_data[31:5];
+    dst_batch_stride[31:0] <= reg_wr_data[31:0];
   end
 
   // Register: NVDLA_SDP_D_DST_DMA_CFG_0    Field: dst_ram_type
@@ -984,12 +985,12 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 
   // Register: NVDLA_SDP_D_DST_LINE_STRIDE_0    Field: dst_line_stride
   if (nvdla_sdp_d_dst_line_stride_0_wren) begin
-    dst_line_stride[26:0] <= reg_wr_data[31:5];
+    dst_line_stride[31:0] <= reg_wr_data[31:0];
   end
 
   // Register: NVDLA_SDP_D_DST_SURFACE_STRIDE_0    Field: dst_surface_stride
   if (nvdla_sdp_d_dst_surface_stride_0_wren) begin
-    dst_surface_stride[26:0] <= reg_wr_data[31:5];
+    dst_surface_stride[31:0] <= reg_wr_data[31:0];
   end
 
   // Register: NVDLA_SDP_D_FEATURE_MODE_CFG_0    Field: batch_number

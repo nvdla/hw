@@ -24,7 +24,7 @@
 // #include "BdmaCore.h"
 
 
-#define BDMA_CONFIG_FIFO_DEPTH      NVDLA_BDMA_STATUS_0_FREE_SLOT_DEFAULT   // Defined as 0x14 in spec
+#define BDMA_CONFIG_FIFO_DEPTH      (2*NVDLA_BDMA_STATUS_0_FREE_SLOT_DEFAULT)   // Defined as 0x14 in spec
 #define MAX_MEM_TRANSACTION_SIZE    256
 #define MEM_TRANSACTION_ATOM_SIZE   32
 

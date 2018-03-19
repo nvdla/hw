@@ -21,7 +21,7 @@
 #include <cstdlib> // for std::abort()
 #endif
 
-// FIXME: there're 2 strrchr, might not good for performance;
+// There're 2 strrchr, might not good for performance;
 #define __FILENAME__ (strrchr(__FILE__, '/') ? (strrchr(__FILE__, '/') + 1):__FILE__)
 #define MSG_BUF_SIZE    2048
 
@@ -45,7 +45,7 @@
                                                 char msg_buf[MSG_BUF_SIZE]; \
                                                 int pos = snprintf(msg_buf, MSG_BUF_SIZE, "%d:", __LINE__); \
                                                 snprintf(msg_buf + pos, MSG_BUF_SIZE - pos, __VA_ARGS__); \
-                                                SC_REPORT_INFO(__FILENAME__, msg_buf ); \
+                                                SC_REPORT_FATAL(__FILENAME__, msg_buf ); \
                                             } while(0)
 #define FAIL(args)                          FAILInternal args
 #define Fail(...)                           FAILInternal(__VA_ARGS__)

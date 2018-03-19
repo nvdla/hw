@@ -9,10 +9,9 @@
 // File Name: NV_NVDLA_bdma_bdma_gen.h
 
 #include "NV_NVDLA_bdma.h"
+#include "log.h"
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
-#include "log.h"
-
 
 USING_SCSIM_NAMESPACE(cmod)
 USING_SCSIM_NAMESPACE(clib)

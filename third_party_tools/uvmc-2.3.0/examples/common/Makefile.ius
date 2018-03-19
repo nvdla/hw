@@ -1,0 +1,97 @@
+# 
+## -------------------------------------------------------------
+##    Copyright 2010 Cadence.
+##    All Rights Reserved Worldwide
+## 
+##    Licensed under the Apache License, Version 2.0 (the
+##    "License"); you may not use this file except in
+##    compliance with the License.  You may obtain a copy of
+##    the License at
+## 
+##        http://www.apache.org/licenses/LICENSE-2.0
+## 
+##    Unless required by applicable law or agreed to in
+##    writing, software distributed under the License is
+##    distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+##    CONDITIONS OF ANY KIND, either express or implied.  See
+##    the License for the specific language governing
+##    permissions and limitations under the License.
+## -------------------------------------------------------------
+## 
+
+x: all
+
+#
+# Include file for IUS Makefiles
+#
+
+UVM_VERBOSITY = UVM_HIGH
+
+#
+# Note that "-access rw" have an adverse impact on performance
+# and should not be used unless necessary.
+#
+# They are used here because they are required by some examples
+# (backdoor register accesses).
+#
+
+
+TEST = /usr/bin/test
+N_ERRS = 0
+N_FATALS = 0
+
+ifeq ($(BITS),64)
+IUS_BITS=-64
+else
+IUS_BITS=
+endif
+
+#IUS = irun -access rw -uvmhome $(UVM_HOME) $(UVM_HOME)/src/dpi/uvm_dpi.cc \
+#    +UVM_VERBOSITY=$(UVM_VERBOSITY) -quiet 
+#    -uvmnoautocompile \
+#    -dpiheader dpiexpheader.c \
+#    -incdir $(UVM_HOME)/src \
+#    $(UVM_HOME)/src/dpi/uvm_dpi.cc \
+
+IUS = irun \
+    -Wcxx -fPIC \
+    -dpi \
+    -g \
+    -sysc \
+    -scsynceverydelta on \
+    -uvmnocndsextra \
+    -tlm2 \
+    -access rw \
+    $(IUS_BITS) \
+    -DSC_INCLUDE_DYNAMIC_PROCESSES \
+    -DINCA \
+    -define INCA \
+    -uvmhome $(UVM_HOME) \
+    \
+    -incdir $(UVMC_HOME)/src/connect/sv \
+    $(UVMC_HOME)/src/connect/sv/uvmc_pkg.sv \
+    \
+    -I$(IUS_HOME)/tools/systemc/include/tlm2/tlm_utils \
+    -I$(UVMC_HOME)/src/connect/sc \
+    $(UVMC_HOME)/src/connect/sc/uvmc.cpp \
+    \
+    -I.
+    +UVM_VERBOSITY=$(UVM_VERBOSITY) \
+    -l irun.log
+
+CHECK = \
+    $(TEST) \( `grep -c 'UVM_ERROR :    $(N_ERRS)' irun.log` -eq 1 \) -a \
+         \( `grep -c 'UVM_FATAL :    $(N_FATALS)' irun.log` -eq 1 \)
+
+CHECK_SC = \
+        $(TEST) \( `grep -ci 'ERROR' irun.log` -eq 0 \) -a \
+                     \( `grep -ci 'FATAL' irun.log` -eq 0 \)
+
+check_uvm_home:
+ifndef UVM_HOME
+	@echo "ERROR: UVM_HOME environment variable is not defined"
+	abort-mission
+endif
+
+clean:
+	rm -rf *~ *.cmp core csrc INCA* vc_hdrs.h ucli.key *.log .log irun.key

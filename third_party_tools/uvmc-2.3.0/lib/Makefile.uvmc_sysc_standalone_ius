@@ -1,0 +1,60 @@
+# ============================================================================
+#  @(#) $Id: Makefile.uvmc_sysc_standalone_ius 1413 2015-03-05 21:50:29Z jstickle $
+# ============================================================================
+
+#    //_______________________
+#   // Mentor Graphics, Corp. \_______________________________________
+#  //                                                               //
+# //   (C) Copyright, Mentor Graphics, Corp. 2003-2014              //
+# //   All Rights Reserved                                          //
+# //                                                                //
+# //    Licensed under the Apache License, Version 2.0 (the         //
+# //    "License"); you may not use this file except in             //
+# //    compliance with the License.  You may obtain a copy of      //
+# //    the License at                                              //
+# //                                                                //
+# //        http://www.apache.org/licenses/LICENSE-2.0              //
+# //                                                                //
+# //    Unless required by applicable law or agreed to in           //
+# //    writing, software distributed under the License is          //
+# //    distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR      //
+# //    CONDITIONS OF ANY KIND, either express or implied.  See     //
+# //    the License for the specific language governing            //
+# //    permissions and limitations under the License.            //
+# //-------------------------------------------------------------//
+
+# This Makefile adds support for an OSCI SystemC version of UVM-Connect SC for
+# uses with a non-Questa OSCI SystemC kernel. See comments in
+# Makefile.uvmc_sysc_standalone for more details.
+
+all: build
+
+BITS ?= 64
+
+include common.mk
+
+LIB = ../lib
+LIBOBJ = $(LIB)/ius/$(UVMC_BUILD_PLATFORM)
+
+INCL += \
+    -DNCSC \
+    -I$(IUS_HOME)/tools/systemc/include \
+    -I$(IUS_HOME)/tools/systemc/include/tlm2 \
+    -I$(IUS_HOME)/tools/include \
+    -I$(UVM_HOME)/src/dpi
+
+build: $(LIBOBJ)/uvmc.build_imprint
+	rm -rf modelsim.ini # In case left over from Questa build
+	$(MAKE) -f Makefile.uvmc_sysc_standalone build \
+		LIBOBJ="$(LIBOBJ)" INCL="$(INCL)"
+
+$(LIBOBJ)/uvmc.build_imprint:
+	mkdir -p $(LIBOBJ)
+	BITS=$(BITS); export BITS; perl ../examples/common/xlcheck.pl env_ius | grep ius
+	BITS=$(BITS); export BITS; perl ../examples/common/xlcheck.pl env_gcc | grep gcc
+	BITS=$(BITS); export BITS; perl ../examples/common/xlcheck.pl env_ius | grep ius > $@
+	BITS=$(BITS); export BITS; perl ../examples/common/xlcheck.pl env_gcc | grep gcc >> $@
+
+clean:
+	$(MAKE) -f Makefile.uvmc_sysc_standalone clean \
+		LIBOBJ="$(LIBOBJ)" INCL="$(INCL)"

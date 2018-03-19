@@ -1,0 +1,29 @@
+# 10 ns [PRODUCER/CONFIG/QUERY] ADDR_WIDTH=64 DATA_WIDTH=128 LOCK_TYPE=0 CACHE_TYPE=0 PROT_TYPE=0
+# 10 ns [PRODUCER/CONFIG/QUERY] ADDR_WIDTH=64 DATA_WIDTH=128 LOCK_TYPE=2 CACHE_TYPE=14 PROT_TYPE=6
+# 10 ns [PRODUCER/GP/SEND] cmd: 1 addr:0 PAYLOAD_NUM_BYTES:2097152 NUM_TRANSACTIONS:80
+# 
+# 810 ns [PRODUCER/ENDING] 
+# expectedChecksum=4fb000ca8 == actualChecksum=4fb000ca8 test PASSED !
+# UVM_INFO uvmc_commands.sv(373) @ 810000: reporter [TRACE/UVMC_CMD/OBJECTION] op=DROP name=run contxt= description= count=1 sv_contxt=uvm_top
+# UVM_INFO uvm_objection.svh(1268) @ 810000: reporter [TEST_DONE] 'run' phase is ready to proceed to the 'extract' phase
+# 
+# --- UVM Report catcher Summary ---
+# 
+# 
+# Number of demoted UVM_FATAL reports  :    0
+# Number of demoted UVM_ERROR reports  :    0
+# Number of demoted UVM_WARNING reports:    0
+# Number of caught UVM_FATAL reports   :    0
+# Number of caught UVM_ERROR reports   :    0
+# Number of caught UVM_WARNING reports :    0
+# 
+# --- UVM Report Summary ---
+# 
+# ** Report counts by severity
+# UVM_INFO :
+# UVM_WARNING :    0
+# UVM_ERROR :    0
+# UVM_FATAL :    0
+# ** Report counts by id
+# [RNTST]     1
+# [TEST_DONE]     1

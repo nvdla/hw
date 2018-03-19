@@ -21,10 +21,9 @@
 #include <tlm.h>
 #include <tlm_utils/multi_passthrough_initiator_socket.h>
 #include <tlm_utils/multi_passthrough_target_socket.h>
-#include <systemc.h>
 // #include "bdmacoreconfigclass.h"
 
-#define BDMA_CONFIG_FIFO_DEPTH 20
+#define BDMA_CONFIG_FIFO_DEPTH 40
 #define DMA_ATOM_SIZE 32
 #define DMA_ATOM_CMOD_ENTRY_GRANULARITY 8
 #define BDMA_CORE_DMA_ATOM_FIFO_SIZE 2048
@@ -81,7 +80,7 @@ class BdmaCore : public sc_module
     sc_fifo<uint8_t>          *cmd_req_ack;
 #endif
 
-    sc_fifo <bdma_ack_info *> *bdma_ack_fifo_;
+    sc_core::sc_fifo <bdma_ack_info *> *bdma_ack_fifo_;
     
     // Configuration ports
     sc_port<sc_fifo_in_if<BdmaCoreConfig> > core_config_in;
@@ -144,11 +143,12 @@ class BdmaCore : public sc_module
     sc_core::sc_time dma_delay_;
 
     // FIFO between read response and write request
-    sc_fifo <DmaAtom>                *dma_atom_fifo_;
+    sc_core::sc_fifo <DmaAtom>              *dma_atom_fifo_;
     sc_core::sc_fifo <BdmaCoreConfig>   *write_config_fifo_;
 #if 0
     sc_core::sc_fifo <uint8_t>          *write_complete_interrupt_ptr_fifo_;
 #endif
+    sc_event    reset_event_;
 
     uint32_t src_ram_type_next_;
     uint32_t src_ram_type_curr_;

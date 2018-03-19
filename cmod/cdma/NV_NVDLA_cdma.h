@@ -21,77 +21,39 @@
 #include "NV_NVDLA_cdma_base.h"
 #include "cdma_reg_model.h"
 #include "systemc.h"
-
+#include "nvdla_config.h"
 #include "cdma_hls_wrapper.h"
 
-// FIXME, add buswidth define
-#define ATOM_PER_DMA_TRANSACTION            8
-#define MEM_BUSWIDTH_IN_BIT                 64
-#define PADDING_NONE                        0
-#define PADDING_ZERO                        1
-#define PADDING_MIRROR                      2
-#define CDMA_RDMA_SIZE                      1024
-#define CDMA_RDMA_BUFFER_CMOD_ENTRY_SIZE    1
-#define CDMA_LOCAL_BUFFER_SIZE              256
-#define ELEMENT_PER_ATOM_INT8               32
-#define ELEMENT_PER_ATOM_INT16              16
-#define ELEMENT_PER_ATOM_FP16               16
-#define ELEMENT_SIZE_INT8                   1
-#define ELEMENT_SIZE_INT16                  2
-#define ELEMENT_SIZE_FP16                   2
-#define ATOM_SIZE_INT8                      (ELEMENT_PER_ATOM_INT8 * ELEMENT_SIZE_INT8)
-#define ATOM_SIZE_INT16                     (ELEMENT_PER_ATOM_INT16 * ELEMENT_SIZE_INT16)
-#define ATOM_SIZE_FP16                      32
+#define MEM_BUS_WIDTH               (max(max(NVDLA_PRIMARY_MEMIF_WIDTH/8, NVDLA_SECONDARY_MEMIF_WIDTH/8), NVDLA_MEMORY_ATOMIC_SIZE*ELEMENT_SIZE_INT8))
+#define MAX_MEM_TRANSACTION_NUM     8
 
-#define KERNEL_PER_GROUP_INT8   32
-#define KERNEL_PER_GROUP_INT16  16
-#define KERNEL_PER_GROUP_FP16   16
+#define ELEMENT_SIZE_INT8           1
+#define ELEMENT_SIZE_INT16          2
+#define ELEMENT_SIZE_FP16           2
 
-#define CBUF_BANK_NUM                       16
-#define CBUF_ENTRY_PER_BANK                 256
-#undef  CBUF_ENTRY_NUM
-#define CBUF_ENTRY_NUM                      (CBUF_BANK_NUM*CBUF_ENTRY_PER_BANK)
-#define CBUF_ENTRY_SIZE                     128
-#undef  CBUF_HALF_ENTRY_SIZE
-#define CBUF_HALF_ENTRY_SIZE                (CBUF_ENTRY_SIZE/2)
-#define CBUF_DATA_BASE_BANK                 0
-#define CBUF_DATA_HEAD_BANK                 14
-#define CBUF_WEIGHT_BASE_BANK               1
-#define CBUF_WEIGHT_HEAD_BANK               15
+#define ATOM_SIZE_INT8              (NVDLA_MEMORY_ATOMIC_SIZE*ELEMENT_SIZE_INT8)
+#define ATOM_SIZE_INT16             (NVDLA_MEMORY_ATOMIC_SIZE*ELEMENT_SIZE_INT16)
+#define ATOM_SIZE_FP16              (NVDLA_MEMORY_ATOMIC_SIZE*ELEMENT_SIZE_FP16)
 
-#define CBUF_WMB_BANK                       15
+#define CBUF_ENTRY_NUM              (NVDLA_CBUF_BANK_NUMBER*NVDLA_CBUF_BANK_DEPTH)
+#define CBUF_WMB_BANK_IDX           15
 
-#define RAM_ID_MC                           1
-#define RAM_ID_CV                           0
-#define MAX_MEM_TRANSACTION_SIZE            256
-#define ATOM_CUBE_SIZE                      32
+#define RAM_ID_MC                   1
+#define RAM_ID_CV                   0
 
-#define CDMA_DATA_REUSE_EN                  1
-#define CDMA_DATA_REUSE_DIS                 0
-#define CDMA_WEIGHT_REUSE_EN                1
-#define CDMA_WEIGHT_REUSE_DIS               0
+#define CDMA_WEIGHT_DATA            0
+#define CDMA_WMB_DATA               1
+#define CDMA_WGS_DATA               2
+#define CDMA_FEATURE_DATA           3
+#define CDMA_MEAN_DATA              4
 
-#define CDMA_WEIGHT_DATA                    0
-#define CDMA_WMB_DATA                       1
-#define CDMA_WGS_DATA                       2
-#define CDMA_FEATURE_DATA                   3
-#define CDMA_MEAN_DATA                      4
+#define READ_WINO_BUF_WIDTH         (4*8)    //8 is max of stride_x
 
-#define COMP_R                              0
-#define COMP_G                              1
-#define COMP_B                              2
-#define COMP_A                              3
-#define COMP_Y                              0
-#define COMP_U                              1
-#define COMP_V                              2
-#define COMP_X                              3
+#define INPUT_DATA_FORMAT_DC        0
+#define INPUT_DATA_FORMAT_IMAGE     1
+#define INPUT_DATA_FORMAT_WINO      2
 
-#define READ_WINO_BUF_WIDTH                 (4*8)    //8 is max of stride_x
-
-#define INPUT_DATA_FORMAT_DC                0
-#define INPUT_DATA_FORMAT_IMAGE             1
-#define INPUT_DATA_FORMAT_WINO              2
-
+#define CDMA_LOCAL_BUFFER_SIZE      256
 
 SCSIM_NAMESPACE_START(clib)
 // clib class forward declaration
@@ -136,8 +98,6 @@ class NV_NVDLA_cdma:
         bool wmb_first_layer;
         bool wgs_first_layer;
         bool is_there_ongoing_csb2cdma_response_;
-        // FIXME, need a configuration to determine max slice num
-        uint32_t data_max_slice_num_;
         uint32_t *wgs_buffer_;
         // Payloads
         nvdla_dma_rd_req_t *dma_act_rd_req_payload_;
@@ -340,7 +300,7 @@ class NV_NVDLA_cdma:
         uint8_t cdma_element_num(uint16_t pixel_format);
         bool isNaN(uint16_t in_fp16);
         bool isInf(uint16_t in_fp16);
-        void WriteOneEntryToCbuf(uint8_t* ptr, uint32_t cbuf_entry_addr);
+        void WriteOneEntryToCbuf(uint8_t* ptr, uint32_t cbuf_entry_addr, uint32_t super_atom_size, uint32_t super_atom_num);
         void hls_convertor(int16_t* in_ptr, uint8_t input_data_type, int16_t offset, int16_t scale, uint8_t truncate, uint32_t in_precision, uint32_t out_precision, int32_t* out_ptr);
         void process_one_element_8(int8_t pixel_8, uint32_t pixel_idx, uint8_t element_num, uint8_t i, bool cvt_en, bool convert_8to16, uint8_t* pad_buffer_8, uint16_t* pad_buffer_16, int16_t cvt_mean, int16_t cvt_scale, uint8_t cvt_truncate, uint32_t in_precision, uint32_t proc_precision);
         void process_one_element_16(int16_t pixel_16, uint32_t pixel_idx, uint8_t element_num, uint8_t i, int8_t input_data_type, bool cvt_en, bool convert_16to8, uint8_t* pad_buffer_8, uint16_t* pad_buffer_16, int16_t cvt_mean, int16_t cvt_scale, uint8_t cvt_truncate, uint32_t in_precision, uint32_t proc_precision);

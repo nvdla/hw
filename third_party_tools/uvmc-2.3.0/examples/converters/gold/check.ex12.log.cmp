@@ -1,0 +1,127 @@
+# UVM_INFO @ 0: reporter [RNTST] Running test ...
+# ----------------------------------------------------------------
+# UVMC-2.3
+# (C) 2009-2014 Mentor Graphics Corporation
+# ----------------------------------------------------------------
+# Registering SV-side 'env.prod.out' and lookup string 'stimulus' for later connection with SC
+# Connected SC-side 'sc_main/env/cons/in' to SV-side 'env.prod.out'
+# UVM_INFO producer.sv(63) @ 0: env.prod [PRODUCER/PKT/SEND_REQ] SV producer request:
+#    cmd:READ addr:fcf21086 data:'{-119, 35, -28, 54, -23, 89, 5, -104} extra_int:06b58d4e
+# 0 s SC consumer executing packet:
+#   '{addr_hi:fcf2 addr_lo:1086 len:8 write:0 } payload:{ 36e42389, 980559e9, 0, 0 }
+# 1 ns SC consumer packet executed:
+#   '{addr_hi:30d addr_lo:ef79 len:8 write:0 } payload:{ c91bdc76, 67faa616, ffffffff, ffffffff }
+# UVM_INFO producer.sv(68) @ 1000: env.prod [PRODUCER/PKT/RECV_RSP] SV producer response:
+#    cmd:READ addr:030def79 data:'{118, -36, 27, -55, 22, -90, -6, 103} extra_int:ffffffff
+# 
+# UVM_INFO producer.sv(63) @ 1000: env.prod [PRODUCER/PKT/SEND_REQ] SV producer request:
+#    cmd:WRITE addr:fa17e9fa data:'{20, 27, -44, 11, 59, 14, 59, -14, 81, -122, -20, -24} extra_int:78ab6bd8
+# 1 ns SC consumer executing packet:
+#   '{addr_hi:fa17 addr_lo:e9fa len:c write:1 } payload:{ bd41b14, f23b0e3b, e8ec8651, 0 }
+# 2 ns SC consumer packet executed:
+#   '{addr_hi:5e8 addr_lo:1605 len:c write:1 } payload:{ f42be4eb, dc4f1c4, 171379ae, ffffffff }
+# UVM_INFO producer.sv(68) @ 2000: env.prod [PRODUCER/PKT/RECV_RSP] SV producer response:
+#    cmd:WRITE addr:05e81605 data:'{-21, -28, 43, -12, -60, -15, -60, 13, -82, 121, 19, 23} extra_int:ffffffff
+# 
+# UVM_INFO producer.sv(63) @ 2000: env.prod [PRODUCER/PKT/SEND_REQ] SV producer request:
+#    cmd:WRITE addr:1eb8b486 data:'{109, 120} extra_int:23791636
+# 2 ns SC consumer executing packet:
+#   '{addr_hi:1eb8 addr_lo:b486 len:2 write:1 } payload:{ 786d, 0, 0, 0 }
+# 3 ns SC consumer packet executed:
+#   '{addr_hi:e147 addr_lo:4b79 len:2 write:1 } payload:{ ffff8792, ffffffff, ffffffff, ffffffff }
+# UVM_INFO producer.sv(68) @ 3000: env.prod [PRODUCER/PKT/RECV_RSP] SV producer response:
+#    cmd:WRITE addr:e1474b79 data:'{-110, -121} extra_int:ffffffff
+# 
+# UVM_INFO producer.sv(63) @ 3000: env.prod [PRODUCER/PKT/SEND_REQ] SV producer request:
+#    cmd:READ addr:6c894dab data:'{1, 52, 88, -17, -120, -123, -123, -67} extra_int:cb63b4dd
+# 3 ns SC consumer executing packet:
+#   '{addr_hi:6c89 addr_lo:4dab len:8 write:0 } payload:{ ef583401, bd858588, 0, 0 }
+# 4 ns SC consumer packet executed:
+#   '{addr_hi:9376 addr_lo:b254 len:8 write:0 } payload:{ 10a7cbfe, 427a7a77, ffffffff, ffffffff }
+# UVM_INFO producer.sv(68) @ 4000: env.prod [PRODUCER/PKT/RECV_RSP] SV producer response:
+#    cmd:READ addr:9376b254 data:'{-2, -53, -89, 16, 119, 122, 122, 66} extra_int:ffffffff
+# 
+# UVM_INFO producer.sv(63) @ 4000: env.prod [PRODUCER/PKT/SEND_REQ] SV producer request:
+#    cmd:NOOP addr:3350492a data:'{-73} extra_int:df2e2ab0
+# packet cmd from SV side has unsupported value 2
+# 4 ns SC consumer executing packet:
+#   '{addr_hi:3350 addr_lo:492a len:1 write:0 } payload:{ b7, 0, 0, 0 }
+# 5 ns SC consumer packet executed:
+#   '{addr_hi:ccaf addr_lo:b6d5 len:1 write:0 } payload:{ ffffff48, ffffffff, ffffffff, ffffffff }
+# UVM_INFO producer.sv(68) @ 5000: env.prod [PRODUCER/PKT/RECV_RSP] SV producer response:
+#    cmd:READ addr:ccafb6d5 data:'{72} extra_int:ffffffff
+# 
+# UVM_INFO producer.sv(63) @ 5000: env.prod [PRODUCER/PKT/SEND_REQ] SV producer request:
+#    cmd:WRITE addr:41a37a28 data:'{-81, -45, 92, -117, 124, 17, -58, -82, 84} extra_int:08babf6d
+# 5 ns SC consumer executing packet:
+#   '{addr_hi:41a3 addr_lo:7a28 len:9 write:1 } payload:{ 8b5cd3af, aec6117c, 54, 0 }
+# 6 ns SC consumer packet executed:
+#   '{addr_hi:be5c addr_lo:85d7 len:9 write:1 } payload:{ 74a32c50, 5139ee83, ffffffab, ffffffff }
+# UVM_INFO producer.sv(68) @ 6000: env.prod [PRODUCER/PKT/RECV_RSP] SV producer response:
+#    cmd:WRITE addr:be5c85d7 data:'{80, 44, -93, 116, -125, -18, 57, 81, -85} extra_int:ffffffff
+# 
+# UVM_INFO producer.sv(63) @ 6000: env.prod [PRODUCER/PKT/SEND_REQ] SV producer request:
+#    cmd:WRITE addr:178d9652 data:'{-108, 38, 89, -19, 112, -59, 27, 8} extra_int:6e2f36ca
+# 6 ns SC consumer executing packet:
+#   '{addr_hi:178d addr_lo:9652 len:8 write:1 } payload:{ ed592694, 81bc570, 0, 0 }
+# 7 ns SC consumer packet executed:
+#   '{addr_hi:e872 addr_lo:69ad len:8 write:1 } payload:{ 12a6d96b, f7e43a8f, ffffffff, ffffffff }
+# UVM_INFO producer.sv(68) @ 7000: env.prod [PRODUCER/PKT/RECV_RSP] SV producer response:
+#    cmd:WRITE addr:e87269ad data:'{107, -39, -90, 18, -113, 58, -28, -9} extra_int:ffffffff
+# 
+# UVM_INFO producer.sv(63) @ 7000: env.prod [PRODUCER/PKT/SEND_REQ] SV producer request:
+#    cmd:WRITE addr:7bf60f0c data:'{127, -99, -44, 112, 114, -109, 1, 19, -71, 55} extra_int:b40f16b7
+# 7 ns SC consumer executing packet:
+#   '{addr_hi:7bf6 addr_lo:f0c len:a write:1 } payload:{ 70d49d7f, 13019372, 37b9, 0 }
+# 8 ns SC consumer packet executed:
+#   '{addr_hi:8409 addr_lo:f0f3 len:a write:1 } payload:{ 8f2b6280, ecfe6c8d, ffffc846, ffffffff }
+# UVM_INFO producer.sv(68) @ 8000: env.prod [PRODUCER/PKT/RECV_RSP] SV producer response:
+#    cmd:WRITE addr:8409f0f3 data:'{-128, 98, 43, -113, -115, 108, -2, -20, 70, -56} extra_int:ffffffff
+# 
+# UVM_INFO producer.sv(63) @ 8000: env.prod [PRODUCER/PKT/SEND_REQ] SV producer request:
+#    cmd:NOOP addr:d4af0f08 data:'{-34} extra_int:77d571d9
+# packet cmd from SV side has unsupported value 2
+# 8 ns SC consumer executing packet:
+#   '{addr_hi:d4af addr_lo:f08 len:1 write:1 } payload:{ de, 0, 0, 0 }
+# 9 ns SC consumer packet executed:
+#   '{addr_hi:2b50 addr_lo:f0f7 len:1 write:1 } payload:{ ffffff21, ffffffff, ffffffff, ffffffff }
+# UVM_INFO producer.sv(68) @ 9000: env.prod [PRODUCER/PKT/RECV_RSP] SV producer response:
+#    cmd:WRITE addr:2b50f0f7 data:'{33} extra_int:ffffffff
+# 
+# UVM_INFO producer.sv(63) @ 9000: env.prod [PRODUCER/PKT/SEND_REQ] SV producer request:
+#    cmd:WRITE addr:41dda014 data:'{70} extra_int:9eb21d75
+# 9 ns SC consumer executing packet:
+#   '{addr_hi:41dd addr_lo:a014 len:1 write:1 } payload:{ 46, 0, 0, 0 }
+# 10 ns SC consumer packet executed:
+#   '{addr_hi:be22 addr_lo:5feb len:1 write:1 } payload:{ ffffffb9, ffffffff, ffffffff, ffffffff }
+# UVM_INFO producer.sv(68) @ 10000: env.prod [PRODUCER/PKT/RECV_RSP] SV producer response:
+#    cmd:WRITE addr:be225feb data:'{-71} extra_int:ffffffff
+# 
+# UVM_INFO producer.sv(81) @ 10000: env.prod [PRODUCER/END_TEST] Dropping objection to ending the test
+# UVM_INFO uvm_objection.svh(1268) @ 10000: reporter [TEST_DONE] 'run' phase is ready to proceed to the 'extract' phase
+# 
+# --- UVM Report catcher Summary ---
+# 
+# 
+# Number of demoted UVM_FATAL reports  :    0
+# Number of demoted UVM_ERROR reports  :    0
+# Number of demoted UVM_WARNING reports:    0
+# Number of caught UVM_FATAL reports   :    1
+# Number of caught UVM_ERROR reports   :    0
+# Number of caught UVM_WARNING reports :    0
+# 
+# --- UVM Report Summary ---
+# 
+# ** Report counts by severity
+# UVM_INFO :   23
+# UVM_WARNING :    0
+# UVM_ERROR :    0
+# UVM_FATAL :    0
+# ** Report counts by id
+# [PRODUCER/END_TEST]     1
+# [PRODUCER/PKT/RECV_RSP]    10
+# [PRODUCER/PKT/SEND_REQ]    10
+# [RNTST]     1
+# [TEST_DONE]     1
+# ** Note: $finish    : uvm_root.svh(430)
+#    Time: 10 ns  Iteration: 55  Instance: /sv_main

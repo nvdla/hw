@@ -52,6 +52,21 @@ void NvdlaAxiAdaptor::nb_resp_thread()
     }
 }
 
+static void free_gp(tlm_generic_payload *gp)
+{
+    if (gp == NULL) {
+        return ;
+    }
+
+    if (gp->get_data_ptr()) {
+        delete [] gp->get_data_ptr();
+    }
+    if (gp->get_byte_enable_ptr()) {
+        delete [] gp->get_byte_enable_ptr();
+    }
+    delete gp;
+}
+
 void NvdlaAxiAdaptor::axi_rd_wr_thread()
 {
     tlm_generic_payload *tlm_gp;
@@ -78,7 +93,7 @@ void NvdlaAxiAdaptor::axi_rd_wr_thread()
                 customized_rd_rsp->b_transport(*tlm_gp, delay);
                 cslDebug(( 50, "NvdlaAxiAdaptor::axi_rd_wr_thread, after standard_axi (read)\n" ));
             }
-            delete tlm_gp;
+            free_gp(tlm_gp);
             cslDebug((50, "NvdlaAxiAdaptor::axi_rd_wr_thread, send read request done\n"));
         }
         // For Write request
@@ -94,7 +109,7 @@ void NvdlaAxiAdaptor::axi_rd_wr_thread()
                 customized_wr_rsp->b_transport(*tlm_gp, delay);
                 cslDebug(( 50, "NvdlaAxiAdaptor::axi_rd_wr_thread, after standard_axi (write)\n" ));
             }
-            delete tlm_gp;
+            free_gp(tlm_gp);
             cslDebug((50, "NvdlaAxiAdaptor::axi_rd_wr_thread, send write request done\n"));
         }
     }

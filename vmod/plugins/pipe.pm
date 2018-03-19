@@ -19,6 +19,13 @@ use EperlUtil;
     NONE
 
   Optional Inputs:
+    -vi  : input valid signal name
+    -di  : input data signal name
+    -ro  : output ready signal name
+    -vo  : output valid signal name
+    -do  : output data signal name
+    -ri  : input ready signal name
+
     -is  : input skid buffer            
     -os  : output skid buffer           
 
@@ -62,13 +69,13 @@ use EperlUtil;
 use base ("Exporter");
 our @EXPORT = qw(pipe);
 
-my @code = ();
-my @ports = ();
-my @regs = ();
-my @wires = ();
-my $clk = "clk";
-my $rst = "rst";
-my $indent= 0;
+my @code;
+my @ports;
+my @regs;
+my @wires;
+my $clk;
+my $rst;
+my $indent;
 
 sub pipe {
     my $args = shift;
@@ -77,8 +84,23 @@ sub pipe {
     #================================
     # OPTIONS
     #================================
+    @code = ();
+    @ports = ();
+    @regs = ();
+    @wires = ();
+    $clk = "nvdla_core_clk";
+    $rst = "nvdla_core_rstn";
+    $indent= 0;
     
-    my $prefix = "pipe";
+    my $prefix;
+
+    my $vi = "vi";
+    my $di = "di";
+    my $ro = "ro";
+    my $vo = "vo";
+    my $do = "do";
+    my $ri = "ri";
+
     my $wid = 1;
     my $module;
     my $is;
@@ -87,6 +109,12 @@ sub pipe {
                'prefix=s'  => \$prefix,
                'is'    => \$is,
                'os'    => \$os,
+               'vi=s'  => \$vi,
+               'di=s'  => \$di,
+               'ro=s'  => \$ro,
+               'vo=s'  => \$vo,
+               'do=s'  => \$do,
+               'ri=s'  => \$ri,
                'wid=s' => \$wid,
                'module|m=s' => \$module,
                'clk=s' => \$clk,
@@ -97,18 +125,17 @@ sub pipe {
     #================================
     # VARIABLE
     #================================
-    my $vi = $prefix."_vi";
-    my $ro = $prefix."_ro";
-    my $di = $prefix."_di";
-    my $vo = $prefix."_vo";
-    my $ri = $prefix."_ri";
-    my $do = $prefix."_do";
+    $vi = $prefix."_".$vi if defined $prefix;
+    $di = $prefix."_".$di if defined $prefix;
+    $ro = $prefix."_".$ro if defined $prefix;
+    $vo = $prefix."_".$vo if defined $prefix;
+    $do = $prefix."_".$do if defined $prefix;
+    $ri = $prefix."_".$ri if defined $prefix;
 
-
-    my $range = "$wid-1:0";
+    my $range = ($wid>1) ? "[$wid-1:0]" : "";
     
-    my $DI = $di."[$range]";
-    my $DO = $do."[$range]";
+    my $DI = $di."$range";
+    my $DO = $do."$range";
     my $INDENT = " "x$indent;
 
     push @ports, "${INDENT}input  $clk;";
@@ -116,11 +143,11 @@ sub pipe {
 
     push @ports, "${INDENT}input  $vi;";
     push @ports, "${INDENT}output $ro;";
-    push @ports, "${INDENT}input  [$range] $di;";
+    push @ports, "${INDENT}input  $range $di;";
     
     push @ports, "${INDENT}output $vo;";
     push @ports, "${INDENT}input  $ri;";
-    push @ports, "${INDENT}output [$range] $do;";
+    push @ports, "${INDENT}output $range $do;";
     
     my @pins;
     push @pins, $vi;
@@ -147,13 +174,16 @@ sub pipe {
     # TAIL
     #================================
     push @code, "// PIPE OUTPUT";
+    push @wires, "$ro;";
+    push @wires, "$vo;";
+    push @wires, "$range $do;";
     push @code, "${INDENT}assign $ro = $ri;";
     push @code, "${INDENT}assign $vo = $vi;";
     push @code, "${INDENT}assign $do = $di;";
     
-    my $regs = join("\n",@regs);
+    my $regs = "reg ".join("\nreg ",@regs);
     
-    my $wire = join("\n",@wires);
+    my $wire = "wire ".join("\nwire ",@wires);
 
     my $code = join("\n",@code);
 
@@ -162,6 +192,7 @@ sub pipe {
     #================================
     if ($module) {
         vprintl "${INDENT}module $module (";
+         print  "${INDENT}   ";
         vprintl join("\n${INDENT}  ,",@pins);
         vprintl "${INDENT}  );";
         vprintl "// Port";
@@ -193,13 +224,13 @@ sub _pipe {
     my $do = "pipe_".$di;
     my $ri = "pipe_".$ro;
     
-    my $DI = $di."[$range]";
-    my $DO = $do."[$range]";
+    my $DI = $di."$range";
+    my $DO = $do."$range";
     
     # READY
     push @code, "// PIPE READY";
-    push @regs, "reg    $vo;";
-    push @wires,"wire   $ro;";
+    push @regs, "$vo;";
+    push @wires,"$ro;";
     push @code, "${INDENT}assign $ro = $ri || !$vo;";
     push @code, "";
     # VALID
@@ -216,7 +247,7 @@ sub _pipe {
     push @code, "";
     # DATA
     push @code, "// PIPE DATA";
-    push @regs, "reg    [$range] $do;";
+    push @regs, "$range $do;";
     push @code, "${INDENT}always @(posedge $clk) begin";
     push @code, "${INDENT}    if ($ro && $vi) begin";
     push @code, "${INDENT}        $DO <= $DI;";
@@ -243,15 +274,15 @@ sub _skid {
     my $do = "skid_".$di;
     my $ri = "skid_".$ro;
     
-    my $DI = $di."[$range]";
-    my $DS = $ds."[$range]";
-    my $DO = $do."[$range]";
+    my $DI = $di."$range";
+    my $DS = $ds."$range";
+    my $DO = $do."$range";
     
     
     # READY
     push @code, "// SKID READY";
-    push @regs, "reg    $ro;";
-    push @regs, "reg    $rs;";
+    push @regs, "$ro;";
+    push @regs, "$rs;";
     push @code, "${INDENT}always @(posedge $clk or negedge $rst) begin";
     push @code, "${INDENT}   if (!$rst) begin";
     push @code, "${INDENT}       $ro <= 1'b1;";
@@ -265,7 +296,8 @@ sub _skid {
 
     # VALID
     push @code, "// SKID VALID";
-    push @regs, "reg    $vs;";
+    push @regs, "$vs;";
+    push @wires,"$vo;";
     push @code, "${INDENT}always @(posedge $clk or negedge $rst) begin";
     push @code, "${INDENT}    if (!$rst) begin";
     push @code, "${INDENT}        $vs <= 1'b0;";
@@ -280,7 +312,8 @@ sub _skid {
     
     # DATA
     push @code, "// SKID DATA";
-    push @regs, "reg    [$range] $ds;";
+    push @regs, "$range $ds;";
+    push @wires,"$range $do;";
     push @code, "${INDENT}always @(posedge $clk) begin";
     push @code, "${INDENT}    if ($rs & $vi) begin";
     push @code, "${INDENT}        $DS <= $DI;";

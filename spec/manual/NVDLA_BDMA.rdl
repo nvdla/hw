@@ -1,0 +1,445 @@
+// ================================================================
+// NVDLA Open Source Project
+//
+// Copyright(c) 2016 - 2017 NVIDIA Corporation.  Licensed under the
+// NVDLA Open Hardware License; Check "LICENSE" which comes with
+// this distribution for more information.
+// ================================================================
+
+property spec_sw_default {
+    type      = number;
+    component = field;
+};
+property spec_access {
+    type      = string;
+    component = field;
+};
+property sw_default_mask {
+    type      = number;
+    component = field;
+};
+property reset_mask {
+    type      = number;
+    component = field;
+};
+regfile regs_NVDLA_BDMA{
+    default regwidth=32;
+    reg {
+        name = "CFG_SRC_ADDR_LOW";
+        desc = "
+////Bridge DMA Registers
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x7ffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } V32[31:5];
+        V32->desc="
+//// catenate with CFG_SRC_ADDR_HIGH to form a 40bit addr
+";
+    }CFG_SRC_ADDR_LOW @0x0;
+    reg {
+        name = "CFG_SRC_ADDR_HIGH";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } V8[31:0];
+        V8->desc="
+//// catenate with CFG_SRC_ADDR_LOW to form a 40bit addr
+";
+    }CFG_SRC_ADDR_HIGH @0x4;
+    reg {
+        name = "CFG_DST_ADDR_LOW";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x7ffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } V32[31:5];
+        V32->desc="
+//// catenate with CFG_SRC_ADDR_HIGH to form a 40bit addr
+";
+    }CFG_DST_ADDR_LOW @0x8;
+    reg {
+        name = "CFG_DST_ADDR_HIGH";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } V8[31:0];
+        V8->desc="
+//// catenate with CFG_SRC_ADDR_LOW to form a 40bit addr
+";
+    }CFG_DST_ADDR_HIGH @0xc;
+    reg {
+        name = "CFG_LINE";
+        desc = "
+////+1
+////in unit of 32B
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1fff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } SIZE[12:0];
+    }CFG_LINE @0x10;
+    reg {
+        name = "CFG_CMD";
+        enum CFG_CMD_SRC_RAM_TYPE_enum {
+            CVSRAM = 1'd0 {desc = "
+//// memory copy src from CVSRAM
+";};
+            MC = 1'd1 {desc = "
+//// memory copy src from MC
+";};
+        };
+        field {
+            encode          = CFG_CMD_SRC_RAM_TYPE_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } SRC_RAM_TYPE[0:0];
+        enum CFG_CMD_DST_RAM_TYPE_enum {
+            CVSRAM = 1'd0 {desc = "
+//// memory copy dst to CVSRAM
+";};
+            MC = 1'd1 {desc = "
+//// memory copy dst to CVSRAM
+";};
+        };
+        field {
+            encode          = CFG_CMD_DST_RAM_TYPE_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } DST_RAM_TYPE[1:1];
+    }CFG_CMD @0x14;
+    reg {
+        name = "CFG_LINE_REPEAT";
+        desc = "
+////+1: 
+////NUMBER is from 0 to 0x1fff
+////NUMBER[23:13] need be set as 0, which is reserved
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } NUMBER[23:0];
+        NUMBER->desc="
+//// 
+";
+    }CFG_LINE_REPEAT @0x18;
+    reg {
+        name = "CFG_SRC_LINE";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x7ffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } STRIDE[31:5];
+        STRIDE->desc="
+//// 
+";
+    }CFG_SRC_LINE @0x1c;
+    reg {
+        name = "CFG_DST_LINE";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x7ffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } STRIDE[31:5];
+        STRIDE->desc="
+//// 
+";
+    }CFG_DST_LINE @0x20;
+    reg {
+        name = "CFG_SURF_REPEAT";
+        desc = "
+////+1
+////NUMBER is from 0 to 0x1fff
+////NUMBER[23:13] need be set as 0, which is reserved
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } NUMBER[23:0];
+        NUMBER->desc="
+//// 
+";
+    }CFG_SURF_REPEAT @0x24;
+    reg {
+        name = "CFG_SRC_SURF";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x7ffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } STRIDE[31:5];
+        STRIDE->desc="
+//// 
+";
+    }CFG_SRC_SURF @0x28;
+    reg {
+        name = "CFG_DST_SURF";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x7ffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } STRIDE[31:5];
+        STRIDE->desc="
+//// 
+";
+    }CFG_DST_SURF @0x2c;
+    reg {
+        name = "CFG_OP";
+        enum CFG_OP_EN_enum {
+            DISABLE = 1'd0;
+            ENABLE = 1'd1;
+        };
+        field {
+            encode          = CFG_OP_EN_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rwt;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } EN[0:0];
+        EN->desc="
+//// 
+";
+    }CFG_OP @0x30;
+    reg {
+        name = "CFG_LAUNCH0";
+        enum CFG_LAUNCH0_GRP0_LAUNCH_enum {
+            NO = 1'd0 {desc = "
+//// no action
+";};
+            YES = 1'd1 {desc = "
+//// launch the previously enabled cmd
+";};
+        };
+        field {
+            encode          = CFG_LAUNCH0_GRP0_LAUNCH_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rwt;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } GRP0_LAUNCH[0:0];
+    }CFG_LAUNCH0 @0x34;
+    reg {
+        name = "CFG_LAUNCH1";
+        enum CFG_LAUNCH1_GRP1_LAUNCH_enum {
+            NO = 1'd0 {desc = "
+//// no action
+";};
+            YES = 1'd1 {desc = "
+//// launch the previously enabled cmd
+";};
+        };
+        field {
+            encode          = CFG_LAUNCH1_GRP1_LAUNCH_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rwt;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } GRP1_LAUNCH[0:0];
+    }CFG_LAUNCH1 @0x38;
+    reg {
+        name = "CFG_STATUS";
+        enum CFG_STATUS_STALL_COUNT_EN_enum {
+            NO = 1'd0 {desc = "
+//// disable stall counting
+";};
+            YES = 1'd1 {desc = "
+//// enable stall counting
+";};
+        };
+        field {
+            encode          = CFG_STATUS_STALL_COUNT_EN_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } STALL_COUNT_EN[0:0];
+    }CFG_STATUS @0x3c;
+    reg {
+        name = "STATUS";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x14;
+            reset_mask      = 0xff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } FREE_SLOT[7:0];
+        enum STATUS_IDLE_enum {
+            NO = 1'd0 {desc = "
+//// module is not idle, means memory copy is in process
+";};
+            YES = 1'd1 {desc = "
+//// module is idle, means no pending command
+";};
+        };
+        field {
+            encode          = STATUS_IDLE_enum;
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x1;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } IDLE[8:8];
+        enum STATUS_GRP0_BUSY_enum {
+            NO = 1'd0 {desc = "
+//// GRP0 has no outstanding interrupt
+";};
+            YES = 1'd1 {desc = "
+//// GRP0 has outstanding interrupt not returned
+";};
+        };
+        field {
+            encode          = STATUS_GRP0_BUSY_enum;
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } GRP0_BUSY[9:9];
+        enum STATUS_GRP1_BUSY_enum {
+            NO = 1'd0 {desc = "
+//// GRP1 has no outstanding interrupt
+";};
+            YES = 1'd1 {desc = "
+//// GRP1 has outstanding interrupt not returned
+";};
+        };
+        field {
+            encode          = STATUS_GRP1_BUSY_enum;
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } GRP1_BUSY[10:10];
+    }STATUS @0x40;
+    reg {
+        name = "STATUS_GRP0_READ_STALL";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } COUNT[31:0];
+    }STATUS_GRP0_READ_STALL @0x44;
+    reg {
+        name = "STATUS_GRP0_WRITE_STALL";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } COUNT[31:0];
+    }STATUS_GRP0_WRITE_STALL @0x48;
+    reg {
+        name = "STATUS_GRP1_READ_STALL";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } COUNT[31:0];
+    }STATUS_GRP1_READ_STALL @0x4c;
+    reg {
+        name = "STATUS_GRP1_WRITE_STALL";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } COUNT[31:0];
+    }STATUS_GRP1_WRITE_STALL @0x50;
+};
+addrmap  {
+    regs_NVDLA_BDMA NVDLA_BDMA @0x10000;
+}addrmap_NVDLA;

@@ -8,7 +8,9 @@
 
 // File Name: NV_NVDLA_CMAC_reg.v
 
-`include "simulate_x_tick.vh"
+#include "simulate_x_tick.vh"
+#include "NV_NVDLA_CMAC.h"
+
 module NV_NVDLA_CMAC_reg (
    nvdla_core_clk        //|< i
   ,nvdla_core_rstn       //|< i
@@ -36,7 +38,7 @@ output        csb2cmac_a_req_prdy;
 output        reg2dp_conv_mode;
 output        reg2dp_op_en;
 output  [1:0] reg2dp_proc_precision;
-output [10:0] slcg_op_en;
+output [CMAC_SLCG_NUM-1:0] slcg_op_en;
 wire          csb_rresp_error;
 wire   [33:0] csb_rresp_pd_w;
 wire   [31:0] csb_rresp_rdat;
@@ -79,7 +81,7 @@ wire          s_reg_wr_en;
 wire          select_d0;
 wire          select_d1;
 wire          select_s;
-wire   [10:0] slcg_op_en_d0;
+wire [CMAC_SLCG_NUM-1:0] slcg_op_en_d0;
 reg    [33:0] cmac_a2csb_resp_pd;
 reg           cmac_a2csb_resp_valid;
 reg           dp2reg_consumer;
@@ -95,9 +97,9 @@ reg     [2:0] reg2dp_op_en_reg;
 reg     [1:0] reg2dp_proc_precision;
 reg    [62:0] req_pd;
 reg           req_pvld;
-reg    [10:0] slcg_op_en_d1;
-reg    [10:0] slcg_op_en_d2;
-reg    [10:0] slcg_op_en_d3;
+reg [CMAC_SLCG_NUM-1:0] slcg_op_en_d1;
+reg [CMAC_SLCG_NUM-1:0] slcg_op_en_d2;
+reg [CMAC_SLCG_NUM-1:0] slcg_op_en_d3;
 
 
 //Instance single register group
@@ -297,11 +299,11 @@ end
 
 assign reg2dp_op_en = reg2dp_op_en_reg[3-1];
 
-assign slcg_op_en_d0 = {11{reg2dp_op_en_ori}};
+assign slcg_op_en_d0 = {CMAC_SLCG_NUM{reg2dp_op_en_ori}};
 
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
-    slcg_op_en_d1 <= {11{1'b0}};
+    slcg_op_en_d1 <= {CMAC_SLCG_NUM{1'b0}};
   end else begin
   slcg_op_en_d1 <= slcg_op_en_d0;
   end
@@ -309,7 +311,7 @@ end
 
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
-    slcg_op_en_d2 <= {11{1'b0}};
+    slcg_op_en_d2 <= {CMAC_SLCG_NUM{1'b0}};
   end else begin
   slcg_op_en_d2 <= slcg_op_en_d1;
   end
@@ -317,7 +319,7 @@ end
 
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
-    slcg_op_en_d3 <= {11{1'b0}};
+    slcg_op_en_d3 <= {CMAC_SLCG_NUM{1'b0}};
   end else begin
   slcg_op_en_d3 <= slcg_op_en_d2;
   end

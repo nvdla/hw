@@ -1,0 +1,296 @@
+// ================================================================
+// NVDLA Open Source Project
+//
+// Copyright(c) 2016 - 2017 NVIDIA Corporation.  Licensed under the
+// NVDLA Open Hardware License; Check "LICENSE" which comes with
+// this distribution for more information.
+// ================================================================
+
+property spec_sw_default {
+    type      = number;
+    component = field;
+};
+property spec_access {
+    type      = string;
+    component = field;
+};
+property sw_default_mask {
+    type      = number;
+    component = field;
+};
+property reset_mask {
+    type      = number;
+    component = field;
+};
+regfile regs_NVDLA_MCIF{
+    default regwidth=32;
+    reg {
+        name = "CFG_RD_WEIGHT_0";
+        desc = "
+//// 0x28 to 0x30 = Reserved for future use.
+////MCIF Regiseters
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x1;
+            reset_mask      = 0xff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } RD_WEIGHT_BDMA[7:0];
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x1;
+            reset_mask      = 0xff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } RD_WEIGHT_SDP[15:8];
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x1;
+            reset_mask      = 0xff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } RD_WEIGHT_PDP[23:16];
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x1;
+            reset_mask      = 0xff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } RD_WEIGHT_CDP[31:24];
+    }CFG_RD_WEIGHT_0 @0x0;
+    reg {
+        name = "CFG_RD_WEIGHT_1";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x1;
+            reset_mask      = 0xff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } RD_WEIGHT_SDP_B[7:0];
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x1;
+            reset_mask      = 0xff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } RD_WEIGHT_SDP_N[15:8];
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x1;
+            reset_mask      = 0xff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } RD_WEIGHT_SDP_E[23:16];
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x1;
+            reset_mask      = 0xff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } RD_WEIGHT_CDMA_DAT[31:24];
+    }CFG_RD_WEIGHT_1 @0x4;
+    reg {
+        name = "CFG_RD_WEIGHT_2";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x1;
+            reset_mask      = 0xff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } RD_WEIGHT_CDMA_WT[7:0];
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x1;
+            reset_mask      = 0xff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } RD_WEIGHT_RBK[15:8];
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x1;
+            reset_mask      = 0xff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } RD_WEIGHT_RSV_1[23:16];
+        RD_WEIGHT_RSV_1->desc="
+//// reserved
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x1;
+            reset_mask      = 0xff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } RD_WEIGHT_RSV_0[31:24];
+        RD_WEIGHT_RSV_0->desc="
+//// reserved
+";
+    }CFG_RD_WEIGHT_2 @0x8;
+    reg {
+        name = "CFG_WR_WEIGHT_0";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x1;
+            reset_mask      = 0xff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } WR_WEIGHT_BDMA[7:0];
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x1;
+            reset_mask      = 0xff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } WR_WEIGHT_SDP[15:8];
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x1;
+            reset_mask      = 0xff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } WR_WEIGHT_PDP[23:16];
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x1;
+            reset_mask      = 0xff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } WR_WEIGHT_CDP[31:24];
+    }CFG_WR_WEIGHT_0 @0xc;
+    reg {
+        name = "CFG_WR_WEIGHT_1";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x1;
+            reset_mask      = 0xff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } WR_WEIGHT_RBK[7:0];
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x1;
+            reset_mask      = 0xff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } WR_WEIGHT_RSV_2[15:8];
+        WR_WEIGHT_RSV_2->desc="
+//// reserved
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x1;
+            reset_mask      = 0xff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } WR_WEIGHT_RSV_1[23:16];
+        WR_WEIGHT_RSV_1->desc="
+//// reserved
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x1;
+            reset_mask      = 0xff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } WR_WEIGHT_RSV_0[31:24];
+        WR_WEIGHT_RSV_0->desc="
+//// reserved
+";
+    }CFG_WR_WEIGHT_1 @0x10;
+    reg {
+        name = "CFG_OUTSTANDING_CNT";
+        desc = "
+//// outstanding AXI transactions in unit of 64Byte, less than 256
+//// +1
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0xff;
+            reset_mask      = 0xff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } RD_OS_CNT[7:0];
+        RD_OS_CNT->desc="
+//// reserved
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0xff;
+            reset_mask      = 0xff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } WR_OS_CNT[15:8];
+        WR_OS_CNT->desc="
+//// reserved
+";
+    }CFG_OUTSTANDING_CNT @0x14;
+    reg {
+        name = "STATUS";
+        enum STATUS_IDLE_enum {
+            NO = 1'd0 {desc = "
+//// module is not idle, means there are oustanding AXI trans from/to CVNAS
+";};
+            YES = 1'd1 {desc = "
+//// module is idle, no outstanding AXI trnas from/to CVNAS
+";};
+        };
+        field {
+            encode          = STATUS_IDLE_enum;
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x1;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } IDLE[8:8];
+    }STATUS @0x18;
+};
+addrmap  {
+    regs_NVDLA_MCIF NVDLA_MCIF @0x2000;
+}addrmap_NVDLA;

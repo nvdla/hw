@@ -24,6 +24,18 @@ NV_nvdla::NV_nvdla( sc_module_name module_name, uint8_t id, bool sctb_args )
       csb_adaptor( 0 ),
       axi_adaptor_mc( 0 ), axi_adaptor_cv( 0 ),
       nvdla_top_dummy( 0 )
+// For reference model usage, begin
+#ifdef  NVDLA_REFERENCE_MODEL_ENABLE
+      , dma_monitor_mc("dma_monitor_mc")
+      , dma_monitor_cv("dma_monitor_cv")
+      , convolution_core_monitor_initiator("convolution_core_monitor_initiator" )
+      , post_processing_monitor_initiator("post_processing_monitor_initiator")
+      , dma_monitor_mc_credit("dma_monitor_mc_credit")
+      , dma_monitor_cv_credit("dma_monitor_cv_credit")
+      , convolution_core_monitor_credit("convolution_core_monitor_credit")
+      , post_processing_monitor_credit("post_processing_monitor_credit")
+#endif
+// For reference model usage, end
 {
     csb_adaptor = new NvdlaCsbAdaptor( "nvdla_csb_adaptor" );
     axi_adaptor_mc = new NvdlaAxiAdaptor("axi_adaptor_mc");
@@ -61,6 +73,19 @@ NV_nvdla::NV_nvdla( sc_module_name module_name, uint8_t id, bool sctb_args )
 
     // Dummy
     nvdla_core->csb2nvdla_wr_hack( nvdla_top_dummy->m_target );
+
+// For reference model usage, begin
+#ifdef  NVDLA_REFERENCE_MODEL_ENABLE
+    nvdla_core->dma_monitor_mc(dma_monitor_mc);
+    nvdla_core->dma_monitor_cv(dma_monitor_cv);
+    nvdla_core->convolution_core_monitor_initiator(convolution_core_monitor_initiator);                                                                                                   
+    nvdla_core->post_processing_monitor_initiator(post_processing_monitor_initiator);
+    dma_monitor_mc_credit(nvdla_core->dma_monitor_mc_credit);
+    dma_monitor_cv_credit(nvdla_core->dma_monitor_cv_credit);
+    convolution_core_monitor_credit(nvdla_core->convolution_core_monitor_credit);
+    post_processing_monitor_credit(nvdla_core->post_processing_monitor_credit);
+#endif
+// For reference model usage, end
 }
 #pragma CTC SKIP
 NV_nvdla::~NV_nvdla()

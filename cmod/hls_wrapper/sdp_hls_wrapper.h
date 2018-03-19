@@ -15,11 +15,20 @@
 #include "ac_channel.h"
 
 #include "sdp.h"
+#include "nvdla_config.h"
 
 #define HLS_TRACE        "HLS_API"
 
 #define LE_TBL_ENTRY 65
 #define LO_TBL_ENTRY 257
+#define SDP_PARALLEL_PROC_NUM               (SDP_MAX_THROUGHPUT)
+
+#define HLS_MAX_THROUGHPUT  16
+
+#if SDP_PARALLEL_PROC_NUM > HLS_MAX_THROUGHPUT
+#error "SDP throughput shoudln't be larger than 16"
+#endif
+
 class sdp_hls_wrapper{
 public:
     sdp_hls_wrapper();
@@ -145,7 +154,7 @@ public:
     bool      sdp_cfg_mode_eql;
 
     // Output of SDP HLS
-    int16_t  sdp_data_out[16];
+    int16_t  sdp_data_out[SDP_PARALLEL_PROC_NUM];
 
 };
 

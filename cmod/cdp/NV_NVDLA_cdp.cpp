@@ -13,8 +13,8 @@
 #include "NV_NVDLA_cdp.h"
 #include "NV_NVDLA_cdp_cdp_gen.h"
 #include "NV_NVDLA_cdp_cdp_rdma_gen.h"
-#include "arnvdla.uh"
-#include "arnvdla.h"
+#include "opendla.uh"
+#include "opendla.h"
 #include "cmacros.uh"
 #include "math.h"
 #include "NvdlaDataFormatConvertor.h"
@@ -33,14 +33,16 @@
 #define DATA_FORMAT_INT16       NVDLA_CDP_RDMA_D_DATA_FORMAT_0_INPUT_DATA_INT16
 #define DATA_FORMAT_FP16        NVDLA_CDP_RDMA_D_DATA_FORMAT_0_INPUT_DATA_FP16
 
+#define CDP_PARALLEL_NUM_W      8 // Number of atoms in one request when reading/writing memory in width direction
+#define CDP_ROUND_PER_ATOM      (DLA_ATOM_SIZE / NVDLA_CDP_THROUGHPUT)
+#define CDP_ATOM_PER_TRANSFER   (DMAIF_WIDTH / DLA_ATOM_SIZE)
+
 USING_SCSIM_NAMESPACE(cmod)
 USING_SCSIM_NAMESPACE(clib)
 using namespace std;
 using namespace tlm;
 using namespace sc_core;
 
-const static bool USE_LUT = true;
-const static bool NOT_USE_LUT = false;
 
 NV_NVDLA_cdp::NV_NVDLA_cdp( sc_module_name module_name ):
     NV_NVDLA_cdp_base(module_name),
@@ -50,9 +52,16 @@ NV_NVDLA_cdp::NV_NVDLA_cdp( sc_module_name module_name ):
     csb_delay_(SC_ZERO_TIME),
     b_transport_delay_(SC_ZERO_TIME)
 {
+    int i, j;
     // Memory allocation
-    dp_calc_buffer      = new int8_t [8*ATOM_CUBE_SIZE*2];    // 256B*2
-    post_calc_buffer    = new int8_t [CDP_PRE_CALC_BUFFER_ATOM_NUM*32];
+    dp_calc_buffer      = new int8_t** [3];
+    for(i=0;i<3;i++)
+        dp_calc_buffer[i] = new int8_t* [8];
+    for(i=0;i<3;i++)
+        for(j=0;j<8;j++)
+            dp_calc_buffer[i][j] = new int8_t [DLA_ATOM_SIZE];
+
+    post_calc_buffer    = new int8_t [CDP_PRE_CALC_BUFFER_ATOM_NUM*DLA_ATOM_SIZE];
     rdma_fifo_          = new sc_fifo <int8_t *> (CDP_RDMA_SIZE);
     hls_out_fifo_       = new sc_fifo <int16_t *> (1024);
     rdma_atom_num_fifo_ = new sc_fifo <uint32_t> (1024);
@@ -67,7 +76,6 @@ NV_NVDLA_cdp::NV_NVDLA_cdp( sc_module_name module_name ):
     cdp_fifo_cfg_wdma_      = new sc_fifo <CdpConfig *>  (1);
     is_mc_ack_done_ = false;
     is_cv_ack_done_ = false;
-    txn_r = 0;
     txn_w = 0;
 
     // Reset
@@ -89,7 +97,14 @@ NV_NVDLA_cdp::NV_NVDLA_cdp( sc_module_name module_name ):
 
 #pragma CTC SKIP
 NV_NVDLA_cdp::~NV_NVDLA_cdp() {
-    if( dp_calc_buffer )        delete [] dp_calc_buffer;
+    int i, j;
+    for(i=0;i<3;i++)
+        for(j=0;j<8;j++)
+            delete [] dp_calc_buffer[i][j];
+    for(i=0;i<3;i++)
+        delete [] dp_calc_buffer[i];
+    delete [] dp_calc_buffer;
+
     if( post_calc_buffer )      delete [] post_calc_buffer;
     if( rdma_fifo_ )            delete rdma_fifo_;
     if( cdp_ack_fifo_)         delete cdp_ack_fifo_;
@@ -260,9 +275,9 @@ void NV_NVDLA_cdp::CdpRdmaSequence_0() {
     cube_width      = cdp_rdma_width_+1;
     cube_height     = cdp_rdma_height_+1;
     cube_channel    = cdp_rdma_channel_+1;
-    line_stride     = cdp_rdma_src_line_stride_ * 32;
-    surf_stride     = cdp_rdma_src_surface_stride_ * 32;
-    src_base_addr   = ((uint64_t)cdp_rdma_src_base_addr_high_ << 32)  | ((uint64_t)cdp_rdma_src_base_addr_low_ << 5);
+    line_stride     = cdp_rdma_src_line_stride_;
+    surf_stride     = cdp_rdma_src_surface_stride_;
+    src_base_addr   = ((uint64_t)cdp_rdma_src_base_addr_high_ << 32)  | (uint64_t)cdp_rdma_src_base_addr_low_;
 
     // # Precision setting
     switch (cdp_rdma_input_data_) {
@@ -291,34 +306,23 @@ void NV_NVDLA_cdp::CdpRdmaSequence_0() {
         atom_sent = 0;
         atom_num = cube_width;
         surf0_payload_addr = src_base_addr + line_iter * line_stride;   // The start address of the current line of the first surface
-        payload_size     = MAX_MEM_TRANSACTION_SIZE;
-        payload_atom_num = payload_size / ATOM_CUBE_SIZE;
+        payload_size     = CDP_PARALLEL_NUM_W * DLA_ATOM_SIZE;
+        payload_atom_num = payload_size / DLA_ATOM_SIZE;
 
         while (atom_sent < atom_num) {
-            // For READPHILE
-            /*if(atom_sent == 0) {    // First request
-                payload_size     = min((uint64_t)cube_width*ATOM_CUBE_SIZE, MAX_MEM_TRANSACTION_SIZE - surf0_payload_addr%MAX_MEM_TRANSACTION_SIZE);
-            }
-            else if ((atom_num - atom_sent) <= MAX_MEM_TRANSACTION_SIZE/ATOM_CUBE_SIZE) {     // Last request
-                payload_size     = (atom_num - atom_sent)*ATOM_CUBE_SIZE;
+            if ((atom_num - atom_sent) <= CDP_PARALLEL_NUM_W) {     // Last request
+                payload_size     = (atom_num - atom_sent) * DLA_ATOM_SIZE;
             }
             else {
-                payload_size     = MAX_MEM_TRANSACTION_SIZE;
+                payload_size     = CDP_PARALLEL_NUM_W * DLA_ATOM_SIZE ;
             }
-            */
-            if ((atom_num - atom_sent) <= MAX_MEM_TRANSACTION_SIZE/ATOM_CUBE_SIZE) {     // Last request
-                payload_size     = (atom_num - atom_sent)*ATOM_CUBE_SIZE;
-            }
-            else {
-                payload_size     = MAX_MEM_TRANSACTION_SIZE;
-            }
-            payload_atom_num     = payload_size / ATOM_CUBE_SIZE;
+            payload_atom_num     = payload_size / DLA_ATOM_SIZE;
 
             // Send DMA request for all surfaces
             for (surf_iter = 0; surf_iter < surf_num; surf_iter++) {
                 cslDebug((50, "CdpRdmaSequence_0 line_iter=%d, surf_iter=%d, atom_sent=%d\n", line_iter, surf_iter, atom_sent));
                 rdma_atom_num_fifo_->write(payload_atom_num);
-                payload_addr     = surf0_payload_addr + surf_iter * surf_stride + atom_sent * ATOM_CUBE_SIZE; // surface_stride is multiple of 256
+                payload_addr     = surf0_payload_addr + surf_iter * surf_stride + atom_sent * DLA_ATOM_SIZE; // surface_stride is multiple of 256
                 cslDebug((50, "CdpRdmaSequence_0 SendDmaReadRequest payload_addr=0x%lx payload_atom_num=%d\n", payload_addr, payload_atom_num));
                 dma_rd_req_payload_->pd.dma_read_cmd.addr = payload_addr;
                 dma_rd_req_payload_->pd.dma_read_cmd.size = payload_atom_num - 1;
@@ -407,7 +411,7 @@ void NV_NVDLA_cdp::CdpDataPathSequence() {
     uint8_t     element_per_group_src;
     // Control variables
     // # Iterators
-    uint32_t    width_iter;
+    //uint32_t    width_iter;
     uint32_t    surf_iter;
     uint32_t    surf_num;
     uint32_t    line_iter;
@@ -415,39 +419,32 @@ void NV_NVDLA_cdp::CdpDataPathSequence() {
     uint32_t    atom_num;
     uint32_t    nxt_atom_num;
     uint32_t    atom_iter;
-    uint32_t    nxt_atom_iter;
     uint32_t    processed_atom_num;
     uint32_t    atom_num_per_line;
     uint32_t    hls_out_num_;
     uint32_t    hls_lookup_num_;
-    // # Evaluated variable
-    //uint64_t    payload_addr;
-    //uint32_t    payload_size;
-    //uint32_t    payload_atom_num;
-    //uint8_t     element_size_src;
 
-    int8_t     *first_half_calc_buffer;
-    int8_t     *second_half_calc_buffer;
-    int8_t     *cur_calc_buffer;
-    int8_t     *pre_calc_buffer;
-    int8_t     *nxt_calc_buffer;
+    int8_t    **cur_calc_buffer;
+    int8_t    **pre_calc_buffer;
+    int8_t    **nxt_calc_buffer;
+
+    int8_t      pre_idx, cur_idx, nxt_idx;
+    uint32_t    element_iter, channel_iter;
 
     // Varibles for HLS
     // Input
     //    uint16_t    data0, data1, data2, data3;
-    int16_t     data_to_hls[12];
+    int16_t     data_to_hls[NVDLA_CDP_THROUGHPUT+4*2];    //4 is (max_normalz_len-1)/2=(9-1)/2
     int8_t      *data_to_hls_i8 = (int8_t*)(&data_to_hls[0]);
     bool        is_int8;
-    int8_t     *byte;
-    uint32_t    cdp_width_cnt, cdp_channel_cnt;
-    bool        cdp_channel_last;
+    //uint32_t    cdp_width_cnt, cdp_channel_cnt;
+    //bool        cdp_channel_last;
     uint32_t    round_num;
     // Input
     //uint32_t    cdp_width_out, cdp_channel_cnt_out;
     //bool        cdp_channel_last_out;
     int8_t     *rdma_data_ptr;
     CdpConfig   *cfg;
-    uint32_t    parallel_num;
 
     // Copy from register value to local config variables, similar with RTL connection, begin
     // # Cube setting
@@ -463,18 +460,15 @@ void NV_NVDLA_cdp::CdpDataPathSequence() {
         case DATA_FORMAT_IS_INT8: {
             element_per_group_src   = ELEMENT_PER_GROUP_INT8;
             is_int8 = true;
-            parallel_num = 8;
             break;
         }
         case DATA_FORMAT_IS_INT16: {
             element_per_group_src   = ELEMENT_PER_GROUP_INT16;
-            parallel_num = 4;
             break;
         }
         case DATA_FORMAT_IS_FP16: {
             element_per_group_src   = ELEMENT_PER_GROUP_FP16;
             cdp_datin_offset_ = 0;
-            parallel_num = 4;
             break;
         }
 #pragma CTC SKIP
@@ -482,16 +476,14 @@ void NV_NVDLA_cdp::CdpDataPathSequence() {
 #pragma CTC ENDSKIP
     }
 
-    first_half_calc_buffer = dp_calc_buffer;
-    second_half_calc_buffer = dp_calc_buffer + 8*ATOM_CUBE_SIZE;
     surf_num = (cube_channel+element_per_group_src-1) / element_per_group_src;
 
-    surf_iter = 0;
-    width_iter = 0;    // width of current stripe
-    processed_atom_num = 0;
-    hls_out_num_ = 0;
-    hls_lookup_num_ = 0;
-    round_num = surf_num*ATOM_CUBE_SIZE/8;
+    surf_iter           = 0;
+    //width_iter          = 0;    // width of current stripe
+    processed_atom_num  = 0;
+    hls_out_num_        = 0;
+    hls_lookup_num_     = 0;
+    round_num           = surf_num*CDP_ROUND_PER_ATOM;
 
     cslInfo(("%s WxHxC=%dx%dx%d, format:%d\n", __FUNCTION__,
                 cube_width, cube_height, cube_channel,cdp_input_data_type_));
@@ -500,169 +492,124 @@ void NV_NVDLA_cdp::CdpDataPathSequence() {
         processed_atom_num = 0;
         atom_num_per_line = cube_width * surf_num;
         while(processed_atom_num < atom_num_per_line) {   // While loop to process the stripes in each line
-            // Process a stripe
-            cur_calc_buffer = first_half_calc_buffer;   // size of dp_calc_buffer is 8*ATOM_CUBE_SIZE*2
-            nxt_calc_buffer = pre_calc_buffer  = second_half_calc_buffer;
-            // Copy the first 256B data (may be less than 256B) to cur_calc_buffer
+            // Process a stripe (number of CDP_PARALLEL_NUM_W atoms in W direction)
+            surf_iter = 0;
+            pre_idx = 0;
+            cur_idx = 1;
+            nxt_idx = 2;
+            pre_calc_buffer = dp_calc_buffer[pre_idx];
+            cur_calc_buffer = dp_calc_buffer[cur_idx];
+            nxt_calc_buffer = dp_calc_buffer[nxt_idx];
+
             atom_num = rdma_atom_num_fifo_->read();
             processed_atom_num  += atom_num;
             cslDebug((50, "CDP line_iter=%d processed_atom_num=%d\n", line_iter, processed_atom_num));
-
             hls_atom_num_fifo_->write(atom_num);
+
+            // Fill padding value to pre_calc_buffer
+            for (atom_iter = 0; atom_iter < atom_num; atom_iter++)
+                for (element_iter = 0; element_iter < DLA_ATOM_SIZE; element_iter++)
+                    pre_calc_buffer[atom_iter][element_iter] = (int8_t)cdp_datin_offset_;
+
+            // Read data to cur_calc_buffer
             for (atom_iter = 0; atom_iter < atom_num; atom_iter++) {
                 rdma_data_ptr = rdma_fifo_->read();
-                memcpy (&cur_calc_buffer[atom_iter*ATOM_CUBE_SIZE], rdma_data_ptr, ATOM_CUBE_SIZE);    // pre_calc_buffer is 8*32*2B
+                memcpy (cur_calc_buffer[atom_iter], rdma_data_ptr, DLA_ATOM_SIZE);
                 delete [] rdma_data_ptr;
+                // Fill cripple channels with padding value
+                if (1==surf_num)
+                    for(channel_iter = cube_channel; channel_iter < surf_num*DLA_ATOM_SIZE; channel_iter++)
+                        cur_calc_buffer[atom_iter][channel_iter%DLA_ATOM_SIZE] = (int8_t)cdp_datin_offset_;
             }
-            for (round_iter=0; round_iter<round_num; round_iter++) {     // Each round produces 8B result from HLS module (in Channel direction)
-                for (atom_iter=0; atom_iter<atom_num; atom_iter++) {
-                    byte = &cur_calc_buffer[atom_iter*ATOM_CUBE_SIZE];
-                    if(round_iter==0) { // First surf, padding the first 8B
-                        if (is_int8) {
-                            // Each data is 1Byte
-                            data_to_hls_i8[0] = data_to_hls_i8[1] =
-                                data_to_hls_i8[2] = data_to_hls_i8[3] = (int8_t)cdp_datin_offset_;
-                            memcpy(&data_to_hls_i8[4], byte, 12);
-                        } else {
-                            // Each data is 2Bytes
-                            data_to_hls[0] = data_to_hls[1] =
-                                data_to_hls[2] = data_to_hls[3] = cdp_datin_offset_;
-                            memcpy(&data_to_hls[4], byte, 16);
-                        }
-                    }
-                    else if(round_iter==(round_num-1)) { // Last round of last surf. Padding the last 8B
-                        if (is_int8) {
-                            memcpy(data_to_hls_i8, &byte[16+4], 12);
-                            data_to_hls_i8[12] = data_to_hls_i8[13] =
-                                data_to_hls_i8[14] = data_to_hls_i8[15] = (int8_t)cdp_datin_offset_;
-                        } else {
-                            // Each data is 2Bytes
-                            memcpy(data_to_hls, &byte[16], 16);
-                            data_to_hls[8] = data_to_hls[9] =
-                                data_to_hls[10] = data_to_hls[11] = cdp_datin_offset_;
-                        }
-                    }
-                    else if((round_iter%4)==1 || (round_iter%4)==2) {
-                        if (is_int8) {
-                            memcpy(data_to_hls_i8, &byte[((round_iter%4)-1)*8 + 4], 16);
-                        } else {
-                            memcpy(data_to_hls, &byte[((round_iter%4)-1)*8], 24);
-                        }
-                    }
-                    else if(round_iter%4==0) {
-                        if(cdp_sqsum_bypass_ && atom_iter==0) {
-                            // Copy from rdma_fifo_ to nxt buffer
-                            nxt_atom_num = rdma_atom_num_fifo_->read();
-                            processed_atom_num  += nxt_atom_num;
-                            cslDebug((50, "CDP line_iter=%d processed_atom_num=%d\n", line_iter, processed_atom_num));
+
+            // Read data to nxt_calc_buffer
+            if (surf_num>1) {
+                nxt_atom_num = rdma_atom_num_fifo_->read();
+                processed_atom_num  += nxt_atom_num;
+                hls_atom_num_fifo_->write(nxt_atom_num);
 #pragma CTC SKIP
-                            if(nxt_atom_num!=atom_num) {
-                                FAIL((("atom_num should be same in same stripe. atom_num=%d, nxt_atom_num=%d"), atom_num, nxt_atom_num));
-                            }
+                if(nxt_atom_num!=atom_num) {
+                    FAIL((("atom_num should be same in same stripe. atom_num=%d, nxt_atom_num=%d"), atom_num, nxt_atom_num));
+                }
 #pragma CTC ENDSKIP
-                            hls_atom_num_fifo_->write(nxt_atom_num);
-                            for (nxt_atom_iter = 0; nxt_atom_iter < nxt_atom_num; nxt_atom_iter++) {
-                                rdma_data_ptr = rdma_fifo_->read();
-                                memcpy (&cur_calc_buffer[nxt_atom_iter*ATOM_CUBE_SIZE], rdma_data_ptr, ATOM_CUBE_SIZE);    // pre_calc_buffer is 8*32*2B
-                                delete [] rdma_data_ptr;
-                            }
-                        }
-                        if (is_int8) {
-                            memcpy(data_to_hls_i8, &pre_calc_buffer[atom_iter*ATOM_CUBE_SIZE + 24 + 4], 4);
-                            memcpy(&data_to_hls_i8[4], byte, 12);
-                        } else {
-                            memcpy(data_to_hls, &pre_calc_buffer[atom_iter*ATOM_CUBE_SIZE + 24], 8);
-                            memcpy(&data_to_hls[4], byte, 16);
-                        }
-                        
-                    }
-                    else if((round_iter%4)==3) {
-                        // Last round, but not the last round of the last surf
-                        if(!cdp_sqsum_bypass_ && atom_iter==0) {
-                            // Copy from rdma_fifo_ to nxt buffer
-                            nxt_atom_num = rdma_atom_num_fifo_->read();
-                            processed_atom_num  += nxt_atom_num;
-                            cslDebug((50, "CDP line_iter=%d processed_atom_num=%d\n", line_iter, processed_atom_num));
-#pragma CTC SKIP
-                            if(nxt_atom_num!=atom_num) {
-                                FAIL((("atom_num should be same in same stripe. atom_num=%d, nxt_atom_num=%d"), atom_num, nxt_atom_num));
-                            }
-#pragma CTC ENDSKIP
-                            hls_atom_num_fifo_->write(nxt_atom_num);
-                            for (nxt_atom_iter = 0; nxt_atom_iter < nxt_atom_num; nxt_atom_iter++) {
-                                rdma_data_ptr = rdma_fifo_->read();
-                                memcpy (&nxt_calc_buffer[nxt_atom_iter*ATOM_CUBE_SIZE], rdma_data_ptr, ATOM_CUBE_SIZE);    // pre_calc_buffer is 8*32*2B
-                                delete [] rdma_data_ptr;
-                            }
-                        }
-                        if (is_int8) {
-                            memcpy(data_to_hls_i8, &byte[16+4], 12);
-                            memcpy(&data_to_hls_i8[12], &nxt_calc_buffer[atom_iter*ATOM_CUBE_SIZE], 4);
-                        } else {
-                            memcpy(data_to_hls, &byte[16], 16);
-                            memcpy(&data_to_hls[8], &nxt_calc_buffer[atom_iter*ATOM_CUBE_SIZE], 8);
-                        }
-                        if(atom_iter==(atom_num-1)) {   // The last atom of current round in current stripe
-                            // Shift pointers cur_calc_buffer, pre_calc_buffer, nxt_calc_buffer
-                            cur_calc_buffer = (cur_calc_buffer==first_half_calc_buffer)? second_half_calc_buffer: first_half_calc_buffer;
-                            pre_calc_buffer = (pre_calc_buffer==first_half_calc_buffer)? second_half_calc_buffer: first_half_calc_buffer;
-                            nxt_calc_buffer = pre_calc_buffer;
-                        }
-                    }
-                    //garbage in left padding
-                    if ((round_iter+0)*parallel_num > cube_channel) {
-                        int garbage_element_num = std::min((round_iter+0)*parallel_num - cube_channel, (uint32_t)4);
-                        int valid_element_num = 4 - garbage_element_num;
-                        if (is_int8) {
-                            for(int i = 0; i < garbage_element_num; i++) {
-                                data_to_hls_i8[0 + valid_element_num + i] = (int8_t)cdp_datin_offset_;
-                            }
-                        } else {
-                            for(int i = 0; i < garbage_element_num; i++) {
-                                data_to_hls[0 + valid_element_num + i] = cdp_datin_offset_;
-                            }
-                        }
-                    }
-                    //garbage in current data
-                    if ((round_iter+1)*parallel_num > cube_channel) {
-                        int garbage_element_num = std::min((round_iter+1)*parallel_num - cube_channel, parallel_num);
-                        int valid_element_num = parallel_num - garbage_element_num;
-                        if (is_int8) {
-                            for(int i = 0; i < garbage_element_num; i++) {
-                                data_to_hls_i8[4 + valid_element_num + i] = (int8_t)cdp_datin_offset_;
-                            }
-                        } else {
-                            for(int i = 0; i < garbage_element_num; i++) {
-                                data_to_hls[4 + valid_element_num + i] = cdp_datin_offset_;
-                            }
-                        }
-                    }
-                    //garbage in right padding
-                    if ((round_iter+2)*parallel_num > cube_channel) {
-                        int garbage_element_num = std::min((round_iter+2)*parallel_num - cube_channel, parallel_num);
-                        int valid_element_num = parallel_num - garbage_element_num;
-                        if (is_int8) {
-                            for(int i = 0; i < 4 - valid_element_num; i++) {
-                                data_to_hls_i8[4 + parallel_num + valid_element_num + i] = (int8_t)cdp_datin_offset_;
-                            }
-                        } else {
-                            for(int i = 0; i < 4 - valid_element_num; i++) {
-                                data_to_hls[4 + parallel_num + valid_element_num + i] = cdp_datin_offset_;
-                            }
-                        }
+                for (atom_iter = 0; atom_iter < nxt_atom_num; atom_iter++) {
+                    rdma_data_ptr = rdma_fifo_->read();
+                    memcpy (nxt_calc_buffer[atom_iter], rdma_data_ptr, DLA_ATOM_SIZE);
+                    delete [] rdma_data_ptr;
+                    if (2==surf_num)
+                        for(channel_iter = cube_channel; channel_iter < surf_num*DLA_ATOM_SIZE; channel_iter++)
+                            nxt_calc_buffer[atom_iter][channel_iter%DLA_ATOM_SIZE] = (int8_t)cdp_datin_offset_;
+                }
+            } else { // Fill padding value
+                for (atom_iter = 0; atom_iter < atom_num; atom_iter++) {
+                    for (element_iter = 0; element_iter < DLA_ATOM_SIZE; element_iter++)
+                        nxt_calc_buffer[atom_iter][element_iter%DLA_ATOM_SIZE] = (int8_t)cdp_datin_offset_;
+                }
+            }
+
+            for (round_iter=0; round_iter<round_num; round_iter++) {     // Each round produces number of NVDLA_CDP_THROUGHPUT results from HLS module (in Channel direction)
+                surf_iter = round_iter / CDP_ROUND_PER_ATOM;
+                for (atom_iter=0; atom_iter<atom_num; atom_iter++) {    // In W direction
+                    int32_t idx;
+                    int32_t pos = (round_iter * NVDLA_CDP_THROUGHPUT) % DLA_ATOM_SIZE;
+                    cslDebug((50, "CDP line_iter=%d surf_iter=%d round_iter=%d atom_iter=%d round_num=%d\n", line_iter, surf_iter, round_iter, atom_iter, round_num));
+                    for(idx=pos-4;idx<=pos+(NVDLA_CDP_THROUGHPUT-1)+4;idx++) {
+                        int32_t data_idx = idx-(pos-4);
+                        if(idx<0)
+                            data_to_hls_i8[data_idx] = pre_calc_buffer[atom_iter][DLA_ATOM_SIZE+idx];
+                        else if(idx<DLA_ATOM_SIZE)
+                            data_to_hls_i8[data_idx] = cur_calc_buffer[atom_iter][idx];
+                        else
+                            data_to_hls_i8[data_idx] = nxt_calc_buffer[atom_iter][idx-DLA_ATOM_SIZE];
                     }
 
+                    // The last atom of current round in current stripe and last round of current surface
+                    if((atom_iter==(atom_num-1)) && (round_iter%CDP_ROUND_PER_ATOM == CDP_ROUND_PER_ATOM-1)) {
+                        // Shift pointers cur_calc_buffer, pre_calc_buffer, nxt_calc_buffer
+                        pre_idx = (pre_idx+1)%3;
+                        cur_idx = (cur_idx+1)%3;
+                        nxt_idx = (nxt_idx+1)%3;
+                        pre_calc_buffer = dp_calc_buffer[pre_idx];
+                        cur_calc_buffer = dp_calc_buffer[cur_idx];
+                        nxt_calc_buffer = dp_calc_buffer[nxt_idx];
+
+                        if(surf_iter+1 < surf_num-1) {    // There is still data to fetch in current stripe
+                            nxt_atom_num = rdma_atom_num_fifo_->read();
+                            processed_atom_num  += nxt_atom_num;
+                            hls_atom_num_fifo_->write(nxt_atom_num);
+#pragma CTC SKIP
+                            if(nxt_atom_num!=atom_num) {
+                                FAIL((("atom_num should be same in same stripe. atom_num=%d, nxt_atom_num=%d"), atom_num, nxt_atom_num));
+                            }
+#pragma CTC ENDSKIP
+                            for (atom_iter = 0; atom_iter < nxt_atom_num; atom_iter++) {
+                                rdma_data_ptr = rdma_fifo_->read();
+                                memcpy (nxt_calc_buffer[atom_iter], rdma_data_ptr, DLA_ATOM_SIZE);
+                                delete [] rdma_data_ptr;
+                                if (surf_iter+2 == surf_num-1)
+                                    for(channel_iter = cube_channel; channel_iter < surf_num*DLA_ATOM_SIZE; channel_iter++)
+                                        nxt_calc_buffer[atom_iter][channel_iter%DLA_ATOM_SIZE] = (int8_t)cdp_datin_offset_;
+                            }
+                        } else { // Fill padding value
+                            for (atom_iter = 0; atom_iter < atom_num; atom_iter++) {
+                                for (element_iter = 0; element_iter < DLA_ATOM_SIZE; element_iter++)
+                                    nxt_calc_buffer[atom_iter][element_iter] = (int8_t)cdp_datin_offset_;
+                            }
+                        }
+                    }
+/*
                     cdp_width_cnt   = width_iter + atom_iter;
-                    cdp_channel_cnt = surf_iter*ATOM_CUBE_SIZE/8;  // Each channel is 8B. Each surf is 32B.
+                    cdp_channel_cnt = surf_iter*DLA_ATOM_SIZE/8;  // Each channel is 8B. Each surf is 32B.
 
-                    if(cdp_channel_cnt==(surf_num-1)*ATOM_CUBE_SIZE/8)
+                    if(cdp_channel_cnt==(surf_num-1)*DLA_ATOM_SIZE/8)
                         cdp_channel_last = true;
                     else
                         cdp_channel_last = false;
 
                     hls_lookup_num_++;
-                    cslDebug((70, "cdp_width_cnt=%d cdp_channel_cnt=%d cdp_channel_last=%d round_iter=%d data_to_hls:\n",
-                                cdp_width_cnt, cdp_channel_cnt, cdp_channel_last, round_iter));
+                    //cslDebug((70, "cdp_width_cnt=%d cdp_channel_cnt=%d cdp_channel_last=%d round_iter=%d data_to_hls:\n",
+                    //            cdp_width_cnt, cdp_channel_cnt, cdp_channel_last, round_iter));
+*/
                     if(is_int8)
                     {
                         for(int i=0;i<16;i++) {
@@ -685,11 +632,11 @@ void NV_NVDLA_cdp::CdpDataPathSequence() {
                     cslDebug((70, "\n"));
 
                     if (is_int8) {
-                        normalz_out_int8 = new int8_t[8];
-                        lookup_lut_int8(data_to_hls_i8, 8);
-                        hls_out_fifo_->write((int16_t*)normalz_out_int8);    //8B
+                        normalz_out_int8 = new int8_t[NVDLA_CDP_THROUGHPUT];
+                        lookup_lut_int8(data_to_hls_i8, NVDLA_CDP_THROUGHPUT);
+                        hls_out_fifo_->write((int16_t*)normalz_out_int8);
                         cslDebug((50, "normalz_out:"));
-                        for(int i=0;i<8;i++) {
+                        for(int i=0;i<NVDLA_CDP_THROUGHPUT;i++) {
                             cslDebug((50, " %04x", normalz_out_int8[i]));
                         }
                         cslDebug((50, "\n"));
@@ -720,7 +667,7 @@ void NV_NVDLA_cdp::CdpDataPathSequence() {
                     cslDebug((50, "\n"));
                 } // atom_iter
             } // round_iter
-
+/*
             // Finished processing one stripe (last surf in stripe)
             if (surf_iter == (surf_num-1)) {
                 surf_iter = 0;
@@ -732,6 +679,7 @@ void NV_NVDLA_cdp::CdpDataPathSequence() {
             }
             else
                 surf_iter++;
+*/
         } // stripe iter
     } // line_iter
 
@@ -797,9 +745,9 @@ void NV_NVDLA_cdp::CdpWdmaSequence() {
     cube_width      = cfg->cdp_rdma_width_+1;
     cube_height     = cfg->cdp_rdma_height_+1;
     cube_channel    = cfg->cdp_rdma_channel_+1;
-    line_stride     = cdp_dst_line_stride_ << 5;
-    surface_stride  = cdp_dst_surface_stride_ << 5;
-    dst_base_addr   = ((uint64_t)cdp_dst_base_addr_high_ << 32) | ((uint64_t)cdp_dst_base_addr_low_ << 5);
+    line_stride     = cdp_dst_line_stride_;
+    surface_stride  = cdp_dst_surface_stride_;
+    dst_base_addr   = ((uint64_t)cdp_dst_base_addr_high_ << 32) | (uint64_t)cdp_dst_base_addr_low_;
 
     delete cfg;
     // # Precision setting
@@ -821,7 +769,7 @@ void NV_NVDLA_cdp::CdpWdmaSequence() {
 #pragma CTC ENDSKIP
     }
 
-    surf_num         = (cube_channel+element_per_group_dst-1)/element_per_group_dst;
+    surf_num       = (cube_channel+element_per_group_dst-1)/element_per_group_dst;
     total_atom_num = cube_width * cube_height * surf_num;
     cslDebug((30, "%s: WxHxC=%dx%dx%d, total_atoms=%d\n", __FUNCTION__, cube_width, cube_height, cube_channel, total_atom_num));
 
@@ -831,9 +779,9 @@ void NV_NVDLA_cdp::CdpWdmaSequence() {
     sent_atom_num = 0;
     while(sent_atom_num < total_atom_num) {
         atom_num = hls_atom_num_fifo_->read();
-        round_num = atom_num * 4;           // each atom has 4 rounds
+        round_num = atom_num * CDP_ROUND_PER_ATOM;
 
-        payload_addr = dst_base_addr + surf_iter * surface_stride + line_iter * line_stride + width_iter*ATOM_CUBE_SIZE;
+        payload_addr = dst_base_addr + surf_iter * surface_stride + line_iter * line_stride + width_iter*DLA_ATOM_SIZE;
 
         // Prepare payload
         cslDebug((30, "NV_NVDLA_cdp::SendDmaWriteRequest, begin. total_atom_num=%d sent_atom_num=%d atom_num=%d payload_addr=0x%lx\n", total_atom_num, sent_atom_num, atom_num, payload_addr));
@@ -854,20 +802,20 @@ void NV_NVDLA_cdp::CdpWdmaSequence() {
         cslDebug((50, "CdpWdmaSequence SendDmaWriteRquest cmd done\n"));
         
         for (round_iter = 0; round_iter < round_num; round_iter++) {
-            hls_element = hls_out_fifo_->read();    //8B
+            hls_element = hls_out_fifo_->read();
             int round_x = round_iter%atom_num;
             int round_y = round_iter/atom_num;
 
-            element_data_index = round_x*ATOM_CUBE_SIZE + round_y*8;
+            element_data_index = round_x*DLA_ATOM_SIZE + round_y*NVDLA_CDP_THROUGHPUT;
 
-            memcpy(&post_calc_buffer[element_data_index], hls_element, 8);     // Max size of payload_data_ptr is 256B
+            memcpy(&post_calc_buffer[element_data_index], hls_element, NVDLA_CDP_THROUGHPUT);
             delete [] hls_element;
         }
 
         // Send write data
         for (atom_iter=0; atom_iter<atom_num; atom_iter++) {
-            memcpy(&payload_data_ptr[(atom_iter%2)*ATOM_CUBE_SIZE], &post_calc_buffer[atom_iter*ATOM_CUBE_SIZE], ATOM_CUBE_SIZE);
-            if (((atom_iter%2)==1) || atom_iter==(atom_num-1)) {
+            memcpy(&payload_data_ptr[(atom_iter%CDP_ATOM_PER_TRANSFER)*DLA_ATOM_SIZE], &post_calc_buffer[atom_iter*DLA_ATOM_SIZE], DLA_ATOM_SIZE);
+            if (((atom_iter%CDP_ATOM_PER_TRANSFER)==CDP_ATOM_PER_TRANSFER-1) || atom_iter==(atom_num-1)) {
                 // Send write data
                 cslDebug((50, "CdpWdmaSequence SendDmaWriteRquest data txn=%d atom_iter=%d\n", txn_w, atom_iter));
                 SendDmaWriteRequest(dma_wr_req_data_payload_, dma_delay_, cdp_dst_ram_type_);
@@ -933,7 +881,7 @@ void NV_NVDLA_cdp::SendDmaReadRequest(nvdla_dma_rd_req_t* payload, sc_time& dela
 
 void NV_NVDLA_cdp::ExtractRdmaResponsePayload(nvdla_dma_rd_rsp_t* payload){
     // Extract data from payload
-    // Each payload is 64 byte, two mask bit tells which 32 byte groups are effective
+    // Each payload is DMAIF_WIDTH byte, two mask bit tells which DLA_ATOM_SIZE byte groups are effective
     uint8_t *payload_data_ptr;
     int8_t *rdma_atom_cube_ptr;
     uint8_t mask;
@@ -941,81 +889,39 @@ void NV_NVDLA_cdp::ExtractRdmaResponsePayload(nvdla_dma_rd_rsp_t* payload){
     mask = payload->pd.dma_read_data.mask;
     payload_data_ptr    = reinterpret_cast <uint8_t *> (payload->pd.dma_read_data.data);
 
-#pragma CTC SKIP
-    if (mask==0x2) {    // First 32B is not effective, second 32B is effective
-        FAIL(("NV_NVDLA_cdp::ExtractRdmaResponsePayload, mask==2 is unexcepted"));
-    }
-#pragma CTC ENDSKIP
+    for(int atom_iter = 0; atom_iter < DMAIF_WIDTH/DLA_ATOM_SIZE; atom_iter++) {
+        if (0 != (mask & (0x1 << atom_iter))) {
+            rdma_atom_cube_ptr = new int8_t[DLA_ATOM_SIZE]; 
+            memcpy(rdma_atom_cube_ptr, payload_data_ptr + DLA_ATOM_SIZE*atom_iter, DLA_ATOM_SIZE);
 
-    // Handling lower 32 bytes
-    if (0 != (mask & 0x1)) {
-        rdma_atom_cube_ptr = new int8_t[ATOM_CUBE_SIZE]; 
-        memcpy(rdma_atom_cube_ptr, payload_data_ptr, ATOM_CUBE_SIZE);
-        rdma_fifo_->write(rdma_atom_cube_ptr);
-        txn_r++;
-        
-        if(cdp_input_data_type_ == DATA_FORMAT_IS_FP16)
-        {
-            uint16_t *ptr = reinterpret_cast <uint16_t *> (rdma_atom_cube_ptr);
-
-            for(int i=0;i<16;i++)
+            if(cdp_input_data_type_ == DATA_FORMAT_IS_FP16)
             {
-                uint32_t exp = (ptr[i] >> 10) & 0x1f;
-                uint32_t frac = ptr[i] & 0x3ff;
+                uint16_t *ptr = reinterpret_cast <uint16_t *> (rdma_atom_cube_ptr);
 
-                if(exp == 0x1f)
+                for(int i=0;i<DLA_ATOM_SIZE/2;i++)
                 {
-                    if(frac == 0)
-                        inf_input_num++;
-                    else
-                        nan_input_num++;
+                    uint32_t exp = (ptr[i] >> 10) & 0x1f;
+                    uint32_t frac = ptr[i] & 0x3ff;
+
+                    if(exp == 0x1f)
+                    {
+                        if(frac == 0)
+                            inf_input_num++;
+                        else
+                            nan_input_num++;
+                    }
                 }
             }
-        }
 
-        cslDebug((70, "write to rdma_buffer. mask A\n"));
-        for(int i=0;i<32;i++)
-        {
-            cslDebug((70, "%02x ", rdma_atom_cube_ptr[i]));
-        }
-        cslDebug((70, "\n"));
-    }
-
-    // Handling upper 32 bytes
-    if (0 != (mask & 0x2)) {
-        rdma_atom_cube_ptr = new int8_t[ATOM_CUBE_SIZE]; 
-        memcpy(rdma_atom_cube_ptr, &payload_data_ptr[ATOM_CUBE_SIZE], ATOM_CUBE_SIZE);
-        rdma_fifo_->write(rdma_atom_cube_ptr);
-        txn_r++;
-
-        if(cdp_input_data_type_ == DATA_FORMAT_IS_FP16)
-        {
-            uint16_t *ptr = reinterpret_cast <uint16_t *> (rdma_atom_cube_ptr);
-
-            for(int i=0;i<16;i++)
+            cslDebug((70, "write to rdma_buffer. atom:%d\n", atom_iter));
+            for(int i=0;i<DLA_ATOM_SIZE;i++)
             {
-                uint32_t exp = (ptr[i] >> 10) & 0x1f;
-                uint32_t frac = ptr[i] & 0x3ff;
-
-                if(exp == 0x1f)
-                {
-                    if(frac == 0)
-                        inf_input_num++;
-                    else
-                        nan_input_num++;
-                }
+                cslDebug((70, "%02x ", rdma_atom_cube_ptr[i]));
             }
+            cslDebug((70, "\n"));
+            rdma_fifo_->write(rdma_atom_cube_ptr);
         }
-
-        cslDebug((70, "write to rdma_buffer. mask B\n"));
-        for(int i=0;i<32;i++)
-        {
-            cslDebug((70, "%02x ", rdma_atom_cube_ptr[i]));
-        }
-        cslDebug((70, "\n"));
     }
-
-    cslDebug((50, "NV_NVDLA_cdp::ExtractRdmaResponsePayload, txn=%d, atom_iter=%d\n", txn_r / 8, txn_r % 8));
 }
 
 void NV_NVDLA_cdp::mcif2cdp_rd_rsp_b_transport(int ID, nvdla_dma_rd_rsp_t* payload, sc_core::sc_time& delay){
@@ -1236,7 +1142,7 @@ void NV_NVDLA_cdp::lookup_lut_int8(int8_t *data_in, int parallel_num)
 
     sc_int<16> lut_result;
 
-    sc_int<25> data_cvt_out_0[8];
+    sc_int<25> data_cvt_out_0[NVDLA_CDP_THROUGHPUT];
 
     bool       le_underflow;
     bool       le_overflow;
@@ -1274,11 +1180,11 @@ void NV_NVDLA_cdp::lookup_lut_int8(int8_t *data_in, int parallel_num)
 
 #pragma CTC SKIP
     assert(cdp_input_data_type_ == NVDLA_CDP_D_DATA_FORMAT_0_INPUT_DATA_TYPE_INT8);
-    assert(parallel_num == 8);
+//    assert(parallel_num == 8);
 #pragma CTC ENDSKIP
 
     // Input Converter
-    for(i=0; i<(parallel_num+8)/2; i++) {
+    for(i=0; i<(parallel_num+8+1)/2; i++) {     //parallel_num may be odd. add 1 before division
         //***** HLS Input Convertor (INT16->INT17) ******
         int32_t data_cvt_in_2_tmp;
         int16_t in = ((int16_t)data_in[i*2+1] << 8) | (data_in[i*2] & 0xff);
@@ -1528,7 +1434,7 @@ void NV_NVDLA_cdp::lookup_lut_int8(int8_t *data_in, int parallel_num)
         cslDebug((70, "le: %lx, lo:%lx, out:%x mul:%x\n" , result_raw, result_density, lut_result.to_int(), data_cvt_out_0[i].to_int() ));
     }
 
-    for(i = 0; i < parallel_num/2; i++) {
+    for(i = 0; i < (parallel_num+1)/2; i++) {   //parallel_num may be 1, 2, 4 or 8
         int64_t in = (int64_t)(((int64_t)data_cvt_out_0[i*2+1].to_int()&0x1ffffff) << 25) | ((int64_t)data_cvt_out_0[i*2].to_int()&0x1ffffff);
         int16_t out;
         uint8_t flag;
@@ -1673,15 +1579,15 @@ void NV_NVDLA_cdp::lookup_lut(int16_t *data_in, int parallel_num)
     }
 
     cslDebug((70, "Data after input convertor:\n"));
-    for(int i=0;i<12;i++) {
-        cslDebug((70," %x",  data_cvt_in_2[i].to_int()));
-    }
-    cslDebug((70, "\n"));
-    cslDebug((70, "Data after square:\n"));
-    for(int i=0;i<12;i++) {
-        cslDebug((70," %llx",  data_cvt_in_3[i].to_int64()));
-    }
-    cslDebug((70, "\n"));
+///    for(int i=0;i<12;i++) {
+///        cslDebug((70," %x",  data_cvt_in_2[i].to_int()));
+///    }
+///    cslDebug((70, "\n"));
+///    cslDebug((70, "Data after square:\n"));
+///    for(int i=0;i<12;i++) {
+///        cslDebug((70," %llx",  data_cvt_in_3[i].to_int64()));
+///    }
+///    cslDebug((70, "\n"));
 
 
     for(i=0; i<4; i++) {

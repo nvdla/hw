@@ -8,55 +8,78 @@
 
 // File Name: NV_NVDLA_partition_a.v
 
+#include "NV_NVDLA_define.h"
+
 `ifdef NV_HWACC
 `include "NV_HWACC_NVDLA_tick_defines.vh"
 `endif
 
-
+#include "../cacc/NV_NVDLA_CACC.h"
+#include "../cmac/NV_NVDLA_CMAC.h"
 module NV_NVDLA_partition_a (
-   cacc2sdp_ready                //|< i
-  ,csb2cacc_req_dst_pd           //|< i
-  ,csb2cacc_req_dst_pvld         //|< i
-  ,direct_reset_                 //|< i
-  ,dla_reset_rstn                //|< i
-  ,global_clk_ovr_on             //|< i
-  ,mac_a2accu_dst_data0          //|< i
-  ,mac_a2accu_dst_data1          //|< i
-  ,mac_a2accu_dst_data2          //|< i
-  ,mac_a2accu_dst_data3          //|< i
-  ,mac_a2accu_dst_data4          //|< i
-  ,mac_a2accu_dst_data5          //|< i
-  ,mac_a2accu_dst_data6          //|< i
-  ,mac_a2accu_dst_data7          //|< i
-  ,mac_a2accu_dst_mask           //|< i
-  ,mac_a2accu_dst_mode           //|< i
-  ,mac_a2accu_dst_pd             //|< i
-  ,mac_a2accu_dst_pvld           //|< i
-  ,mac_b2accu_src_data0          //|< i
-  ,mac_b2accu_src_data1          //|< i
-  ,mac_b2accu_src_data2          //|< i
-  ,mac_b2accu_src_data3          //|< i
-  ,mac_b2accu_src_data4          //|< i
-  ,mac_b2accu_src_data5          //|< i
-  ,mac_b2accu_src_data6          //|< i
-  ,mac_b2accu_src_data7          //|< i
-  ,mac_b2accu_src_mask           //|< i
-  ,mac_b2accu_src_mode           //|< i
-  ,mac_b2accu_src_pd             //|< i
-  ,mac_b2accu_src_pvld           //|< i
-  ,nvdla_clk_ovr_on              //|< i
-  ,nvdla_core_clk                //|< i
-  ,pwrbus_ram_pd                 //|< i
-  ,test_mode                     //|< i
-  ,tmc2slcg_disable_clock_gating //|< i
-  ,accu2sc_credit_size           //|> o
-  ,accu2sc_credit_vld            //|> o
-  ,cacc2csb_resp_src_pd          //|> o
-  ,cacc2csb_resp_src_valid       //|> o
-  ,cacc2glb_done_intr_src_pd     //|> o
-  ,cacc2sdp_pd                   //|> o
-  ,cacc2sdp_valid                //|> o
-  ,csb2cacc_req_dst_prdy         //|> o
+   cacc2sdp_ready              
+#ifdef NVDLA_RETIMING_ENABLE
+  ,csb2cacc_req_dst_pvld       
+  ,csb2cacc_req_dst_prdy       
+  ,csb2cacc_req_dst_pd         
+  ,cacc2csb_resp_src_pd        
+  ,cacc2csb_resp_src_valid     
+  ,cacc2glb_done_intr_src_pd   
+#else
+  ,csb2cacc_req_pvld           
+  ,csb2cacc_req_prdy           
+  ,csb2cacc_req_pd             
+  ,cacc2csb_resp_pd            
+  ,cacc2csb_resp_valid         
+  ,cacc2glb_done_intr_pd       
+#endif
+  ,direct_reset_               
+  ,dla_reset_rstn              
+  ,global_clk_ovr_on           
+#ifdef NVDLA_RETIMING_ENABLE
+//: for(my $i=0; $i<CACC_ATOMK/2 ; $i++){
+//: print qq(
+//: ,mac_a2accu_dst_data${i}   )
+//: }
+  ,mac_a2accu_dst_mask         
+  ,mac_a2accu_dst_mode         
+  ,mac_a2accu_dst_pd           
+  ,mac_a2accu_dst_pvld         
+//: for(my $i=0; $i<CACC_ATOMK/2 ; $i++){
+//: print qq(
+//: ,mac_b2accu_src_data${i}   )
+//: }
+  ,mac_b2accu_src_mask         
+  ,mac_b2accu_src_mode         
+  ,mac_b2accu_src_pd           
+  ,mac_b2accu_src_pvld         
+#else
+//: for(my $i=0; $i<CACC_ATOMK/2 ; $i++){
+//: print qq(
+//: ,mac_a2accu_data${i}   )
+//: }
+  ,mac_a2accu_mask             
+  ,mac_a2accu_mode             
+  ,mac_a2accu_pd               
+  ,mac_a2accu_pvld             
+//: for(my $i=0; $i<CACC_ATOMK/2 ; $i++){
+//: print qq(
+//: ,mac_b2accu_data${i}   )
+//: }
+  ,mac_b2accu_mask             
+  ,mac_b2accu_mode             
+  ,mac_b2accu_pd               
+  ,mac_b2accu_pvld             
+#endif
+  ,nvdla_clk_ovr_on            
+  ,nvdla_core_clk              
+  ,pwrbus_ram_pd               
+  ,test_mode                   
+  ,tmc2slcg_disable_clock_gating
+  ,accu2sc_credit_size          
+  ,accu2sc_credit_vld           
+  ,cacc2sdp_pd                  
+  ,cacc2sdp_valid               
   );
 
 //
@@ -72,44 +95,64 @@ input  tmc2slcg_disable_clock_gating;
 output       accu2sc_credit_vld;   /* data valid */
 output [2:0] accu2sc_credit_size;
 
+#ifdef NVDLA_RETIMING_ENABLE
 output        cacc2csb_resp_src_valid;  /* data valid */
 output [33:0] cacc2csb_resp_src_pd;     /* pkt_id_width=1 pkt_widths=33,33  */
-
-output [1:0] cacc2glb_done_intr_src_pd;
-
-output         cacc2sdp_valid;  /* data valid */
-input          cacc2sdp_ready;  /* data return handshake */
-output [513:0] cacc2sdp_pd;
-
+output [1:0]  cacc2glb_done_intr_src_pd;
 input         csb2cacc_req_dst_pvld;  /* data valid */
 output        csb2cacc_req_dst_prdy;  /* data return handshake */
 input  [62:0] csb2cacc_req_dst_pd;
 
-input         mac_a2accu_dst_pvld;   /* data valid */
-input   [7:0] mac_a2accu_dst_mask;
-input   [7:0] mac_a2accu_dst_mode;
-input [175:0] mac_a2accu_dst_data0;
-input [175:0] mac_a2accu_dst_data1;
-input [175:0] mac_a2accu_dst_data2;
-input [175:0] mac_a2accu_dst_data3;
-input [175:0] mac_a2accu_dst_data4;
-input [175:0] mac_a2accu_dst_data5;
-input [175:0] mac_a2accu_dst_data6;
-input [175:0] mac_a2accu_dst_data7;
-input   [8:0] mac_a2accu_dst_pd;
+#else
+output        cacc2csb_resp_valid;  /* data valid */
+output [33:0] cacc2csb_resp_pd;     /* pkt_id_width=1 pkt_widths=33,33  */
+output [1:0]  cacc2glb_done_intr_pd;
+input         csb2cacc_req_pvld;  /* data valid */
+output        csb2cacc_req_prdy;  /* data return handshake */
+input  [62:0] csb2cacc_req_pd;
 
+#endif
+
+output         cacc2sdp_valid;  /* data valid */
+input          cacc2sdp_ready;  /* data return handshake */
+output [CACC_SDP_WIDTH-1:0] cacc2sdp_pd;
+
+
+#ifdef NVDLA_RETIMING_ENABLE
+input         mac_a2accu_dst_pvld;   /* data valid */
+input   [CMAC_ATOMK_HALF-1:0] mac_a2accu_dst_mask;
+input   mac_a2accu_dst_mode;
+//: for(my $i=0; $i<CMAC_ATOMK_HALF ; $i++){
+//: print qq(
+//: input [CMAC_RESULT_WIDTH-1:0] mac_a2accu_dst_data${i};   )
+//: }
+input   [8:0] mac_a2accu_dst_pd;
 input         mac_b2accu_src_pvld;   /* data valid */
-input   [7:0] mac_b2accu_src_mask;
-input   [7:0] mac_b2accu_src_mode;
-input [175:0] mac_b2accu_src_data0;
-input [175:0] mac_b2accu_src_data1;
-input [175:0] mac_b2accu_src_data2;
-input [175:0] mac_b2accu_src_data3;
-input [175:0] mac_b2accu_src_data4;
-input [175:0] mac_b2accu_src_data5;
-input [175:0] mac_b2accu_src_data6;
-input [175:0] mac_b2accu_src_data7;
+input   [CMAC_ATOMK_HALF-1:0] mac_b2accu_src_mask;
+input   mac_b2accu_src_mode;
+//: for(my $i=0; $i<CMAC_ATOMK_HALF ; $i++){
+//: print qq(
+//: input [CMAC_RESULT_WIDTH-1:0] mac_b2accu_src_data${i};   )
+//: }
 input   [8:0] mac_b2accu_src_pd;
+#else
+input         mac_a2accu_pvld;   /* data valid */
+input   [CMAC_ATOMK_HALF-1:0] mac_a2accu_mask;
+input   mac_a2accu_mode;
+//: for(my $i=0; $i<CMAC_ATOMK_HALF ; $i++){
+//: print qq(
+//: input [CMAC_RESULT_WIDTH-1:0] mac_a2accu_data${i};   )
+//: }
+input   [8:0] mac_a2accu_pd;
+input         mac_b2accu_pvld;   /* data valid */
+input   [CMAC_ATOMK_HALF-1:0] mac_b2accu_mask;
+input   mac_b2accu_mode;
+//: for(my $i=0; $i<CMAC_ATOMK_HALF ; $i++){
+//: print qq(
+//: input [CMAC_RESULT_WIDTH-1:0] mac_b2accu_data${i};   )
+//: }
+input   [8:0] mac_b2accu_pd;
+#endif
 
 input [31:0] pwrbus_ram_pd;
 
@@ -123,18 +166,25 @@ input         nvdla_clk_ovr_on;
 
 wire          dla_clk_ovr_on_sync;
 wire          global_clk_ovr_on_sync;
-wire  [175:0] mac_b2accu_dst_data0;
-wire  [175:0] mac_b2accu_dst_data1;
-wire  [175:0] mac_b2accu_dst_data2;
-wire  [175:0] mac_b2accu_dst_data3;
-wire  [175:0] mac_b2accu_dst_data4;
-wire  [175:0] mac_b2accu_dst_data5;
-wire  [175:0] mac_b2accu_dst_data6;
-wire  [175:0] mac_b2accu_dst_data7;
-wire    [7:0] mac_b2accu_dst_mask;
-wire    [7:0] mac_b2accu_dst_mode;
+#ifdef NVDLA_RETIMING_ENABLE
+//: for(my $i=0; $i<CMAC_ATOMK_HALF ; $i++){
+//: print qq(
+//: wire  [CMAC_RESULT_WIDTH-1:0] mac_b2accu_dst_data${i}; )
+//: }
+wire    [CMAC_ATOMK_HALF-1:0] mac_b2accu_dst_mask;
+wire    mac_b2accu_dst_mode;
 wire    [8:0] mac_b2accu_dst_pd;
 wire          mac_b2accu_dst_pvld;
+#else
+//: for(my $i=0; $i<CMAC_ATOMK_HALF ; $i++){
+//: print qq(
+//: wire  [CMAC_RESULT_WIDTH-1:0] mac_b2accu_data${i}; )
+//: }
+wire    [CMAC_ATOMK_HALF-1:0] mac_b2accu_mask;
+wire    mac_b2accu_mode;
+wire    [8:0] mac_b2accu_pd;
+wire          mac_b2accu_pvld;
+#endif
 wire          nvdla_core_rstn;
 
 ////////////////////////////////////////////////////////////////////////
@@ -167,81 +217,92 @@ NV_NVDLA_sync3d_s u_global_clk_ovr_on_sync (
 ////////////////////////////////////////////////////////////////////////
 //  NVDLA Partition A:     Convolution Accumulator                    //
 ////////////////////////////////////////////////////////////////////////
+//stepheng, modify for cacc verification
 NV_NVDLA_cacc u_NV_NVDLA_cacc (
-   .nvdla_core_clk                (nvdla_core_clk)                 //|< i
-  ,.nvdla_core_rstn               (nvdla_core_rstn)                //|< w
-  ,.pwrbus_ram_pd                 (pwrbus_ram_pd[31:0])            //|< i
-  ,.csb2cacc_req_pvld             (csb2cacc_req_dst_pvld)          //|< i
-  ,.csb2cacc_req_prdy             (csb2cacc_req_dst_prdy)          //|> o
-  ,.csb2cacc_req_pd               (csb2cacc_req_dst_pd[62:0])      //|< i
-  ,.cacc2csb_resp_valid           (cacc2csb_resp_src_valid)        //|> o
-  ,.cacc2csb_resp_pd              (cacc2csb_resp_src_pd[33:0])     //|> o
+   .nvdla_core_clk                (nvdla_core_clk) 
+  ,.nvdla_core_rstn               (nvdla_core_rstn)
+  ,.pwrbus_ram_pd                 (pwrbus_ram_pd)  
+#ifdef NVDLA_RETIMING_ENABLE
+  ,.csb2cacc_req_pvld             (csb2cacc_req_dst_pvld)         
+  ,.csb2cacc_req_prdy             (csb2cacc_req_dst_prdy)         
+  ,.csb2cacc_req_pd               (csb2cacc_req_dst_pd)     
+  ,.cacc2csb_resp_valid           (cacc2csb_resp_src_valid)       
+  ,.cacc2csb_resp_pd              (cacc2csb_resp_src_pd)    
+  ,.cacc2glb_done_intr_pd         (cacc2glb_done_intr_src_pd)
+#else
+  ,.csb2cacc_req_pvld             (csb2cacc_req_pvld)          
+  ,.csb2cacc_req_prdy             (csb2cacc_req_prdy)          
+  ,.csb2cacc_req_pd               (csb2cacc_req_pd)      
+  ,.cacc2csb_resp_valid           (cacc2csb_resp_valid)        
+  ,.cacc2csb_resp_pd              (cacc2csb_resp_pd)     
+  ,.cacc2glb_done_intr_pd         (cacc2glb_done_intr_pd) 
+#endif
+#ifdef NVDLA_RETIMING_ENABLE
   ,.mac_a2accu_pvld               (mac_a2accu_dst_pvld)            //|< i
-  ,.mac_a2accu_mask               (mac_a2accu_dst_mask[7:0])       //|< i
-  ,.mac_a2accu_mode               (mac_a2accu_dst_mode[7:0])       //|< i
-  ,.mac_a2accu_data0              (mac_a2accu_dst_data0[175:0])    //|< i
-  ,.mac_a2accu_data1              (mac_a2accu_dst_data1[175:0])    //|< i
-  ,.mac_a2accu_data2              (mac_a2accu_dst_data2[175:0])    //|< i
-  ,.mac_a2accu_data3              (mac_a2accu_dst_data3[175:0])    //|< i
-  ,.mac_a2accu_data4              (mac_a2accu_dst_data4[175:0])    //|< i
-  ,.mac_a2accu_data5              (mac_a2accu_dst_data5[175:0])    //|< i
-  ,.mac_a2accu_data6              (mac_a2accu_dst_data6[175:0])    //|< i
-  ,.mac_a2accu_data7              (mac_a2accu_dst_data7[175:0])    //|< i
+  ,.mac_a2accu_mask               (mac_a2accu_dst_mask[CMAC_ATOMK_HALF-1:0])       //|< i
+  ,.mac_a2accu_mode               (mac_a2accu_dst_mode)       //|< i
+  //:for(my $i=0; $i<CACC_ATOMK/2; $i++){
+  //: print ",.mac_a2accu_data${i}              (mac_a2accu_dst_data${i}) \n";   #//|< i
+  //: }
   ,.mac_a2accu_pd                 (mac_a2accu_dst_pd[8:0])         //|< i
   ,.mac_b2accu_pvld               (mac_b2accu_dst_pvld)            //|< w
-  ,.mac_b2accu_mask               (mac_b2accu_dst_mask[7:0])       //|< w
-  ,.mac_b2accu_mode               (mac_b2accu_dst_mode[7:0])       //|< w
-  ,.mac_b2accu_data0              (mac_b2accu_dst_data0[175:0])    //|< w
-  ,.mac_b2accu_data1              (mac_b2accu_dst_data1[175:0])    //|< w
-  ,.mac_b2accu_data2              (mac_b2accu_dst_data2[175:0])    //|< w
-  ,.mac_b2accu_data3              (mac_b2accu_dst_data3[175:0])    //|< w
-  ,.mac_b2accu_data4              (mac_b2accu_dst_data4[175:0])    //|< w
-  ,.mac_b2accu_data5              (mac_b2accu_dst_data5[175:0])    //|< w
-  ,.mac_b2accu_data6              (mac_b2accu_dst_data6[175:0])    //|< w
-  ,.mac_b2accu_data7              (mac_b2accu_dst_data7[175:0])    //|< w
+  ,.mac_b2accu_mask               (mac_b2accu_dst_mask[CMAC_ATOMK_HALF-1:0])       //|< w
+  ,.mac_b2accu_mode               (mac_b2accu_dst_mode)       //|< w
+  //:for(my $i=0; $i<CACC_ATOMK/2; $i++){
+  //: print ",.mac_b2accu_data${i}              (mac_b2accu_dst_data${i}) \n";   #//|< i
+  //: }
   ,.mac_b2accu_pd                 (mac_b2accu_dst_pd[8:0])         //|< w
-  ,.cacc2sdp_valid                (cacc2sdp_valid)                 //|> o
-  ,.cacc2sdp_ready                (cacc2sdp_ready)                 //|< i
-  ,.cacc2sdp_pd                   (cacc2sdp_pd[513:0])             //|> o
-  ,.accu2sc_credit_vld            (accu2sc_credit_vld)             //|> o
-  ,.accu2sc_credit_size           (accu2sc_credit_size[2:0])       //|> o
-  ,.cacc2glb_done_intr_pd         (cacc2glb_done_intr_src_pd[1:0]) //|> o
-  ,.dla_clk_ovr_on_sync           (dla_clk_ovr_on_sync)            //|< w
-  ,.global_clk_ovr_on_sync        (global_clk_ovr_on_sync)         //|< w
-  ,.tmc2slcg_disable_clock_gating (tmc2slcg_disable_clock_gating)  //|< i
+#else
+  ,.mac_a2accu_pvld               (mac_a2accu_pvld)                //|< i
+  ,.mac_a2accu_mask               (mac_a2accu_mask[CMAC_ATOMK_HALF-1:0])           //|< i
+  ,.mac_a2accu_mode               (mac_a2accu_mode)           //|< i
+  //:for(my $i=0; $i<CACC_ATOMK/2; $i++){
+  //: print ",.mac_a2accu_data${i}              (mac_a2accu_data${i}) \n";   #//|< i
+  //: }
+  ,.mac_a2accu_pd                 (mac_a2accu_pd[8:0])             //|< i
+  ,.mac_b2accu_pvld               (mac_b2accu_pvld)                //|< w
+  ,.mac_b2accu_mask               (mac_b2accu_mask[CMAC_ATOMK_HALF-1:0])           //|< w
+  ,.mac_b2accu_mode               (mac_b2accu_mode)           //|< w
+  //:for(my $i=0; $i<CACC_ATOMK/2; $i++){
+  //: print ",.mac_b2accu_data${i}              (mac_b2accu_data${i}) \n";   #//|< i
+  //: }
+  ,.mac_b2accu_pd                 (mac_b2accu_pd[8:0])             //|< w
+#endif
+  ,.cacc2sdp_valid                (cacc2sdp_valid)        
+  ,.cacc2sdp_ready                (cacc2sdp_ready)        
+  ,.cacc2sdp_pd                   (cacc2sdp_pd)    
+  ,.accu2sc_credit_vld            (accu2sc_credit_vld)    
+  ,.accu2sc_credit_size           (accu2sc_credit_size)
+  ,.dla_clk_ovr_on_sync           (dla_clk_ovr_on_sync)
+  ,.global_clk_ovr_on_sync        (global_clk_ovr_on_sync)
+  ,.tmc2slcg_disable_clock_gating (tmc2slcg_disable_clock_gating)
   );
 
+#ifdef NVDLA_RETIMING_ENABLE
 ////////////////////////////////////////////////////////////////////////
 //  NVDLA Partition A:    Retiming path cmac_b->cacc                  //
 ////////////////////////////////////////////////////////////////////////
 NV_NVDLA_RT_cmac_b2cacc u_NV_NVDLA_RT_cmac_b2cacc (
-   .nvdla_core_clk                (nvdla_core_clk)                 //|< i
-  ,.nvdla_core_rstn               (nvdla_core_rstn)                //|< w
-  ,.mac2accu_src_pvld             (mac_b2accu_src_pvld)            //|< i
-  ,.mac2accu_src_mask             (mac_b2accu_src_mask[7:0])       //|< i
-  ,.mac2accu_src_mode             (mac_b2accu_src_mode[7:0])       //|< i
-  ,.mac2accu_src_data0            (mac_b2accu_src_data0[175:0])    //|< i
-  ,.mac2accu_src_data1            (mac_b2accu_src_data1[175:0])    //|< i
-  ,.mac2accu_src_data2            (mac_b2accu_src_data2[175:0])    //|< i
-  ,.mac2accu_src_data3            (mac_b2accu_src_data3[175:0])    //|< i
-  ,.mac2accu_src_data4            (mac_b2accu_src_data4[175:0])    //|< i
-  ,.mac2accu_src_data5            (mac_b2accu_src_data5[175:0])    //|< i
-  ,.mac2accu_src_data6            (mac_b2accu_src_data6[175:0])    //|< i
-  ,.mac2accu_src_data7            (mac_b2accu_src_data7[175:0])    //|< i
-  ,.mac2accu_src_pd               (mac_b2accu_src_pd[8:0])         //|< i
-  ,.mac2accu_dst_pvld             (mac_b2accu_dst_pvld)            //|> w
-  ,.mac2accu_dst_mask             (mac_b2accu_dst_mask[7:0])       //|> w
-  ,.mac2accu_dst_mode             (mac_b2accu_dst_mode[7:0])       //|> w
-  ,.mac2accu_dst_data0            (mac_b2accu_dst_data0[175:0])    //|> w
-  ,.mac2accu_dst_data1            (mac_b2accu_dst_data1[175:0])    //|> w
-  ,.mac2accu_dst_data2            (mac_b2accu_dst_data2[175:0])    //|> w
-  ,.mac2accu_dst_data3            (mac_b2accu_dst_data3[175:0])    //|> w
-  ,.mac2accu_dst_data4            (mac_b2accu_dst_data4[175:0])    //|> w
-  ,.mac2accu_dst_data5            (mac_b2accu_dst_data5[175:0])    //|> w
-  ,.mac2accu_dst_data6            (mac_b2accu_dst_data6[175:0])    //|> w
-  ,.mac2accu_dst_data7            (mac_b2accu_dst_data7[175:0])    //|> w
-  ,.mac2accu_dst_pd               (mac_b2accu_dst_pd[8:0])         //|> w
+   .nvdla_core_clk                (nvdla_core_clk)             
+  ,.nvdla_core_rstn               (nvdla_core_rstn)            
+  ,.mac2accu_src_pvld             (mac_b2accu_src_pvld)        
+  ,.mac2accu_src_mask             (mac_b2accu_src_mask)   
+  ,.mac2accu_src_mode             (mac_b2accu_src_mode)   
+  //: for(my $i=0; $i<CMAC_ATOMK_HALF ; $i++){
+  //: print qq(
+  //: ,.mac2accu_src_data${i}            (mac_b2accu_src_data${i})   )
+  //: }
+  ,.mac2accu_src_pd               (mac_b2accu_src_pd)     
+  ,.mac2accu_dst_pvld             (mac_b2accu_dst_pvld)        
+  ,.mac2accu_dst_mask             (mac_b2accu_dst_mask)   
+  ,.mac2accu_dst_mode             (mac_b2accu_dst_mode)   
+  //: for(my $i=0; $i<CMAC_ATOMK_HALF ; $i++){
+  //: print qq(
+  //: ,.mac2accu_dst_data${i}            (mac_b2accu_dst_data${i})   )
+  //: }
+  ,.mac2accu_dst_pd               (mac_b2accu_dst_pd)     
   );
+#endif
 
 ////////////////////////////////////////////////////////////////////////
 //  NVDLA Partition A:    OBS                                         //

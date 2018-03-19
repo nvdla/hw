@@ -13,8 +13,8 @@
 #include "NV_NVDLA_sdp.h"
 #include "NV_NVDLA_sdp_sdp_gen.h"
 #include "NV_NVDLA_sdp_sdp_rdma_gen.h"
-#include "arnvdla.uh"
-#include "arnvdla.h"
+#include "opendla.uh"
+#include "opendla.h"
 #include "cmacros.uh"
 #include "math.h"
 #include "NvdlaDataFormatConvertor.h"
@@ -75,7 +75,7 @@ NV_NVDLA_sdp::NV_NVDLA_sdp( sc_module_name module_name ):
 #endif
     sdp_ack_fifo_     = new sc_fifo <ack_info*> (2);
     sdp_config_fifo_  = new sc_fifo <SdpConfig *> (1);
-    for(int i = SDP_RDMA_INPUT; i < SDP_RDMA_NUM; i++) {
+    for(int i = SDP_RDMA_INPUT; i < SDP_DMA_NUM; i++) {
         sdp_internal_buf_[i]    = new uint8_t[INTERNAL_BUF_SIZE];
         sdp_buf_wr_ptr_[i]      = 0;
         sdp_buf_rd_ptr_[i]      = 0;
@@ -134,7 +134,7 @@ NV_NVDLA_sdp::~NV_NVDLA_sdp() {
     if( dma_wr_req_cmd_payload_) delete dma_wr_req_cmd_payload_;
     if( dma_wr_req_data_payload_) delete dma_wr_req_data_payload_;
     if( sdp_ack_fifo_)         delete sdp_ack_fifo_;
-    for(int i = SDP_RDMA_INPUT; i < SDP_RDMA_NUM; i++) {
+    for(int i = SDP_RDMA_INPUT; i < SDP_DMA_NUM; i++) {
         if( sdp_internal_buf_[i] ) delete [] sdp_internal_buf_[i];
     }
 }
@@ -163,7 +163,7 @@ void NV_NVDLA_sdp::SdpRdmaConsumerThread() {
         sdp_rdma_reg_model::SdpRdmaUpdateVariables(sdp_rdma_register_group_0);
 #pragma CTC SKIP
         cslInfo(( "group0: %s: WxHxC=%dx%dx%d, M:%d, B:%d, N:%d, E:%d\n",
-                    __FUNCTION__, sdp_width_+1, sdp_height_+1, sdp_channel_+1,
+                    __FUNCTION__, sdp_rdma_width_+1, sdp_rdma_height_+1, sdp_rdma_channel_+1,
                     !sdp_rdma_flying_mode_, !sdp_rdma_brdma_disable_, !sdp_rdma_nrdma_disable_, !sdp_rdma_erdma_disable_));
 #pragma CTC ENDSKIP
         SdpRdmaHardwareLayerExecutionTrigger();
@@ -179,7 +179,7 @@ void NV_NVDLA_sdp::SdpRdmaConsumerThread() {
         sdp_rdma_reg_model::SdpRdmaUpdateVariables(sdp_rdma_register_group_1);
 #pragma CTC SKIP
         cslInfo(( "group1: %s: WxHxC=%dx%dx%d, M:%d, B:%d, N:%d, E:%d\n",
-                    __FUNCTION__, sdp_width_+1, sdp_height_+1, sdp_channel_+1,
+                    __FUNCTION__, sdp_rdma_width_+1, sdp_rdma_height_+1, sdp_rdma_channel_+1,
                     !sdp_rdma_flying_mode_, !sdp_rdma_brdma_disable_, !sdp_rdma_nrdma_disable_, !sdp_rdma_erdma_disable_));
 #pragma CTC ENDSKIP
         SdpRdmaHardwareLayerExecutionTrigger();
@@ -221,9 +221,6 @@ void NV_NVDLA_sdp::SdpConsumerThread() {
 
 void NV_NVDLA_sdp::SdpIntrThread() {
     while (true) {
-        while (uint32_t(sdp_ack_fifo_->num_available()) < 1) {
-            wait( sdp_ack_fifo_->data_written_event() );
-        }
         ack_info *ack = sdp_ack_fifo_->read();
 
         if (ack->is_mc == 1) {
@@ -329,10 +326,9 @@ void NV_NVDLA_sdp::SdpRdmaCore( te_rdma_type eRdDma ) {
 
     switch(eRdDma) {
         case SDP_RDMA_INPUT:
-            src_base_addr   = (uint64_t(sdp_rdma_src_base_addr_high_) << 32)
-                | (uint64_t(sdp_rdma_src_base_addr_low_) << 5);
-            line_stride         = sdp_rdma_src_line_stride_ << 5;
-            surf_stride         = sdp_rdma_src_surface_stride_ << 5 ;
+            src_base_addr   = (uint64_t(sdp_rdma_src_base_addr_high_) << 32) | uint64_t(sdp_rdma_src_base_addr_low_);
+            line_stride         = sdp_rdma_src_line_stride_;
+            surf_stride         = sdp_rdma_src_surface_stride_;
             enabled             = NVDLA_SDP_RDMA_D_FEATURE_MODE_CFG_0_FLYING_MODE_OFF == sdp_rdma_flying_mode_;
             component_per_element = 1;
             bytes_per_component   = sdp_rdma_in_precision_ == NVDLA_SDP_RDMA_D_FEATURE_MODE_CFG_0_IN_PRECISION_INT8 ? 1:2;
@@ -344,10 +340,9 @@ void NV_NVDLA_sdp::SdpRdmaCore( te_rdma_type eRdDma ) {
 #endif
             break;
         case SDP_RDMA_X1_INPUT:
-            src_base_addr   = (uint64_t(sdp_rdma_bs_base_addr_high_) << 32)
-                | (uint64_t(sdp_rdma_bs_base_addr_low_) << 5);
-            line_stride         = sdp_rdma_bs_line_stride_ << 5;
-            surf_stride         = sdp_rdma_bs_surface_stride_ << 5 ;
+            src_base_addr   = (uint64_t(sdp_rdma_bs_base_addr_high_) << 32) | uint64_t(sdp_rdma_bs_base_addr_low_);
+            line_stride         = sdp_rdma_bs_line_stride_;
+            surf_stride         = sdp_rdma_bs_surface_stride_;
             enabled             = !sdp_rdma_brdma_disable_;
             component_per_element = sdp_rdma_brdma_data_use_ == NVDLA_SDP_RDMA_D_BRDMA_CFG_0_BRDMA_DATA_USE_BOTH?2:1;
             bytes_per_component   = sdp_rdma_brdma_data_size_ == NVDLA_SDP_RDMA_D_BRDMA_CFG_0_BRDMA_DATA_SIZE_TWO_BYTE ? 2:1;
@@ -355,10 +350,9 @@ void NV_NVDLA_sdp::SdpRdmaCore( te_rdma_type eRdDma ) {
             payload             = dma_b_rd_req_payload_;
             break;
         case SDP_RDMA_X2_INPUT:
-            src_base_addr   = (uint64_t(sdp_rdma_bn_base_addr_high_) << 32)
-                | (uint64_t(sdp_rdma_bn_base_addr_low_) << 5);
-            line_stride         = sdp_rdma_bn_line_stride_ << 5;
-            surf_stride         = sdp_rdma_bn_surface_stride_ << 5 ;
+            src_base_addr   = (uint64_t(sdp_rdma_bn_base_addr_high_) << 32) | uint64_t(sdp_rdma_bn_base_addr_low_);
+            line_stride         = sdp_rdma_bn_line_stride_;
+            surf_stride         = sdp_rdma_bn_surface_stride_;
             enabled             = !sdp_rdma_nrdma_disable_;
             component_per_element = sdp_rdma_nrdma_data_use_ == NVDLA_SDP_RDMA_D_NRDMA_CFG_0_NRDMA_DATA_USE_BOTH?2:1;
             bytes_per_component   = sdp_rdma_nrdma_data_size_ == NVDLA_SDP_RDMA_D_NRDMA_CFG_0_NRDMA_DATA_SIZE_TWO_BYTE ? 2:1;
@@ -366,10 +360,9 @@ void NV_NVDLA_sdp::SdpRdmaCore( te_rdma_type eRdDma ) {
             payload             = dma_n_rd_req_payload_;
             break;
         case SDP_RDMA_Y_INPUT:
-            src_base_addr   = (uint64_t(sdp_rdma_ew_base_addr_high_) << 32)
-                | (uint64_t(sdp_rdma_ew_base_addr_low_) << 5);
-            line_stride         = sdp_rdma_ew_line_stride_ << 5;
-            surf_stride         = sdp_rdma_ew_surface_stride_ << 5 ;
+            src_base_addr   = (uint64_t(sdp_rdma_ew_base_addr_high_) << 32) | uint64_t(sdp_rdma_ew_base_addr_low_);
+            line_stride         = sdp_rdma_ew_line_stride_;
+            surf_stride         = sdp_rdma_ew_surface_stride_;
             enabled             = !sdp_rdma_erdma_disable_;
             component_per_element = sdp_rdma_erdma_data_use_ == NVDLA_SDP_RDMA_D_ERDMA_CFG_0_ERDMA_DATA_USE_BOTH?2:1;
             bytes_per_component   = sdp_rdma_erdma_data_size_ == NVDLA_SDP_RDMA_D_ERDMA_CFG_0_ERDMA_DATA_SIZE_TWO_BYTE ? 2:1;
@@ -391,7 +384,7 @@ void NV_NVDLA_sdp::SdpRdmaCore( te_rdma_type eRdDma ) {
         if (is_1x1) {
             cslAssert(surf_stride == element_per_group_src * bytes_per_element);
         }
-    
+
         // argument check
 #pragma CTC SKIP
         if (sdp_rdma_flying_mode_ == NVDLA_SDP_RDMA_D_FEATURE_MODE_CFG_0_FLYING_MODE_OFF) {
@@ -423,6 +416,8 @@ void NV_NVDLA_sdp::SdpRdmaCore( te_rdma_type eRdDma ) {
         if (is_int16_to_int8 == true) {
             surf_num = ((surf_num+1)/2) * 2;
             cslDebug((30, "int16->int8, adjust surf_num as:%d\n", surf_num));
+            // precision conversion is not supported
+            assert(0);
         }
         rdma_atom_recieved_[eRdDma] = 0;
         if (data_mode == NVDLA_SDP_RDMA_D_ERDMA_CFG_0_ERDMA_DATA_MODE_PER_KERNEL) {
@@ -436,9 +431,12 @@ void NV_NVDLA_sdp::SdpRdmaCore( te_rdma_type eRdDma ) {
                 payload_size *= batch_num;
             }
         }
-        cslAssert(payload_size%32 == 0);
-        rdma_atom_total_[eRdDma] = payload_size/32;
+        cslAssert(payload_size%DLA_ATOM_SIZE == 0);
+        rdma_atom_total_[eRdDma] = payload_size/DLA_ATOM_SIZE;
         cslDebug((30, "rdma:%d, total payload:%d\n", eRdDma, rdma_atom_total_[eRdDma]));
+
+        dma_packers_[eRdDma].set_parameters(DLA_ATOM_SIZE, SDP_PARALLEL_PROC_NUM*bytes_per_component,
+                component_per_element, bytes_per_component == 1? DATA_TYPE_ONE_BYTE : DATA_TYPE_TWO_BYTE);
 
 
         cslDebug((30, "%s: DMA:%d port enabled, WxHxC=%dx%dx%d\n", __FUNCTION__, eRdDma, cube_width, cube_height, cube_channel));
@@ -472,6 +470,7 @@ void NV_NVDLA_sdp::SdpRdmaCore( te_rdma_type eRdDma ) {
                 payload->pd.dma_read_cmd.addr = payload_addr;
                 payload->pd.dma_read_cmd.size = payload_atom_num - 1;
                 // WaitUntilRdmaFifoFreeSizeGreaterThan(payload_atom_num);
+                // cout << "WaitUntilRdmaFifoFreeSizeGreaterThan done" << endl;
                 SendDmaReadRequest(eRdDma, payload, dma_delay_);
             }
         } else {
@@ -494,6 +493,7 @@ void NV_NVDLA_sdp::SdpRdmaCore( te_rdma_type eRdDma ) {
                                 payload->pd.dma_read_cmd.addr = payload_addr;
                                 payload->pd.dma_read_cmd.size = payload_atom_num - 1;
                                 // WaitUntilRdmaFifoFreeSizeGreaterThan(payload_atom_num);
+                                // cout << "WaitUntilRdmaFifoFreeSizeGreaterThan done" << endl;
                                 SendDmaReadRequest(eRdDma, payload, dma_delay_);
                             }
                         }
@@ -526,12 +526,14 @@ void NV_NVDLA_sdp::SdpRdmaCore( te_rdma_type eRdDma ) {
                             payload->pd.dma_read_cmd.addr = payload_addr;
                             payload->pd.dma_read_cmd.size = payload_atom_num - 1;
                             // WaitUntilRdmaFifoFreeSizeGreaterThan(payload_atom_num);
+                            // cout << "WaitUntilRdmaFifoFreeSizeGreaterThan done" << endl;
                             SendDmaReadRequest(eRdDma, payload, dma_delay_);
                         }
                     }
                 }
             } else if (is_int16_to_int8 == true) {
                 // Precision conversion
+                FAIL(("Precision conversion is not supported in openDLA\n"));
                 int max_width_step = (INTERNAL_BUF_SIZE)/(element_per_group_src*bytes_per_element);
                 for (surf_iter=0; surf_iter < surf_num; surf_iter+=2) {
                     for (line_iter=0; line_iter < cube_height; line_iter++) {
@@ -552,6 +554,7 @@ void NV_NVDLA_sdp::SdpRdmaCore( te_rdma_type eRdDma ) {
                                 payload->pd.dma_read_cmd.addr = payload_addr;
                                 payload->pd.dma_read_cmd.size = payload_atom_num - 1;
                                 // WaitUntilRdmaFifoFreeSizeGreaterThan(payload_atom_num);
+                                // cout << "WaitUntilRdmaFifoFreeSizeGreaterThan done" << endl;
                                 SendDmaReadRequest(eRdDma, payload, dma_delay_);
                             }
                             width_iter += width_step;
@@ -570,6 +573,7 @@ void NV_NVDLA_sdp::SdpRdmaCore( te_rdma_type eRdDma ) {
                         payload->pd.dma_read_cmd.addr = payload_addr;
                         payload->pd.dma_read_cmd.size = payload_atom_num - 1;
                         // WaitUntilRdmaFifoFreeSizeGreaterThan(payload_atom_num);
+                        // cout << "WaitUntilRdmaFifoFreeSizeGreaterThan done" << endl;
                         SendDmaReadRequest(eRdDma, payload, dma_delay_);
                     }
                 }
@@ -730,7 +734,7 @@ void NV_NVDLA_sdp::SdpLoadPerChannelData(uint32_t proc_num) {
             cslDebug((50, "Wait for rdma_b_alu_fifo for per-channel data\n"));
             int16_t *src_ptr = reinterpret_cast<int16_t*>(rdma_b_alu_fifo_->read());
             cslDebug((50, "After Wait for rdma_b_alu_fifo for per-channel data\n"));
-            memcpy(hls_x1_alu_op_[0][i], src_ptr, 16*sizeof(int16_t));
+            memcpy(hls_x1_alu_op_[0][i], src_ptr, SDP_PARALLEL_PROC_NUM*sizeof(int16_t));
 
             delete [] src_ptr;
         }
@@ -743,7 +747,7 @@ void NV_NVDLA_sdp::SdpLoadPerChannelData(uint32_t proc_num) {
             cslDebug((50, "Wait for rdma_b_mul_fifo for per-channel data\n"));
             int16_t *src_ptr = reinterpret_cast<int16_t*>(rdma_b_mul_fifo_->read());
             cslDebug((50, "After Wait for rdma_b_mul_fifo for per-channel data\n"));
-            memcpy(hls_x1_mul_op_[0][i], src_ptr, 16*sizeof(int16_t));
+            memcpy(hls_x1_mul_op_[0][i], src_ptr, SDP_PARALLEL_PROC_NUM*sizeof(int16_t));
 
             delete [] src_ptr;
         }
@@ -756,7 +760,7 @@ void NV_NVDLA_sdp::SdpLoadPerChannelData(uint32_t proc_num) {
             cslDebug((50, "Wait for rdma_n_alu_fifo for per-channel data\n"));
             int16_t *src_ptr = reinterpret_cast<int16_t*>(rdma_n_alu_fifo_->read());
             cslDebug((50, "after Wait for rdma_n_alu_fifo for per-channel data\n"));
-            memcpy(hls_x2_alu_op_[0][i], src_ptr, 16*sizeof(int16_t));
+            memcpy(hls_x2_alu_op_[0][i], src_ptr, SDP_PARALLEL_PROC_NUM*sizeof(int16_t));
 
             delete [] src_ptr;
         }
@@ -769,7 +773,7 @@ void NV_NVDLA_sdp::SdpLoadPerChannelData(uint32_t proc_num) {
             cslDebug((50, "Wait for rdma_n_mul_fifo for per-channel data\n"));
             int16_t *src_ptr = reinterpret_cast<int16_t*>(rdma_n_mul_fifo_->read());
             cslDebug((50, "After Wait for rdma_n_mul_fifo for per-channel data\n"));
-            memcpy(hls_x2_mul_op_[0][i], src_ptr, 16*sizeof(int16_t));
+            memcpy(hls_x2_mul_op_[0][i], src_ptr, SDP_PARALLEL_PROC_NUM*sizeof(int16_t));
 
             delete [] src_ptr;
         }
@@ -782,7 +786,7 @@ void NV_NVDLA_sdp::SdpLoadPerChannelData(uint32_t proc_num) {
             cslDebug((50, "Wait for rdma_e_alu_fifo for per-channel data\n"));
             int16_t *src_ptr = reinterpret_cast<int16_t*>(rdma_e_alu_fifo_->read());
             cslDebug((50, "After Wait for rdma_e_alu_fifo for per-channel data\n"));
-            memcpy(hls_y_alu_op_[0][i], src_ptr, 16*sizeof(int16_t));
+            memcpy(hls_y_alu_op_[0][i], src_ptr, SDP_PARALLEL_PROC_NUM*sizeof(int16_t));
 
             delete [] src_ptr;
         }
@@ -795,7 +799,7 @@ void NV_NVDLA_sdp::SdpLoadPerChannelData(uint32_t proc_num) {
             cslDebug((50, "Wait for rdma_e_mul_fifo for per-channel data\n"));
             int16_t *src_ptr = reinterpret_cast<int16_t*>(rdma_e_mul_fifo_->read());
             cslDebug((50, "Aftger Wait for rdma_e_mul_fifo for per-channel data\n"));
-            memcpy(hls_y_mul_op_[0][i], src_ptr, 16*sizeof(int16_t));
+            memcpy(hls_y_mul_op_[0][i], src_ptr, SDP_PARALLEL_PROC_NUM*sizeof(int16_t));
 
             delete [] src_ptr;
         }
@@ -902,10 +906,10 @@ void NV_NVDLA_sdp::SdpDataOperationDC() {
  
     switch (sdp_proc_precision_) {
         case NVDLA_SDP_D_DATA_FORMAT_0_PROC_PRECISION_INT8:
-            element_per_atom = 32;
+            element_per_atom = ELEMENT_PER_GROUP_INT8;
             break;
          default:
-            element_per_atom = 16;
+            element_per_atom = ELEMENT_PER_GROUP_INT16;
             break;
     }
     proc_num_per_atom = element_per_atom/SDP_PARALLEL_PROC_NUM;
@@ -932,35 +936,35 @@ void NV_NVDLA_sdp::SdpDataOperationDC() {
                         cslDebug((30, "%s: after wait rdma_fifo_, valid:%d\n", __FUNCTION__, rdma_fifo_->num_available()));
                         if (sdp_proc_precision_ == NVDLA_SDP_D_DATA_FORMAT_0_PROC_PRECISION_FP16 ) {
                             cslDebug((30, "%s: SDP_DP, input data before FP16->32\n", __FUNCTION__));
-                            for(int i = 0; i < 16; i++) {
+                            for(int i = 0; i < SDP_PARALLEL_PROC_NUM; i++) {
                                 cslDebug((30, "%08x, ", rdma_data_ptr[i]));
                             }
                             cslDebug((30, "\n" ));
                             if (sdp_hls_wrapper_.sdp_cfg_perf_nan_inf_cnt_en) {
-                                for(int i = 0; i < 16; i++) {
+                                for(int i = 0; i < SDP_PARALLEL_PROC_NUM; i++) {
                                     if (((rdma_data_ptr[i]&0x3FF) == 0) && (((rdma_data_ptr[i]>>10)&0x1F) == 0x1F)) {
                                         sdp_hls_wrapper_.i_inf_cnt++;
                                     }
                                 }
-                                for(int i = 0; i < 16; i++) {
+                                for(int i = 0; i < SDP_PARALLEL_PROC_NUM; i++) {
                                     if (((rdma_data_ptr[i]&0x3FF) != 0) && (((rdma_data_ptr[i]>>10)&0x1F) == 0x1F)) {
                                         sdp_hls_wrapper_.i_nan_cnt++;
                                     }
                                 }
                             }
                             
-                            for(int i = 0; i < 16; i++) {
+                            for(int i = 0; i < SDP_PARALLEL_PROC_NUM; i++) {
                                 hls_data_in_[i] = Fp16ToFp32((ACINTT(16))rdma_data_ptr[i]);
                             }
                             
                             cslDebug((30, "%s: SDP_DP, input data after FP16->32\n", __FUNCTION__));
-                            for(int i = 0; i < 16; i++) {
+                            for(int i = 0; i < SDP_PARALLEL_PROC_NUM; i++) {
                                 cslDebug((30, "%08x, ", hls_data_in_[i]));
                             }
                             cslDebug((30, "\n" ));
 
                         } else {
-                            for(int i = 0; i < 16; i++) {
+                            for(int i = 0; i < SDP_PARALLEL_PROC_NUM; i++) {
                                 hls_data_in_[i] = static_cast<int32_t>(rdma_data_ptr[i]);
                             }
                         }
@@ -972,7 +976,7 @@ void NV_NVDLA_sdp::SdpDataOperationDC() {
                         cslDebug((50, "NV_NVDLA_sdp::SdpDataOperationThread, after read cc2pp_fifo_\n"));
                         memcpy(hls_data_in_, cacc2sdp_data_ptr, sizeof(uint32_t)*CC2PP_PAYLOAD_SIZE);
                         cslDebug((30, "%s: SDP_DP, input data from cacc\n", __FUNCTION__));
-                        for(int i = 0; i < 16; i++) {
+                        for(int i = 0; i < SDP_PARALLEL_PROC_NUM; i++) {
                             cslDebug((30, "%08x, ", hls_data_in_[i]));
                         }
                         cslDebug((30, "\n" ));
@@ -1016,7 +1020,7 @@ void NV_NVDLA_sdp::SdpDataOperationDC() {
                         }
                     } else {
                         if (NVDLA_SDP_D_FEATURE_MODE_CFG_0_OUTPUT_DST_MEM == sdp_output_dst_) {
-                            int16_t *temp_ptr = new int16_t[16];
+                            int16_t *temp_ptr = new int16_t[SDP_PARALLEL_PROC_NUM];
                             cslAssert((temp_ptr != NULL));
                             memcpy(temp_ptr, sdp_hls_wrapper_.sdp_data_out, ATOM_CUBE_SIZE);
                             // Output destination is memory
@@ -1025,7 +1029,7 @@ void NV_NVDLA_sdp::SdpDataOperationDC() {
                                 cslDebug((70, "0x%x ", (unsigned int)sdp_hls_wrapper_.sdp_data_out[i]));
                             }
                             cslDebug((70, "\n" ));
-                            wdma_fifo_->write(temp_ptr);    //32B
+                            wdma_fifo_->write(temp_ptr);
 
 #pragma CTC SKIP
                             cslDebug((50, " write wdma_fifo_, height[%d], width[%d], proc[%d], total_num:%d\n",
@@ -1040,7 +1044,17 @@ void NV_NVDLA_sdp::SdpDataOperationDC() {
                                 cslDebug((70, "0x%x ", (unsigned int)sdp_hls_wrapper_.sdp_data_out[i]));
                             }
                             cslDebug((70, "\n" ));
-                            memcpy((void *)payload->pd.sdp2pdp.data, sdp_hls_wrapper_.sdp_data_out, ATOM_CUBE_SIZE);
+                            if (sdp_out_precision_ != NVDLA_SDP_D_DATA_FORMAT_0_OUT_PRECISION_INT8) {
+                                memcpy((void *)payload->pd.sdp2pdp.data,
+                                        sdp_hls_wrapper_.sdp_data_out, SDP_PARALLEL_PROC_NUM*sizeof(int16_t));
+                            } else {
+                                memset((void *)payload->pd.sdp2pdp.data, 0, 
+                                        SDP_PARALLEL_PROC_NUM*sizeof(int16_t));
+                                int8_t *tmp_ptr = (int8_t *)payload->pd.sdp2pdp.data;
+                                for(int element_iter = 0; element_iter < SDP_PARALLEL_PROC_NUM; element_iter++) {
+                                    tmp_ptr[element_iter] = (int8_t)sdp_hls_wrapper_.sdp_data_out[element_iter];
+                                }
+                            }
                             sdp2pdp_b_transport(payload, b_transport_delay_);
                             delete payload;
                             cslDebug((70, "%s: send payload to PDP done\n", __FUNCTION__));
@@ -1057,10 +1071,6 @@ void NV_NVDLA_sdp::SdpDataOperationBatch() {
     uint32_t    width, height, channel, surf_num, proc_num_per_atom, round_num;
     uint32_t    surf_iter, height_iter, width_iter, proc_iter, batch_iter, round_iter;
     uint32_t    element_per_atom;
-    uint64_t    line_base_addr, surf_base_addr;
-    uint64_t    dst_base_addr = (((uint64_t)sdp_dst_base_addr_high_) << 32) | (sdp_dst_base_addr_low_ << 5);
-    uint32_t    line_stride = sdp_dst_line_stride_ << 5;
-    uint32_t    surf_stride = sdp_dst_surface_stride_ << 5;
     uint32_t    batch_num = sdp_batch_number_ + 1;
     uint32_t    *cacc2sdp_data_ptr;
     int16_t     *rdma_data_ptr;
@@ -1068,10 +1078,10 @@ void NV_NVDLA_sdp::SdpDataOperationBatch() {
 
     switch (sdp_proc_precision_) {
         case NVDLA_SDP_D_DATA_FORMAT_0_PROC_PRECISION_INT8:
-            element_per_atom = 32;
+            element_per_atom = ELEMENT_PER_GROUP_INT8;
             break;
          default:
-            element_per_atom = 16;
+            element_per_atom = ELEMENT_PER_GROUP_INT16;
             break;
     }
     proc_num_per_atom = element_per_atom/SDP_PARALLEL_PROC_NUM;
@@ -1087,15 +1097,9 @@ void NV_NVDLA_sdp::SdpDataOperationBatch() {
     for( surf_iter = 0; surf_iter < surf_num; surf_iter++ ) {
         // load the alu/mul data for per channel mode
         SdpLoadPerChannelData(proc_num_per_atom);
-        surf_base_addr = surf_iter*surf_stride + dst_base_addr;
         for( height_iter = 0; height_iter < height; height_iter++  ) {
-            line_base_addr = surf_base_addr + height_iter*line_stride;
             round_num = 1;
             for( width_iter = 0; width_iter < width; width_iter+= round_num) {
-#pragma CTC SKIj
-                round_num = ((line_base_addr + (width_iter*32))%64 == 0) ? 2:1;
-#pragma CTC ENDSKIP
-                round_num = width-width_iter >= round_num ? round_num:1;
                 for( batch_iter = 0; batch_iter < batch_num; batch_iter++ ) {
                     for( round_iter = 0; round_iter < round_num; round_iter++ ) {
                         for( proc_iter = 0; proc_iter < proc_num_per_atom; proc_iter++ ) {
@@ -1108,7 +1112,7 @@ void NV_NVDLA_sdp::SdpDataOperationBatch() {
                                 cslDebug((50, "%s, before read data from rdma\n", __FUNCTION__));
                                 rdma_data_ptr = reinterpret_cast<int16_t*>(rdma_fifo_->read());
                                 cslDebug((30, "%s: SDP_DP, input data before FP16->32\n", __FUNCTION__));
-                                for(int i = 0; i < 16; i++) {
+                                for(int i = 0; i < SDP_PARALLEL_PROC_NUM; i++) {
                                     cslDebug((30, "%08x, ", rdma_data_ptr[i]));
                                 }
                                 cslDebug((30, "\n" ));
@@ -1116,30 +1120,30 @@ void NV_NVDLA_sdp::SdpDataOperationBatch() {
                                 if (sdp_proc_precision_ == NVDLA_SDP_D_DATA_FORMAT_0_PROC_PRECISION_FP16 ) {
 #pragma CTC SKIP
                                     if (sdp_hls_wrapper_.sdp_cfg_perf_nan_inf_cnt_en) {
-                                        for(int i = 0; i < 16; i++) {
+                                        for(int i = 0; i < SDP_PARALLEL_PROC_NUM; i++) {
                                             if (((rdma_data_ptr[i]&0x3FF) == 0) && (((rdma_data_ptr[i]>>10)&0x1F) == 0x1F)) {
                                                 sdp_hls_wrapper_.i_inf_cnt++;
                                             }
                                         }
-                                        for(int i = 0; i < 16; i++) {
+                                        for(int i = 0; i < SDP_PARALLEL_PROC_NUM; i++) {
                                             if (((rdma_data_ptr[i]&0x3FF) != 0) && (((rdma_data_ptr[i]>>10)&0x1F) == 0x1F)) {
                                                 sdp_hls_wrapper_.i_nan_cnt++;
                                             }
                                         }
                                     }
 #pragma CTC ENDSKIP
-                                    for(int i = 0; i < 16; i++) {
+                                    for(int i = 0; i < SDP_PARALLEL_PROC_NUM; i++) {
                                         hls_data_in_[i] = Fp16ToFp32((ACINTT(16))rdma_data_ptr[i]);
                                     }
 
                                     cslDebug((30, "%s: SDP_DP, input data after FP16->32\n", __FUNCTION__));
-                                    for(int i = 0; i < 16; i++) {
+                                    for(int i = 0; i < SDP_PARALLEL_PROC_NUM; i++) {
                                         cslDebug((30, "%08x, ", hls_data_in_[i]));
                                     }
                                     cslDebug((30, "\n" ));
 
                                 } else {
-                                    for(int i = 0; i < 16; i++) {
+                                    for(int i = 0; i < SDP_PARALLEL_PROC_NUM; i++) {
                                         hls_data_in_[i] = static_cast<int32_t>(rdma_data_ptr[i]);
                                     }
                                 }
@@ -1173,7 +1177,7 @@ void NV_NVDLA_sdp::SdpDataOperationBatch() {
                                     hls_x1_alu_op_[bs_idx][proc_iter], hls_x1_mul_op_[bs_idx][proc_iter],
                                     hls_x2_alu_op_[bn_idx][proc_iter], hls_x2_mul_op_[bn_idx][proc_iter],
                                     hls_y_alu_op_[y_idx][proc_iter], hls_y_mul_op_[y_idx][proc_iter]);
-                            int16_t *temp_ptr = new int16_t[16];
+                            int16_t *temp_ptr = new int16_t[SDP_PARALLEL_PROC_NUM];
                             cslAssert((temp_ptr != NULL));
                             memcpy(temp_ptr, sdp_hls_wrapper_.sdp_data_out, ATOM_CUBE_SIZE);
                             cslDebug((50, "before write wdma_fifo_\n"));
@@ -1200,10 +1204,10 @@ void NV_NVDLA_sdp::SdpDataOperationWG() {
 
     switch (sdp_proc_precision_) {
         case NVDLA_SDP_D_DATA_FORMAT_0_PROC_PRECISION_INT8:
-            element_per_atom = 32;
+            element_per_atom = ELEMENT_PER_ATOM_INT8;
             break;
          default:
-            element_per_atom = 16;
+            element_per_atom = ELEMENT_PER_ATOM_INT16;
             break;
     }
     proc_num_per_atom = element_per_atom/SDP_PARALLEL_PROC_NUM;
@@ -1235,18 +1239,18 @@ void NV_NVDLA_sdp::SdpDataOperationWG() {
                                 cslDebug((30, "%s: after wait rdma_fifo_, valid:%d\n", __FUNCTION__, rdma_fifo_->num_available()));
                                 if (sdp_proc_precision_ == NVDLA_SDP_D_DATA_FORMAT_0_PROC_PRECISION_FP16 ) {
                                     cslDebug((30, "%s: SDP_DP, input data before FP16->32\n", __FUNCTION__));
-                                    for(int i = 0; i < 16; i++) {
+                                    for(int i = 0; i < SDP_PARALLEL_PROC_NUM; i++) {
                                         cslDebug((30, "%08x, ", rdma_data_ptr[i]));
                                     }
                                     cslDebug((30, "\n" ));
 #pragma CTC SKIP
                                     if (sdp_hls_wrapper_.sdp_cfg_perf_nan_inf_cnt_en) {
-                                        for(int i = 0; i < 16; i++) {
+                                        for(int i = 0; i < SDP_PARALLEL_PROC_NUM; i++) {
                                             if (((rdma_data_ptr[i]&0x3FF) == 0) && (((rdma_data_ptr[i]>>10)&0x1F) == 0x1F)) {
                                                 sdp_hls_wrapper_.i_inf_cnt++;
                                             }
                                         }
-                                        for(int i = 0; i < 16; i++) {
+                                        for(int i = 0; i < SDP_PARALLEL_PROC_NUM; i++) {
                                             if (((rdma_data_ptr[i]&0x3FF) != 0) && (((rdma_data_ptr[i]>>10)&0x1F) == 0x1F)) {
                                                 sdp_hls_wrapper_.i_nan_cnt++;
                                             }
@@ -1254,18 +1258,18 @@ void NV_NVDLA_sdp::SdpDataOperationWG() {
                                     }
 #pragma CTC ENDSKIP
 
-                                    for(int i = 0; i < 16; i++) {
+                                    for(int i = 0; i < SDP_PARALLEL_PROC_NUM; i++) {
                                         hls_data_in_[i] = Fp16ToFp32((ACINTT(16))rdma_data_ptr[i]);
                                     }
 
                                     cslDebug((30, "%s: SDP_DP, input data after FP16->32\n", __FUNCTION__));
-                                    for(int i = 0; i < 16; i++) {
+                                    for(int i = 0; i < SDP_PARALLEL_PROC_NUM; i++) {
                                         cslDebug((30, "%08x, ", hls_data_in_[i]));
                                     }
                                     cslDebug((30, "\n" ));
 
                                 } else {
-                                    for(int i = 0; i < 16; i++) {
+                                    for(int i = 0; i < SDP_PARALLEL_PROC_NUM; i++) {
                                         hls_data_in_[i] = static_cast<int32_t>(rdma_data_ptr[i]);
                                     }
                                 }
@@ -1293,7 +1297,7 @@ void NV_NVDLA_sdp::SdpDataOperationWG() {
                                 cslAssert(false);
 #pragma CTC ENDSKIP
                             } else {
-                                int16_t *temp_ptr = new int16_t[16];
+                                int16_t *temp_ptr = new int16_t[SDP_PARALLEL_PROC_NUM];
                                 cslAssert((temp_ptr != NULL));
                                 memcpy(temp_ptr, sdp_hls_wrapper_.sdp_data_out, ATOM_CUBE_SIZE);
                                 wdma_fifo_->write(temp_ptr);    //8B
@@ -1455,12 +1459,12 @@ void NV_NVDLA_sdp::WdmaSequenceDC() {
 
     // Copy from register value to local config variables, similar with RTL connection
     //
-    dst_base_addr       = (((uint64_t)(sdp_dst_base_addr_high_))<< 32) + ((uint64_t)(sdp_dst_base_addr_low_ << 5));
+    dst_base_addr       = (((uint64_t)(sdp_dst_base_addr_high_))<< 32) + (uint64_t)(sdp_dst_base_addr_low_);
     cube_width          = sdp_width_  +1;
     cube_height         = sdp_height_ +1;
     cube_channel        = sdp_channel_+1;
-    dst_line_stride     = sdp_dst_line_stride_ << 5;
-    dst_surface_stride  = sdp_dst_surface_stride_ << 5;
+    dst_line_stride     = sdp_dst_line_stride_;
+    dst_surface_stride  = sdp_dst_surface_stride_;
     is_required_ack     = false;
     is_int8_to_int16 = sdp_proc_precision_ == NVDLA_SDP_D_DATA_FORMAT_0_PROC_PRECISION_INT8 &&
         sdp_out_precision_ != NVDLA_SDP_D_DATA_FORMAT_0_OUT_PRECISION_INT8;
@@ -1495,7 +1499,9 @@ void NV_NVDLA_sdp::WdmaSequenceDC() {
 
     // For block sequence looping
     if (is_int8_to_int16) {
-        surface_num     = ((cube_channel + 32 - 1)/32)*2;
+        // openDLA doesn't support precision conversion
+        assert(0);
+        surface_num     = ((cube_channel + ELEMENT_PER_ATOM_INT8 - 1)/ELEMENT_PER_ATOM_INT8)*2;
     } else {
         surface_num     = (cube_channel + element_per_atom - 1)/element_per_atom;
     }
@@ -1515,8 +1521,8 @@ void NV_NVDLA_sdp::WdmaSequenceDC() {
                     payload_size        = payload_atom_num*ATOM_CUBE_SIZE;
                     if ( (surface_iter+1 == surface_num)
                             && (line_iter+1==cube_height)) {
-                        cslDebug((30, "SDP dst line_unpacked %s send the last transaction, ack_required=%d\n", __FUNCTION__, is_required_ack));
                         is_required_ack = true;
+                        cslDebug((30, "SDP dst line_unpacked %s send the last transaction, ack_required=%d\n", __FUNCTION__, is_required_ack));
                     }
                     SendDmaWriteRequest(payload_addr, payload_size, payload_atom_num, is_required_ack);
                 }
@@ -1533,8 +1539,8 @@ void NV_NVDLA_sdp::WdmaSequenceDC() {
                         if ( (surface_iter+2 >= surface_num)
                                 && (line_iter+1==cube_height)
                                 && (width_iter + width_step == cube_width) ) {
-                            cslDebug((30, "SDP dst line_unpacked %s send the last transaction, width_iter=%d ack_required=%d\n", __FUNCTION__, width_iter, is_required_ack));
                             is_required_ack = true;
+                            cslDebug((30, "SDP dst line_unpacked %s send the last transaction, width_iter=%d ack_required=%d\n", __FUNCTION__, width_iter, is_required_ack));
                         }
                         SendDmaWriteRequest(payload_addr, payload_size, width_step, is_required_ack);
 
@@ -1565,12 +1571,12 @@ void NV_NVDLA_sdp::WdmaSequenceWG() {
 
     // Copy from register value to local config variables, similar with RTL connection
     //
-    dst_base_addr       = (uint64_t(sdp_dst_base_addr_high_) << 32) + uint64_t(sdp_dst_base_addr_low_ << 5);
+    dst_base_addr       = (uint64_t(sdp_dst_base_addr_high_) << 32) + uint64_t(sdp_dst_base_addr_low_);
     cube_width          = sdp_width_  +1;
     cube_height         = sdp_height_ +1;
     cube_channel        = sdp_channel_+1;
-    dst_line_stride     = sdp_dst_line_stride_ << 5;
-    dst_surface_stride  = sdp_dst_surface_stride_ << 5;
+    dst_line_stride     = sdp_dst_line_stride_;
+    dst_surface_stride  = sdp_dst_surface_stride_;
 
     switch (sdp_out_precision_) {
         case DATA_FORMAT_IS_INT8: {
@@ -1640,13 +1646,13 @@ void NV_NVDLA_sdp::WdmaSequenceBatch() {
 
     // Copy from register value to local config variables, similar with RTL connection
     //
-    dst_base_addr       = (((uint64_t)sdp_dst_base_addr_high_) << 32) + (((uint64_t)sdp_dst_base_addr_low_) << 5);
+    dst_base_addr       = (((uint64_t)sdp_dst_base_addr_high_) << 32) + (uint64_t)sdp_dst_base_addr_low_;
     cube_width          = sdp_width_  +1;
     cube_height         = sdp_height_ +1;
     cube_channel        = sdp_channel_+1;
-    dst_line_stride     = sdp_dst_line_stride_ << 5;
-    dst_surface_stride  = sdp_dst_surface_stride_ << 5;
-    dst_batch_stride    = sdp_dst_batch_stride_ << 5;
+    dst_line_stride     = sdp_dst_line_stride_;
+    dst_surface_stride  = sdp_dst_surface_stride_;
+    dst_batch_stride    = sdp_dst_batch_stride_ * DLA_ATOM_SIZE;
 
     if (sdp_ew_bypass_ == NVDLA_SDP_D_DP_EW_CFG_0_EW_BYPASS_NO &&
             sdp_ew_alu_bypass_ == NVDLA_SDP_D_DP_EW_CFG_0_EW_ALU_BYPASS_NO ) {
@@ -1680,12 +1686,17 @@ void NV_NVDLA_sdp::WdmaSequenceBatch() {
             atom_sent_num = 0;
             atom_num = cube_width;
             while(atom_sent_num < atom_num)  {
+#if 0
 #pragma CTC SKIP
                 // dst_base_addr should be always 64B aligend for multi-batch tests
                 round_num = (dst_base_addr + surface_iter*dst_surface_stride +
                         line_iter*dst_line_stride + atom_sent_num*ATOM_CUBE_SIZE)%DMA_TRANSACTION_SIZE == 0 ? 2:1;
 #pragma CTC ENDSKIP
                 round_num = min(round_num, atom_num-atom_sent_num);
+#else
+                // CACC doesn't support packing for batch mode in openDLA
+                round_num = 1;
+#endif
                 for(batch_iter = 0; batch_iter < batch_num; batch_iter++) {
                     payload_addr = dst_base_addr + surface_iter*dst_surface_stride +
                         line_iter*dst_line_stride + batch_iter*dst_batch_stride + atom_sent_num*ATOM_CUBE_SIZE;
@@ -1711,6 +1722,10 @@ void NV_NVDLA_sdp::SdpWdmaThread () {
     // Varialbes
     while (true) {
         wait(sdp_kickoff_);
+        dma_packers_[SDP_WDMA].set_parameters(SDP_PARALLEL_PROC_NUM*sizeof(int16_t),
+                NVDLA_MEMORY_ATOMIC_SIZE*sizeof(int16_t), 1,
+                // set data type as INT16 becuase we always pass down int16_t to wdma
+                DATA_TYPE_TWO_BYTE);
         if (sdp_winograd_ == NVDLA_SDP_D_FEATURE_MODE_CFG_0_WINOGRAD_ON) {
 #pragma CTC SKIP
             cslAssert(!(sdp_ew_bypass_ == NVDLA_SDP_D_DP_EW_CFG_0_EW_BYPASS_NO &&
@@ -1776,7 +1791,7 @@ void NV_NVDLA_sdp::ExtractRdmaResponsePayloadCore(te_rdma_type eRdDma, nvdla_dma
     int     cube_width;
     uint32_t buf_limit;
     int     bytes_per_element, component_per_element, bytes_per_component, element_per_atom;
-    sc_fifo <int16_t *> *fifo_alu = NULL, *fifo_mul = NULL, *fifo;
+    sc_fifo <int16_t *> *fifo_alu = NULL, *fifo_mul = NULL, *fifo, *fifos[2];
     mask = payload->pd.dma_read_data.mask;
     payload_data_ptr_i8    = reinterpret_cast <int8_t *> (payload->pd.dma_read_data.data);
     payload_data_ptr_i16   = reinterpret_cast <int16_t *> (payload->pd.dma_read_data.data);
@@ -1831,21 +1846,25 @@ void NV_NVDLA_sdp::ExtractRdmaResponsePayloadCore(te_rdma_type eRdDma, nvdla_dma
     component_per_element = data_use == NVDLA_SDP_RDMA_D_ERDMA_CFG_0_ERDMA_DATA_USE_BOTH ? 2:1;
     bytes_per_component = is_int8 ? 1:2;
     bytes_per_element   = bytes_per_component * component_per_element;
-    element_per_atom    = sdp_rdma_in_precision_ == NVDLA_SDP_RDMA_D_FEATURE_MODE_CFG_0_IN_PRECISION_INT8 ? 32:16;
+    element_per_atom    = sdp_rdma_in_precision_ == NVDLA_SDP_RDMA_D_FEATURE_MODE_CFG_0_IN_PRECISION_INT8 ? ELEMENT_PER_ATOM_INT8:ELEMENT_PER_ATOM_INT16;
     buf_limit = cube_width;
    
-    // Handling lower 32 bytes
-    for(int payload_iter = 0; payload_iter < 2; payload_iter++ ) {
+    for(int payload_iter = 0; payload_iter < DMAIF_WIDTH/DLA_ATOM_SIZE; payload_iter++ ) {
         payload_data_ptr_i8 += payload_iter*ATOM_CUBE_SIZE;
         payload_data_ptr_i16 += payload_iter*ATOM_CUBE_SIZE/2;
 
         is_both = data_use == NVDLA_SDP_RDMA_D_BRDMA_CFG_0_BRDMA_DATA_USE_BOTH;
         if (data_use == NVDLA_SDP_RDMA_D_BRDMA_CFG_0_BRDMA_DATA_USE_ALU) {
             fifo = fifo_alu;
+            fifos[0] = fifo;
             cslDebug((50, "fifo_alu\n"));
         } else if (data_use == NVDLA_SDP_RDMA_D_BRDMA_CFG_0_BRDMA_DATA_USE_MUL) {
             fifo = fifo_mul;
+            fifos[0] = fifo;
             cslDebug((50, "fifo_mul\n"));
+        } else {
+            fifos[0] = fifo_alu;
+            fifos[1] = fifo_mul;
         }
         if (0 != (mask & (0x1 << payload_iter))) {
             if (is_int16_to_int8 && eRdDma == SDP_RDMA_INPUT) {
@@ -1898,66 +1917,28 @@ void NV_NVDLA_sdp::ExtractRdmaResponsePayloadCore(te_rdma_type eRdDma, nvdla_dma
                             eRdDma, sdp_buf_rd_ptr_[eRdDma], buf_surf_stride));
 #pragma CTC ENDSKIP
             } else {
-                if (is_int8) {
-                    if (is_both == false) {
-                        for( int atom = 0; atom < 2; atom++ ) {
-                            int16_t *ptr1 = new int16_t[SDP_PARALLEL_PROC_NUM];
-                            cslAssert((ptr1 != NULL));
-                            for( int i = 0; i < SDP_PARALLEL_PROC_NUM; i++) {
-                                ptr1[i] = static_cast<int16_t>(payload_data_ptr_i8[i + SDP_PARALLEL_PROC_NUM*atom]);
+                uint8_t *output_payloads[MAX_OUTPUT_PAYLOAD_NUM][MAX_OUTPUT_WAY_NUM];
+                uint8_t num_payloads;
+                dma_packers_[eRdDma].set_payload((uint8_t*)payload_data_ptr_i8,
+                                                 output_payloads,
+                                                 &num_payloads);
+                uint8_t ways = is_both ? 2:1;
+                for(int payload_iter = 0; payload_iter < num_payloads; payload_iter++) {
+                    if (is_int8) {
+                        // For int8, we have to cast the data type to int16_t
+                        for(int way_iter = 0; way_iter < ways; way_iter++) {
+                            int16_t *ptr = new int16_t [SDP_PARALLEL_PROC_NUM];
+                            for(int element_iter = 0; element_iter < SDP_PARALLEL_PROC_NUM; element_iter++) {
+                                ptr[element_iter] = static_cast<int16_t>((reinterpret_cast<int8_t*>(output_payloads[payload_iter][way_iter])[element_iter]));
                             }
-                            cslDebug((30, "%s send a payload to alu or mul fifo, nb_free:%d\n", str, fifo->num_free()));
-                            fifo->write(ptr1);
-                            cslDebug((30, "after %s send a payload to alu or mul fifo\n", str));
+                            delete [] output_payloads[payload_iter][way_iter];
+                            fifos[way_iter]->write(ptr);
+                            cslDebug((50, "write SDP_PARALLEL_PROC_NUM(%d) elements to DP, payload_iter:%d, way_iter:%d\n", SDP_PARALLEL_PROC_NUM, payload_iter, way_iter));
                         }
                     } else {
-                        int16_t *ptr1 = new int16_t[SDP_PARALLEL_PROC_NUM];
-                        int16_t *ptr2 = new int16_t[SDP_PARALLEL_PROC_NUM];
-
-                        cslAssert((ptr1 != NULL && ptr2 != NULL));
-                        for(int i = 0; i < SDP_PARALLEL_PROC_NUM; i++) {
-                            ptr1[i] = static_cast<int16_t>(payload_data_ptr_i8[i*2 + 0]);
-                            ptr2[i] = static_cast<int16_t>(payload_data_ptr_i8[i*2 + 1]);
-                        }
-                        fifo_alu->write(ptr1);
-                        fifo_mul->write(ptr2);
-                        cslDebug((30, "%s send a payload to both alu/mul fifo\n", str));
-                    }
-                } else {
-                    if (is_both == false) {
-                        int16_t *ptr1 = new int16_t[SDP_PARALLEL_PROC_NUM];
-                        cslAssert((ptr1 != NULL));
-
-                        memcpy(ptr1, payload_data_ptr_i16, ATOM_CUBE_SIZE);
-                        fifo->write(ptr1);
-                        cslDebug((30, "%s send a payload to alu or mul fifo\n", str));
-                    } else {
-                        if (payload_alu_ == NULL) {
-                            payload_alu_ = new int16_t[SDP_PARALLEL_PROC_NUM];
-                            payload_index_ = 0;
-                            cslAssert(payload_alu_ != NULL);
-                        }
-                        if (payload_mul_ == NULL) {
-                            payload_mul_ = new int16_t[SDP_PARALLEL_PROC_NUM];
-                            cslAssert((payload_index_ == 0));
-                            cslAssert(payload_mul_ != NULL);
-                        }
-
-                        for(int i = 0; i < 8; i++) {
-                            payload_alu_[payload_index_ + i] = payload_data_ptr_i16[i*2 + 0];
-                            payload_mul_[payload_index_ + i] = payload_data_ptr_i16[i*2 + 1];
-                        }
-                        payload_index_ += 8;
-
-                        if (payload_index_ == SDP_PARALLEL_PROC_NUM) {
-                            fifo_alu->write(payload_alu_);
-                            fifo_mul->write(payload_mul_);
-                            payload_index_ = 0;
-
-                            payload_alu_ = NULL;
-                            payload_mul_ = NULL;
-
-                            cslDebug((30, "%s send a payload to both alu/mul fifo\n", str));
+                        for(int way_iter = 0; way_iter < ways; way_iter++) {
+                            fifos[way_iter]->write((int16_t*)output_payloads[payload_iter][way_iter]);
+                            cslDebug((50, "write SDP_PARALLEL_PROC_NUM(%d) elements to DP, payload_iter:%d, way_iter:%d\n", SDP_PARALLEL_PROC_NUM, payload_iter, way_iter));
                         }
                     }
                 }
@@ -1988,6 +1969,8 @@ void NV_NVDLA_sdp::ExtractRdmaResponsePayloadCore(te_rdma_type eRdDma, nvdla_dma
             cslAssert(false);
         }
 #pragma CTC ENDSKIP
+    } else {
+        cslDebug((30, "dma:%d recieved:%d atoms\n", eRdDma, rdma_atom_recieved_[eRdDma]));
     }
 }
 
@@ -2089,30 +2072,35 @@ void NV_NVDLA_sdp::SendDmaWriteRequest(uint64_t payload_addr, uint32_t payload_s
     }
     if (sdp_out_precision_ == DATA_FORMAT_IS_INT8) {
         int8_t *payload_data_ptr;
-        int channel_iter;
         payload_data_ptr = reinterpret_cast <int8_t *>  (dma_wr_req_data_payload_->pd.dma_write_data.data);
-        for (atom_iter = 0; atom_iter < payload_atom_num; atom_iter++) {
-            // each transaction from DP is 16 elements, for INT8, we have to combine 2 transactions
-            // to pack one output atom
-            for(channel_iter = 0; channel_iter < ATOM_CUBE_SIZE/SDP_PARALLEL_PROC_NUM; channel_iter++) {
-                cslDebug((70, "%s: before read wdma_fifo\n", __FUNCTION__));
-                dma_write_data_ptr = reinterpret_cast <int16_t *>(wdma_fifo_->read());    //16*32bits(64B)
-                cslDebug((70, "%s: after read wdma_fifo\n", __FUNCTION__));
-                for( int i = 0; i < SDP_PARALLEL_PROC_NUM; i++) {
-                    payload_data_ptr[(atom_iter%2)*ATOM_CUBE_SIZE + channel_iter*SDP_PARALLEL_PROC_NUM + i] =
-                        static_cast<int8_t>(dma_write_data_ptr[i]);
-                }
+        atom_iter = 0;
+        while( atom_iter < payload_atom_num) {
+            // each transaction from DP is SDP_PARALLEL_PROC_NUM elements, we have
+            // to pack/unpack to ATOMs
+            uint8_t *output_payloads[MAX_OUTPUT_PAYLOAD_NUM][MAX_OUTPUT_WAY_NUM];
+            uint8_t num_payloads = 0;
+            do {
+                dma_write_data_ptr = reinterpret_cast <int16_t *>(wdma_fifo_->read());
+                dma_packers_[SDP_WDMA].set_payload((uint8_t*)dma_write_data_ptr,
+                       output_payloads, &num_payloads );
                 delete [] dma_write_data_ptr;
+            } while(num_payloads == 0);
+
+            for(int payload_iter = 0; payload_iter < num_payloads; payload_iter++) {
+                int16_t *tmp_ptr = reinterpret_cast<int16_t*>(output_payloads[payload_iter][0]);
+                for(int element_iter = 0; element_iter < NVDLA_MEMORY_ATOMIC_SIZE; element_iter++) {
+                    payload_data_ptr[element_iter + (atom_iter%DMA_MAX_ATOM_NUM)*NVDLA_MEMORY_ATOMIC_SIZE] = (int8_t)tmp_ptr[element_iter];
+                }
             }
-            // Send write data (64B)
-            if ( (atom_iter%2) == 1 ) {
+            if (atom_iter%DMA_MAX_ATOM_NUM == DMA_MAX_ATOM_NUM-1) {
                 SendDmaWriteRequest (dma_wr_req_data_payload_, dma_delay_);
                 cslDebug((70, "NV_NVDLA_sdp::SendDmaWriteRequest, dma_wr_req_data_payload_, atoms_sent=%d\n", atom_iter+1));
-                for(i=0;i<64;i++) {
+                for(i=0;i<DMAIF_WIDTH;i++) {
                     cslDebug((70, "0x%x ", (unsigned int)payload_data_ptr[i]));
                 }
                 cslDebug((70, "\n"));
             }
+            atom_iter += num_payloads;
         }
         ptr = reinterpret_cast<uint8_t *>(payload_data_ptr);
     } else {
@@ -2120,29 +2108,40 @@ void NV_NVDLA_sdp::SendDmaWriteRequest(uint64_t payload_addr, uint32_t payload_s
             int16_t *payload_data_ptr;
             payload_data_ptr = reinterpret_cast <int16_t *>  (dma_wr_req_data_payload_->pd.dma_write_data.data);
             for (atom_iter = 0; atom_iter < payload_atom_num; atom_iter++) {
-                cslDebug((70, "%s: before read wdma_fifo\n", __FUNCTION__));
-                dma_write_data_ptr = wdma_fifo_->read();    //16*32bits(64B)
-                cslDebug((70, "%s: after read wdma_fifo\n", __FUNCTION__));
-                memcpy (&payload_data_ptr[SDP_PARALLEL_PROC_NUM*(atom_iter%2)], dma_write_data_ptr, ATOM_CUBE_SIZE);
-                // Send write data (64B)
-                if ( (atom_iter%2) == 1 ) {
+                // each transaction from DP is SDP_PARALLEL_PROC_NUM elements, we have
+                // to pack/unpack to ATOMs
+                uint8_t *output_payloads[MAX_OUTPUT_PAYLOAD_NUM][MAX_OUTPUT_WAY_NUM];
+                uint8_t num_payloads = 0;
+                do {
+                    dma_write_data_ptr = reinterpret_cast <int16_t *>(wdma_fifo_->read());
+                    dma_packers_[SDP_WDMA].set_payload((uint8_t*)dma_write_data_ptr,
+                            output_payloads, &num_payloads );
+                    delete [] dma_write_data_ptr;
+                } while(num_payloads == 0);
+
+                for(int payload_iter = 0; payload_iter < num_payloads; payload_iter++) {
+                    int16_t *tmp_ptr = reinterpret_cast<int16_t*>(output_payloads[payload_iter][0]);
+                    for(int element_iter = 0; element_iter < NVDLA_MEMORY_ATOMIC_SIZE; element_iter++) {
+                        payload_data_ptr[element_iter + (atom_iter%DMA_MAX_ATOM_NUM)*NVDLA_MEMORY_ATOMIC_SIZE] = (int16_t)tmp_ptr[element_iter];
+                    }
+                }
+                if (atom_iter%DMA_MAX_ATOM_NUM == DMA_MAX_ATOM_NUM-1) {
                     SendDmaWriteRequest (dma_wr_req_data_payload_, dma_delay_);
                     cslDebug((70, "NV_NVDLA_sdp::SendDmaWriteRequest, dma_wr_req_data_payload_, atoms_sent=%d\n", atom_iter+1));
-                    for(i=0;i<32;i++) {
+                    for(i=0;i<DMAIF_WIDTH/2;i++) {
                         cslDebug((70, "0x%x ", (unsigned int)payload_data_ptr[i]));
                     }
                     cslDebug((70, "\n"));
                 }
-                delete [] dma_write_data_ptr;
             }
             ptr = reinterpret_cast<uint8_t *>(payload_data_ptr);
         } else {
             // INT8 --> INT16
-            //cslAssert(payload_atom_num <= 2);
+            cslAssert(payload_atom_num <= 2);
             for (atom_iter = 0; atom_iter < payload_atom_num; atom_iter++) {
                 for(int surf_internal_iter = 0; surf_internal_iter < 2; surf_internal_iter++) {
                     cslDebug((70, "%s: before read wdma_fifo\n", __FUNCTION__));
-                    dma_write_data_ptr = wdma_fifo_->read();    //16*2(32B)
+                    dma_write_data_ptr = wdma_fifo_->read();  
                     cslDebug((70, "%s: after read wdma_fifo\n", __FUNCTION__));
                     memcpy (sdp_internal_buf_[0] + surf_internal_iter*DMA_TRANSACTION_SIZE + atom_iter*ATOM_CUBE_SIZE,
                             dma_write_data_ptr, ATOM_CUBE_SIZE);
@@ -2150,7 +2149,7 @@ void NV_NVDLA_sdp::SendDmaWriteRequest(uint64_t payload_addr, uint32_t payload_s
                 }
             }
             int16_t *payload_data_ptr;
-            uint32_t dst_surf_stride = sdp_dst_surface_stride_ << 5;
+            uint32_t dst_surf_stride = sdp_dst_surface_stride_ * DLA_ATOM_SIZE;
             payload_data_ptr = reinterpret_cast <int16_t *>  (dma_wr_req_data_payload_->pd.dma_write_data.data);
             for(int surf_internal_iter = 0; surf_internal_iter < 2; surf_internal_iter++) {
                 memcpy (payload_data_ptr, sdp_internal_buf_[0] + surf_internal_iter*DMA_TRANSACTION_SIZE, payload_atom_num*ATOM_CUBE_SIZE);
@@ -2170,12 +2169,14 @@ void NV_NVDLA_sdp::SendDmaWriteRequest(uint64_t payload_addr, uint32_t payload_s
         }
     }
     // payload_atom_num is a odd number
-    if ( (payload_atom_num%2) == 1 && (!is_int8_to_int16)) {
-        // Fill the last 32 byte with 0
+    int remaining_atom_num = payload_atom_num%DMA_MAX_ATOM_NUM;
+    if ( remaining_atom_num != 0 && (!is_int8_to_int16)) {
+        // Fill the last bytes with 0
         cslDebug((30, "%s filling 0s to last invalid atom\n", __FUNCTION__));
-        memset (&ptr[ATOM_CUBE_SIZE], 0, ATOM_CUBE_SIZE);
+        memset (&ptr[remaining_atom_num*DLA_ATOM_SIZE], 0, (DMA_MAX_ATOM_NUM-remaining_atom_num)*DLA_ATOM_SIZE);
         SendDmaWriteRequest (dma_wr_req_data_payload_, dma_delay_);
     }
+    assert(0 == dma_packers_[SDP_WDMA].get_data_size());
 
     if (ack_required) {
         ack_info *ack = new ack_info;
@@ -2198,7 +2199,9 @@ void NV_NVDLA_sdp::SendDmaWriteRequest(nvdla_dma_wr_req_t* payload, sc_time& del
                 payload->pd.dma_write_cmd.require_ack = 0;
             }
         }
+        cslDebug((70, "before: sdp2mcif_wr_req_b_transport, is_cmd:%d\n", payload->tag == TAG_CMD));
         sdp2mcif_wr_req_b_transport(payload, dma_delay_);
+        cslDebug((70, "after: sdp2mcif_wr_req_b_transport\n"));
     } else {
         if (TAG_CMD == payload->tag) {
             if (ack_required) {

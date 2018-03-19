@@ -1,0 +1,10 @@
+name: nvdla_env
+channels:
+- defaults
+- conda-forge
+dependencies:
+- numpy=1.13.3
+- python=3.6.4
+- python-levenshtein=0.12.0
+- plotly=2.4.0
+

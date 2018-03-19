@@ -11,10 +11,11 @@
 #include <algorithm>
 #include <iomanip>
 #include "NV_NVDLA_mcif.h"
-#include "arnvdla.uh"
-#include "arnvdla.h"
+#include "opendla.uh"
+#include "opendla.h"
 #include "cmacros.uh"
 #include "math.h"
+#include "nvdla_config.h"
 #include "log.h"
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
@@ -279,65 +280,52 @@ NV_NVDLA_mcif::~NV_NVDLA_mcif() {
 // DMA read request target sockets
 
 void NV_NVDLA_mcif::bdma2mcif_rd_req_b_transport(int ID, nvdla_dma_rd_req_t* payload, sc_time& delay) {
-    // DMA request size unit is 32 bytes
-    uint64_t base_addr;
+    // DMA request size unit is DLA_ATOM_SIZE bytes
+    uint64_t base_addr, cur_address;
     uint64_t first_base_addr;
-    uint64_t last_base_addr;
+    uint64_t last_base_addr, last_actual_addr, last_aligned_addr;
     uint32_t size_in_byte;
     uint32_t total_axi_size;
     uint64_t payload_addr;
     uint32_t payload_size;
     uint8_t* axi_byte_enable_ptr;
     uint32_t byte_iter;
-    int32_t  user_size_first, user_size_last, user_size;
-    bool     is_base_64byte_align;
-    bool     is_rear_64byte_align;
     bool     is_read=true;
     nvdla_dbb_extension *nvdla_dbb_ext = NULL;
     dla_b_transport_payload *bt_payload;
 
     payload_addr = payload->pd.dma_read_cmd.addr;
-    payload_size = (payload->pd.dma_read_cmd.size + 1) * DMA_TRANSACTION_ATOM_SIZE; //payload_size's max value is 2^13
+    payload_size = (payload->pd.dma_read_cmd.size + 1) * DLA_ATOM_SIZE; //payload_size's max value is 2^13
 
-    is_base_64byte_align = payload_addr%AXI_TRANSACTION_ATOM_SIZE == 0;
-    first_base_addr = is_base_64byte_align? payload_addr: payload_addr - DMA_TRANSACTION_ATOM_SIZE; // Align to 64B
+    first_base_addr = (payload_addr/AXI_ALIGN_SIZE)*AXI_ALIGN_SIZE; 
 
-    is_rear_64byte_align = (payload_addr + payload_size) % AXI_TRANSACTION_ATOM_SIZE == 0;
-    total_axi_size = payload_size + (is_base_64byte_align? 0: DMA_TRANSACTION_ATOM_SIZE) + (is_rear_64byte_align? 0: DMA_TRANSACTION_ATOM_SIZE);
+    last_actual_addr = payload_addr + payload_size;
+    last_aligned_addr= ((last_actual_addr + AXI_ALIGN_SIZE - 1)/AXI_ALIGN_SIZE)*AXI_ALIGN_SIZE;
+    last_base_addr   = last_aligned_addr - MEM_TRANSACTION_SIZE;
+    total_axi_size = last_aligned_addr - first_base_addr;
     cslDebug((30, "XXXXXXX NV_NVDLA_mcif::bdma2mcif_rd_req_b_transport, first_base_addr=0x%lx total_axi_size is 0x%x payload_addr=0x%lx payload_size=0x%x\x0A", first_base_addr, total_axi_size, payload_addr, payload_size));
-    last_base_addr  = first_base_addr + total_axi_size - AXI_TRANSACTION_ATOM_SIZE;
 
-    base_addr = first_base_addr;
+    cur_address = base_addr = first_base_addr;
 
     // Push the number of atoms of the request
-    bdma2mcif_rd_req_atom_num_fifo_->write(payload_size/DMA_TRANSACTION_ATOM_SIZE);
-    cslDebug((50, "NV_NVDLA_mcif::bdma2mcif_rd_req_b_transport, write 0x%x to bdma2mcif_rd_req_atom_num_fifo_, num_free:%d.\x0A", payload_size/DMA_TRANSACTION_ATOM_SIZE, bdma2mcif_rd_req_atom_num_fifo_->num_free()));
-
-    if (total_axi_size <= (MCIF_MAX_MEM_TRANSACTION_SIZE - first_base_addr % MCIF_MAX_MEM_TRANSACTION_SIZE))
-        user_size_first = total_axi_size / AXI_TRANSACTION_ATOM_SIZE - 1;
-    else
-        user_size_first = (MCIF_MAX_MEM_TRANSACTION_SIZE - first_base_addr % MCIF_MAX_MEM_TRANSACTION_SIZE) / AXI_TRANSACTION_ATOM_SIZE - 1;
-
-    if ((first_base_addr + total_axi_size) % MCIF_MAX_MEM_TRANSACTION_SIZE == 0)
-        user_size_last = 3;
-    else
-        user_size_last = ((first_base_addr + total_axi_size) % MCIF_MAX_MEM_TRANSACTION_SIZE) / AXI_TRANSACTION_ATOM_SIZE - 1;
+    bdma2mcif_rd_req_atom_num_fifo_->write(payload_size/MIN_BUS_WIDTH);
+    cslDebug((50, "NV_NVDLA_mcif::bdma2mcif_rd_req_b_transport, write 0x%x to bdma2mcif_rd_req_atom_num_fifo_, num_free:%d.\x0A", payload_size/MIN_BUS_WIDTH, bdma2mcif_rd_req_atom_num_fifo_->num_free()));
 
     //Split dma request to axi requests
-    cslDebug((50, "NV_NVDLA_mcif::bdma2mcif_rd_req_b_transport, before spliting DMA transaction. user_size_first=0x%x user_size_last=0x%x\x0A", user_size_first, user_size_last));
-    while(base_addr <= last_base_addr) {
+    while(cur_address <= last_base_addr) {
+        base_addr    = cur_address;
         cslDebug((50, "NV_NVDLA_mcif::bdma2mcif_rd_req_b_transport, prepare AXI transaction for address: 0x%lx\x0A", base_addr));
-        // base_addr should be aligned to 64B
-        // size_in_byte should be multiple of 64
+        // base_addr should be aligned to AXI_ALIGN_SIZE Byte
+        // size_in_byte should be multiple of MEM_TRANSACTION_SIZE
         // if the data size required by dma mster is 32B, MCIF will drop the extra 32B when AXI returns
-        size_in_byte = AXI_TRANSACTION_ATOM_SIZE;
-        if (((base_addr - first_base_addr) < MCIF_MAX_MEM_TRANSACTION_SIZE) && (base_addr / MCIF_MAX_MEM_TRANSACTION_SIZE == first_base_addr / MCIF_MAX_MEM_TRANSACTION_SIZE))
-            user_size = user_size_first;
-        else if (((last_base_addr - base_addr) < MCIF_MAX_MEM_TRANSACTION_SIZE) && (base_addr / MCIF_MAX_MEM_TRANSACTION_SIZE == last_base_addr / MCIF_MAX_MEM_TRANSACTION_SIZE))
-            user_size = user_size_last;
-        else
-            user_size = 3;
-
+        size_in_byte = MEM_TRANSACTION_SIZE;
+        while (((cur_address + MEM_TRANSACTION_SIZE) < (last_aligned_addr)) && ((cur_address + MEM_TRANSACTION_SIZE) % MCIF_MAX_MEM_TRANSACTION_SIZE != 0)) {
+            size_in_byte += MEM_TRANSACTION_SIZE;
+            cur_address  += MEM_TRANSACTION_SIZE;
+        }
+        cur_address += MEM_TRANSACTION_SIZE;
+        cslDebug((50, "NV_NVDLA_mcif::bdma2mcif_rd_req_b_transport, cur_address=0x%lx base_addr=0x%lx size_in_byte=0x%x\x0A", cur_address, base_addr, size_in_byte));
+    
         // Allocating memory for dla_b_transport_payload
         bt_payload = new dla_b_transport_payload(size_in_byte, dla_b_transport_payload::DLA_B_TRANSPORT_PAYLOAD_TYPE_MC);
         bt_payload->configure_gp(base_addr, size_in_byte, is_read);
@@ -348,59 +336,32 @@ void NV_NVDLA_mcif::bdma2mcif_rd_req_b_transport(int ID, nvdla_dma_rd_req_t* pay
         // Write true to *_rd_atom_enable_fifo_ when the 32B atom is needed by dma client
         // Write false to *_rd_atom_enable_fifo_ when the 32B atom is not needed by dma client (dma's addr is not aligned to 64B
         for (byte_iter=0; byte_iter < size_in_byte; byte_iter++) {
-            if(base_addr == last_base_addr) {   // compare with last_base_addr before first_base_addr for the case of only one axi transaction
-                if ( (((true == is_rear_64byte_align) || (byte_iter < DMA_TRANSACTION_ATOM_SIZE)) && (first_base_addr != base_addr)) || 
-                        ( ( ( (true == is_base_64byte_align) && (byte_iter < DMA_TRANSACTION_ATOM_SIZE) ) || ( (true == is_rear_64byte_align) && (byte_iter >= DMA_TRANSACTION_ATOM_SIZE)) ) && (first_base_addr == base_addr)) ){
-                    axi_byte_enable_ptr[byte_iter] = TLM_BYTE_ENABLED;
-                    if (0 == byte_iter%DMA_TRANSACTION_ATOM_SIZE) {
-                    cslDebug((50, "NV_NVDLA_mcif::bdma2mcif_rd_req_b_transport, write true to bdma_rd_atom_enable_fifo_, num_free:%d\x0A", bdma_rd_atom_enable_fifo_->num_free()));
-                        bdma_rd_atom_enable_fifo_->write(true);
-                    }
-                } else {
-                    axi_byte_enable_ptr[byte_iter] = TLM_BYTE_DISABLED;
-                    if (0 == byte_iter%DMA_TRANSACTION_ATOM_SIZE) {
-                    cslDebug((50, "NV_NVDLA_mcif::bdma2mcif_rd_req_b_transport, write false to bdma_rd_atom_enable_fifo_, num_free:%d\x0A", bdma_rd_atom_enable_fifo_->num_free()));
-                        bdma_rd_atom_enable_fifo_->write(false);
-                    }
-                }
-            }
-            else if(base_addr == first_base_addr) {
-                if ( (true == is_base_64byte_align) || (byte_iter >= DMA_TRANSACTION_ATOM_SIZE) ){
-                    axi_byte_enable_ptr[byte_iter] = TLM_BYTE_ENABLED;
-                    if (0 == byte_iter%DMA_TRANSACTION_ATOM_SIZE) {
-                    cslDebug((50, "NV_NVDLA_mcif::bdma2mcif_rd_req_b_transport, write true to bdma_rd_atom_enable_fifo_, num_free:%d\x0A", bdma_rd_atom_enable_fifo_->num_free()));
-                        bdma_rd_atom_enable_fifo_->write(true);
-                    }
-                } else {
-                    axi_byte_enable_ptr[byte_iter] = TLM_BYTE_DISABLED;
-                    if (0 == byte_iter%DMA_TRANSACTION_ATOM_SIZE) {
-                    cslDebug((50, "NV_NVDLA_mcif::bdma2mcif_rd_req_b_transport, write false to bdma_rd_atom_enable_fifo_, num_free:%d\x0A", bdma_rd_atom_enable_fifo_->num_free()));
-                        bdma_rd_atom_enable_fifo_->write(false);
-                    }
-                }
-            }
-            else {
+            if ( ((base_addr + byte_iter >= payload_addr) && (base_addr + byte_iter < last_actual_addr)) ){
                 axi_byte_enable_ptr[byte_iter] = TLM_BYTE_ENABLED;
-                if (0 == byte_iter%DMA_TRANSACTION_ATOM_SIZE) {
-                cslDebug((50, "NV_NVDLA_mcif::bdma2mcif_rd_req_b_transport, write true to bdma_rd_atom_enable_fifo_, num_free:%d\x0A", bdma_rd_atom_enable_fifo_->num_free()));
+                if (0 == byte_iter%MIN_BUS_WIDTH) {
+                    cslDebug((50, "NV_NVDLA_mcif::bdma2mcif_rd_req_b_transport, write true to bdma_rd_atom_enable_fifo_, num_free:%d\x0A", bdma_rd_atom_enable_fifo_->num_free()));
                     bdma_rd_atom_enable_fifo_->write(true);
+                }
+            } else {
+                axi_byte_enable_ptr[byte_iter] = TLM_BYTE_DISABLED;
+                if (0 == byte_iter%MIN_BUS_WIDTH) {
+                    cslDebug((50, "NV_NVDLA_mcif::bdma2mcif_rd_req_b_transport, write false to bdma_rd_atom_enable_fifo_, num_free:%d\x0A", bdma_rd_atom_enable_fifo_->num_free()));
+                    bdma_rd_atom_enable_fifo_->write(false);
                 }
             }
         }
         nvdla_dbb_ext->set_id(BDMA_AXI_ID);
-        nvdla_dbb_ext->set_size(64);
-        nvdla_dbb_ext->set_length(size_in_byte/AXI_TRANSACTION_ATOM_SIZE);
+        nvdla_dbb_ext->set_size(MEM_TRANSACTION_SIZE);
+        nvdla_dbb_ext->set_length(size_in_byte/MEM_TRANSACTION_SIZE);
         // avoid warinig for unused variable
-        (void)user_size;
 #pragma CTC SKIP
-        if(size_in_byte%AXI_TRANSACTION_ATOM_SIZE!=0)
-            FAIL(("NV_NVDLA_mcif::bdma2mcif_rd_req_b_transport, size_in_byte is not multiple of AXI_TRANSACTION_ATOM_SIZE. size_in_byte=0x%x", size_in_byte));
+        if(size_in_byte%MEM_TRANSACTION_SIZE!=0)
+            FAIL(("NV_NVDLA_mcif::bdma2mcif_rd_req_b_transport, size_in_byte is not multiple of MEM_TRANSACTION_SIZE. size_in_byte=0x%x", size_in_byte));
 #pragma CTC ENDSKIP
         cslDebug((50, "NV_NVDLA_mcif::bdma2mcif_rd_req_b_transport, before sending data to bdma_rd_req_fifo_ addr=0x%lx, , num_free:%d\x0A", base_addr, bdma_rd_req_fifo_->num_free()));
         bdma_rd_req_fifo_->write(bt_payload);
         cslDebug((50, "NV_NVDLA_mcif::bdma2mcif_rd_req_b_transport, after sending data to bdma_rd_req_fifo_ addr=0x%lx\x0A", base_addr));
 
-        base_addr    += AXI_TRANSACTION_ATOM_SIZE;
     }
     cslDebug((50, "NV_NVDLA_mcif::bdma2mcif_rd_req_b_transport, after spliting DMA transaction\x0A"));
 }
@@ -411,6 +372,7 @@ void NV_NVDLA_mcif::ReadResp_mcif2bdma() {
     nvdla_dma_rd_rsp_t* dma_rd_rsp_payload = NULL;
     uint8_t           * dma_payload_data_ptr;
     uint32_t    idx;
+    int         dla_atom_num = 0;
 
     atom_num_left = 0;
     while(true) {
@@ -425,27 +387,16 @@ void NV_NVDLA_mcif::ReadResp_mcif2bdma() {
         dma_payload_data_ptr    = reinterpret_cast <uint8_t *> (dma_rd_rsp_payload->pd.dma_read_data.data);
         dma_rd_rsp_payload->pd.dma_read_data.mask = 0x00;
 
-        // 1st atom of the 64B
-        // Aligen to 32B
-        cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2bdma, num_available:%d\x0A", mcif2bdma_rd_rsp_fifo_->num_available()));
-        axi_atom_ptr = mcif2bdma_rd_rsp_fifo_->read();
-        credit_mcif2bdma_rd_rsp_fifo_ ++;
-        cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2bdma, read 1st atom of the 64B from mcif2bdma_rd_rsp_fifo_\x0A"));
-        atom_num_left--;
-
-        dma_rd_rsp_payload->pd.dma_read_data.mask = 0x1;
-        memcpy (&dma_payload_data_ptr[0], axi_atom_ptr, DMA_TRANSACTION_ATOM_SIZE);
-        delete[] axi_atom_ptr;
-
-        if(atom_num_left>0) {
-            // 2nd atom of the 64B
+        for(int atom_iter = 0; atom_iter < TRANSACTION_DMA_ATOMIC_NUM && atom_num_left > 0; atom_iter++) {
             cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2bdma, num_available:%d\x0A", mcif2bdma_rd_rsp_fifo_->num_available()));
             axi_atom_ptr = mcif2bdma_rd_rsp_fifo_->read();
             credit_mcif2bdma_rd_rsp_fifo_ ++;
-            cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2bdma, read 2nd atom of the 64B from mcif2bdma_rd_rsp_fifo_\x0A"));
+            cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2bdma, read 1st atom of the 64B from mcif2bdma_rd_rsp_fifo_\x0A"));
             atom_num_left--;
-            dma_rd_rsp_payload->pd.dma_read_data.mask = (dma_rd_rsp_payload->pd.dma_read_data.mask << 0x1) + 0x1;
-            memcpy (&dma_payload_data_ptr[DMA_TRANSACTION_ATOM_SIZE], axi_atom_ptr, DMA_TRANSACTION_ATOM_SIZE);
+            dla_atom_num = atom_iter*MIN_BUS_WIDTH/DLA_ATOM_SIZE;
+
+            dma_rd_rsp_payload->pd.dma_read_data.mask |= 0x1 << dla_atom_num;
+            memcpy (&dma_payload_data_ptr[atom_iter*MIN_BUS_WIDTH], axi_atom_ptr, MIN_BUS_WIDTH);
             delete[] axi_atom_ptr;
         }
 
@@ -462,65 +413,52 @@ void NV_NVDLA_mcif::ReadResp_mcif2bdma() {
 }
 
 void NV_NVDLA_mcif::sdp2mcif_rd_req_b_transport(int ID, nvdla_dma_rd_req_t* payload, sc_time& delay) {
-    // DMA request size unit is 32 bytes
-    uint64_t base_addr;
+    // DMA request size unit is DLA_ATOM_SIZE bytes
+    uint64_t base_addr, cur_address;
     uint64_t first_base_addr;
-    uint64_t last_base_addr;
+    uint64_t last_base_addr, last_actual_addr, last_aligned_addr;
     uint32_t size_in_byte;
     uint32_t total_axi_size;
     uint64_t payload_addr;
     uint32_t payload_size;
     uint8_t* axi_byte_enable_ptr;
     uint32_t byte_iter;
-    int32_t  user_size_first, user_size_last, user_size;
-    bool     is_base_64byte_align;
-    bool     is_rear_64byte_align;
     bool     is_read=true;
     nvdla_dbb_extension *nvdla_dbb_ext = NULL;
     dla_b_transport_payload *bt_payload;
 
     payload_addr = payload->pd.dma_read_cmd.addr;
-    payload_size = (payload->pd.dma_read_cmd.size + 1) * DMA_TRANSACTION_ATOM_SIZE; //payload_size's max value is 2^13
+    payload_size = (payload->pd.dma_read_cmd.size + 1) * DLA_ATOM_SIZE; //payload_size's max value is 2^13
 
-    is_base_64byte_align = payload_addr%AXI_TRANSACTION_ATOM_SIZE == 0;
-    first_base_addr = is_base_64byte_align? payload_addr: payload_addr - DMA_TRANSACTION_ATOM_SIZE; // Align to 64B
+    first_base_addr = (payload_addr/AXI_ALIGN_SIZE)*AXI_ALIGN_SIZE; 
 
-    is_rear_64byte_align = (payload_addr + payload_size) % AXI_TRANSACTION_ATOM_SIZE == 0;
-    total_axi_size = payload_size + (is_base_64byte_align? 0: DMA_TRANSACTION_ATOM_SIZE) + (is_rear_64byte_align? 0: DMA_TRANSACTION_ATOM_SIZE);
+    last_actual_addr = payload_addr + payload_size;
+    last_aligned_addr= ((last_actual_addr + AXI_ALIGN_SIZE - 1)/AXI_ALIGN_SIZE)*AXI_ALIGN_SIZE;
+    last_base_addr   = last_aligned_addr - MEM_TRANSACTION_SIZE;
+    total_axi_size = last_aligned_addr - first_base_addr;
     cslDebug((30, "XXXXXXX NV_NVDLA_mcif::sdp2mcif_rd_req_b_transport, first_base_addr=0x%lx total_axi_size is 0x%x payload_addr=0x%lx payload_size=0x%x\x0A", first_base_addr, total_axi_size, payload_addr, payload_size));
-    last_base_addr  = first_base_addr + total_axi_size - AXI_TRANSACTION_ATOM_SIZE;
 
-    base_addr = first_base_addr;
+    cur_address = base_addr = first_base_addr;
 
     // Push the number of atoms of the request
-    sdp2mcif_rd_req_atom_num_fifo_->write(payload_size/DMA_TRANSACTION_ATOM_SIZE);
-    cslDebug((50, "NV_NVDLA_mcif::sdp2mcif_rd_req_b_transport, write 0x%x to sdp2mcif_rd_req_atom_num_fifo_, num_free:%d.\x0A", payload_size/DMA_TRANSACTION_ATOM_SIZE, sdp2mcif_rd_req_atom_num_fifo_->num_free()));
-
-    if (total_axi_size <= (MCIF_MAX_MEM_TRANSACTION_SIZE - first_base_addr % MCIF_MAX_MEM_TRANSACTION_SIZE))
-        user_size_first = total_axi_size / AXI_TRANSACTION_ATOM_SIZE - 1;
-    else
-        user_size_first = (MCIF_MAX_MEM_TRANSACTION_SIZE - first_base_addr % MCIF_MAX_MEM_TRANSACTION_SIZE) / AXI_TRANSACTION_ATOM_SIZE - 1;
-
-    if ((first_base_addr + total_axi_size) % MCIF_MAX_MEM_TRANSACTION_SIZE == 0)
-        user_size_last = 3;
-    else
-        user_size_last = ((first_base_addr + total_axi_size) % MCIF_MAX_MEM_TRANSACTION_SIZE) / AXI_TRANSACTION_ATOM_SIZE - 1;
+    sdp2mcif_rd_req_atom_num_fifo_->write(payload_size/MIN_BUS_WIDTH);
+    cslDebug((50, "NV_NVDLA_mcif::sdp2mcif_rd_req_b_transport, write 0x%x to sdp2mcif_rd_req_atom_num_fifo_, num_free:%d.\x0A", payload_size/MIN_BUS_WIDTH, sdp2mcif_rd_req_atom_num_fifo_->num_free()));
 
     //Split dma request to axi requests
-    cslDebug((50, "NV_NVDLA_mcif::sdp2mcif_rd_req_b_transport, before spliting DMA transaction. user_size_first=0x%x user_size_last=0x%x\x0A", user_size_first, user_size_last));
-    while(base_addr <= last_base_addr) {
+    while(cur_address <= last_base_addr) {
+        base_addr    = cur_address;
         cslDebug((50, "NV_NVDLA_mcif::sdp2mcif_rd_req_b_transport, prepare AXI transaction for address: 0x%lx\x0A", base_addr));
-        // base_addr should be aligned to 64B
-        // size_in_byte should be multiple of 64
+        // base_addr should be aligned to AXI_ALIGN_SIZE Byte
+        // size_in_byte should be multiple of MEM_TRANSACTION_SIZE
         // if the data size required by dma mster is 32B, MCIF will drop the extra 32B when AXI returns
-        size_in_byte = AXI_TRANSACTION_ATOM_SIZE;
-        if (((base_addr - first_base_addr) < MCIF_MAX_MEM_TRANSACTION_SIZE) && (base_addr / MCIF_MAX_MEM_TRANSACTION_SIZE == first_base_addr / MCIF_MAX_MEM_TRANSACTION_SIZE))
-            user_size = user_size_first;
-        else if (((last_base_addr - base_addr) < MCIF_MAX_MEM_TRANSACTION_SIZE) && (base_addr / MCIF_MAX_MEM_TRANSACTION_SIZE == last_base_addr / MCIF_MAX_MEM_TRANSACTION_SIZE))
-            user_size = user_size_last;
-        else
-            user_size = 3;
-
+        size_in_byte = MEM_TRANSACTION_SIZE;
+        while (((cur_address + MEM_TRANSACTION_SIZE) < (last_aligned_addr)) && ((cur_address + MEM_TRANSACTION_SIZE) % MCIF_MAX_MEM_TRANSACTION_SIZE != 0)) {
+            size_in_byte += MEM_TRANSACTION_SIZE;
+            cur_address  += MEM_TRANSACTION_SIZE;
+        }
+        cur_address += MEM_TRANSACTION_SIZE;
+        cslDebug((50, "NV_NVDLA_mcif::sdp2mcif_rd_req_b_transport, cur_address=0x%lx base_addr=0x%lx size_in_byte=0x%x\x0A", cur_address, base_addr, size_in_byte));
+    
         // Allocating memory for dla_b_transport_payload
         bt_payload = new dla_b_transport_payload(size_in_byte, dla_b_transport_payload::DLA_B_TRANSPORT_PAYLOAD_TYPE_MC);
         bt_payload->configure_gp(base_addr, size_in_byte, is_read);
@@ -531,59 +469,32 @@ void NV_NVDLA_mcif::sdp2mcif_rd_req_b_transport(int ID, nvdla_dma_rd_req_t* payl
         // Write true to *_rd_atom_enable_fifo_ when the 32B atom is needed by dma client
         // Write false to *_rd_atom_enable_fifo_ when the 32B atom is not needed by dma client (dma's addr is not aligned to 64B
         for (byte_iter=0; byte_iter < size_in_byte; byte_iter++) {
-            if(base_addr == last_base_addr) {   // compare with last_base_addr before first_base_addr for the case of only one axi transaction
-                if ( (((true == is_rear_64byte_align) || (byte_iter < DMA_TRANSACTION_ATOM_SIZE)) && (first_base_addr != base_addr)) || 
-                        ( ( ( (true == is_base_64byte_align) && (byte_iter < DMA_TRANSACTION_ATOM_SIZE) ) || ( (true == is_rear_64byte_align) && (byte_iter >= DMA_TRANSACTION_ATOM_SIZE)) ) && (first_base_addr == base_addr)) ){
-                    axi_byte_enable_ptr[byte_iter] = TLM_BYTE_ENABLED;
-                    if (0 == byte_iter%DMA_TRANSACTION_ATOM_SIZE) {
-                    cslDebug((50, "NV_NVDLA_mcif::sdp2mcif_rd_req_b_transport, write true to sdp_rd_atom_enable_fifo_, num_free:%d\x0A", sdp_rd_atom_enable_fifo_->num_free()));
-                        sdp_rd_atom_enable_fifo_->write(true);
-                    }
-                } else {
-                    axi_byte_enable_ptr[byte_iter] = TLM_BYTE_DISABLED;
-                    if (0 == byte_iter%DMA_TRANSACTION_ATOM_SIZE) {
-                    cslDebug((50, "NV_NVDLA_mcif::sdp2mcif_rd_req_b_transport, write false to sdp_rd_atom_enable_fifo_, num_free:%d\x0A", sdp_rd_atom_enable_fifo_->num_free()));
-                        sdp_rd_atom_enable_fifo_->write(false);
-                    }
-                }
-            }
-            else if(base_addr == first_base_addr) {
-                if ( (true == is_base_64byte_align) || (byte_iter >= DMA_TRANSACTION_ATOM_SIZE) ){
-                    axi_byte_enable_ptr[byte_iter] = TLM_BYTE_ENABLED;
-                    if (0 == byte_iter%DMA_TRANSACTION_ATOM_SIZE) {
-                    cslDebug((50, "NV_NVDLA_mcif::sdp2mcif_rd_req_b_transport, write true to sdp_rd_atom_enable_fifo_, num_free:%d\x0A", sdp_rd_atom_enable_fifo_->num_free()));
-                        sdp_rd_atom_enable_fifo_->write(true);
-                    }
-                } else {
-                    axi_byte_enable_ptr[byte_iter] = TLM_BYTE_DISABLED;
-                    if (0 == byte_iter%DMA_TRANSACTION_ATOM_SIZE) {
-                    cslDebug((50, "NV_NVDLA_mcif::sdp2mcif_rd_req_b_transport, write false to sdp_rd_atom_enable_fifo_, num_free:%d\x0A", sdp_rd_atom_enable_fifo_->num_free()));
-                        sdp_rd_atom_enable_fifo_->write(false);
-                    }
-                }
-            }
-            else {
+            if ( ((base_addr + byte_iter >= payload_addr) && (base_addr + byte_iter < last_actual_addr)) ){
                 axi_byte_enable_ptr[byte_iter] = TLM_BYTE_ENABLED;
-                if (0 == byte_iter%DMA_TRANSACTION_ATOM_SIZE) {
-                cslDebug((50, "NV_NVDLA_mcif::sdp2mcif_rd_req_b_transport, write true to sdp_rd_atom_enable_fifo_, num_free:%d\x0A", sdp_rd_atom_enable_fifo_->num_free()));
+                if (0 == byte_iter%MIN_BUS_WIDTH) {
+                    cslDebug((50, "NV_NVDLA_mcif::sdp2mcif_rd_req_b_transport, write true to sdp_rd_atom_enable_fifo_, num_free:%d\x0A", sdp_rd_atom_enable_fifo_->num_free()));
                     sdp_rd_atom_enable_fifo_->write(true);
+                }
+            } else {
+                axi_byte_enable_ptr[byte_iter] = TLM_BYTE_DISABLED;
+                if (0 == byte_iter%MIN_BUS_WIDTH) {
+                    cslDebug((50, "NV_NVDLA_mcif::sdp2mcif_rd_req_b_transport, write false to sdp_rd_atom_enable_fifo_, num_free:%d\x0A", sdp_rd_atom_enable_fifo_->num_free()));
+                    sdp_rd_atom_enable_fifo_->write(false);
                 }
             }
         }
         nvdla_dbb_ext->set_id(SDP_AXI_ID);
-        nvdla_dbb_ext->set_size(64);
-        nvdla_dbb_ext->set_length(size_in_byte/AXI_TRANSACTION_ATOM_SIZE);
+        nvdla_dbb_ext->set_size(MEM_TRANSACTION_SIZE);
+        nvdla_dbb_ext->set_length(size_in_byte/MEM_TRANSACTION_SIZE);
         // avoid warinig for unused variable
-        (void)user_size;
 #pragma CTC SKIP
-        if(size_in_byte%AXI_TRANSACTION_ATOM_SIZE!=0)
-            FAIL(("NV_NVDLA_mcif::sdp2mcif_rd_req_b_transport, size_in_byte is not multiple of AXI_TRANSACTION_ATOM_SIZE. size_in_byte=0x%x", size_in_byte));
+        if(size_in_byte%MEM_TRANSACTION_SIZE!=0)
+            FAIL(("NV_NVDLA_mcif::sdp2mcif_rd_req_b_transport, size_in_byte is not multiple of MEM_TRANSACTION_SIZE. size_in_byte=0x%x", size_in_byte));
 #pragma CTC ENDSKIP
         cslDebug((50, "NV_NVDLA_mcif::sdp2mcif_rd_req_b_transport, before sending data to sdp_rd_req_fifo_ addr=0x%lx, , num_free:%d\x0A", base_addr, sdp_rd_req_fifo_->num_free()));
         sdp_rd_req_fifo_->write(bt_payload);
         cslDebug((50, "NV_NVDLA_mcif::sdp2mcif_rd_req_b_transport, after sending data to sdp_rd_req_fifo_ addr=0x%lx\x0A", base_addr));
 
-        base_addr    += AXI_TRANSACTION_ATOM_SIZE;
     }
     cslDebug((50, "NV_NVDLA_mcif::sdp2mcif_rd_req_b_transport, after spliting DMA transaction\x0A"));
 }
@@ -594,6 +505,7 @@ void NV_NVDLA_mcif::ReadResp_mcif2sdp() {
     nvdla_dma_rd_rsp_t* dma_rd_rsp_payload = NULL;
     uint8_t           * dma_payload_data_ptr;
     uint32_t    idx;
+    int         dla_atom_num = 0;
 
     atom_num_left = 0;
     while(true) {
@@ -608,27 +520,16 @@ void NV_NVDLA_mcif::ReadResp_mcif2sdp() {
         dma_payload_data_ptr    = reinterpret_cast <uint8_t *> (dma_rd_rsp_payload->pd.dma_read_data.data);
         dma_rd_rsp_payload->pd.dma_read_data.mask = 0x00;
 
-        // 1st atom of the 64B
-        // Aligen to 32B
-        cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2sdp, num_available:%d\x0A", mcif2sdp_rd_rsp_fifo_->num_available()));
-        axi_atom_ptr = mcif2sdp_rd_rsp_fifo_->read();
-        credit_mcif2sdp_rd_rsp_fifo_ ++;
-        cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2sdp, read 1st atom of the 64B from mcif2sdp_rd_rsp_fifo_\x0A"));
-        atom_num_left--;
-
-        dma_rd_rsp_payload->pd.dma_read_data.mask = 0x1;
-        memcpy (&dma_payload_data_ptr[0], axi_atom_ptr, DMA_TRANSACTION_ATOM_SIZE);
-        delete[] axi_atom_ptr;
-
-        if(atom_num_left>0) {
-            // 2nd atom of the 64B
+        for(int atom_iter = 0; atom_iter < TRANSACTION_DMA_ATOMIC_NUM && atom_num_left > 0; atom_iter++) {
             cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2sdp, num_available:%d\x0A", mcif2sdp_rd_rsp_fifo_->num_available()));
             axi_atom_ptr = mcif2sdp_rd_rsp_fifo_->read();
             credit_mcif2sdp_rd_rsp_fifo_ ++;
-            cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2sdp, read 2nd atom of the 64B from mcif2sdp_rd_rsp_fifo_\x0A"));
+            cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2sdp, read 1st atom of the 64B from mcif2sdp_rd_rsp_fifo_\x0A"));
             atom_num_left--;
-            dma_rd_rsp_payload->pd.dma_read_data.mask = (dma_rd_rsp_payload->pd.dma_read_data.mask << 0x1) + 0x1;
-            memcpy (&dma_payload_data_ptr[DMA_TRANSACTION_ATOM_SIZE], axi_atom_ptr, DMA_TRANSACTION_ATOM_SIZE);
+            dla_atom_num = atom_iter*MIN_BUS_WIDTH/DLA_ATOM_SIZE;
+
+            dma_rd_rsp_payload->pd.dma_read_data.mask |= 0x1 << dla_atom_num;
+            memcpy (&dma_payload_data_ptr[atom_iter*MIN_BUS_WIDTH], axi_atom_ptr, MIN_BUS_WIDTH);
             delete[] axi_atom_ptr;
         }
 
@@ -645,65 +546,52 @@ void NV_NVDLA_mcif::ReadResp_mcif2sdp() {
 }
 
 void NV_NVDLA_mcif::pdp2mcif_rd_req_b_transport(int ID, nvdla_dma_rd_req_t* payload, sc_time& delay) {
-    // DMA request size unit is 32 bytes
-    uint64_t base_addr;
+    // DMA request size unit is DLA_ATOM_SIZE bytes
+    uint64_t base_addr, cur_address;
     uint64_t first_base_addr;
-    uint64_t last_base_addr;
+    uint64_t last_base_addr, last_actual_addr, last_aligned_addr;
     uint32_t size_in_byte;
     uint32_t total_axi_size;
     uint64_t payload_addr;
     uint32_t payload_size;
     uint8_t* axi_byte_enable_ptr;
     uint32_t byte_iter;
-    int32_t  user_size_first, user_size_last, user_size;
-    bool     is_base_64byte_align;
-    bool     is_rear_64byte_align;
     bool     is_read=true;
     nvdla_dbb_extension *nvdla_dbb_ext = NULL;
     dla_b_transport_payload *bt_payload;
 
     payload_addr = payload->pd.dma_read_cmd.addr;
-    payload_size = (payload->pd.dma_read_cmd.size + 1) * DMA_TRANSACTION_ATOM_SIZE; //payload_size's max value is 2^13
+    payload_size = (payload->pd.dma_read_cmd.size + 1) * DLA_ATOM_SIZE; //payload_size's max value is 2^13
 
-    is_base_64byte_align = payload_addr%AXI_TRANSACTION_ATOM_SIZE == 0;
-    first_base_addr = is_base_64byte_align? payload_addr: payload_addr - DMA_TRANSACTION_ATOM_SIZE; // Align to 64B
+    first_base_addr = (payload_addr/AXI_ALIGN_SIZE)*AXI_ALIGN_SIZE; 
 
-    is_rear_64byte_align = (payload_addr + payload_size) % AXI_TRANSACTION_ATOM_SIZE == 0;
-    total_axi_size = payload_size + (is_base_64byte_align? 0: DMA_TRANSACTION_ATOM_SIZE) + (is_rear_64byte_align? 0: DMA_TRANSACTION_ATOM_SIZE);
+    last_actual_addr = payload_addr + payload_size;
+    last_aligned_addr= ((last_actual_addr + AXI_ALIGN_SIZE - 1)/AXI_ALIGN_SIZE)*AXI_ALIGN_SIZE;
+    last_base_addr   = last_aligned_addr - MEM_TRANSACTION_SIZE;
+    total_axi_size = last_aligned_addr - first_base_addr;
     cslDebug((30, "XXXXXXX NV_NVDLA_mcif::pdp2mcif_rd_req_b_transport, first_base_addr=0x%lx total_axi_size is 0x%x payload_addr=0x%lx payload_size=0x%x\x0A", first_base_addr, total_axi_size, payload_addr, payload_size));
-    last_base_addr  = first_base_addr + total_axi_size - AXI_TRANSACTION_ATOM_SIZE;
 
-    base_addr = first_base_addr;
+    cur_address = base_addr = first_base_addr;
 
     // Push the number of atoms of the request
-    pdp2mcif_rd_req_atom_num_fifo_->write(payload_size/DMA_TRANSACTION_ATOM_SIZE);
-    cslDebug((50, "NV_NVDLA_mcif::pdp2mcif_rd_req_b_transport, write 0x%x to pdp2mcif_rd_req_atom_num_fifo_, num_free:%d.\x0A", payload_size/DMA_TRANSACTION_ATOM_SIZE, pdp2mcif_rd_req_atom_num_fifo_->num_free()));
-
-    if (total_axi_size <= (MCIF_MAX_MEM_TRANSACTION_SIZE - first_base_addr % MCIF_MAX_MEM_TRANSACTION_SIZE))
-        user_size_first = total_axi_size / AXI_TRANSACTION_ATOM_SIZE - 1;
-    else
-        user_size_first = (MCIF_MAX_MEM_TRANSACTION_SIZE - first_base_addr % MCIF_MAX_MEM_TRANSACTION_SIZE) / AXI_TRANSACTION_ATOM_SIZE - 1;
-
-    if ((first_base_addr + total_axi_size) % MCIF_MAX_MEM_TRANSACTION_SIZE == 0)
-        user_size_last = 3;
-    else
-        user_size_last = ((first_base_addr + total_axi_size) % MCIF_MAX_MEM_TRANSACTION_SIZE) / AXI_TRANSACTION_ATOM_SIZE - 1;
+    pdp2mcif_rd_req_atom_num_fifo_->write(payload_size/MIN_BUS_WIDTH);
+    cslDebug((50, "NV_NVDLA_mcif::pdp2mcif_rd_req_b_transport, write 0x%x to pdp2mcif_rd_req_atom_num_fifo_, num_free:%d.\x0A", payload_size/MIN_BUS_WIDTH, pdp2mcif_rd_req_atom_num_fifo_->num_free()));
 
     //Split dma request to axi requests
-    cslDebug((50, "NV_NVDLA_mcif::pdp2mcif_rd_req_b_transport, before spliting DMA transaction. user_size_first=0x%x user_size_last=0x%x\x0A", user_size_first, user_size_last));
-    while(base_addr <= last_base_addr) {
+    while(cur_address <= last_base_addr) {
+        base_addr    = cur_address;
         cslDebug((50, "NV_NVDLA_mcif::pdp2mcif_rd_req_b_transport, prepare AXI transaction for address: 0x%lx\x0A", base_addr));
-        // base_addr should be aligned to 64B
-        // size_in_byte should be multiple of 64
+        // base_addr should be aligned to AXI_ALIGN_SIZE Byte
+        // size_in_byte should be multiple of MEM_TRANSACTION_SIZE
         // if the data size required by dma mster is 32B, MCIF will drop the extra 32B when AXI returns
-        size_in_byte = AXI_TRANSACTION_ATOM_SIZE;
-        if (((base_addr - first_base_addr) < MCIF_MAX_MEM_TRANSACTION_SIZE) && (base_addr / MCIF_MAX_MEM_TRANSACTION_SIZE == first_base_addr / MCIF_MAX_MEM_TRANSACTION_SIZE))
-            user_size = user_size_first;
-        else if (((last_base_addr - base_addr) < MCIF_MAX_MEM_TRANSACTION_SIZE) && (base_addr / MCIF_MAX_MEM_TRANSACTION_SIZE == last_base_addr / MCIF_MAX_MEM_TRANSACTION_SIZE))
-            user_size = user_size_last;
-        else
-            user_size = 3;
-
+        size_in_byte = MEM_TRANSACTION_SIZE;
+        while (((cur_address + MEM_TRANSACTION_SIZE) < (last_aligned_addr)) && ((cur_address + MEM_TRANSACTION_SIZE) % MCIF_MAX_MEM_TRANSACTION_SIZE != 0)) {
+            size_in_byte += MEM_TRANSACTION_SIZE;
+            cur_address  += MEM_TRANSACTION_SIZE;
+        }
+        cur_address += MEM_TRANSACTION_SIZE;
+        cslDebug((50, "NV_NVDLA_mcif::pdp2mcif_rd_req_b_transport, cur_address=0x%lx base_addr=0x%lx size_in_byte=0x%x\x0A", cur_address, base_addr, size_in_byte));
+    
         // Allocating memory for dla_b_transport_payload
         bt_payload = new dla_b_transport_payload(size_in_byte, dla_b_transport_payload::DLA_B_TRANSPORT_PAYLOAD_TYPE_MC);
         bt_payload->configure_gp(base_addr, size_in_byte, is_read);
@@ -714,59 +602,32 @@ void NV_NVDLA_mcif::pdp2mcif_rd_req_b_transport(int ID, nvdla_dma_rd_req_t* payl
         // Write true to *_rd_atom_enable_fifo_ when the 32B atom is needed by dma client
         // Write false to *_rd_atom_enable_fifo_ when the 32B atom is not needed by dma client (dma's addr is not aligned to 64B
         for (byte_iter=0; byte_iter < size_in_byte; byte_iter++) {
-            if(base_addr == last_base_addr) {   // compare with last_base_addr before first_base_addr for the case of only one axi transaction
-                if ( (((true == is_rear_64byte_align) || (byte_iter < DMA_TRANSACTION_ATOM_SIZE)) && (first_base_addr != base_addr)) || 
-                        ( ( ( (true == is_base_64byte_align) && (byte_iter < DMA_TRANSACTION_ATOM_SIZE) ) || ( (true == is_rear_64byte_align) && (byte_iter >= DMA_TRANSACTION_ATOM_SIZE)) ) && (first_base_addr == base_addr)) ){
-                    axi_byte_enable_ptr[byte_iter] = TLM_BYTE_ENABLED;
-                    if (0 == byte_iter%DMA_TRANSACTION_ATOM_SIZE) {
-                    cslDebug((50, "NV_NVDLA_mcif::pdp2mcif_rd_req_b_transport, write true to pdp_rd_atom_enable_fifo_, num_free:%d\x0A", pdp_rd_atom_enable_fifo_->num_free()));
-                        pdp_rd_atom_enable_fifo_->write(true);
-                    }
-                } else {
-                    axi_byte_enable_ptr[byte_iter] = TLM_BYTE_DISABLED;
-                    if (0 == byte_iter%DMA_TRANSACTION_ATOM_SIZE) {
-                    cslDebug((50, "NV_NVDLA_mcif::pdp2mcif_rd_req_b_transport, write false to pdp_rd_atom_enable_fifo_, num_free:%d\x0A", pdp_rd_atom_enable_fifo_->num_free()));
-                        pdp_rd_atom_enable_fifo_->write(false);
-                    }
-                }
-            }
-            else if(base_addr == first_base_addr) {
-                if ( (true == is_base_64byte_align) || (byte_iter >= DMA_TRANSACTION_ATOM_SIZE) ){
-                    axi_byte_enable_ptr[byte_iter] = TLM_BYTE_ENABLED;
-                    if (0 == byte_iter%DMA_TRANSACTION_ATOM_SIZE) {
-                    cslDebug((50, "NV_NVDLA_mcif::pdp2mcif_rd_req_b_transport, write true to pdp_rd_atom_enable_fifo_, num_free:%d\x0A", pdp_rd_atom_enable_fifo_->num_free()));
-                        pdp_rd_atom_enable_fifo_->write(true);
-                    }
-                } else {
-                    axi_byte_enable_ptr[byte_iter] = TLM_BYTE_DISABLED;
-                    if (0 == byte_iter%DMA_TRANSACTION_ATOM_SIZE) {
-                    cslDebug((50, "NV_NVDLA_mcif::pdp2mcif_rd_req_b_transport, write false to pdp_rd_atom_enable_fifo_, num_free:%d\x0A", pdp_rd_atom_enable_fifo_->num_free()));
-                        pdp_rd_atom_enable_fifo_->write(false);
-                    }
-                }
-            }
-            else {
+            if ( ((base_addr + byte_iter >= payload_addr) && (base_addr + byte_iter < last_actual_addr)) ){
                 axi_byte_enable_ptr[byte_iter] = TLM_BYTE_ENABLED;
-                if (0 == byte_iter%DMA_TRANSACTION_ATOM_SIZE) {
-                cslDebug((50, "NV_NVDLA_mcif::pdp2mcif_rd_req_b_transport, write true to pdp_rd_atom_enable_fifo_, num_free:%d\x0A", pdp_rd_atom_enable_fifo_->num_free()));
+                if (0 == byte_iter%MIN_BUS_WIDTH) {
+                    cslDebug((50, "NV_NVDLA_mcif::pdp2mcif_rd_req_b_transport, write true to pdp_rd_atom_enable_fifo_, num_free:%d\x0A", pdp_rd_atom_enable_fifo_->num_free()));
                     pdp_rd_atom_enable_fifo_->write(true);
+                }
+            } else {
+                axi_byte_enable_ptr[byte_iter] = TLM_BYTE_DISABLED;
+                if (0 == byte_iter%MIN_BUS_WIDTH) {
+                    cslDebug((50, "NV_NVDLA_mcif::pdp2mcif_rd_req_b_transport, write false to pdp_rd_atom_enable_fifo_, num_free:%d\x0A", pdp_rd_atom_enable_fifo_->num_free()));
+                    pdp_rd_atom_enable_fifo_->write(false);
                 }
             }
         }
         nvdla_dbb_ext->set_id(PDP_AXI_ID);
-        nvdla_dbb_ext->set_size(64);
-        nvdla_dbb_ext->set_length(size_in_byte/AXI_TRANSACTION_ATOM_SIZE);
+        nvdla_dbb_ext->set_size(MEM_TRANSACTION_SIZE);
+        nvdla_dbb_ext->set_length(size_in_byte/MEM_TRANSACTION_SIZE);
         // avoid warinig for unused variable
-        (void)user_size;
 #pragma CTC SKIP
-        if(size_in_byte%AXI_TRANSACTION_ATOM_SIZE!=0)
-            FAIL(("NV_NVDLA_mcif::pdp2mcif_rd_req_b_transport, size_in_byte is not multiple of AXI_TRANSACTION_ATOM_SIZE. size_in_byte=0x%x", size_in_byte));
+        if(size_in_byte%MEM_TRANSACTION_SIZE!=0)
+            FAIL(("NV_NVDLA_mcif::pdp2mcif_rd_req_b_transport, size_in_byte is not multiple of MEM_TRANSACTION_SIZE. size_in_byte=0x%x", size_in_byte));
 #pragma CTC ENDSKIP
         cslDebug((50, "NV_NVDLA_mcif::pdp2mcif_rd_req_b_transport, before sending data to pdp_rd_req_fifo_ addr=0x%lx, , num_free:%d\x0A", base_addr, pdp_rd_req_fifo_->num_free()));
         pdp_rd_req_fifo_->write(bt_payload);
         cslDebug((50, "NV_NVDLA_mcif::pdp2mcif_rd_req_b_transport, after sending data to pdp_rd_req_fifo_ addr=0x%lx\x0A", base_addr));
 
-        base_addr    += AXI_TRANSACTION_ATOM_SIZE;
     }
     cslDebug((50, "NV_NVDLA_mcif::pdp2mcif_rd_req_b_transport, after spliting DMA transaction\x0A"));
 }
@@ -777,6 +638,7 @@ void NV_NVDLA_mcif::ReadResp_mcif2pdp() {
     nvdla_dma_rd_rsp_t* dma_rd_rsp_payload = NULL;
     uint8_t           * dma_payload_data_ptr;
     uint32_t    idx;
+    int         dla_atom_num = 0;
 
     atom_num_left = 0;
     while(true) {
@@ -791,27 +653,16 @@ void NV_NVDLA_mcif::ReadResp_mcif2pdp() {
         dma_payload_data_ptr    = reinterpret_cast <uint8_t *> (dma_rd_rsp_payload->pd.dma_read_data.data);
         dma_rd_rsp_payload->pd.dma_read_data.mask = 0x00;
 
-        // 1st atom of the 64B
-        // Aligen to 32B
-        cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2pdp, num_available:%d\x0A", mcif2pdp_rd_rsp_fifo_->num_available()));
-        axi_atom_ptr = mcif2pdp_rd_rsp_fifo_->read();
-        credit_mcif2pdp_rd_rsp_fifo_ ++;
-        cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2pdp, read 1st atom of the 64B from mcif2pdp_rd_rsp_fifo_\x0A"));
-        atom_num_left--;
-
-        dma_rd_rsp_payload->pd.dma_read_data.mask = 0x1;
-        memcpy (&dma_payload_data_ptr[0], axi_atom_ptr, DMA_TRANSACTION_ATOM_SIZE);
-        delete[] axi_atom_ptr;
-
-        if(atom_num_left>0) {
-            // 2nd atom of the 64B
+        for(int atom_iter = 0; atom_iter < TRANSACTION_DMA_ATOMIC_NUM && atom_num_left > 0; atom_iter++) {
             cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2pdp, num_available:%d\x0A", mcif2pdp_rd_rsp_fifo_->num_available()));
             axi_atom_ptr = mcif2pdp_rd_rsp_fifo_->read();
             credit_mcif2pdp_rd_rsp_fifo_ ++;
-            cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2pdp, read 2nd atom of the 64B from mcif2pdp_rd_rsp_fifo_\x0A"));
+            cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2pdp, read 1st atom of the 64B from mcif2pdp_rd_rsp_fifo_\x0A"));
             atom_num_left--;
-            dma_rd_rsp_payload->pd.dma_read_data.mask = (dma_rd_rsp_payload->pd.dma_read_data.mask << 0x1) + 0x1;
-            memcpy (&dma_payload_data_ptr[DMA_TRANSACTION_ATOM_SIZE], axi_atom_ptr, DMA_TRANSACTION_ATOM_SIZE);
+            dla_atom_num = atom_iter*MIN_BUS_WIDTH/DLA_ATOM_SIZE;
+
+            dma_rd_rsp_payload->pd.dma_read_data.mask |= 0x1 << dla_atom_num;
+            memcpy (&dma_payload_data_ptr[atom_iter*MIN_BUS_WIDTH], axi_atom_ptr, MIN_BUS_WIDTH);
             delete[] axi_atom_ptr;
         }
 
@@ -828,65 +679,52 @@ void NV_NVDLA_mcif::ReadResp_mcif2pdp() {
 }
 
 void NV_NVDLA_mcif::cdp2mcif_rd_req_b_transport(int ID, nvdla_dma_rd_req_t* payload, sc_time& delay) {
-    // DMA request size unit is 32 bytes
-    uint64_t base_addr;
+    // DMA request size unit is DLA_ATOM_SIZE bytes
+    uint64_t base_addr, cur_address;
     uint64_t first_base_addr;
-    uint64_t last_base_addr;
+    uint64_t last_base_addr, last_actual_addr, last_aligned_addr;
     uint32_t size_in_byte;
     uint32_t total_axi_size;
     uint64_t payload_addr;
     uint32_t payload_size;
     uint8_t* axi_byte_enable_ptr;
     uint32_t byte_iter;
-    int32_t  user_size_first, user_size_last, user_size;
-    bool     is_base_64byte_align;
-    bool     is_rear_64byte_align;
     bool     is_read=true;
     nvdla_dbb_extension *nvdla_dbb_ext = NULL;
     dla_b_transport_payload *bt_payload;
 
     payload_addr = payload->pd.dma_read_cmd.addr;
-    payload_size = (payload->pd.dma_read_cmd.size + 1) * DMA_TRANSACTION_ATOM_SIZE; //payload_size's max value is 2^13
+    payload_size = (payload->pd.dma_read_cmd.size + 1) * DLA_ATOM_SIZE; //payload_size's max value is 2^13
 
-    is_base_64byte_align = payload_addr%AXI_TRANSACTION_ATOM_SIZE == 0;
-    first_base_addr = is_base_64byte_align? payload_addr: payload_addr - DMA_TRANSACTION_ATOM_SIZE; // Align to 64B
+    first_base_addr = (payload_addr/AXI_ALIGN_SIZE)*AXI_ALIGN_SIZE; 
 
-    is_rear_64byte_align = (payload_addr + payload_size) % AXI_TRANSACTION_ATOM_SIZE == 0;
-    total_axi_size = payload_size + (is_base_64byte_align? 0: DMA_TRANSACTION_ATOM_SIZE) + (is_rear_64byte_align? 0: DMA_TRANSACTION_ATOM_SIZE);
+    last_actual_addr = payload_addr + payload_size;
+    last_aligned_addr= ((last_actual_addr + AXI_ALIGN_SIZE - 1)/AXI_ALIGN_SIZE)*AXI_ALIGN_SIZE;
+    last_base_addr   = last_aligned_addr - MEM_TRANSACTION_SIZE;
+    total_axi_size = last_aligned_addr - first_base_addr;
     cslDebug((30, "XXXXXXX NV_NVDLA_mcif::cdp2mcif_rd_req_b_transport, first_base_addr=0x%lx total_axi_size is 0x%x payload_addr=0x%lx payload_size=0x%x\x0A", first_base_addr, total_axi_size, payload_addr, payload_size));
-    last_base_addr  = first_base_addr + total_axi_size - AXI_TRANSACTION_ATOM_SIZE;
 
-    base_addr = first_base_addr;
+    cur_address = base_addr = first_base_addr;
 
     // Push the number of atoms of the request
-    cdp2mcif_rd_req_atom_num_fifo_->write(payload_size/DMA_TRANSACTION_ATOM_SIZE);
-    cslDebug((50, "NV_NVDLA_mcif::cdp2mcif_rd_req_b_transport, write 0x%x to cdp2mcif_rd_req_atom_num_fifo_, num_free:%d.\x0A", payload_size/DMA_TRANSACTION_ATOM_SIZE, cdp2mcif_rd_req_atom_num_fifo_->num_free()));
-
-    if (total_axi_size <= (MCIF_MAX_MEM_TRANSACTION_SIZE - first_base_addr % MCIF_MAX_MEM_TRANSACTION_SIZE))
-        user_size_first = total_axi_size / AXI_TRANSACTION_ATOM_SIZE - 1;
-    else
-        user_size_first = (MCIF_MAX_MEM_TRANSACTION_SIZE - first_base_addr % MCIF_MAX_MEM_TRANSACTION_SIZE) / AXI_TRANSACTION_ATOM_SIZE - 1;
-
-    if ((first_base_addr + total_axi_size) % MCIF_MAX_MEM_TRANSACTION_SIZE == 0)
-        user_size_last = 3;
-    else
-        user_size_last = ((first_base_addr + total_axi_size) % MCIF_MAX_MEM_TRANSACTION_SIZE) / AXI_TRANSACTION_ATOM_SIZE - 1;
+    cdp2mcif_rd_req_atom_num_fifo_->write(payload_size/MIN_BUS_WIDTH);
+    cslDebug((50, "NV_NVDLA_mcif::cdp2mcif_rd_req_b_transport, write 0x%x to cdp2mcif_rd_req_atom_num_fifo_, num_free:%d.\x0A", payload_size/MIN_BUS_WIDTH, cdp2mcif_rd_req_atom_num_fifo_->num_free()));
 
     //Split dma request to axi requests
-    cslDebug((50, "NV_NVDLA_mcif::cdp2mcif_rd_req_b_transport, before spliting DMA transaction. user_size_first=0x%x user_size_last=0x%x\x0A", user_size_first, user_size_last));
-    while(base_addr <= last_base_addr) {
+    while(cur_address <= last_base_addr) {
+        base_addr    = cur_address;
         cslDebug((50, "NV_NVDLA_mcif::cdp2mcif_rd_req_b_transport, prepare AXI transaction for address: 0x%lx\x0A", base_addr));
-        // base_addr should be aligned to 64B
-        // size_in_byte should be multiple of 64
+        // base_addr should be aligned to AXI_ALIGN_SIZE Byte
+        // size_in_byte should be multiple of MEM_TRANSACTION_SIZE
         // if the data size required by dma mster is 32B, MCIF will drop the extra 32B when AXI returns
-        size_in_byte = AXI_TRANSACTION_ATOM_SIZE;
-        if (((base_addr - first_base_addr) < MCIF_MAX_MEM_TRANSACTION_SIZE) && (base_addr / MCIF_MAX_MEM_TRANSACTION_SIZE == first_base_addr / MCIF_MAX_MEM_TRANSACTION_SIZE))
-            user_size = user_size_first;
-        else if (((last_base_addr - base_addr) < MCIF_MAX_MEM_TRANSACTION_SIZE) && (base_addr / MCIF_MAX_MEM_TRANSACTION_SIZE == last_base_addr / MCIF_MAX_MEM_TRANSACTION_SIZE))
-            user_size = user_size_last;
-        else
-            user_size = 3;
-
+        size_in_byte = MEM_TRANSACTION_SIZE;
+        while (((cur_address + MEM_TRANSACTION_SIZE) < (last_aligned_addr)) && ((cur_address + MEM_TRANSACTION_SIZE) % MCIF_MAX_MEM_TRANSACTION_SIZE != 0)) {
+            size_in_byte += MEM_TRANSACTION_SIZE;
+            cur_address  += MEM_TRANSACTION_SIZE;
+        }
+        cur_address += MEM_TRANSACTION_SIZE;
+        cslDebug((50, "NV_NVDLA_mcif::cdp2mcif_rd_req_b_transport, cur_address=0x%lx base_addr=0x%lx size_in_byte=0x%x\x0A", cur_address, base_addr, size_in_byte));
+    
         // Allocating memory for dla_b_transport_payload
         bt_payload = new dla_b_transport_payload(size_in_byte, dla_b_transport_payload::DLA_B_TRANSPORT_PAYLOAD_TYPE_MC);
         bt_payload->configure_gp(base_addr, size_in_byte, is_read);
@@ -897,59 +735,32 @@ void NV_NVDLA_mcif::cdp2mcif_rd_req_b_transport(int ID, nvdla_dma_rd_req_t* payl
         // Write true to *_rd_atom_enable_fifo_ when the 32B atom is needed by dma client
         // Write false to *_rd_atom_enable_fifo_ when the 32B atom is not needed by dma client (dma's addr is not aligned to 64B
         for (byte_iter=0; byte_iter < size_in_byte; byte_iter++) {
-            if(base_addr == last_base_addr) {   // compare with last_base_addr before first_base_addr for the case of only one axi transaction
-                if ( (((true == is_rear_64byte_align) || (byte_iter < DMA_TRANSACTION_ATOM_SIZE)) && (first_base_addr != base_addr)) || 
-                        ( ( ( (true == is_base_64byte_align) && (byte_iter < DMA_TRANSACTION_ATOM_SIZE) ) || ( (true == is_rear_64byte_align) && (byte_iter >= DMA_TRANSACTION_ATOM_SIZE)) ) && (first_base_addr == base_addr)) ){
-                    axi_byte_enable_ptr[byte_iter] = TLM_BYTE_ENABLED;
-                    if (0 == byte_iter%DMA_TRANSACTION_ATOM_SIZE) {
-                    cslDebug((50, "NV_NVDLA_mcif::cdp2mcif_rd_req_b_transport, write true to cdp_rd_atom_enable_fifo_, num_free:%d\x0A", cdp_rd_atom_enable_fifo_->num_free()));
-                        cdp_rd_atom_enable_fifo_->write(true);
-                    }
-                } else {
-                    axi_byte_enable_ptr[byte_iter] = TLM_BYTE_DISABLED;
-                    if (0 == byte_iter%DMA_TRANSACTION_ATOM_SIZE) {
-                    cslDebug((50, "NV_NVDLA_mcif::cdp2mcif_rd_req_b_transport, write false to cdp_rd_atom_enable_fifo_, num_free:%d\x0A", cdp_rd_atom_enable_fifo_->num_free()));
-                        cdp_rd_atom_enable_fifo_->write(false);
-                    }
-                }
-            }
-            else if(base_addr == first_base_addr) {
-                if ( (true == is_base_64byte_align) || (byte_iter >= DMA_TRANSACTION_ATOM_SIZE) ){
-                    axi_byte_enable_ptr[byte_iter] = TLM_BYTE_ENABLED;
-                    if (0 == byte_iter%DMA_TRANSACTION_ATOM_SIZE) {
-                    cslDebug((50, "NV_NVDLA_mcif::cdp2mcif_rd_req_b_transport, write true to cdp_rd_atom_enable_fifo_, num_free:%d\x0A", cdp_rd_atom_enable_fifo_->num_free()));
-                        cdp_rd_atom_enable_fifo_->write(true);
-                    }
-                } else {
-                    axi_byte_enable_ptr[byte_iter] = TLM_BYTE_DISABLED;
-                    if (0 == byte_iter%DMA_TRANSACTION_ATOM_SIZE) {
-                    cslDebug((50, "NV_NVDLA_mcif::cdp2mcif_rd_req_b_transport, write false to cdp_rd_atom_enable_fifo_, num_free:%d\x0A", cdp_rd_atom_enable_fifo_->num_free()));
-                        cdp_rd_atom_enable_fifo_->write(false);
-                    }
-                }
-            }
-            else {
+            if ( ((base_addr + byte_iter >= payload_addr) && (base_addr + byte_iter < last_actual_addr)) ){
                 axi_byte_enable_ptr[byte_iter] = TLM_BYTE_ENABLED;
-                if (0 == byte_iter%DMA_TRANSACTION_ATOM_SIZE) {
-                cslDebug((50, "NV_NVDLA_mcif::cdp2mcif_rd_req_b_transport, write true to cdp_rd_atom_enable_fifo_, num_free:%d\x0A", cdp_rd_atom_enable_fifo_->num_free()));
+                if (0 == byte_iter%MIN_BUS_WIDTH) {
+                    cslDebug((50, "NV_NVDLA_mcif::cdp2mcif_rd_req_b_transport, write true to cdp_rd_atom_enable_fifo_, num_free:%d\x0A", cdp_rd_atom_enable_fifo_->num_free()));
                     cdp_rd_atom_enable_fifo_->write(true);
+                }
+            } else {
+                axi_byte_enable_ptr[byte_iter] = TLM_BYTE_DISABLED;
+                if (0 == byte_iter%MIN_BUS_WIDTH) {
+                    cslDebug((50, "NV_NVDLA_mcif::cdp2mcif_rd_req_b_transport, write false to cdp_rd_atom_enable_fifo_, num_free:%d\x0A", cdp_rd_atom_enable_fifo_->num_free()));
+                    cdp_rd_atom_enable_fifo_->write(false);
                 }
             }
         }
         nvdla_dbb_ext->set_id(CDP_AXI_ID);
-        nvdla_dbb_ext->set_size(64);
-        nvdla_dbb_ext->set_length(size_in_byte/AXI_TRANSACTION_ATOM_SIZE);
+        nvdla_dbb_ext->set_size(MEM_TRANSACTION_SIZE);
+        nvdla_dbb_ext->set_length(size_in_byte/MEM_TRANSACTION_SIZE);
         // avoid warinig for unused variable
-        (void)user_size;
 #pragma CTC SKIP
-        if(size_in_byte%AXI_TRANSACTION_ATOM_SIZE!=0)
-            FAIL(("NV_NVDLA_mcif::cdp2mcif_rd_req_b_transport, size_in_byte is not multiple of AXI_TRANSACTION_ATOM_SIZE. size_in_byte=0x%x", size_in_byte));
+        if(size_in_byte%MEM_TRANSACTION_SIZE!=0)
+            FAIL(("NV_NVDLA_mcif::cdp2mcif_rd_req_b_transport, size_in_byte is not multiple of MEM_TRANSACTION_SIZE. size_in_byte=0x%x", size_in_byte));
 #pragma CTC ENDSKIP
         cslDebug((50, "NV_NVDLA_mcif::cdp2mcif_rd_req_b_transport, before sending data to cdp_rd_req_fifo_ addr=0x%lx, , num_free:%d\x0A", base_addr, cdp_rd_req_fifo_->num_free()));
         cdp_rd_req_fifo_->write(bt_payload);
         cslDebug((50, "NV_NVDLA_mcif::cdp2mcif_rd_req_b_transport, after sending data to cdp_rd_req_fifo_ addr=0x%lx\x0A", base_addr));
 
-        base_addr    += AXI_TRANSACTION_ATOM_SIZE;
     }
     cslDebug((50, "NV_NVDLA_mcif::cdp2mcif_rd_req_b_transport, after spliting DMA transaction\x0A"));
 }
@@ -960,6 +771,7 @@ void NV_NVDLA_mcif::ReadResp_mcif2cdp() {
     nvdla_dma_rd_rsp_t* dma_rd_rsp_payload = NULL;
     uint8_t           * dma_payload_data_ptr;
     uint32_t    idx;
+    int         dla_atom_num = 0;
 
     atom_num_left = 0;
     while(true) {
@@ -974,27 +786,16 @@ void NV_NVDLA_mcif::ReadResp_mcif2cdp() {
         dma_payload_data_ptr    = reinterpret_cast <uint8_t *> (dma_rd_rsp_payload->pd.dma_read_data.data);
         dma_rd_rsp_payload->pd.dma_read_data.mask = 0x00;
 
-        // 1st atom of the 64B
-        // Aligen to 32B
-        cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2cdp, num_available:%d\x0A", mcif2cdp_rd_rsp_fifo_->num_available()));
-        axi_atom_ptr = mcif2cdp_rd_rsp_fifo_->read();
-        credit_mcif2cdp_rd_rsp_fifo_ ++;
-        cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2cdp, read 1st atom of the 64B from mcif2cdp_rd_rsp_fifo_\x0A"));
-        atom_num_left--;
-
-        dma_rd_rsp_payload->pd.dma_read_data.mask = 0x1;
-        memcpy (&dma_payload_data_ptr[0], axi_atom_ptr, DMA_TRANSACTION_ATOM_SIZE);
-        delete[] axi_atom_ptr;
-
-        if(atom_num_left>0) {
-            // 2nd atom of the 64B
+        for(int atom_iter = 0; atom_iter < TRANSACTION_DMA_ATOMIC_NUM && atom_num_left > 0; atom_iter++) {
             cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2cdp, num_available:%d\x0A", mcif2cdp_rd_rsp_fifo_->num_available()));
             axi_atom_ptr = mcif2cdp_rd_rsp_fifo_->read();
             credit_mcif2cdp_rd_rsp_fifo_ ++;
-            cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2cdp, read 2nd atom of the 64B from mcif2cdp_rd_rsp_fifo_\x0A"));
+            cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2cdp, read 1st atom of the 64B from mcif2cdp_rd_rsp_fifo_\x0A"));
             atom_num_left--;
-            dma_rd_rsp_payload->pd.dma_read_data.mask = (dma_rd_rsp_payload->pd.dma_read_data.mask << 0x1) + 0x1;
-            memcpy (&dma_payload_data_ptr[DMA_TRANSACTION_ATOM_SIZE], axi_atom_ptr, DMA_TRANSACTION_ATOM_SIZE);
+            dla_atom_num = atom_iter*MIN_BUS_WIDTH/DLA_ATOM_SIZE;
+
+            dma_rd_rsp_payload->pd.dma_read_data.mask |= 0x1 << dla_atom_num;
+            memcpy (&dma_payload_data_ptr[atom_iter*MIN_BUS_WIDTH], axi_atom_ptr, MIN_BUS_WIDTH);
             delete[] axi_atom_ptr;
         }
 
@@ -1011,65 +812,52 @@ void NV_NVDLA_mcif::ReadResp_mcif2cdp() {
 }
 
 void NV_NVDLA_mcif::rbk2mcif_rd_req_b_transport(int ID, nvdla_dma_rd_req_t* payload, sc_time& delay) {
-    // DMA request size unit is 32 bytes
-    uint64_t base_addr;
+    // DMA request size unit is DLA_ATOM_SIZE bytes
+    uint64_t base_addr, cur_address;
     uint64_t first_base_addr;
-    uint64_t last_base_addr;
+    uint64_t last_base_addr, last_actual_addr, last_aligned_addr;
     uint32_t size_in_byte;
     uint32_t total_axi_size;
     uint64_t payload_addr;
     uint32_t payload_size;
     uint8_t* axi_byte_enable_ptr;
     uint32_t byte_iter;
-    int32_t  user_size_first, user_size_last, user_size;
-    bool     is_base_64byte_align;
-    bool     is_rear_64byte_align;
     bool     is_read=true;
     nvdla_dbb_extension *nvdla_dbb_ext = NULL;
     dla_b_transport_payload *bt_payload;
 
     payload_addr = payload->pd.dma_read_cmd.addr;
-    payload_size = (payload->pd.dma_read_cmd.size + 1) * DMA_TRANSACTION_ATOM_SIZE; //payload_size's max value is 2^13
+    payload_size = (payload->pd.dma_read_cmd.size + 1) * DLA_ATOM_SIZE; //payload_size's max value is 2^13
 
-    is_base_64byte_align = payload_addr%AXI_TRANSACTION_ATOM_SIZE == 0;
-    first_base_addr = is_base_64byte_align? payload_addr: payload_addr - DMA_TRANSACTION_ATOM_SIZE; // Align to 64B
+    first_base_addr = (payload_addr/AXI_ALIGN_SIZE)*AXI_ALIGN_SIZE; 
 
-    is_rear_64byte_align = (payload_addr + payload_size) % AXI_TRANSACTION_ATOM_SIZE == 0;
-    total_axi_size = payload_size + (is_base_64byte_align? 0: DMA_TRANSACTION_ATOM_SIZE) + (is_rear_64byte_align? 0: DMA_TRANSACTION_ATOM_SIZE);
+    last_actual_addr = payload_addr + payload_size;
+    last_aligned_addr= ((last_actual_addr + AXI_ALIGN_SIZE - 1)/AXI_ALIGN_SIZE)*AXI_ALIGN_SIZE;
+    last_base_addr   = last_aligned_addr - MEM_TRANSACTION_SIZE;
+    total_axi_size = last_aligned_addr - first_base_addr;
     cslDebug((30, "XXXXXXX NV_NVDLA_mcif::rbk2mcif_rd_req_b_transport, first_base_addr=0x%lx total_axi_size is 0x%x payload_addr=0x%lx payload_size=0x%x\x0A", first_base_addr, total_axi_size, payload_addr, payload_size));
-    last_base_addr  = first_base_addr + total_axi_size - AXI_TRANSACTION_ATOM_SIZE;
 
-    base_addr = first_base_addr;
+    cur_address = base_addr = first_base_addr;
 
     // Push the number of atoms of the request
-    rbk2mcif_rd_req_atom_num_fifo_->write(payload_size/DMA_TRANSACTION_ATOM_SIZE);
-    cslDebug((50, "NV_NVDLA_mcif::rbk2mcif_rd_req_b_transport, write 0x%x to rbk2mcif_rd_req_atom_num_fifo_, num_free:%d.\x0A", payload_size/DMA_TRANSACTION_ATOM_SIZE, rbk2mcif_rd_req_atom_num_fifo_->num_free()));
-
-    if (total_axi_size <= (MCIF_MAX_MEM_TRANSACTION_SIZE - first_base_addr % MCIF_MAX_MEM_TRANSACTION_SIZE))
-        user_size_first = total_axi_size / AXI_TRANSACTION_ATOM_SIZE - 1;
-    else
-        user_size_first = (MCIF_MAX_MEM_TRANSACTION_SIZE - first_base_addr % MCIF_MAX_MEM_TRANSACTION_SIZE) / AXI_TRANSACTION_ATOM_SIZE - 1;
-
-    if ((first_base_addr + total_axi_size) % MCIF_MAX_MEM_TRANSACTION_SIZE == 0)
-        user_size_last = 3;
-    else
-        user_size_last = ((first_base_addr + total_axi_size) % MCIF_MAX_MEM_TRANSACTION_SIZE) / AXI_TRANSACTION_ATOM_SIZE - 1;
+    rbk2mcif_rd_req_atom_num_fifo_->write(payload_size/MIN_BUS_WIDTH);
+    cslDebug((50, "NV_NVDLA_mcif::rbk2mcif_rd_req_b_transport, write 0x%x to rbk2mcif_rd_req_atom_num_fifo_, num_free:%d.\x0A", payload_size/MIN_BUS_WIDTH, rbk2mcif_rd_req_atom_num_fifo_->num_free()));
 
     //Split dma request to axi requests
-    cslDebug((50, "NV_NVDLA_mcif::rbk2mcif_rd_req_b_transport, before spliting DMA transaction. user_size_first=0x%x user_size_last=0x%x\x0A", user_size_first, user_size_last));
-    while(base_addr <= last_base_addr) {
+    while(cur_address <= last_base_addr) {
+        base_addr    = cur_address;
         cslDebug((50, "NV_NVDLA_mcif::rbk2mcif_rd_req_b_transport, prepare AXI transaction for address: 0x%lx\x0A", base_addr));
-        // base_addr should be aligned to 64B
-        // size_in_byte should be multiple of 64
+        // base_addr should be aligned to AXI_ALIGN_SIZE Byte
+        // size_in_byte should be multiple of MEM_TRANSACTION_SIZE
         // if the data size required by dma mster is 32B, MCIF will drop the extra 32B when AXI returns
-        size_in_byte = AXI_TRANSACTION_ATOM_SIZE;
-        if (((base_addr - first_base_addr) < MCIF_MAX_MEM_TRANSACTION_SIZE) && (base_addr / MCIF_MAX_MEM_TRANSACTION_SIZE == first_base_addr / MCIF_MAX_MEM_TRANSACTION_SIZE))
-            user_size = user_size_first;
-        else if (((last_base_addr - base_addr) < MCIF_MAX_MEM_TRANSACTION_SIZE) && (base_addr / MCIF_MAX_MEM_TRANSACTION_SIZE == last_base_addr / MCIF_MAX_MEM_TRANSACTION_SIZE))
-            user_size = user_size_last;
-        else
-            user_size = 3;
-
+        size_in_byte = MEM_TRANSACTION_SIZE;
+        while (((cur_address + MEM_TRANSACTION_SIZE) < (last_aligned_addr)) && ((cur_address + MEM_TRANSACTION_SIZE) % MCIF_MAX_MEM_TRANSACTION_SIZE != 0)) {
+            size_in_byte += MEM_TRANSACTION_SIZE;
+            cur_address  += MEM_TRANSACTION_SIZE;
+        }
+        cur_address += MEM_TRANSACTION_SIZE;
+        cslDebug((50, "NV_NVDLA_mcif::rbk2mcif_rd_req_b_transport, cur_address=0x%lx base_addr=0x%lx size_in_byte=0x%x\x0A", cur_address, base_addr, size_in_byte));
+    
         // Allocating memory for dla_b_transport_payload
         bt_payload = new dla_b_transport_payload(size_in_byte, dla_b_transport_payload::DLA_B_TRANSPORT_PAYLOAD_TYPE_MC);
         bt_payload->configure_gp(base_addr, size_in_byte, is_read);
@@ -1080,59 +868,32 @@ void NV_NVDLA_mcif::rbk2mcif_rd_req_b_transport(int ID, nvdla_dma_rd_req_t* payl
         // Write true to *_rd_atom_enable_fifo_ when the 32B atom is needed by dma client
         // Write false to *_rd_atom_enable_fifo_ when the 32B atom is not needed by dma client (dma's addr is not aligned to 64B
         for (byte_iter=0; byte_iter < size_in_byte; byte_iter++) {
-            if(base_addr == last_base_addr) {   // compare with last_base_addr before first_base_addr for the case of only one axi transaction
-                if ( (((true == is_rear_64byte_align) || (byte_iter < DMA_TRANSACTION_ATOM_SIZE)) && (first_base_addr != base_addr)) || 
-                        ( ( ( (true == is_base_64byte_align) && (byte_iter < DMA_TRANSACTION_ATOM_SIZE) ) || ( (true == is_rear_64byte_align) && (byte_iter >= DMA_TRANSACTION_ATOM_SIZE)) ) && (first_base_addr == base_addr)) ){
-                    axi_byte_enable_ptr[byte_iter] = TLM_BYTE_ENABLED;
-                    if (0 == byte_iter%DMA_TRANSACTION_ATOM_SIZE) {
-                    cslDebug((50, "NV_NVDLA_mcif::rbk2mcif_rd_req_b_transport, write true to rbk_rd_atom_enable_fifo_, num_free:%d\x0A", rbk_rd_atom_enable_fifo_->num_free()));
-                        rbk_rd_atom_enable_fifo_->write(true);
-                    }
-                } else {
-                    axi_byte_enable_ptr[byte_iter] = TLM_BYTE_DISABLED;
-                    if (0 == byte_iter%DMA_TRANSACTION_ATOM_SIZE) {
-                    cslDebug((50, "NV_NVDLA_mcif::rbk2mcif_rd_req_b_transport, write false to rbk_rd_atom_enable_fifo_, num_free:%d\x0A", rbk_rd_atom_enable_fifo_->num_free()));
-                        rbk_rd_atom_enable_fifo_->write(false);
-                    }
-                }
-            }
-            else if(base_addr == first_base_addr) {
-                if ( (true == is_base_64byte_align) || (byte_iter >= DMA_TRANSACTION_ATOM_SIZE) ){
-                    axi_byte_enable_ptr[byte_iter] = TLM_BYTE_ENABLED;
-                    if (0 == byte_iter%DMA_TRANSACTION_ATOM_SIZE) {
-                    cslDebug((50, "NV_NVDLA_mcif::rbk2mcif_rd_req_b_transport, write true to rbk_rd_atom_enable_fifo_, num_free:%d\x0A", rbk_rd_atom_enable_fifo_->num_free()));
-                        rbk_rd_atom_enable_fifo_->write(true);
-                    }
-                } else {
-                    axi_byte_enable_ptr[byte_iter] = TLM_BYTE_DISABLED;
-                    if (0 == byte_iter%DMA_TRANSACTION_ATOM_SIZE) {
-                    cslDebug((50, "NV_NVDLA_mcif::rbk2mcif_rd_req_b_transport, write false to rbk_rd_atom_enable_fifo_, num_free:%d\x0A", rbk_rd_atom_enable_fifo_->num_free()));
-                        rbk_rd_atom_enable_fifo_->write(false);
-                    }
-                }
-            }
-            else {
+            if ( ((base_addr + byte_iter >= payload_addr) && (base_addr + byte_iter < last_actual_addr)) ){
                 axi_byte_enable_ptr[byte_iter] = TLM_BYTE_ENABLED;
-                if (0 == byte_iter%DMA_TRANSACTION_ATOM_SIZE) {
-                cslDebug((50, "NV_NVDLA_mcif::rbk2mcif_rd_req_b_transport, write true to rbk_rd_atom_enable_fifo_, num_free:%d\x0A", rbk_rd_atom_enable_fifo_->num_free()));
+                if (0 == byte_iter%MIN_BUS_WIDTH) {
+                    cslDebug((50, "NV_NVDLA_mcif::rbk2mcif_rd_req_b_transport, write true to rbk_rd_atom_enable_fifo_, num_free:%d\x0A", rbk_rd_atom_enable_fifo_->num_free()));
                     rbk_rd_atom_enable_fifo_->write(true);
+                }
+            } else {
+                axi_byte_enable_ptr[byte_iter] = TLM_BYTE_DISABLED;
+                if (0 == byte_iter%MIN_BUS_WIDTH) {
+                    cslDebug((50, "NV_NVDLA_mcif::rbk2mcif_rd_req_b_transport, write false to rbk_rd_atom_enable_fifo_, num_free:%d\x0A", rbk_rd_atom_enable_fifo_->num_free()));
+                    rbk_rd_atom_enable_fifo_->write(false);
                 }
             }
         }
         nvdla_dbb_ext->set_id(RBK_AXI_ID);
-        nvdla_dbb_ext->set_size(64);
-        nvdla_dbb_ext->set_length(size_in_byte/AXI_TRANSACTION_ATOM_SIZE);
+        nvdla_dbb_ext->set_size(MEM_TRANSACTION_SIZE);
+        nvdla_dbb_ext->set_length(size_in_byte/MEM_TRANSACTION_SIZE);
         // avoid warinig for unused variable
-        (void)user_size;
 #pragma CTC SKIP
-        if(size_in_byte%AXI_TRANSACTION_ATOM_SIZE!=0)
-            FAIL(("NV_NVDLA_mcif::rbk2mcif_rd_req_b_transport, size_in_byte is not multiple of AXI_TRANSACTION_ATOM_SIZE. size_in_byte=0x%x", size_in_byte));
+        if(size_in_byte%MEM_TRANSACTION_SIZE!=0)
+            FAIL(("NV_NVDLA_mcif::rbk2mcif_rd_req_b_transport, size_in_byte is not multiple of MEM_TRANSACTION_SIZE. size_in_byte=0x%x", size_in_byte));
 #pragma CTC ENDSKIP
         cslDebug((50, "NV_NVDLA_mcif::rbk2mcif_rd_req_b_transport, before sending data to rbk_rd_req_fifo_ addr=0x%lx, , num_free:%d\x0A", base_addr, rbk_rd_req_fifo_->num_free()));
         rbk_rd_req_fifo_->write(bt_payload);
         cslDebug((50, "NV_NVDLA_mcif::rbk2mcif_rd_req_b_transport, after sending data to rbk_rd_req_fifo_ addr=0x%lx\x0A", base_addr));
 
-        base_addr    += AXI_TRANSACTION_ATOM_SIZE;
     }
     cslDebug((50, "NV_NVDLA_mcif::rbk2mcif_rd_req_b_transport, after spliting DMA transaction\x0A"));
 }
@@ -1143,6 +904,7 @@ void NV_NVDLA_mcif::ReadResp_mcif2rbk() {
     nvdla_dma_rd_rsp_t* dma_rd_rsp_payload = NULL;
     uint8_t           * dma_payload_data_ptr;
     uint32_t    idx;
+    int         dla_atom_num = 0;
 
     atom_num_left = 0;
     while(true) {
@@ -1157,27 +919,16 @@ void NV_NVDLA_mcif::ReadResp_mcif2rbk() {
         dma_payload_data_ptr    = reinterpret_cast <uint8_t *> (dma_rd_rsp_payload->pd.dma_read_data.data);
         dma_rd_rsp_payload->pd.dma_read_data.mask = 0x00;
 
-        // 1st atom of the 64B
-        // Aligen to 32B
-        cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2rbk, num_available:%d\x0A", mcif2rbk_rd_rsp_fifo_->num_available()));
-        axi_atom_ptr = mcif2rbk_rd_rsp_fifo_->read();
-        credit_mcif2rbk_rd_rsp_fifo_ ++;
-        cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2rbk, read 1st atom of the 64B from mcif2rbk_rd_rsp_fifo_\x0A"));
-        atom_num_left--;
-
-        dma_rd_rsp_payload->pd.dma_read_data.mask = 0x1;
-        memcpy (&dma_payload_data_ptr[0], axi_atom_ptr, DMA_TRANSACTION_ATOM_SIZE);
-        delete[] axi_atom_ptr;
-
-        if(atom_num_left>0) {
-            // 2nd atom of the 64B
+        for(int atom_iter = 0; atom_iter < TRANSACTION_DMA_ATOMIC_NUM && atom_num_left > 0; atom_iter++) {
             cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2rbk, num_available:%d\x0A", mcif2rbk_rd_rsp_fifo_->num_available()));
             axi_atom_ptr = mcif2rbk_rd_rsp_fifo_->read();
             credit_mcif2rbk_rd_rsp_fifo_ ++;
-            cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2rbk, read 2nd atom of the 64B from mcif2rbk_rd_rsp_fifo_\x0A"));
+            cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2rbk, read 1st atom of the 64B from mcif2rbk_rd_rsp_fifo_\x0A"));
             atom_num_left--;
-            dma_rd_rsp_payload->pd.dma_read_data.mask = (dma_rd_rsp_payload->pd.dma_read_data.mask << 0x1) + 0x1;
-            memcpy (&dma_payload_data_ptr[DMA_TRANSACTION_ATOM_SIZE], axi_atom_ptr, DMA_TRANSACTION_ATOM_SIZE);
+            dla_atom_num = atom_iter*MIN_BUS_WIDTH/DLA_ATOM_SIZE;
+
+            dma_rd_rsp_payload->pd.dma_read_data.mask |= 0x1 << dla_atom_num;
+            memcpy (&dma_payload_data_ptr[atom_iter*MIN_BUS_WIDTH], axi_atom_ptr, MIN_BUS_WIDTH);
             delete[] axi_atom_ptr;
         }
 
@@ -1194,65 +945,52 @@ void NV_NVDLA_mcif::ReadResp_mcif2rbk() {
 }
 
 void NV_NVDLA_mcif::sdp_b2mcif_rd_req_b_transport(int ID, nvdla_dma_rd_req_t* payload, sc_time& delay) {
-    // DMA request size unit is 32 bytes
-    uint64_t base_addr;
+    // DMA request size unit is DLA_ATOM_SIZE bytes
+    uint64_t base_addr, cur_address;
     uint64_t first_base_addr;
-    uint64_t last_base_addr;
+    uint64_t last_base_addr, last_actual_addr, last_aligned_addr;
     uint32_t size_in_byte;
     uint32_t total_axi_size;
     uint64_t payload_addr;
     uint32_t payload_size;
     uint8_t* axi_byte_enable_ptr;
     uint32_t byte_iter;
-    int32_t  user_size_first, user_size_last, user_size;
-    bool     is_base_64byte_align;
-    bool     is_rear_64byte_align;
     bool     is_read=true;
     nvdla_dbb_extension *nvdla_dbb_ext = NULL;
     dla_b_transport_payload *bt_payload;
 
     payload_addr = payload->pd.dma_read_cmd.addr;
-    payload_size = (payload->pd.dma_read_cmd.size + 1) * DMA_TRANSACTION_ATOM_SIZE; //payload_size's max value is 2^13
+    payload_size = (payload->pd.dma_read_cmd.size + 1) * DLA_ATOM_SIZE; //payload_size's max value is 2^13
 
-    is_base_64byte_align = payload_addr%AXI_TRANSACTION_ATOM_SIZE == 0;
-    first_base_addr = is_base_64byte_align? payload_addr: payload_addr - DMA_TRANSACTION_ATOM_SIZE; // Align to 64B
+    first_base_addr = (payload_addr/AXI_ALIGN_SIZE)*AXI_ALIGN_SIZE; 
 
-    is_rear_64byte_align = (payload_addr + payload_size) % AXI_TRANSACTION_ATOM_SIZE == 0;
-    total_axi_size = payload_size + (is_base_64byte_align? 0: DMA_TRANSACTION_ATOM_SIZE) + (is_rear_64byte_align? 0: DMA_TRANSACTION_ATOM_SIZE);
+    last_actual_addr = payload_addr + payload_size;
+    last_aligned_addr= ((last_actual_addr + AXI_ALIGN_SIZE - 1)/AXI_ALIGN_SIZE)*AXI_ALIGN_SIZE;
+    last_base_addr   = last_aligned_addr - MEM_TRANSACTION_SIZE;
+    total_axi_size = last_aligned_addr - first_base_addr;
     cslDebug((30, "XXXXXXX NV_NVDLA_mcif::sdp_b2mcif_rd_req_b_transport, first_base_addr=0x%lx total_axi_size is 0x%x payload_addr=0x%lx payload_size=0x%x\x0A", first_base_addr, total_axi_size, payload_addr, payload_size));
-    last_base_addr  = first_base_addr + total_axi_size - AXI_TRANSACTION_ATOM_SIZE;
 
-    base_addr = first_base_addr;
+    cur_address = base_addr = first_base_addr;
 
     // Push the number of atoms of the request
-    sdp_b2mcif_rd_req_atom_num_fifo_->write(payload_size/DMA_TRANSACTION_ATOM_SIZE);
-    cslDebug((50, "NV_NVDLA_mcif::sdp_b2mcif_rd_req_b_transport, write 0x%x to sdp_b2mcif_rd_req_atom_num_fifo_, num_free:%d.\x0A", payload_size/DMA_TRANSACTION_ATOM_SIZE, sdp_b2mcif_rd_req_atom_num_fifo_->num_free()));
-
-    if (total_axi_size <= (MCIF_MAX_MEM_TRANSACTION_SIZE - first_base_addr % MCIF_MAX_MEM_TRANSACTION_SIZE))
-        user_size_first = total_axi_size / AXI_TRANSACTION_ATOM_SIZE - 1;
-    else
-        user_size_first = (MCIF_MAX_MEM_TRANSACTION_SIZE - first_base_addr % MCIF_MAX_MEM_TRANSACTION_SIZE) / AXI_TRANSACTION_ATOM_SIZE - 1;
-
-    if ((first_base_addr + total_axi_size) % MCIF_MAX_MEM_TRANSACTION_SIZE == 0)
-        user_size_last = 3;
-    else
-        user_size_last = ((first_base_addr + total_axi_size) % MCIF_MAX_MEM_TRANSACTION_SIZE) / AXI_TRANSACTION_ATOM_SIZE - 1;
+    sdp_b2mcif_rd_req_atom_num_fifo_->write(payload_size/MIN_BUS_WIDTH);
+    cslDebug((50, "NV_NVDLA_mcif::sdp_b2mcif_rd_req_b_transport, write 0x%x to sdp_b2mcif_rd_req_atom_num_fifo_, num_free:%d.\x0A", payload_size/MIN_BUS_WIDTH, sdp_b2mcif_rd_req_atom_num_fifo_->num_free()));
 
     //Split dma request to axi requests
-    cslDebug((50, "NV_NVDLA_mcif::sdp_b2mcif_rd_req_b_transport, before spliting DMA transaction. user_size_first=0x%x user_size_last=0x%x\x0A", user_size_first, user_size_last));
-    while(base_addr <= last_base_addr) {
+    while(cur_address <= last_base_addr) {
+        base_addr    = cur_address;
         cslDebug((50, "NV_NVDLA_mcif::sdp_b2mcif_rd_req_b_transport, prepare AXI transaction for address: 0x%lx\x0A", base_addr));
-        // base_addr should be aligned to 64B
-        // size_in_byte should be multiple of 64
+        // base_addr should be aligned to AXI_ALIGN_SIZE Byte
+        // size_in_byte should be multiple of MEM_TRANSACTION_SIZE
         // if the data size required by dma mster is 32B, MCIF will drop the extra 32B when AXI returns
-        size_in_byte = AXI_TRANSACTION_ATOM_SIZE;
-        if (((base_addr - first_base_addr) < MCIF_MAX_MEM_TRANSACTION_SIZE) && (base_addr / MCIF_MAX_MEM_TRANSACTION_SIZE == first_base_addr / MCIF_MAX_MEM_TRANSACTION_SIZE))
-            user_size = user_size_first;
-        else if (((last_base_addr - base_addr) < MCIF_MAX_MEM_TRANSACTION_SIZE) && (base_addr / MCIF_MAX_MEM_TRANSACTION_SIZE == last_base_addr / MCIF_MAX_MEM_TRANSACTION_SIZE))
-            user_size = user_size_last;
-        else
-            user_size = 3;
-
+        size_in_byte = MEM_TRANSACTION_SIZE;
+        while (((cur_address + MEM_TRANSACTION_SIZE) < (last_aligned_addr)) && ((cur_address + MEM_TRANSACTION_SIZE) % MCIF_MAX_MEM_TRANSACTION_SIZE != 0)) {
+            size_in_byte += MEM_TRANSACTION_SIZE;
+            cur_address  += MEM_TRANSACTION_SIZE;
+        }
+        cur_address += MEM_TRANSACTION_SIZE;
+        cslDebug((50, "NV_NVDLA_mcif::sdp_b2mcif_rd_req_b_transport, cur_address=0x%lx base_addr=0x%lx size_in_byte=0x%x\x0A", cur_address, base_addr, size_in_byte));
+    
         // Allocating memory for dla_b_transport_payload
         bt_payload = new dla_b_transport_payload(size_in_byte, dla_b_transport_payload::DLA_B_TRANSPORT_PAYLOAD_TYPE_MC);
         bt_payload->configure_gp(base_addr, size_in_byte, is_read);
@@ -1263,59 +1001,32 @@ void NV_NVDLA_mcif::sdp_b2mcif_rd_req_b_transport(int ID, nvdla_dma_rd_req_t* pa
         // Write true to *_rd_atom_enable_fifo_ when the 32B atom is needed by dma client
         // Write false to *_rd_atom_enable_fifo_ when the 32B atom is not needed by dma client (dma's addr is not aligned to 64B
         for (byte_iter=0; byte_iter < size_in_byte; byte_iter++) {
-            if(base_addr == last_base_addr) {   // compare with last_base_addr before first_base_addr for the case of only one axi transaction
-                if ( (((true == is_rear_64byte_align) || (byte_iter < DMA_TRANSACTION_ATOM_SIZE)) && (first_base_addr != base_addr)) || 
-                        ( ( ( (true == is_base_64byte_align) && (byte_iter < DMA_TRANSACTION_ATOM_SIZE) ) || ( (true == is_rear_64byte_align) && (byte_iter >= DMA_TRANSACTION_ATOM_SIZE)) ) && (first_base_addr == base_addr)) ){
-                    axi_byte_enable_ptr[byte_iter] = TLM_BYTE_ENABLED;
-                    if (0 == byte_iter%DMA_TRANSACTION_ATOM_SIZE) {
-                    cslDebug((50, "NV_NVDLA_mcif::sdp_b2mcif_rd_req_b_transport, write true to sdp_b_rd_atom_enable_fifo_, num_free:%d\x0A", sdp_b_rd_atom_enable_fifo_->num_free()));
-                        sdp_b_rd_atom_enable_fifo_->write(true);
-                    }
-                } else {
-                    axi_byte_enable_ptr[byte_iter] = TLM_BYTE_DISABLED;
-                    if (0 == byte_iter%DMA_TRANSACTION_ATOM_SIZE) {
-                    cslDebug((50, "NV_NVDLA_mcif::sdp_b2mcif_rd_req_b_transport, write false to sdp_b_rd_atom_enable_fifo_, num_free:%d\x0A", sdp_b_rd_atom_enable_fifo_->num_free()));
-                        sdp_b_rd_atom_enable_fifo_->write(false);
-                    }
-                }
-            }
-            else if(base_addr == first_base_addr) {
-                if ( (true == is_base_64byte_align) || (byte_iter >= DMA_TRANSACTION_ATOM_SIZE) ){
-                    axi_byte_enable_ptr[byte_iter] = TLM_BYTE_ENABLED;
-                    if (0 == byte_iter%DMA_TRANSACTION_ATOM_SIZE) {
-                    cslDebug((50, "NV_NVDLA_mcif::sdp_b2mcif_rd_req_b_transport, write true to sdp_b_rd_atom_enable_fifo_, num_free:%d\x0A", sdp_b_rd_atom_enable_fifo_->num_free()));
-                        sdp_b_rd_atom_enable_fifo_->write(true);
-                    }
-                } else {
-                    axi_byte_enable_ptr[byte_iter] = TLM_BYTE_DISABLED;
-                    if (0 == byte_iter%DMA_TRANSACTION_ATOM_SIZE) {
-                    cslDebug((50, "NV_NVDLA_mcif::sdp_b2mcif_rd_req_b_transport, write false to sdp_b_rd_atom_enable_fifo_, num_free:%d\x0A", sdp_b_rd_atom_enable_fifo_->num_free()));
-                        sdp_b_rd_atom_enable_fifo_->write(false);
-                    }
-                }
-            }
-            else {
+            if ( ((base_addr + byte_iter >= payload_addr) && (base_addr + byte_iter < last_actual_addr)) ){
                 axi_byte_enable_ptr[byte_iter] = TLM_BYTE_ENABLED;
-                if (0 == byte_iter%DMA_TRANSACTION_ATOM_SIZE) {
-                cslDebug((50, "NV_NVDLA_mcif::sdp_b2mcif_rd_req_b_transport, write true to sdp_b_rd_atom_enable_fifo_, num_free:%d\x0A", sdp_b_rd_atom_enable_fifo_->num_free()));
+                if (0 == byte_iter%MIN_BUS_WIDTH) {
+                    cslDebug((50, "NV_NVDLA_mcif::sdp_b2mcif_rd_req_b_transport, write true to sdp_b_rd_atom_enable_fifo_, num_free:%d\x0A", sdp_b_rd_atom_enable_fifo_->num_free()));
                     sdp_b_rd_atom_enable_fifo_->write(true);
+                }
+            } else {
+                axi_byte_enable_ptr[byte_iter] = TLM_BYTE_DISABLED;
+                if (0 == byte_iter%MIN_BUS_WIDTH) {
+                    cslDebug((50, "NV_NVDLA_mcif::sdp_b2mcif_rd_req_b_transport, write false to sdp_b_rd_atom_enable_fifo_, num_free:%d\x0A", sdp_b_rd_atom_enable_fifo_->num_free()));
+                    sdp_b_rd_atom_enable_fifo_->write(false);
                 }
             }
         }
         nvdla_dbb_ext->set_id(SDP_B_AXI_ID);
-        nvdla_dbb_ext->set_size(64);
-        nvdla_dbb_ext->set_length(size_in_byte/AXI_TRANSACTION_ATOM_SIZE);
+        nvdla_dbb_ext->set_size(MEM_TRANSACTION_SIZE);
+        nvdla_dbb_ext->set_length(size_in_byte/MEM_TRANSACTION_SIZE);
         // avoid warinig for unused variable
-        (void)user_size;
 #pragma CTC SKIP
-        if(size_in_byte%AXI_TRANSACTION_ATOM_SIZE!=0)
-            FAIL(("NV_NVDLA_mcif::sdp_b2mcif_rd_req_b_transport, size_in_byte is not multiple of AXI_TRANSACTION_ATOM_SIZE. size_in_byte=0x%x", size_in_byte));
+        if(size_in_byte%MEM_TRANSACTION_SIZE!=0)
+            FAIL(("NV_NVDLA_mcif::sdp_b2mcif_rd_req_b_transport, size_in_byte is not multiple of MEM_TRANSACTION_SIZE. size_in_byte=0x%x", size_in_byte));
 #pragma CTC ENDSKIP
         cslDebug((50, "NV_NVDLA_mcif::sdp_b2mcif_rd_req_b_transport, before sending data to sdp_b_rd_req_fifo_ addr=0x%lx, , num_free:%d\x0A", base_addr, sdp_b_rd_req_fifo_->num_free()));
         sdp_b_rd_req_fifo_->write(bt_payload);
         cslDebug((50, "NV_NVDLA_mcif::sdp_b2mcif_rd_req_b_transport, after sending data to sdp_b_rd_req_fifo_ addr=0x%lx\x0A", base_addr));
 
-        base_addr    += AXI_TRANSACTION_ATOM_SIZE;
     }
     cslDebug((50, "NV_NVDLA_mcif::sdp_b2mcif_rd_req_b_transport, after spliting DMA transaction\x0A"));
 }
@@ -1326,6 +1037,7 @@ void NV_NVDLA_mcif::ReadResp_mcif2sdp_b() {
     nvdla_dma_rd_rsp_t* dma_rd_rsp_payload = NULL;
     uint8_t           * dma_payload_data_ptr;
     uint32_t    idx;
+    int         dla_atom_num = 0;
 
     atom_num_left = 0;
     while(true) {
@@ -1340,27 +1052,16 @@ void NV_NVDLA_mcif::ReadResp_mcif2sdp_b() {
         dma_payload_data_ptr    = reinterpret_cast <uint8_t *> (dma_rd_rsp_payload->pd.dma_read_data.data);
         dma_rd_rsp_payload->pd.dma_read_data.mask = 0x00;
 
-        // 1st atom of the 64B
-        // Aligen to 32B
-        cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2sdp_b, num_available:%d\x0A", mcif2sdp_b_rd_rsp_fifo_->num_available()));
-        axi_atom_ptr = mcif2sdp_b_rd_rsp_fifo_->read();
-        credit_mcif2sdp_b_rd_rsp_fifo_ ++;
-        cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2sdp_b, read 1st atom of the 64B from mcif2sdp_b_rd_rsp_fifo_\x0A"));
-        atom_num_left--;
-
-        dma_rd_rsp_payload->pd.dma_read_data.mask = 0x1;
-        memcpy (&dma_payload_data_ptr[0], axi_atom_ptr, DMA_TRANSACTION_ATOM_SIZE);
-        delete[] axi_atom_ptr;
-
-        if(atom_num_left>0) {
-            // 2nd atom of the 64B
+        for(int atom_iter = 0; atom_iter < TRANSACTION_DMA_ATOMIC_NUM && atom_num_left > 0; atom_iter++) {
             cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2sdp_b, num_available:%d\x0A", mcif2sdp_b_rd_rsp_fifo_->num_available()));
             axi_atom_ptr = mcif2sdp_b_rd_rsp_fifo_->read();
             credit_mcif2sdp_b_rd_rsp_fifo_ ++;
-            cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2sdp_b, read 2nd atom of the 64B from mcif2sdp_b_rd_rsp_fifo_\x0A"));
+            cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2sdp_b, read 1st atom of the 64B from mcif2sdp_b_rd_rsp_fifo_\x0A"));
             atom_num_left--;
-            dma_rd_rsp_payload->pd.dma_read_data.mask = (dma_rd_rsp_payload->pd.dma_read_data.mask << 0x1) + 0x1;
-            memcpy (&dma_payload_data_ptr[DMA_TRANSACTION_ATOM_SIZE], axi_atom_ptr, DMA_TRANSACTION_ATOM_SIZE);
+            dla_atom_num = atom_iter*MIN_BUS_WIDTH/DLA_ATOM_SIZE;
+
+            dma_rd_rsp_payload->pd.dma_read_data.mask |= 0x1 << dla_atom_num;
+            memcpy (&dma_payload_data_ptr[atom_iter*MIN_BUS_WIDTH], axi_atom_ptr, MIN_BUS_WIDTH);
             delete[] axi_atom_ptr;
         }
 
@@ -1377,65 +1078,52 @@ void NV_NVDLA_mcif::ReadResp_mcif2sdp_b() {
 }
 
 void NV_NVDLA_mcif::sdp_n2mcif_rd_req_b_transport(int ID, nvdla_dma_rd_req_t* payload, sc_time& delay) {
-    // DMA request size unit is 32 bytes
-    uint64_t base_addr;
+    // DMA request size unit is DLA_ATOM_SIZE bytes
+    uint64_t base_addr, cur_address;
     uint64_t first_base_addr;
-    uint64_t last_base_addr;
+    uint64_t last_base_addr, last_actual_addr, last_aligned_addr;
     uint32_t size_in_byte;
     uint32_t total_axi_size;
     uint64_t payload_addr;
     uint32_t payload_size;
     uint8_t* axi_byte_enable_ptr;
     uint32_t byte_iter;
-    int32_t  user_size_first, user_size_last, user_size;
-    bool     is_base_64byte_align;
-    bool     is_rear_64byte_align;
     bool     is_read=true;
     nvdla_dbb_extension *nvdla_dbb_ext = NULL;
     dla_b_transport_payload *bt_payload;
 
     payload_addr = payload->pd.dma_read_cmd.addr;
-    payload_size = (payload->pd.dma_read_cmd.size + 1) * DMA_TRANSACTION_ATOM_SIZE; //payload_size's max value is 2^13
+    payload_size = (payload->pd.dma_read_cmd.size + 1) * DLA_ATOM_SIZE; //payload_size's max value is 2^13
 
-    is_base_64byte_align = payload_addr%AXI_TRANSACTION_ATOM_SIZE == 0;
-    first_base_addr = is_base_64byte_align? payload_addr: payload_addr - DMA_TRANSACTION_ATOM_SIZE; // Align to 64B
+    first_base_addr = (payload_addr/AXI_ALIGN_SIZE)*AXI_ALIGN_SIZE; 
 
-    is_rear_64byte_align = (payload_addr + payload_size) % AXI_TRANSACTION_ATOM_SIZE == 0;
-    total_axi_size = payload_size + (is_base_64byte_align? 0: DMA_TRANSACTION_ATOM_SIZE) + (is_rear_64byte_align? 0: DMA_TRANSACTION_ATOM_SIZE);
+    last_actual_addr = payload_addr + payload_size;
+    last_aligned_addr= ((last_actual_addr + AXI_ALIGN_SIZE - 1)/AXI_ALIGN_SIZE)*AXI_ALIGN_SIZE;
+    last_base_addr   = last_aligned_addr - MEM_TRANSACTION_SIZE;
+    total_axi_size = last_aligned_addr - first_base_addr;
     cslDebug((30, "XXXXXXX NV_NVDLA_mcif::sdp_n2mcif_rd_req_b_transport, first_base_addr=0x%lx total_axi_size is 0x%x payload_addr=0x%lx payload_size=0x%x\x0A", first_base_addr, total_axi_size, payload_addr, payload_size));
-    last_base_addr  = first_base_addr + total_axi_size - AXI_TRANSACTION_ATOM_SIZE;
 
-    base_addr = first_base_addr;
+    cur_address = base_addr = first_base_addr;
 
     // Push the number of atoms of the request
-    sdp_n2mcif_rd_req_atom_num_fifo_->write(payload_size/DMA_TRANSACTION_ATOM_SIZE);
-    cslDebug((50, "NV_NVDLA_mcif::sdp_n2mcif_rd_req_b_transport, write 0x%x to sdp_n2mcif_rd_req_atom_num_fifo_, num_free:%d.\x0A", payload_size/DMA_TRANSACTION_ATOM_SIZE, sdp_n2mcif_rd_req_atom_num_fifo_->num_free()));
-
-    if (total_axi_size <= (MCIF_MAX_MEM_TRANSACTION_SIZE - first_base_addr % MCIF_MAX_MEM_TRANSACTION_SIZE))
-        user_size_first = total_axi_size / AXI_TRANSACTION_ATOM_SIZE - 1;
-    else
-        user_size_first = (MCIF_MAX_MEM_TRANSACTION_SIZE - first_base_addr % MCIF_MAX_MEM_TRANSACTION_SIZE) / AXI_TRANSACTION_ATOM_SIZE - 1;
-
-    if ((first_base_addr + total_axi_size) % MCIF_MAX_MEM_TRANSACTION_SIZE == 0)
-        user_size_last = 3;
-    else
-        user_size_last = ((first_base_addr + total_axi_size) % MCIF_MAX_MEM_TRANSACTION_SIZE) / AXI_TRANSACTION_ATOM_SIZE - 1;
+    sdp_n2mcif_rd_req_atom_num_fifo_->write(payload_size/MIN_BUS_WIDTH);
+    cslDebug((50, "NV_NVDLA_mcif::sdp_n2mcif_rd_req_b_transport, write 0x%x to sdp_n2mcif_rd_req_atom_num_fifo_, num_free:%d.\x0A", payload_size/MIN_BUS_WIDTH, sdp_n2mcif_rd_req_atom_num_fifo_->num_free()));
 
     //Split dma request to axi requests
-    cslDebug((50, "NV_NVDLA_mcif::sdp_n2mcif_rd_req_b_transport, before spliting DMA transaction. user_size_first=0x%x user_size_last=0x%x\x0A", user_size_first, user_size_last));
-    while(base_addr <= last_base_addr) {
+    while(cur_address <= last_base_addr) {
+        base_addr    = cur_address;
         cslDebug((50, "NV_NVDLA_mcif::sdp_n2mcif_rd_req_b_transport, prepare AXI transaction for address: 0x%lx\x0A", base_addr));
-        // base_addr should be aligned to 64B
-        // size_in_byte should be multiple of 64
+        // base_addr should be aligned to AXI_ALIGN_SIZE Byte
+        // size_in_byte should be multiple of MEM_TRANSACTION_SIZE
         // if the data size required by dma mster is 32B, MCIF will drop the extra 32B when AXI returns
-        size_in_byte = AXI_TRANSACTION_ATOM_SIZE;
-        if (((base_addr - first_base_addr) < MCIF_MAX_MEM_TRANSACTION_SIZE) && (base_addr / MCIF_MAX_MEM_TRANSACTION_SIZE == first_base_addr / MCIF_MAX_MEM_TRANSACTION_SIZE))
-            user_size = user_size_first;
-        else if (((last_base_addr - base_addr) < MCIF_MAX_MEM_TRANSACTION_SIZE) && (base_addr / MCIF_MAX_MEM_TRANSACTION_SIZE == last_base_addr / MCIF_MAX_MEM_TRANSACTION_SIZE))
-            user_size = user_size_last;
-        else
-            user_size = 3;
-
+        size_in_byte = MEM_TRANSACTION_SIZE;
+        while (((cur_address + MEM_TRANSACTION_SIZE) < (last_aligned_addr)) && ((cur_address + MEM_TRANSACTION_SIZE) % MCIF_MAX_MEM_TRANSACTION_SIZE != 0)) {
+            size_in_byte += MEM_TRANSACTION_SIZE;
+            cur_address  += MEM_TRANSACTION_SIZE;
+        }
+        cur_address += MEM_TRANSACTION_SIZE;
+        cslDebug((50, "NV_NVDLA_mcif::sdp_n2mcif_rd_req_b_transport, cur_address=0x%lx base_addr=0x%lx size_in_byte=0x%x\x0A", cur_address, base_addr, size_in_byte));
+    
         // Allocating memory for dla_b_transport_payload
         bt_payload = new dla_b_transport_payload(size_in_byte, dla_b_transport_payload::DLA_B_TRANSPORT_PAYLOAD_TYPE_MC);
         bt_payload->configure_gp(base_addr, size_in_byte, is_read);
@@ -1446,59 +1134,32 @@ void NV_NVDLA_mcif::sdp_n2mcif_rd_req_b_transport(int ID, nvdla_dma_rd_req_t* pa
         // Write true to *_rd_atom_enable_fifo_ when the 32B atom is needed by dma client
         // Write false to *_rd_atom_enable_fifo_ when the 32B atom is not needed by dma client (dma's addr is not aligned to 64B
         for (byte_iter=0; byte_iter < size_in_byte; byte_iter++) {
-            if(base_addr == last_base_addr) {   // compare with last_base_addr before first_base_addr for the case of only one axi transaction
-                if ( (((true == is_rear_64byte_align) || (byte_iter < DMA_TRANSACTION_ATOM_SIZE)) && (first_base_addr != base_addr)) || 
-                        ( ( ( (true == is_base_64byte_align) && (byte_iter < DMA_TRANSACTION_ATOM_SIZE) ) || ( (true == is_rear_64byte_align) && (byte_iter >= DMA_TRANSACTION_ATOM_SIZE)) ) && (first_base_addr == base_addr)) ){
-                    axi_byte_enable_ptr[byte_iter] = TLM_BYTE_ENABLED;
-                    if (0 == byte_iter%DMA_TRANSACTION_ATOM_SIZE) {
-                    cslDebug((50, "NV_NVDLA_mcif::sdp_n2mcif_rd_req_b_transport, write true to sdp_n_rd_atom_enable_fifo_, num_free:%d\x0A", sdp_n_rd_atom_enable_fifo_->num_free()));
-                        sdp_n_rd_atom_enable_fifo_->write(true);
-                    }
-                } else {
-                    axi_byte_enable_ptr[byte_iter] = TLM_BYTE_DISABLED;
-                    if (0 == byte_iter%DMA_TRANSACTION_ATOM_SIZE) {
-                    cslDebug((50, "NV_NVDLA_mcif::sdp_n2mcif_rd_req_b_transport, write false to sdp_n_rd_atom_enable_fifo_, num_free:%d\x0A", sdp_n_rd_atom_enable_fifo_->num_free()));
-                        sdp_n_rd_atom_enable_fifo_->write(false);
-                    }
-                }
-            }
-            else if(base_addr == first_base_addr) {
-                if ( (true == is_base_64byte_align) || (byte_iter >= DMA_TRANSACTION_ATOM_SIZE) ){
-                    axi_byte_enable_ptr[byte_iter] = TLM_BYTE_ENABLED;
-                    if (0 == byte_iter%DMA_TRANSACTION_ATOM_SIZE) {
-                    cslDebug((50, "NV_NVDLA_mcif::sdp_n2mcif_rd_req_b_transport, write true to sdp_n_rd_atom_enable_fifo_, num_free:%d\x0A", sdp_n_rd_atom_enable_fifo_->num_free()));
-                        sdp_n_rd_atom_enable_fifo_->write(true);
-                    }
-                } else {
-                    axi_byte_enable_ptr[byte_iter] = TLM_BYTE_DISABLED;
-                    if (0 == byte_iter%DMA_TRANSACTION_ATOM_SIZE) {
-                    cslDebug((50, "NV_NVDLA_mcif::sdp_n2mcif_rd_req_b_transport, write false to sdp_n_rd_atom_enable_fifo_, num_free:%d\x0A", sdp_n_rd_atom_enable_fifo_->num_free()));
-                        sdp_n_rd_atom_enable_fifo_->write(false);
-                    }
-                }
-            }
-            else {
+            if ( ((base_addr + byte_iter >= payload_addr) && (base_addr + byte_iter < last_actual_addr)) ){
                 axi_byte_enable_ptr[byte_iter] = TLM_BYTE_ENABLED;
-                if (0 == byte_iter%DMA_TRANSACTION_ATOM_SIZE) {
-                cslDebug((50, "NV_NVDLA_mcif::sdp_n2mcif_rd_req_b_transport, write true to sdp_n_rd_atom_enable_fifo_, num_free:%d\x0A", sdp_n_rd_atom_enable_fifo_->num_free()));
+                if (0 == byte_iter%MIN_BUS_WIDTH) {
+                    cslDebug((50, "NV_NVDLA_mcif::sdp_n2mcif_rd_req_b_transport, write true to sdp_n_rd_atom_enable_fifo_, num_free:%d\x0A", sdp_n_rd_atom_enable_fifo_->num_free()));
                     sdp_n_rd_atom_enable_fifo_->write(true);
+                }
+            } else {
+                axi_byte_enable_ptr[byte_iter] = TLM_BYTE_DISABLED;
+                if (0 == byte_iter%MIN_BUS_WIDTH) {
+                    cslDebug((50, "NV_NVDLA_mcif::sdp_n2mcif_rd_req_b_transport, write false to sdp_n_rd_atom_enable_fifo_, num_free:%d\x0A", sdp_n_rd_atom_enable_fifo_->num_free()));
+                    sdp_n_rd_atom_enable_fifo_->write(false);
                 }
             }
         }
         nvdla_dbb_ext->set_id(SDP_N_AXI_ID);
-        nvdla_dbb_ext->set_size(64);
-        nvdla_dbb_ext->set_length(size_in_byte/AXI_TRANSACTION_ATOM_SIZE);
+        nvdla_dbb_ext->set_size(MEM_TRANSACTION_SIZE);
+        nvdla_dbb_ext->set_length(size_in_byte/MEM_TRANSACTION_SIZE);
         // avoid warinig for unused variable
-        (void)user_size;
 #pragma CTC SKIP
-        if(size_in_byte%AXI_TRANSACTION_ATOM_SIZE!=0)
-            FAIL(("NV_NVDLA_mcif::sdp_n2mcif_rd_req_b_transport, size_in_byte is not multiple of AXI_TRANSACTION_ATOM_SIZE. size_in_byte=0x%x", size_in_byte));
+        if(size_in_byte%MEM_TRANSACTION_SIZE!=0)
+            FAIL(("NV_NVDLA_mcif::sdp_n2mcif_rd_req_b_transport, size_in_byte is not multiple of MEM_TRANSACTION_SIZE. size_in_byte=0x%x", size_in_byte));
 #pragma CTC ENDSKIP
         cslDebug((50, "NV_NVDLA_mcif::sdp_n2mcif_rd_req_b_transport, before sending data to sdp_n_rd_req_fifo_ addr=0x%lx, , num_free:%d\x0A", base_addr, sdp_n_rd_req_fifo_->num_free()));
         sdp_n_rd_req_fifo_->write(bt_payload);
         cslDebug((50, "NV_NVDLA_mcif::sdp_n2mcif_rd_req_b_transport, after sending data to sdp_n_rd_req_fifo_ addr=0x%lx\x0A", base_addr));
 
-        base_addr    += AXI_TRANSACTION_ATOM_SIZE;
     }
     cslDebug((50, "NV_NVDLA_mcif::sdp_n2mcif_rd_req_b_transport, after spliting DMA transaction\x0A"));
 }
@@ -1509,6 +1170,7 @@ void NV_NVDLA_mcif::ReadResp_mcif2sdp_n() {
     nvdla_dma_rd_rsp_t* dma_rd_rsp_payload = NULL;
     uint8_t           * dma_payload_data_ptr;
     uint32_t    idx;
+    int         dla_atom_num = 0;
 
     atom_num_left = 0;
     while(true) {
@@ -1523,27 +1185,16 @@ void NV_NVDLA_mcif::ReadResp_mcif2sdp_n() {
         dma_payload_data_ptr    = reinterpret_cast <uint8_t *> (dma_rd_rsp_payload->pd.dma_read_data.data);
         dma_rd_rsp_payload->pd.dma_read_data.mask = 0x00;
 
-        // 1st atom of the 64B
-        // Aligen to 32B
-        cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2sdp_n, num_available:%d\x0A", mcif2sdp_n_rd_rsp_fifo_->num_available()));
-        axi_atom_ptr = mcif2sdp_n_rd_rsp_fifo_->read();
-        credit_mcif2sdp_n_rd_rsp_fifo_ ++;
-        cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2sdp_n, read 1st atom of the 64B from mcif2sdp_n_rd_rsp_fifo_\x0A"));
-        atom_num_left--;
-
-        dma_rd_rsp_payload->pd.dma_read_data.mask = 0x1;
-        memcpy (&dma_payload_data_ptr[0], axi_atom_ptr, DMA_TRANSACTION_ATOM_SIZE);
-        delete[] axi_atom_ptr;
-
-        if(atom_num_left>0) {
-            // 2nd atom of the 64B
+        for(int atom_iter = 0; atom_iter < TRANSACTION_DMA_ATOMIC_NUM && atom_num_left > 0; atom_iter++) {
             cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2sdp_n, num_available:%d\x0A", mcif2sdp_n_rd_rsp_fifo_->num_available()));
             axi_atom_ptr = mcif2sdp_n_rd_rsp_fifo_->read();
             credit_mcif2sdp_n_rd_rsp_fifo_ ++;
-            cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2sdp_n, read 2nd atom of the 64B from mcif2sdp_n_rd_rsp_fifo_\x0A"));
+            cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2sdp_n, read 1st atom of the 64B from mcif2sdp_n_rd_rsp_fifo_\x0A"));
             atom_num_left--;
-            dma_rd_rsp_payload->pd.dma_read_data.mask = (dma_rd_rsp_payload->pd.dma_read_data.mask << 0x1) + 0x1;
-            memcpy (&dma_payload_data_ptr[DMA_TRANSACTION_ATOM_SIZE], axi_atom_ptr, DMA_TRANSACTION_ATOM_SIZE);
+            dla_atom_num = atom_iter*MIN_BUS_WIDTH/DLA_ATOM_SIZE;
+
+            dma_rd_rsp_payload->pd.dma_read_data.mask |= 0x1 << dla_atom_num;
+            memcpy (&dma_payload_data_ptr[atom_iter*MIN_BUS_WIDTH], axi_atom_ptr, MIN_BUS_WIDTH);
             delete[] axi_atom_ptr;
         }
 
@@ -1560,65 +1211,52 @@ void NV_NVDLA_mcif::ReadResp_mcif2sdp_n() {
 }
 
 void NV_NVDLA_mcif::sdp_e2mcif_rd_req_b_transport(int ID, nvdla_dma_rd_req_t* payload, sc_time& delay) {
-    // DMA request size unit is 32 bytes
-    uint64_t base_addr;
+    // DMA request size unit is DLA_ATOM_SIZE bytes
+    uint64_t base_addr, cur_address;
     uint64_t first_base_addr;
-    uint64_t last_base_addr;
+    uint64_t last_base_addr, last_actual_addr, last_aligned_addr;
     uint32_t size_in_byte;
     uint32_t total_axi_size;
     uint64_t payload_addr;
     uint32_t payload_size;
     uint8_t* axi_byte_enable_ptr;
     uint32_t byte_iter;
-    int32_t  user_size_first, user_size_last, user_size;
-    bool     is_base_64byte_align;
-    bool     is_rear_64byte_align;
     bool     is_read=true;
     nvdla_dbb_extension *nvdla_dbb_ext = NULL;
     dla_b_transport_payload *bt_payload;
 
     payload_addr = payload->pd.dma_read_cmd.addr;
-    payload_size = (payload->pd.dma_read_cmd.size + 1) * DMA_TRANSACTION_ATOM_SIZE; //payload_size's max value is 2^13
+    payload_size = (payload->pd.dma_read_cmd.size + 1) * DLA_ATOM_SIZE; //payload_size's max value is 2^13
 
-    is_base_64byte_align = payload_addr%AXI_TRANSACTION_ATOM_SIZE == 0;
-    first_base_addr = is_base_64byte_align? payload_addr: payload_addr - DMA_TRANSACTION_ATOM_SIZE; // Align to 64B
+    first_base_addr = (payload_addr/AXI_ALIGN_SIZE)*AXI_ALIGN_SIZE; 
 
-    is_rear_64byte_align = (payload_addr + payload_size) % AXI_TRANSACTION_ATOM_SIZE == 0;
-    total_axi_size = payload_size + (is_base_64byte_align? 0: DMA_TRANSACTION_ATOM_SIZE) + (is_rear_64byte_align? 0: DMA_TRANSACTION_ATOM_SIZE);
+    last_actual_addr = payload_addr + payload_size;
+    last_aligned_addr= ((last_actual_addr + AXI_ALIGN_SIZE - 1)/AXI_ALIGN_SIZE)*AXI_ALIGN_SIZE;
+    last_base_addr   = last_aligned_addr - MEM_TRANSACTION_SIZE;
+    total_axi_size = last_aligned_addr - first_base_addr;
     cslDebug((30, "XXXXXXX NV_NVDLA_mcif::sdp_e2mcif_rd_req_b_transport, first_base_addr=0x%lx total_axi_size is 0x%x payload_addr=0x%lx payload_size=0x%x\x0A", first_base_addr, total_axi_size, payload_addr, payload_size));
-    last_base_addr  = first_base_addr + total_axi_size - AXI_TRANSACTION_ATOM_SIZE;
 
-    base_addr = first_base_addr;
+    cur_address = base_addr = first_base_addr;
 
     // Push the number of atoms of the request
-    sdp_e2mcif_rd_req_atom_num_fifo_->write(payload_size/DMA_TRANSACTION_ATOM_SIZE);
-    cslDebug((50, "NV_NVDLA_mcif::sdp_e2mcif_rd_req_b_transport, write 0x%x to sdp_e2mcif_rd_req_atom_num_fifo_, num_free:%d.\x0A", payload_size/DMA_TRANSACTION_ATOM_SIZE, sdp_e2mcif_rd_req_atom_num_fifo_->num_free()));
-
-    if (total_axi_size <= (MCIF_MAX_MEM_TRANSACTION_SIZE - first_base_addr % MCIF_MAX_MEM_TRANSACTION_SIZE))
-        user_size_first = total_axi_size / AXI_TRANSACTION_ATOM_SIZE - 1;
-    else
-        user_size_first = (MCIF_MAX_MEM_TRANSACTION_SIZE - first_base_addr % MCIF_MAX_MEM_TRANSACTION_SIZE) / AXI_TRANSACTION_ATOM_SIZE - 1;
-
-    if ((first_base_addr + total_axi_size) % MCIF_MAX_MEM_TRANSACTION_SIZE == 0)
-        user_size_last = 3;
-    else
-        user_size_last = ((first_base_addr + total_axi_size) % MCIF_MAX_MEM_TRANSACTION_SIZE) / AXI_TRANSACTION_ATOM_SIZE - 1;
+    sdp_e2mcif_rd_req_atom_num_fifo_->write(payload_size/MIN_BUS_WIDTH);
+    cslDebug((50, "NV_NVDLA_mcif::sdp_e2mcif_rd_req_b_transport, write 0x%x to sdp_e2mcif_rd_req_atom_num_fifo_, num_free:%d.\x0A", payload_size/MIN_BUS_WIDTH, sdp_e2mcif_rd_req_atom_num_fifo_->num_free()));
 
     //Split dma request to axi requests
-    cslDebug((50, "NV_NVDLA_mcif::sdp_e2mcif_rd_req_b_transport, before spliting DMA transaction. user_size_first=0x%x user_size_last=0x%x\x0A", user_size_first, user_size_last));
-    while(base_addr <= last_base_addr) {
+    while(cur_address <= last_base_addr) {
+        base_addr    = cur_address;
         cslDebug((50, "NV_NVDLA_mcif::sdp_e2mcif_rd_req_b_transport, prepare AXI transaction for address: 0x%lx\x0A", base_addr));
-        // base_addr should be aligned to 64B
-        // size_in_byte should be multiple of 64
+        // base_addr should be aligned to AXI_ALIGN_SIZE Byte
+        // size_in_byte should be multiple of MEM_TRANSACTION_SIZE
         // if the data size required by dma mster is 32B, MCIF will drop the extra 32B when AXI returns
-        size_in_byte = AXI_TRANSACTION_ATOM_SIZE;
-        if (((base_addr - first_base_addr) < MCIF_MAX_MEM_TRANSACTION_SIZE) && (base_addr / MCIF_MAX_MEM_TRANSACTION_SIZE == first_base_addr / MCIF_MAX_MEM_TRANSACTION_SIZE))
-            user_size = user_size_first;
-        else if (((last_base_addr - base_addr) < MCIF_MAX_MEM_TRANSACTION_SIZE) && (base_addr / MCIF_MAX_MEM_TRANSACTION_SIZE == last_base_addr / MCIF_MAX_MEM_TRANSACTION_SIZE))
-            user_size = user_size_last;
-        else
-            user_size = 3;
-
+        size_in_byte = MEM_TRANSACTION_SIZE;
+        while (((cur_address + MEM_TRANSACTION_SIZE) < (last_aligned_addr)) && ((cur_address + MEM_TRANSACTION_SIZE) % MCIF_MAX_MEM_TRANSACTION_SIZE != 0)) {
+            size_in_byte += MEM_TRANSACTION_SIZE;
+            cur_address  += MEM_TRANSACTION_SIZE;
+        }
+        cur_address += MEM_TRANSACTION_SIZE;
+        cslDebug((50, "NV_NVDLA_mcif::sdp_e2mcif_rd_req_b_transport, cur_address=0x%lx base_addr=0x%lx size_in_byte=0x%x\x0A", cur_address, base_addr, size_in_byte));
+    
         // Allocating memory for dla_b_transport_payload
         bt_payload = new dla_b_transport_payload(size_in_byte, dla_b_transport_payload::DLA_B_TRANSPORT_PAYLOAD_TYPE_MC);
         bt_payload->configure_gp(base_addr, size_in_byte, is_read);
@@ -1629,59 +1267,32 @@ void NV_NVDLA_mcif::sdp_e2mcif_rd_req_b_transport(int ID, nvdla_dma_rd_req_t* pa
         // Write true to *_rd_atom_enable_fifo_ when the 32B atom is needed by dma client
         // Write false to *_rd_atom_enable_fifo_ when the 32B atom is not needed by dma client (dma's addr is not aligned to 64B
         for (byte_iter=0; byte_iter < size_in_byte; byte_iter++) {
-            if(base_addr == last_base_addr) {   // compare with last_base_addr before first_base_addr for the case of only one axi transaction
-                if ( (((true == is_rear_64byte_align) || (byte_iter < DMA_TRANSACTION_ATOM_SIZE)) && (first_base_addr != base_addr)) || 
-                        ( ( ( (true == is_base_64byte_align) && (byte_iter < DMA_TRANSACTION_ATOM_SIZE) ) || ( (true == is_rear_64byte_align) && (byte_iter >= DMA_TRANSACTION_ATOM_SIZE)) ) && (first_base_addr == base_addr)) ){
-                    axi_byte_enable_ptr[byte_iter] = TLM_BYTE_ENABLED;
-                    if (0 == byte_iter%DMA_TRANSACTION_ATOM_SIZE) {
-                    cslDebug((50, "NV_NVDLA_mcif::sdp_e2mcif_rd_req_b_transport, write true to sdp_e_rd_atom_enable_fifo_, num_free:%d\x0A", sdp_e_rd_atom_enable_fifo_->num_free()));
-                        sdp_e_rd_atom_enable_fifo_->write(true);
-                    }
-                } else {
-                    axi_byte_enable_ptr[byte_iter] = TLM_BYTE_DISABLED;
-                    if (0 == byte_iter%DMA_TRANSACTION_ATOM_SIZE) {
-                    cslDebug((50, "NV_NVDLA_mcif::sdp_e2mcif_rd_req_b_transport, write false to sdp_e_rd_atom_enable_fifo_, num_free:%d\x0A", sdp_e_rd_atom_enable_fifo_->num_free()));
-                        sdp_e_rd_atom_enable_fifo_->write(false);
-                    }
-                }
-            }
-            else if(base_addr == first_base_addr) {
-                if ( (true == is_base_64byte_align) || (byte_iter >= DMA_TRANSACTION_ATOM_SIZE) ){
-                    axi_byte_enable_ptr[byte_iter] = TLM_BYTE_ENABLED;
-                    if (0 == byte_iter%DMA_TRANSACTION_ATOM_SIZE) {
-                    cslDebug((50, "NV_NVDLA_mcif::sdp_e2mcif_rd_req_b_transport, write true to sdp_e_rd_atom_enable_fifo_, num_free:%d\x0A", sdp_e_rd_atom_enable_fifo_->num_free()));
-                        sdp_e_rd_atom_enable_fifo_->write(true);
-                    }
-                } else {
-                    axi_byte_enable_ptr[byte_iter] = TLM_BYTE_DISABLED;
-                    if (0 == byte_iter%DMA_TRANSACTION_ATOM_SIZE) {
-                    cslDebug((50, "NV_NVDLA_mcif::sdp_e2mcif_rd_req_b_transport, write false to sdp_e_rd_atom_enable_fifo_, num_free:%d\x0A", sdp_e_rd_atom_enable_fifo_->num_free()));
-                        sdp_e_rd_atom_enable_fifo_->write(false);
-                    }
-                }
-            }
-            else {
+            if ( ((base_addr + byte_iter >= payload_addr) && (base_addr + byte_iter < last_actual_addr)) ){
                 axi_byte_enable_ptr[byte_iter] = TLM_BYTE_ENABLED;
-                if (0 == byte_iter%DMA_TRANSACTION_ATOM_SIZE) {
-                cslDebug((50, "NV_NVDLA_mcif::sdp_e2mcif_rd_req_b_transport, write true to sdp_e_rd_atom_enable_fifo_, num_free:%d\x0A", sdp_e_rd_atom_enable_fifo_->num_free()));
+                if (0 == byte_iter%MIN_BUS_WIDTH) {
+                    cslDebug((50, "NV_NVDLA_mcif::sdp_e2mcif_rd_req_b_transport, write true to sdp_e_rd_atom_enable_fifo_, num_free:%d\x0A", sdp_e_rd_atom_enable_fifo_->num_free()));
                     sdp_e_rd_atom_enable_fifo_->write(true);
+                }
+            } else {
+                axi_byte_enable_ptr[byte_iter] = TLM_BYTE_DISABLED;
+                if (0 == byte_iter%MIN_BUS_WIDTH) {
+                    cslDebug((50, "NV_NVDLA_mcif::sdp_e2mcif_rd_req_b_transport, write false to sdp_e_rd_atom_enable_fifo_, num_free:%d\x0A", sdp_e_rd_atom_enable_fifo_->num_free()));
+                    sdp_e_rd_atom_enable_fifo_->write(false);
                 }
             }
         }
         nvdla_dbb_ext->set_id(SDP_E_AXI_ID);
-        nvdla_dbb_ext->set_size(64);
-        nvdla_dbb_ext->set_length(size_in_byte/AXI_TRANSACTION_ATOM_SIZE);
+        nvdla_dbb_ext->set_size(MEM_TRANSACTION_SIZE);
+        nvdla_dbb_ext->set_length(size_in_byte/MEM_TRANSACTION_SIZE);
         // avoid warinig for unused variable
-        (void)user_size;
 #pragma CTC SKIP
-        if(size_in_byte%AXI_TRANSACTION_ATOM_SIZE!=0)
-            FAIL(("NV_NVDLA_mcif::sdp_e2mcif_rd_req_b_transport, size_in_byte is not multiple of AXI_TRANSACTION_ATOM_SIZE. size_in_byte=0x%x", size_in_byte));
+        if(size_in_byte%MEM_TRANSACTION_SIZE!=0)
+            FAIL(("NV_NVDLA_mcif::sdp_e2mcif_rd_req_b_transport, size_in_byte is not multiple of MEM_TRANSACTION_SIZE. size_in_byte=0x%x", size_in_byte));
 #pragma CTC ENDSKIP
         cslDebug((50, "NV_NVDLA_mcif::sdp_e2mcif_rd_req_b_transport, before sending data to sdp_e_rd_req_fifo_ addr=0x%lx, , num_free:%d\x0A", base_addr, sdp_e_rd_req_fifo_->num_free()));
         sdp_e_rd_req_fifo_->write(bt_payload);
         cslDebug((50, "NV_NVDLA_mcif::sdp_e2mcif_rd_req_b_transport, after sending data to sdp_e_rd_req_fifo_ addr=0x%lx\x0A", base_addr));
 
-        base_addr    += AXI_TRANSACTION_ATOM_SIZE;
     }
     cslDebug((50, "NV_NVDLA_mcif::sdp_e2mcif_rd_req_b_transport, after spliting DMA transaction\x0A"));
 }
@@ -1692,6 +1303,7 @@ void NV_NVDLA_mcif::ReadResp_mcif2sdp_e() {
     nvdla_dma_rd_rsp_t* dma_rd_rsp_payload = NULL;
     uint8_t           * dma_payload_data_ptr;
     uint32_t    idx;
+    int         dla_atom_num = 0;
 
     atom_num_left = 0;
     while(true) {
@@ -1706,27 +1318,16 @@ void NV_NVDLA_mcif::ReadResp_mcif2sdp_e() {
         dma_payload_data_ptr    = reinterpret_cast <uint8_t *> (dma_rd_rsp_payload->pd.dma_read_data.data);
         dma_rd_rsp_payload->pd.dma_read_data.mask = 0x00;
 
-        // 1st atom of the 64B
-        // Aligen to 32B
-        cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2sdp_e, num_available:%d\x0A", mcif2sdp_e_rd_rsp_fifo_->num_available()));
-        axi_atom_ptr = mcif2sdp_e_rd_rsp_fifo_->read();
-        credit_mcif2sdp_e_rd_rsp_fifo_ ++;
-        cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2sdp_e, read 1st atom of the 64B from mcif2sdp_e_rd_rsp_fifo_\x0A"));
-        atom_num_left--;
-
-        dma_rd_rsp_payload->pd.dma_read_data.mask = 0x1;
-        memcpy (&dma_payload_data_ptr[0], axi_atom_ptr, DMA_TRANSACTION_ATOM_SIZE);
-        delete[] axi_atom_ptr;
-
-        if(atom_num_left>0) {
-            // 2nd atom of the 64B
+        for(int atom_iter = 0; atom_iter < TRANSACTION_DMA_ATOMIC_NUM && atom_num_left > 0; atom_iter++) {
             cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2sdp_e, num_available:%d\x0A", mcif2sdp_e_rd_rsp_fifo_->num_available()));
             axi_atom_ptr = mcif2sdp_e_rd_rsp_fifo_->read();
             credit_mcif2sdp_e_rd_rsp_fifo_ ++;
-            cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2sdp_e, read 2nd atom of the 64B from mcif2sdp_e_rd_rsp_fifo_\x0A"));
+            cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2sdp_e, read 1st atom of the 64B from mcif2sdp_e_rd_rsp_fifo_\x0A"));
             atom_num_left--;
-            dma_rd_rsp_payload->pd.dma_read_data.mask = (dma_rd_rsp_payload->pd.dma_read_data.mask << 0x1) + 0x1;
-            memcpy (&dma_payload_data_ptr[DMA_TRANSACTION_ATOM_SIZE], axi_atom_ptr, DMA_TRANSACTION_ATOM_SIZE);
+            dla_atom_num = atom_iter*MIN_BUS_WIDTH/DLA_ATOM_SIZE;
+
+            dma_rd_rsp_payload->pd.dma_read_data.mask |= 0x1 << dla_atom_num;
+            memcpy (&dma_payload_data_ptr[atom_iter*MIN_BUS_WIDTH], axi_atom_ptr, MIN_BUS_WIDTH);
             delete[] axi_atom_ptr;
         }
 
@@ -1743,65 +1344,52 @@ void NV_NVDLA_mcif::ReadResp_mcif2sdp_e() {
 }
 
 void NV_NVDLA_mcif::cdma_dat2mcif_rd_req_b_transport(int ID, nvdla_dma_rd_req_t* payload, sc_time& delay) {
-    // DMA request size unit is 32 bytes
-    uint64_t base_addr;
+    // DMA request size unit is DLA_ATOM_SIZE bytes
+    uint64_t base_addr, cur_address;
     uint64_t first_base_addr;
-    uint64_t last_base_addr;
+    uint64_t last_base_addr, last_actual_addr, last_aligned_addr;
     uint32_t size_in_byte;
     uint32_t total_axi_size;
     uint64_t payload_addr;
     uint32_t payload_size;
     uint8_t* axi_byte_enable_ptr;
     uint32_t byte_iter;
-    int32_t  user_size_first, user_size_last, user_size;
-    bool     is_base_64byte_align;
-    bool     is_rear_64byte_align;
     bool     is_read=true;
     nvdla_dbb_extension *nvdla_dbb_ext = NULL;
     dla_b_transport_payload *bt_payload;
 
     payload_addr = payload->pd.dma_read_cmd.addr;
-    payload_size = (payload->pd.dma_read_cmd.size + 1) * DMA_TRANSACTION_ATOM_SIZE; //payload_size's max value is 2^13
+    payload_size = (payload->pd.dma_read_cmd.size + 1) * DLA_ATOM_SIZE; //payload_size's max value is 2^13
 
-    is_base_64byte_align = payload_addr%AXI_TRANSACTION_ATOM_SIZE == 0;
-    first_base_addr = is_base_64byte_align? payload_addr: payload_addr - DMA_TRANSACTION_ATOM_SIZE; // Align to 64B
+    first_base_addr = (payload_addr/AXI_ALIGN_SIZE)*AXI_ALIGN_SIZE; 
 
-    is_rear_64byte_align = (payload_addr + payload_size) % AXI_TRANSACTION_ATOM_SIZE == 0;
-    total_axi_size = payload_size + (is_base_64byte_align? 0: DMA_TRANSACTION_ATOM_SIZE) + (is_rear_64byte_align? 0: DMA_TRANSACTION_ATOM_SIZE);
+    last_actual_addr = payload_addr + payload_size;
+    last_aligned_addr= ((last_actual_addr + AXI_ALIGN_SIZE - 1)/AXI_ALIGN_SIZE)*AXI_ALIGN_SIZE;
+    last_base_addr   = last_aligned_addr - MEM_TRANSACTION_SIZE;
+    total_axi_size = last_aligned_addr - first_base_addr;
     cslDebug((30, "XXXXXXX NV_NVDLA_mcif::cdma_dat2mcif_rd_req_b_transport, first_base_addr=0x%lx total_axi_size is 0x%x payload_addr=0x%lx payload_size=0x%x\x0A", first_base_addr, total_axi_size, payload_addr, payload_size));
-    last_base_addr  = first_base_addr + total_axi_size - AXI_TRANSACTION_ATOM_SIZE;
 
-    base_addr = first_base_addr;
+    cur_address = base_addr = first_base_addr;
 
     // Push the number of atoms of the request
-    cdma_dat2mcif_rd_req_atom_num_fifo_->write(payload_size/DMA_TRANSACTION_ATOM_SIZE);
-    cslDebug((50, "NV_NVDLA_mcif::cdma_dat2mcif_rd_req_b_transport, write 0x%x to cdma_dat2mcif_rd_req_atom_num_fifo_, num_free:%d.\x0A", payload_size/DMA_TRANSACTION_ATOM_SIZE, cdma_dat2mcif_rd_req_atom_num_fifo_->num_free()));
-
-    if (total_axi_size <= (MCIF_MAX_MEM_TRANSACTION_SIZE - first_base_addr % MCIF_MAX_MEM_TRANSACTION_SIZE))
-        user_size_first = total_axi_size / AXI_TRANSACTION_ATOM_SIZE - 1;
-    else
-        user_size_first = (MCIF_MAX_MEM_TRANSACTION_SIZE - first_base_addr % MCIF_MAX_MEM_TRANSACTION_SIZE) / AXI_TRANSACTION_ATOM_SIZE - 1;
-
-    if ((first_base_addr + total_axi_size) % MCIF_MAX_MEM_TRANSACTION_SIZE == 0)
-        user_size_last = 3;
-    else
-        user_size_last = ((first_base_addr + total_axi_size) % MCIF_MAX_MEM_TRANSACTION_SIZE) / AXI_TRANSACTION_ATOM_SIZE - 1;
+    cdma_dat2mcif_rd_req_atom_num_fifo_->write(payload_size/MIN_BUS_WIDTH);
+    cslDebug((50, "NV_NVDLA_mcif::cdma_dat2mcif_rd_req_b_transport, write 0x%x to cdma_dat2mcif_rd_req_atom_num_fifo_, num_free:%d.\x0A", payload_size/MIN_BUS_WIDTH, cdma_dat2mcif_rd_req_atom_num_fifo_->num_free()));
 
     //Split dma request to axi requests
-    cslDebug((50, "NV_NVDLA_mcif::cdma_dat2mcif_rd_req_b_transport, before spliting DMA transaction. user_size_first=0x%x user_size_last=0x%x\x0A", user_size_first, user_size_last));
-    while(base_addr <= last_base_addr) {
+    while(cur_address <= last_base_addr) {
+        base_addr    = cur_address;
         cslDebug((50, "NV_NVDLA_mcif::cdma_dat2mcif_rd_req_b_transport, prepare AXI transaction for address: 0x%lx\x0A", base_addr));
-        // base_addr should be aligned to 64B
-        // size_in_byte should be multiple of 64
+        // base_addr should be aligned to AXI_ALIGN_SIZE Byte
+        // size_in_byte should be multiple of MEM_TRANSACTION_SIZE
         // if the data size required by dma mster is 32B, MCIF will drop the extra 32B when AXI returns
-        size_in_byte = AXI_TRANSACTION_ATOM_SIZE;
-        if (((base_addr - first_base_addr) < MCIF_MAX_MEM_TRANSACTION_SIZE) && (base_addr / MCIF_MAX_MEM_TRANSACTION_SIZE == first_base_addr / MCIF_MAX_MEM_TRANSACTION_SIZE))
-            user_size = user_size_first;
-        else if (((last_base_addr - base_addr) < MCIF_MAX_MEM_TRANSACTION_SIZE) && (base_addr / MCIF_MAX_MEM_TRANSACTION_SIZE == last_base_addr / MCIF_MAX_MEM_TRANSACTION_SIZE))
-            user_size = user_size_last;
-        else
-            user_size = 3;
-
+        size_in_byte = MEM_TRANSACTION_SIZE;
+        while (((cur_address + MEM_TRANSACTION_SIZE) < (last_aligned_addr)) && ((cur_address + MEM_TRANSACTION_SIZE) % MCIF_MAX_MEM_TRANSACTION_SIZE != 0)) {
+            size_in_byte += MEM_TRANSACTION_SIZE;
+            cur_address  += MEM_TRANSACTION_SIZE;
+        }
+        cur_address += MEM_TRANSACTION_SIZE;
+        cslDebug((50, "NV_NVDLA_mcif::cdma_dat2mcif_rd_req_b_transport, cur_address=0x%lx base_addr=0x%lx size_in_byte=0x%x\x0A", cur_address, base_addr, size_in_byte));
+    
         // Allocating memory for dla_b_transport_payload
         bt_payload = new dla_b_transport_payload(size_in_byte, dla_b_transport_payload::DLA_B_TRANSPORT_PAYLOAD_TYPE_MC);
         bt_payload->configure_gp(base_addr, size_in_byte, is_read);
@@ -1812,59 +1400,32 @@ void NV_NVDLA_mcif::cdma_dat2mcif_rd_req_b_transport(int ID, nvdla_dma_rd_req_t*
         // Write true to *_rd_atom_enable_fifo_ when the 32B atom is needed by dma client
         // Write false to *_rd_atom_enable_fifo_ when the 32B atom is not needed by dma client (dma's addr is not aligned to 64B
         for (byte_iter=0; byte_iter < size_in_byte; byte_iter++) {
-            if(base_addr == last_base_addr) {   // compare with last_base_addr before first_base_addr for the case of only one axi transaction
-                if ( (((true == is_rear_64byte_align) || (byte_iter < DMA_TRANSACTION_ATOM_SIZE)) && (first_base_addr != base_addr)) || 
-                        ( ( ( (true == is_base_64byte_align) && (byte_iter < DMA_TRANSACTION_ATOM_SIZE) ) || ( (true == is_rear_64byte_align) && (byte_iter >= DMA_TRANSACTION_ATOM_SIZE)) ) && (first_base_addr == base_addr)) ){
-                    axi_byte_enable_ptr[byte_iter] = TLM_BYTE_ENABLED;
-                    if (0 == byte_iter%DMA_TRANSACTION_ATOM_SIZE) {
-                    cslDebug((50, "NV_NVDLA_mcif::cdma_dat2mcif_rd_req_b_transport, write true to cdma_dat_rd_atom_enable_fifo_, num_free:%d\x0A", cdma_dat_rd_atom_enable_fifo_->num_free()));
-                        cdma_dat_rd_atom_enable_fifo_->write(true);
-                    }
-                } else {
-                    axi_byte_enable_ptr[byte_iter] = TLM_BYTE_DISABLED;
-                    if (0 == byte_iter%DMA_TRANSACTION_ATOM_SIZE) {
-                    cslDebug((50, "NV_NVDLA_mcif::cdma_dat2mcif_rd_req_b_transport, write false to cdma_dat_rd_atom_enable_fifo_, num_free:%d\x0A", cdma_dat_rd_atom_enable_fifo_->num_free()));
-                        cdma_dat_rd_atom_enable_fifo_->write(false);
-                    }
-                }
-            }
-            else if(base_addr == first_base_addr) {
-                if ( (true == is_base_64byte_align) || (byte_iter >= DMA_TRANSACTION_ATOM_SIZE) ){
-                    axi_byte_enable_ptr[byte_iter] = TLM_BYTE_ENABLED;
-                    if (0 == byte_iter%DMA_TRANSACTION_ATOM_SIZE) {
-                    cslDebug((50, "NV_NVDLA_mcif::cdma_dat2mcif_rd_req_b_transport, write true to cdma_dat_rd_atom_enable_fifo_, num_free:%d\x0A", cdma_dat_rd_atom_enable_fifo_->num_free()));
-                        cdma_dat_rd_atom_enable_fifo_->write(true);
-                    }
-                } else {
-                    axi_byte_enable_ptr[byte_iter] = TLM_BYTE_DISABLED;
-                    if (0 == byte_iter%DMA_TRANSACTION_ATOM_SIZE) {
-                    cslDebug((50, "NV_NVDLA_mcif::cdma_dat2mcif_rd_req_b_transport, write false to cdma_dat_rd_atom_enable_fifo_, num_free:%d\x0A", cdma_dat_rd_atom_enable_fifo_->num_free()));
-                        cdma_dat_rd_atom_enable_fifo_->write(false);
-                    }
-                }
-            }
-            else {
+            if ( ((base_addr + byte_iter >= payload_addr) && (base_addr + byte_iter < last_actual_addr)) ){
                 axi_byte_enable_ptr[byte_iter] = TLM_BYTE_ENABLED;
-                if (0 == byte_iter%DMA_TRANSACTION_ATOM_SIZE) {
-                cslDebug((50, "NV_NVDLA_mcif::cdma_dat2mcif_rd_req_b_transport, write true to cdma_dat_rd_atom_enable_fifo_, num_free:%d\x0A", cdma_dat_rd_atom_enable_fifo_->num_free()));
+                if (0 == byte_iter%MIN_BUS_WIDTH) {
+                    cslDebug((50, "NV_NVDLA_mcif::cdma_dat2mcif_rd_req_b_transport, write true to cdma_dat_rd_atom_enable_fifo_, num_free:%d\x0A", cdma_dat_rd_atom_enable_fifo_->num_free()));
                     cdma_dat_rd_atom_enable_fifo_->write(true);
+                }
+            } else {
+                axi_byte_enable_ptr[byte_iter] = TLM_BYTE_DISABLED;
+                if (0 == byte_iter%MIN_BUS_WIDTH) {
+                    cslDebug((50, "NV_NVDLA_mcif::cdma_dat2mcif_rd_req_b_transport, write false to cdma_dat_rd_atom_enable_fifo_, num_free:%d\x0A", cdma_dat_rd_atom_enable_fifo_->num_free()));
+                    cdma_dat_rd_atom_enable_fifo_->write(false);
                 }
             }
         }
         nvdla_dbb_ext->set_id(CDMA_DAT_AXI_ID);
-        nvdla_dbb_ext->set_size(64);
-        nvdla_dbb_ext->set_length(size_in_byte/AXI_TRANSACTION_ATOM_SIZE);
+        nvdla_dbb_ext->set_size(MEM_TRANSACTION_SIZE);
+        nvdla_dbb_ext->set_length(size_in_byte/MEM_TRANSACTION_SIZE);
         // avoid warinig for unused variable
-        (void)user_size;
 #pragma CTC SKIP
-        if(size_in_byte%AXI_TRANSACTION_ATOM_SIZE!=0)
-            FAIL(("NV_NVDLA_mcif::cdma_dat2mcif_rd_req_b_transport, size_in_byte is not multiple of AXI_TRANSACTION_ATOM_SIZE. size_in_byte=0x%x", size_in_byte));
+        if(size_in_byte%MEM_TRANSACTION_SIZE!=0)
+            FAIL(("NV_NVDLA_mcif::cdma_dat2mcif_rd_req_b_transport, size_in_byte is not multiple of MEM_TRANSACTION_SIZE. size_in_byte=0x%x", size_in_byte));
 #pragma CTC ENDSKIP
         cslDebug((50, "NV_NVDLA_mcif::cdma_dat2mcif_rd_req_b_transport, before sending data to cdma_dat_rd_req_fifo_ addr=0x%lx, , num_free:%d\x0A", base_addr, cdma_dat_rd_req_fifo_->num_free()));
         cdma_dat_rd_req_fifo_->write(bt_payload);
         cslDebug((50, "NV_NVDLA_mcif::cdma_dat2mcif_rd_req_b_transport, after sending data to cdma_dat_rd_req_fifo_ addr=0x%lx\x0A", base_addr));
 
-        base_addr    += AXI_TRANSACTION_ATOM_SIZE;
     }
     cslDebug((50, "NV_NVDLA_mcif::cdma_dat2mcif_rd_req_b_transport, after spliting DMA transaction\x0A"));
 }
@@ -1875,6 +1436,7 @@ void NV_NVDLA_mcif::ReadResp_mcif2cdma_dat() {
     nvdla_dma_rd_rsp_t* dma_rd_rsp_payload = NULL;
     uint8_t           * dma_payload_data_ptr;
     uint32_t    idx;
+    int         dla_atom_num = 0;
 
     atom_num_left = 0;
     while(true) {
@@ -1889,27 +1451,16 @@ void NV_NVDLA_mcif::ReadResp_mcif2cdma_dat() {
         dma_payload_data_ptr    = reinterpret_cast <uint8_t *> (dma_rd_rsp_payload->pd.dma_read_data.data);
         dma_rd_rsp_payload->pd.dma_read_data.mask = 0x00;
 
-        // 1st atom of the 64B
-        // Aligen to 32B
-        cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2cdma_dat, num_available:%d\x0A", mcif2cdma_dat_rd_rsp_fifo_->num_available()));
-        axi_atom_ptr = mcif2cdma_dat_rd_rsp_fifo_->read();
-        credit_mcif2cdma_dat_rd_rsp_fifo_ ++;
-        cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2cdma_dat, read 1st atom of the 64B from mcif2cdma_dat_rd_rsp_fifo_\x0A"));
-        atom_num_left--;
-
-        dma_rd_rsp_payload->pd.dma_read_data.mask = 0x1;
-        memcpy (&dma_payload_data_ptr[0], axi_atom_ptr, DMA_TRANSACTION_ATOM_SIZE);
-        delete[] axi_atom_ptr;
-
-        if(atom_num_left>0) {
-            // 2nd atom of the 64B
+        for(int atom_iter = 0; atom_iter < TRANSACTION_DMA_ATOMIC_NUM && atom_num_left > 0; atom_iter++) {
             cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2cdma_dat, num_available:%d\x0A", mcif2cdma_dat_rd_rsp_fifo_->num_available()));
             axi_atom_ptr = mcif2cdma_dat_rd_rsp_fifo_->read();
             credit_mcif2cdma_dat_rd_rsp_fifo_ ++;
-            cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2cdma_dat, read 2nd atom of the 64B from mcif2cdma_dat_rd_rsp_fifo_\x0A"));
+            cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2cdma_dat, read 1st atom of the 64B from mcif2cdma_dat_rd_rsp_fifo_\x0A"));
             atom_num_left--;
-            dma_rd_rsp_payload->pd.dma_read_data.mask = (dma_rd_rsp_payload->pd.dma_read_data.mask << 0x1) + 0x1;
-            memcpy (&dma_payload_data_ptr[DMA_TRANSACTION_ATOM_SIZE], axi_atom_ptr, DMA_TRANSACTION_ATOM_SIZE);
+            dla_atom_num = atom_iter*MIN_BUS_WIDTH/DLA_ATOM_SIZE;
+
+            dma_rd_rsp_payload->pd.dma_read_data.mask |= 0x1 << dla_atom_num;
+            memcpy (&dma_payload_data_ptr[atom_iter*MIN_BUS_WIDTH], axi_atom_ptr, MIN_BUS_WIDTH);
             delete[] axi_atom_ptr;
         }
 
@@ -1926,65 +1477,52 @@ void NV_NVDLA_mcif::ReadResp_mcif2cdma_dat() {
 }
 
 void NV_NVDLA_mcif::cdma_wt2mcif_rd_req_b_transport(int ID, nvdla_dma_rd_req_t* payload, sc_time& delay) {
-    // DMA request size unit is 32 bytes
-    uint64_t base_addr;
+    // DMA request size unit is DLA_ATOM_SIZE bytes
+    uint64_t base_addr, cur_address;
     uint64_t first_base_addr;
-    uint64_t last_base_addr;
+    uint64_t last_base_addr, last_actual_addr, last_aligned_addr;
     uint32_t size_in_byte;
     uint32_t total_axi_size;
     uint64_t payload_addr;
     uint32_t payload_size;
     uint8_t* axi_byte_enable_ptr;
     uint32_t byte_iter;
-    int32_t  user_size_first, user_size_last, user_size;
-    bool     is_base_64byte_align;
-    bool     is_rear_64byte_align;
     bool     is_read=true;
     nvdla_dbb_extension *nvdla_dbb_ext = NULL;
     dla_b_transport_payload *bt_payload;
 
     payload_addr = payload->pd.dma_read_cmd.addr;
-    payload_size = (payload->pd.dma_read_cmd.size + 1) * DMA_TRANSACTION_ATOM_SIZE; //payload_size's max value is 2^13
+    payload_size = (payload->pd.dma_read_cmd.size + 1) * DLA_ATOM_SIZE; //payload_size's max value is 2^13
 
-    is_base_64byte_align = payload_addr%AXI_TRANSACTION_ATOM_SIZE == 0;
-    first_base_addr = is_base_64byte_align? payload_addr: payload_addr - DMA_TRANSACTION_ATOM_SIZE; // Align to 64B
+    first_base_addr = (payload_addr/AXI_ALIGN_SIZE)*AXI_ALIGN_SIZE; 
 
-    is_rear_64byte_align = (payload_addr + payload_size) % AXI_TRANSACTION_ATOM_SIZE == 0;
-    total_axi_size = payload_size + (is_base_64byte_align? 0: DMA_TRANSACTION_ATOM_SIZE) + (is_rear_64byte_align? 0: DMA_TRANSACTION_ATOM_SIZE);
+    last_actual_addr = payload_addr + payload_size;
+    last_aligned_addr= ((last_actual_addr + AXI_ALIGN_SIZE - 1)/AXI_ALIGN_SIZE)*AXI_ALIGN_SIZE;
+    last_base_addr   = last_aligned_addr - MEM_TRANSACTION_SIZE;
+    total_axi_size = last_aligned_addr - first_base_addr;
     cslDebug((30, "XXXXXXX NV_NVDLA_mcif::cdma_wt2mcif_rd_req_b_transport, first_base_addr=0x%lx total_axi_size is 0x%x payload_addr=0x%lx payload_size=0x%x\x0A", first_base_addr, total_axi_size, payload_addr, payload_size));
-    last_base_addr  = first_base_addr + total_axi_size - AXI_TRANSACTION_ATOM_SIZE;
 
-    base_addr = first_base_addr;
+    cur_address = base_addr = first_base_addr;
 
     // Push the number of atoms of the request
-    cdma_wt2mcif_rd_req_atom_num_fifo_->write(payload_size/DMA_TRANSACTION_ATOM_SIZE);
-    cslDebug((50, "NV_NVDLA_mcif::cdma_wt2mcif_rd_req_b_transport, write 0x%x to cdma_wt2mcif_rd_req_atom_num_fifo_, num_free:%d.\x0A", payload_size/DMA_TRANSACTION_ATOM_SIZE, cdma_wt2mcif_rd_req_atom_num_fifo_->num_free()));
-
-    if (total_axi_size <= (MCIF_MAX_MEM_TRANSACTION_SIZE - first_base_addr % MCIF_MAX_MEM_TRANSACTION_SIZE))
-        user_size_first = total_axi_size / AXI_TRANSACTION_ATOM_SIZE - 1;
-    else
-        user_size_first = (MCIF_MAX_MEM_TRANSACTION_SIZE - first_base_addr % MCIF_MAX_MEM_TRANSACTION_SIZE) / AXI_TRANSACTION_ATOM_SIZE - 1;
-
-    if ((first_base_addr + total_axi_size) % MCIF_MAX_MEM_TRANSACTION_SIZE == 0)
-        user_size_last = 3;
-    else
-        user_size_last = ((first_base_addr + total_axi_size) % MCIF_MAX_MEM_TRANSACTION_SIZE) / AXI_TRANSACTION_ATOM_SIZE - 1;
+    cdma_wt2mcif_rd_req_atom_num_fifo_->write(payload_size/MIN_BUS_WIDTH);
+    cslDebug((50, "NV_NVDLA_mcif::cdma_wt2mcif_rd_req_b_transport, write 0x%x to cdma_wt2mcif_rd_req_atom_num_fifo_, num_free:%d.\x0A", payload_size/MIN_BUS_WIDTH, cdma_wt2mcif_rd_req_atom_num_fifo_->num_free()));
 
     //Split dma request to axi requests
-    cslDebug((50, "NV_NVDLA_mcif::cdma_wt2mcif_rd_req_b_transport, before spliting DMA transaction. user_size_first=0x%x user_size_last=0x%x\x0A", user_size_first, user_size_last));
-    while(base_addr <= last_base_addr) {
+    while(cur_address <= last_base_addr) {
+        base_addr    = cur_address;
         cslDebug((50, "NV_NVDLA_mcif::cdma_wt2mcif_rd_req_b_transport, prepare AXI transaction for address: 0x%lx\x0A", base_addr));
-        // base_addr should be aligned to 64B
-        // size_in_byte should be multiple of 64
+        // base_addr should be aligned to AXI_ALIGN_SIZE Byte
+        // size_in_byte should be multiple of MEM_TRANSACTION_SIZE
         // if the data size required by dma mster is 32B, MCIF will drop the extra 32B when AXI returns
-        size_in_byte = AXI_TRANSACTION_ATOM_SIZE;
-        if (((base_addr - first_base_addr) < MCIF_MAX_MEM_TRANSACTION_SIZE) && (base_addr / MCIF_MAX_MEM_TRANSACTION_SIZE == first_base_addr / MCIF_MAX_MEM_TRANSACTION_SIZE))
-            user_size = user_size_first;
-        else if (((last_base_addr - base_addr) < MCIF_MAX_MEM_TRANSACTION_SIZE) && (base_addr / MCIF_MAX_MEM_TRANSACTION_SIZE == last_base_addr / MCIF_MAX_MEM_TRANSACTION_SIZE))
-            user_size = user_size_last;
-        else
-            user_size = 3;
-
+        size_in_byte = MEM_TRANSACTION_SIZE;
+        while (((cur_address + MEM_TRANSACTION_SIZE) < (last_aligned_addr)) && ((cur_address + MEM_TRANSACTION_SIZE) % MCIF_MAX_MEM_TRANSACTION_SIZE != 0)) {
+            size_in_byte += MEM_TRANSACTION_SIZE;
+            cur_address  += MEM_TRANSACTION_SIZE;
+        }
+        cur_address += MEM_TRANSACTION_SIZE;
+        cslDebug((50, "NV_NVDLA_mcif::cdma_wt2mcif_rd_req_b_transport, cur_address=0x%lx base_addr=0x%lx size_in_byte=0x%x\x0A", cur_address, base_addr, size_in_byte));
+    
         // Allocating memory for dla_b_transport_payload
         bt_payload = new dla_b_transport_payload(size_in_byte, dla_b_transport_payload::DLA_B_TRANSPORT_PAYLOAD_TYPE_MC);
         bt_payload->configure_gp(base_addr, size_in_byte, is_read);
@@ -1995,59 +1533,32 @@ void NV_NVDLA_mcif::cdma_wt2mcif_rd_req_b_transport(int ID, nvdla_dma_rd_req_t* 
         // Write true to *_rd_atom_enable_fifo_ when the 32B atom is needed by dma client
         // Write false to *_rd_atom_enable_fifo_ when the 32B atom is not needed by dma client (dma's addr is not aligned to 64B
         for (byte_iter=0; byte_iter < size_in_byte; byte_iter++) {
-            if(base_addr == last_base_addr) {   // compare with last_base_addr before first_base_addr for the case of only one axi transaction
-                if ( (((true == is_rear_64byte_align) || (byte_iter < DMA_TRANSACTION_ATOM_SIZE)) && (first_base_addr != base_addr)) || 
-                        ( ( ( (true == is_base_64byte_align) && (byte_iter < DMA_TRANSACTION_ATOM_SIZE) ) || ( (true == is_rear_64byte_align) && (byte_iter >= DMA_TRANSACTION_ATOM_SIZE)) ) && (first_base_addr == base_addr)) ){
-                    axi_byte_enable_ptr[byte_iter] = TLM_BYTE_ENABLED;
-                    if (0 == byte_iter%DMA_TRANSACTION_ATOM_SIZE) {
-                    cslDebug((50, "NV_NVDLA_mcif::cdma_wt2mcif_rd_req_b_transport, write true to cdma_wt_rd_atom_enable_fifo_, num_free:%d\x0A", cdma_wt_rd_atom_enable_fifo_->num_free()));
-                        cdma_wt_rd_atom_enable_fifo_->write(true);
-                    }
-                } else {
-                    axi_byte_enable_ptr[byte_iter] = TLM_BYTE_DISABLED;
-                    if (0 == byte_iter%DMA_TRANSACTION_ATOM_SIZE) {
-                    cslDebug((50, "NV_NVDLA_mcif::cdma_wt2mcif_rd_req_b_transport, write false to cdma_wt_rd_atom_enable_fifo_, num_free:%d\x0A", cdma_wt_rd_atom_enable_fifo_->num_free()));
-                        cdma_wt_rd_atom_enable_fifo_->write(false);
-                    }
-                }
-            }
-            else if(base_addr == first_base_addr) {
-                if ( (true == is_base_64byte_align) || (byte_iter >= DMA_TRANSACTION_ATOM_SIZE) ){
-                    axi_byte_enable_ptr[byte_iter] = TLM_BYTE_ENABLED;
-                    if (0 == byte_iter%DMA_TRANSACTION_ATOM_SIZE) {
-                    cslDebug((50, "NV_NVDLA_mcif::cdma_wt2mcif_rd_req_b_transport, write true to cdma_wt_rd_atom_enable_fifo_, num_free:%d\x0A", cdma_wt_rd_atom_enable_fifo_->num_free()));
-                        cdma_wt_rd_atom_enable_fifo_->write(true);
-                    }
-                } else {
-                    axi_byte_enable_ptr[byte_iter] = TLM_BYTE_DISABLED;
-                    if (0 == byte_iter%DMA_TRANSACTION_ATOM_SIZE) {
-                    cslDebug((50, "NV_NVDLA_mcif::cdma_wt2mcif_rd_req_b_transport, write false to cdma_wt_rd_atom_enable_fifo_, num_free:%d\x0A", cdma_wt_rd_atom_enable_fifo_->num_free()));
-                        cdma_wt_rd_atom_enable_fifo_->write(false);
-                    }
-                }
-            }
-            else {
+            if ( ((base_addr + byte_iter >= payload_addr) && (base_addr + byte_iter < last_actual_addr)) ){
                 axi_byte_enable_ptr[byte_iter] = TLM_BYTE_ENABLED;
-                if (0 == byte_iter%DMA_TRANSACTION_ATOM_SIZE) {
-                cslDebug((50, "NV_NVDLA_mcif::cdma_wt2mcif_rd_req_b_transport, write true to cdma_wt_rd_atom_enable_fifo_, num_free:%d\x0A", cdma_wt_rd_atom_enable_fifo_->num_free()));
+                if (0 == byte_iter%MIN_BUS_WIDTH) {
+                    cslDebug((50, "NV_NVDLA_mcif::cdma_wt2mcif_rd_req_b_transport, write true to cdma_wt_rd_atom_enable_fifo_, num_free:%d\x0A", cdma_wt_rd_atom_enable_fifo_->num_free()));
                     cdma_wt_rd_atom_enable_fifo_->write(true);
+                }
+            } else {
+                axi_byte_enable_ptr[byte_iter] = TLM_BYTE_DISABLED;
+                if (0 == byte_iter%MIN_BUS_WIDTH) {
+                    cslDebug((50, "NV_NVDLA_mcif::cdma_wt2mcif_rd_req_b_transport, write false to cdma_wt_rd_atom_enable_fifo_, num_free:%d\x0A", cdma_wt_rd_atom_enable_fifo_->num_free()));
+                    cdma_wt_rd_atom_enable_fifo_->write(false);
                 }
             }
         }
         nvdla_dbb_ext->set_id(CDMA_WT_AXI_ID);
-        nvdla_dbb_ext->set_size(64);
-        nvdla_dbb_ext->set_length(size_in_byte/AXI_TRANSACTION_ATOM_SIZE);
+        nvdla_dbb_ext->set_size(MEM_TRANSACTION_SIZE);
+        nvdla_dbb_ext->set_length(size_in_byte/MEM_TRANSACTION_SIZE);
         // avoid warinig for unused variable
-        (void)user_size;
 #pragma CTC SKIP
-        if(size_in_byte%AXI_TRANSACTION_ATOM_SIZE!=0)
-            FAIL(("NV_NVDLA_mcif::cdma_wt2mcif_rd_req_b_transport, size_in_byte is not multiple of AXI_TRANSACTION_ATOM_SIZE. size_in_byte=0x%x", size_in_byte));
+        if(size_in_byte%MEM_TRANSACTION_SIZE!=0)
+            FAIL(("NV_NVDLA_mcif::cdma_wt2mcif_rd_req_b_transport, size_in_byte is not multiple of MEM_TRANSACTION_SIZE. size_in_byte=0x%x", size_in_byte));
 #pragma CTC ENDSKIP
         cslDebug((50, "NV_NVDLA_mcif::cdma_wt2mcif_rd_req_b_transport, before sending data to cdma_wt_rd_req_fifo_ addr=0x%lx, , num_free:%d\x0A", base_addr, cdma_wt_rd_req_fifo_->num_free()));
         cdma_wt_rd_req_fifo_->write(bt_payload);
         cslDebug((50, "NV_NVDLA_mcif::cdma_wt2mcif_rd_req_b_transport, after sending data to cdma_wt_rd_req_fifo_ addr=0x%lx\x0A", base_addr));
 
-        base_addr    += AXI_TRANSACTION_ATOM_SIZE;
     }
     cslDebug((50, "NV_NVDLA_mcif::cdma_wt2mcif_rd_req_b_transport, after spliting DMA transaction\x0A"));
 }
@@ -2058,6 +1569,7 @@ void NV_NVDLA_mcif::ReadResp_mcif2cdma_wt() {
     nvdla_dma_rd_rsp_t* dma_rd_rsp_payload = NULL;
     uint8_t           * dma_payload_data_ptr;
     uint32_t    idx;
+    int         dla_atom_num = 0;
 
     atom_num_left = 0;
     while(true) {
@@ -2072,27 +1584,16 @@ void NV_NVDLA_mcif::ReadResp_mcif2cdma_wt() {
         dma_payload_data_ptr    = reinterpret_cast <uint8_t *> (dma_rd_rsp_payload->pd.dma_read_data.data);
         dma_rd_rsp_payload->pd.dma_read_data.mask = 0x00;
 
-        // 1st atom of the 64B
-        // Aligen to 32B
-        cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2cdma_wt, num_available:%d\x0A", mcif2cdma_wt_rd_rsp_fifo_->num_available()));
-        axi_atom_ptr = mcif2cdma_wt_rd_rsp_fifo_->read();
-        credit_mcif2cdma_wt_rd_rsp_fifo_ ++;
-        cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2cdma_wt, read 1st atom of the 64B from mcif2cdma_wt_rd_rsp_fifo_\x0A"));
-        atom_num_left--;
-
-        dma_rd_rsp_payload->pd.dma_read_data.mask = 0x1;
-        memcpy (&dma_payload_data_ptr[0], axi_atom_ptr, DMA_TRANSACTION_ATOM_SIZE);
-        delete[] axi_atom_ptr;
-
-        if(atom_num_left>0) {
-            // 2nd atom of the 64B
+        for(int atom_iter = 0; atom_iter < TRANSACTION_DMA_ATOMIC_NUM && atom_num_left > 0; atom_iter++) {
             cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2cdma_wt, num_available:%d\x0A", mcif2cdma_wt_rd_rsp_fifo_->num_available()));
             axi_atom_ptr = mcif2cdma_wt_rd_rsp_fifo_->read();
             credit_mcif2cdma_wt_rd_rsp_fifo_ ++;
-            cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2cdma_wt, read 2nd atom of the 64B from mcif2cdma_wt_rd_rsp_fifo_\x0A"));
+            cslDebug((50, "NV_NVDLA_mcif::ReadResp_mcif2cdma_wt, read 1st atom of the 64B from mcif2cdma_wt_rd_rsp_fifo_\x0A"));
             atom_num_left--;
-            dma_rd_rsp_payload->pd.dma_read_data.mask = (dma_rd_rsp_payload->pd.dma_read_data.mask << 0x1) + 0x1;
-            memcpy (&dma_payload_data_ptr[DMA_TRANSACTION_ATOM_SIZE], axi_atom_ptr, DMA_TRANSACTION_ATOM_SIZE);
+            dla_atom_num = atom_iter*MIN_BUS_WIDTH/DLA_ATOM_SIZE;
+
+            dma_rd_rsp_payload->pd.dma_read_data.mask |= 0x1 << dla_atom_num;
+            memcpy (&dma_payload_data_ptr[atom_iter*MIN_BUS_WIDTH], axi_atom_ptr, MIN_BUS_WIDTH);
             delete[] axi_atom_ptr;
         }
 
@@ -2125,15 +1626,15 @@ void NV_NVDLA_mcif::bdma2mcif_wr_req_b_transport(int ID, nvdla_dma_wr_req_t* pay
             FAIL(("NV_NVDLA_mcif::bdma2mcif_wr_req_b_transport, got two consective command request, one command request shall be followed by one or more data request."));
         }
 #pragma CTC ENDSKIP
-	else {
+	    else {
             has_bdma_onging_wr_req_ = true;
         }
 
         bdma_wr_req = new client_wr_req_t;
         bdma_wr_req->addr  = payload->pd.dma_write_cmd.addr;
-        bdma_wr_req->size  = (payload->pd.dma_write_cmd.size + 1) * DMA_TRANSACTION_ATOM_SIZE;    //In byte
+        bdma_wr_req->size  = (payload->pd.dma_write_cmd.size + 1) * DLA_ATOM_SIZE;    //In byte
         bdma_wr_req->require_ack = payload->pd.dma_write_cmd.require_ack;
-        cslDebug((50, "write to bdma2mcif_wr_cmd_fifo_, addr:%lx, size:%d, num_free:%d\x0A", bdma_wr_req->addr, bdma_wr_req->size, bdma2mcif_wr_cmd_fifo_->num_free()));
+        cslDebug((50, "write to bdma2mcif_wr_cmd_fifo_, addr:%lx, size:%d, num_free:%d, req_ack:%d\x0A", bdma_wr_req->addr, bdma_wr_req->size, bdma2mcif_wr_cmd_fifo_->num_free(),bdma_wr_req->require_ack));
         bdma2mcif_wr_cmd_fifo_->write(bdma_wr_req);
         bdma_wr_req_got_size_ = 0;
         bdma_wr_req_size_ = bdma_wr_req->size;
@@ -2141,54 +1642,46 @@ void NV_NVDLA_mcif::bdma2mcif_wr_req_b_transport(int ID, nvdla_dma_wr_req_t* pay
     } else {
         dma_payload_data_ptr = reinterpret_cast <uint8_t *> (payload->pd.dma_write_data.data);
         rest_size = bdma_wr_req_size_ - bdma_wr_req_got_size_;
-        incoming_size = min(rest_size, uint32_t (DMA_TRANSACTION_MAX_SIZE));
-        data_ptr = new uint8_t[DMA_TRANSACTION_ATOM_SIZE];
-        memcpy(data_ptr, dma_payload_data_ptr, DMA_TRANSACTION_ATOM_SIZE);
-        cslDebug((50, "write to bdma2mcif_wr_data_fifo_, num_free:%d\x0A", bdma2mcif_wr_data_fifo_->num_free()));
-        bdma2mcif_wr_data_fifo_->write(data_ptr);   // Write to FIFO in 32Byte atom
-        bdma_wr_req_got_size_ += incoming_size;
-        cslDebug((50, "bdma2mcif_wr_data_fifo_ data:\x0A"));
-        for(int i = 0; i < DMA_TRANSACTION_ATOM_SIZE; i++) {
-            cslDebug((50, "%x ", data_ptr[i]));
-        }
-        cslDebug((50, "\x0A"));
-
-        if (incoming_size==DMA_TRANSACTION_MAX_SIZE) { // The payload is 64B
-            data_ptr = new uint8_t[DMA_TRANSACTION_ATOM_SIZE];
-            memcpy(data_ptr, &dma_payload_data_ptr[DMA_TRANSACTION_ATOM_SIZE], DMA_TRANSACTION_ATOM_SIZE);
+        incoming_size = min(rest_size, uint32_t (DMAIF_WIDTH));
+        for(int atom_iter = 0; atom_iter < incoming_size/MIN_BUS_WIDTH; atom_iter++) {
+            data_ptr = new uint8_t[MIN_BUS_WIDTH];
+            memcpy(data_ptr, dma_payload_data_ptr + MIN_BUS_WIDTH*atom_iter, MIN_BUS_WIDTH);
             cslDebug((50, "write to bdma2mcif_wr_data_fifo_, num_free:%d\x0A", bdma2mcif_wr_data_fifo_->num_free()));
-            bdma2mcif_wr_data_fifo_->write(data_ptr);
             cslDebug((50, "bdma2mcif_wr_data_fifo_ data:\x0A"));
-            for(int i = 0; i < DMA_TRANSACTION_ATOM_SIZE; i++) {
+            for(int i = 0; i < MIN_BUS_WIDTH; i++) {
                 cslDebug((50, "%x ", data_ptr[i]));
             }
             cslDebug((50, "\x0A"));
-        }
 
+            bdma2mcif_wr_data_fifo_->write(data_ptr);   // Write to FIFO in 32Byte atom
+        }
+        bdma_wr_req_got_size_ += incoming_size;
+       
         if (bdma_wr_req_got_size_ == bdma_wr_req_size_) {
+            cslDebug((50, "one write request done on bdma\x0A"));
             has_bdma_onging_wr_req_ = false;
         }
     }
 }
 
 void NV_NVDLA_mcif::WriteRequest_bdma2mcif() {
-    uint64_t base_addr;
+    uint64_t base_addr, cur_address;
     uint64_t first_base_addr;
-    uint64_t last_base_addr;
+    uint64_t last_base_addr, last_actual_addr, last_aligned_addr;
     uint32_t size_in_byte;
     uint32_t total_axi_size;
     uint64_t payload_addr;
     uint32_t payload_size;
-    int32_t  user_size_first, user_size_last, user_size;
     uint8_t* axi_byte_enable_ptr;
     uint32_t byte_iter;
-    bool     is_base_64byte_align;
-    bool     is_rear_64byte_align;
+    bool     is_base_aligned;
+    bool     is_rear_aligned;
     bool     is_read=false;
     uint8_t  *axi_atom_ptr;
     nvdla_dbb_extension *nvdla_dbb_ext = NULL;
     client_wr_req_t   * bdma_wr_req;
     dla_b_transport_payload *bt_payload;
+    int      atom_num;
 
     while(true) {
         // Read one write command
@@ -2196,83 +1689,71 @@ void NV_NVDLA_mcif::WriteRequest_bdma2mcif() {
         payload_addr = bdma_wr_req->addr;   // It's aligend to 32B, not 64B
         payload_size = bdma_wr_req->size;
 
-        is_base_64byte_align = (payload_addr%AXI_TRANSACTION_ATOM_SIZE) == 0;
-        first_base_addr = is_base_64byte_align? payload_addr: payload_addr - DMA_TRANSACTION_ATOM_SIZE; // Align to 64B
-
-        is_rear_64byte_align = ((payload_addr + payload_size) % AXI_TRANSACTION_ATOM_SIZE) == 0;
-        total_axi_size = payload_size + (is_base_64byte_align? 0: DMA_TRANSACTION_ATOM_SIZE) + (is_rear_64byte_align? 0: DMA_TRANSACTION_ATOM_SIZE);
-        last_base_addr  = first_base_addr + total_axi_size - AXI_TRANSACTION_ATOM_SIZE;
+        is_base_aligned      = (payload_addr%AXI_ALIGN_SIZE) == 0;
+        first_base_addr     = (payload_addr/AXI_ALIGN_SIZE)*AXI_ALIGN_SIZE;
+        last_actual_addr    = payload_addr + payload_size;
+        last_aligned_addr   = ((last_actual_addr + AXI_ALIGN_SIZE -1)/AXI_ALIGN_SIZE)*AXI_ALIGN_SIZE;
+        last_base_addr      = last_aligned_addr - MEM_TRANSACTION_SIZE;
+        is_rear_aligned     = ((payload_addr + payload_size) % AXI_ALIGN_SIZE) == 0;
+        total_axi_size      = last_aligned_addr - first_base_addr;
         cslDebug((30, "XXXXXXX NV_NVDLA_mcif::WriteRequest_bdma2mcif, first_base_addr=0x%lx total_axi_size is 0x%x payload_addr=0x%lx payload_size=0x%x\x0A", first_base_addr, total_axi_size, payload_addr, payload_size));
 
-        base_addr = first_base_addr;
+        cur_address = base_addr = first_base_addr;
+        while (cur_address <= last_base_addr) {
+            base_addr = cur_address;
+            size_in_byte = MEM_TRANSACTION_SIZE;
 
-        if (total_axi_size <= (MCIF_MAX_MEM_TRANSACTION_SIZE - first_base_addr % MCIF_MAX_MEM_TRANSACTION_SIZE))
-            user_size_first = total_axi_size / AXI_TRANSACTION_ATOM_SIZE - 1;
-        else
-            user_size_first = (MCIF_MAX_MEM_TRANSACTION_SIZE - first_base_addr % MCIF_MAX_MEM_TRANSACTION_SIZE) / AXI_TRANSACTION_ATOM_SIZE - 1;
+            // Check whether next ATOM belongs to current AXI transaction
+            while (((cur_address + MEM_TRANSACTION_SIZE) < last_aligned_addr) && ((cur_address + MEM_TRANSACTION_SIZE) % MCIF_MAX_MEM_TRANSACTION_SIZE != 0)) {
+                size_in_byte += MEM_TRANSACTION_SIZE;
+                cur_address  += MEM_TRANSACTION_SIZE;
+            }
+            // start address of next axi transaction
+            cur_address += MEM_TRANSACTION_SIZE;
 
-        if ((first_base_addr + total_axi_size) % MCIF_MAX_MEM_TRANSACTION_SIZE == 0)
-            user_size_last = 3;
-        else
-            user_size_last = ((first_base_addr + total_axi_size) % MCIF_MAX_MEM_TRANSACTION_SIZE) / AXI_TRANSACTION_ATOM_SIZE - 1;
-
-        cslDebug((50, "NV_NVDLA_mcif::WriteRequest_bdma2mcif, before spliting DMA transaction. user_size_first=0x%x user_size_first=0x%x\x0A", user_size_first, user_size_last));
-        while (base_addr <= last_base_addr) {
-            size_in_byte = AXI_TRANSACTION_ATOM_SIZE;   //64B
+            atom_num = size_in_byte / MIN_BUS_WIDTH;
             bt_payload = new dla_b_transport_payload(size_in_byte, dla_b_transport_payload::DLA_B_TRANSPORT_PAYLOAD_TYPE_MC);
             axi_byte_enable_ptr = bt_payload->gp.get_byte_enable_ptr();
+            for (byte_iter=0; byte_iter < size_in_byte; byte_iter++) {
+                if ( base_addr + byte_iter < payload_addr) {
+                    // Diable 1st DMA atom of the unaligned first_base_addr
+                    assert(is_base_aligned == false);
+                    axi_byte_enable_ptr[byte_iter] = TLM_BYTE_DISABLED;  // All bytes should be enabled
+                } else if (base_addr + byte_iter >= last_actual_addr) {
+                    // Diable last unaligned last_base_addr
+                    assert(is_rear_aligned == false);
+                    axi_byte_enable_ptr[byte_iter] = TLM_BYTE_DISABLED;  // All bytes should be enabled
+                } else {
+                    axi_byte_enable_ptr[byte_iter] = TLM_BYTE_ENABLED;  // All bytes should be enabled
+                }
+            }
+            cslDebug((50, "NV_NVDLA_mcif::WriteRequest_bdma2mcif, TLM_BYTE_ENABLE is done\x0A"));
 
-            if (((base_addr - first_base_addr) < MCIF_MAX_MEM_TRANSACTION_SIZE) && (base_addr / MCIF_MAX_MEM_TRANSACTION_SIZE == first_base_addr / MCIF_MAX_MEM_TRANSACTION_SIZE))
-                user_size = user_size_first;
-            else if (((last_base_addr - base_addr) < MCIF_MAX_MEM_TRANSACTION_SIZE) && (base_addr / MCIF_MAX_MEM_TRANSACTION_SIZE == last_base_addr / MCIF_MAX_MEM_TRANSACTION_SIZE))
-                user_size = user_size_last;
-            else
-                user_size = 3;
-
-            if((base_addr==last_base_addr) && (false == is_rear_64byte_align)) {
-                // last axi transaction contains only 32B
-                axi_atom_ptr = bdma2mcif_wr_data_fifo_->read();
-                memcpy(&bt_payload->data[0], axi_atom_ptr, DMA_TRANSACTION_ATOM_SIZE);
-                memset(&bt_payload->data[DMA_TRANSACTION_ATOM_SIZE], 0x55, DMA_TRANSACTION_ATOM_SIZE);  // Dummy data
-                delete[] axi_atom_ptr;
-                for (byte_iter=0; byte_iter < size_in_byte; byte_iter++) {
-                    if ( byte_iter < DMA_TRANSACTION_ATOM_SIZE ) {
-                        axi_byte_enable_ptr[byte_iter] = TLM_BYTE_ENABLED;  // Only the first 32B is byte_enabled
-                    } else {
-                        axi_byte_enable_ptr[byte_iter] = TLM_BYTE_DISABLED;
+            for (int atom_iter=0; atom_iter < atom_num; atom_iter++) {
+                if ( axi_byte_enable_ptr[atom_iter*MIN_BUS_WIDTH] == TLM_BYTE_DISABLED) {
+                    // Disable 1st DMA atom of the unaligned first_base_addr
+                    // Use unaligned address as required by DBB_PV
+                    for(int elt_iter = 0; elt_iter < MIN_BUS_WIDTH; elt_iter++) {
+                        bt_payload->data[atom_iter*MIN_BUS_WIDTH + elt_iter] = 0;
                     }
-                }
-            }
-            else if((base_addr==first_base_addr) && (false == is_base_64byte_align)) {
-                // first axi transaction contains only 32B
-                axi_atom_ptr = bdma2mcif_wr_data_fifo_->read();
-                memset(&bt_payload->data[0], 0x55, DMA_TRANSACTION_ATOM_SIZE); //Dummy data
-                // Copy to the 2nd half 32B
-                memcpy(&bt_payload->data[DMA_TRANSACTION_ATOM_SIZE], axi_atom_ptr, DMA_TRANSACTION_ATOM_SIZE);
-                delete[] axi_atom_ptr;
-                for (byte_iter=0; byte_iter < size_in_byte; byte_iter++) {
-                    if ( byte_iter >= DMA_TRANSACTION_ATOM_SIZE ) {
-                        axi_byte_enable_ptr[byte_iter] = TLM_BYTE_ENABLED; // Only the last 32B is byte_enabled
-                    } else {
-                        axi_byte_enable_ptr[byte_iter] = TLM_BYTE_DISABLED;
+                } else {
+                    cslDebug((50, "NV_NVDLA_mcif::WriteRequest_bdma2mcif, before read an atom from bdma2mcif_wr_data_fifo_, base_addr = 0x%lx, atom_iter=0x%x\x0A", base_addr, atom_iter));
+
+                    axi_atom_ptr = bdma2mcif_wr_data_fifo_->read();
+                    cslDebug((50, "NV_NVDLA_mcif::WriteRequest_bdma2mcif, after read an atom from bdma2mcif_wr_data_fifo_\x0A"));
+                    for(int i=0; i<MIN_BUS_WIDTH; i++) {
+                        cslDebug((50, "%02x ", axi_atom_ptr[i]));
                     }
-                }
-            }
-            else {
-                // First 32B
-                axi_atom_ptr = bdma2mcif_wr_data_fifo_->read();
-                memcpy(&bt_payload->data[0], axi_atom_ptr, DMA_TRANSACTION_ATOM_SIZE);
-                delete[] axi_atom_ptr;
-                // Second 32B
-                axi_atom_ptr = bdma2mcif_wr_data_fifo_->read();
-                memcpy(&bt_payload->data[DMA_TRANSACTION_ATOM_SIZE], axi_atom_ptr, DMA_TRANSACTION_ATOM_SIZE);
-                delete[] axi_atom_ptr;
-                for (byte_iter=0; byte_iter < size_in_byte; byte_iter++) {
-                    axi_byte_enable_ptr[byte_iter] = TLM_BYTE_ENABLED;
+                    cslDebug((50, "\x0A"));
+                    for(int elt_iter = 0; elt_iter < MIN_BUS_WIDTH; elt_iter++) {
+                        bt_payload->data[atom_iter*MIN_BUS_WIDTH + elt_iter] = axi_atom_ptr[elt_iter];
+                    }
+                    delete[] axi_atom_ptr;
                 }
             }
 
-            if ( (base_addr==last_base_addr) && (bdma_wr_req->require_ack != 0) ) {
+
+            if ( (cur_address >= last_actual_addr) && (bdma_wr_req->require_ack != 0) ) {
                 cslDebug((30, "NV_NVDLA_mcif::WriteRequest_bdma2mcif, required ack.\x0A"));
                 bdma_wr_required_ack_fifo_->write(true);
             }
@@ -2288,20 +1769,16 @@ void NV_NVDLA_mcif::WriteRequest_bdma2mcif() {
             cslDebug((50, "    addr: 0x%lx\x0A", base_addr));
             cslDebug((50, "    size: %d\x0A", size_in_byte));
             nvdla_dbb_ext->set_id(BDMA_AXI_ID);
-            nvdla_dbb_ext->set_size(64);
-            nvdla_dbb_ext->set_length(size_in_byte/AXI_TRANSACTION_ATOM_SIZE);
-            // avoid warinig for unused variable
-            (void)user_size;
+            nvdla_dbb_ext->set_size(MEM_TRANSACTION_SIZE);
+            nvdla_dbb_ext->set_length(size_in_byte/MEM_TRANSACTION_SIZE);
 
 #pragma CTC SKIP
-            if(size_in_byte%AXI_TRANSACTION_ATOM_SIZE!=0)
-                FAIL(("NV_NVDLA_mcif::bdma2mcif_rd_req_b_transport, size_in_byte is not multiple of AXI_TRANSACTION_ATOM_SIZE. size_in_byte=0x%x", size_in_byte));
+            if(size_in_byte%AXI_ALIGN_SIZE!=0)
+                FAIL(("NV_NVDLA_mcif::bdma2mcif_rd_req_b_transport, size_in_byte is not multiple of AXI_ALIGN_SIZE. size_in_byte=0x%x", size_in_byte));
 #pragma CTC ENDSKIP
 
             // write payload to arbiter fifo
             bdma_wr_req_fifo_->write(bt_payload);
-
-            base_addr    += AXI_TRANSACTION_ATOM_SIZE;
         }
         delete bdma_wr_req;
     }
@@ -2322,15 +1799,15 @@ void NV_NVDLA_mcif::sdp2mcif_wr_req_b_transport(int ID, nvdla_dma_wr_req_t* payl
             FAIL(("NV_NVDLA_mcif::sdp2mcif_wr_req_b_transport, got two consective command request, one command request shall be followed by one or more data request."));
         }
 #pragma CTC ENDSKIP
-	else {
+	    else {
             has_sdp_onging_wr_req_ = true;
         }
 
         sdp_wr_req = new client_wr_req_t;
         sdp_wr_req->addr  = payload->pd.dma_write_cmd.addr;
-        sdp_wr_req->size  = (payload->pd.dma_write_cmd.size + 1) * DMA_TRANSACTION_ATOM_SIZE;    //In byte
+        sdp_wr_req->size  = (payload->pd.dma_write_cmd.size + 1) * DLA_ATOM_SIZE;    //In byte
         sdp_wr_req->require_ack = payload->pd.dma_write_cmd.require_ack;
-        cslDebug((50, "write to sdp2mcif_wr_cmd_fifo_, addr:%lx, size:%d, num_free:%d\x0A", sdp_wr_req->addr, sdp_wr_req->size, sdp2mcif_wr_cmd_fifo_->num_free()));
+        cslDebug((50, "write to sdp2mcif_wr_cmd_fifo_, addr:%lx, size:%d, num_free:%d, req_ack:%d\x0A", sdp_wr_req->addr, sdp_wr_req->size, sdp2mcif_wr_cmd_fifo_->num_free(),sdp_wr_req->require_ack));
         sdp2mcif_wr_cmd_fifo_->write(sdp_wr_req);
         sdp_wr_req_got_size_ = 0;
         sdp_wr_req_size_ = sdp_wr_req->size;
@@ -2338,54 +1815,46 @@ void NV_NVDLA_mcif::sdp2mcif_wr_req_b_transport(int ID, nvdla_dma_wr_req_t* payl
     } else {
         dma_payload_data_ptr = reinterpret_cast <uint8_t *> (payload->pd.dma_write_data.data);
         rest_size = sdp_wr_req_size_ - sdp_wr_req_got_size_;
-        incoming_size = min(rest_size, uint32_t (DMA_TRANSACTION_MAX_SIZE));
-        data_ptr = new uint8_t[DMA_TRANSACTION_ATOM_SIZE];
-        memcpy(data_ptr, dma_payload_data_ptr, DMA_TRANSACTION_ATOM_SIZE);
-        cslDebug((50, "write to sdp2mcif_wr_data_fifo_, num_free:%d\x0A", sdp2mcif_wr_data_fifo_->num_free()));
-        sdp2mcif_wr_data_fifo_->write(data_ptr);   // Write to FIFO in 32Byte atom
-        sdp_wr_req_got_size_ += incoming_size;
-        cslDebug((50, "sdp2mcif_wr_data_fifo_ data:\x0A"));
-        for(int i = 0; i < DMA_TRANSACTION_ATOM_SIZE; i++) {
-            cslDebug((50, "%x ", data_ptr[i]));
-        }
-        cslDebug((50, "\x0A"));
-
-        if (incoming_size==DMA_TRANSACTION_MAX_SIZE) { // The payload is 64B
-            data_ptr = new uint8_t[DMA_TRANSACTION_ATOM_SIZE];
-            memcpy(data_ptr, &dma_payload_data_ptr[DMA_TRANSACTION_ATOM_SIZE], DMA_TRANSACTION_ATOM_SIZE);
+        incoming_size = min(rest_size, uint32_t (DMAIF_WIDTH));
+        for(int atom_iter = 0; atom_iter < incoming_size/MIN_BUS_WIDTH; atom_iter++) {
+            data_ptr = new uint8_t[MIN_BUS_WIDTH];
+            memcpy(data_ptr, dma_payload_data_ptr + MIN_BUS_WIDTH*atom_iter, MIN_BUS_WIDTH);
             cslDebug((50, "write to sdp2mcif_wr_data_fifo_, num_free:%d\x0A", sdp2mcif_wr_data_fifo_->num_free()));
-            sdp2mcif_wr_data_fifo_->write(data_ptr);
             cslDebug((50, "sdp2mcif_wr_data_fifo_ data:\x0A"));
-            for(int i = 0; i < DMA_TRANSACTION_ATOM_SIZE; i++) {
+            for(int i = 0; i < MIN_BUS_WIDTH; i++) {
                 cslDebug((50, "%x ", data_ptr[i]));
             }
             cslDebug((50, "\x0A"));
-        }
 
+            sdp2mcif_wr_data_fifo_->write(data_ptr);   // Write to FIFO in 32Byte atom
+        }
+        sdp_wr_req_got_size_ += incoming_size;
+       
         if (sdp_wr_req_got_size_ == sdp_wr_req_size_) {
+            cslDebug((50, "one write request done on sdp\x0A"));
             has_sdp_onging_wr_req_ = false;
         }
     }
 }
 
 void NV_NVDLA_mcif::WriteRequest_sdp2mcif() {
-    uint64_t base_addr;
+    uint64_t base_addr, cur_address;
     uint64_t first_base_addr;
-    uint64_t last_base_addr;
+    uint64_t last_base_addr, last_actual_addr, last_aligned_addr;
     uint32_t size_in_byte;
     uint32_t total_axi_size;
     uint64_t payload_addr;
     uint32_t payload_size;
-    int32_t  user_size_first, user_size_last, user_size;
     uint8_t* axi_byte_enable_ptr;
     uint32_t byte_iter;
-    bool     is_base_64byte_align;
-    bool     is_rear_64byte_align;
+    bool     is_base_aligned;
+    bool     is_rear_aligned;
     bool     is_read=false;
     uint8_t  *axi_atom_ptr;
     nvdla_dbb_extension *nvdla_dbb_ext = NULL;
     client_wr_req_t   * sdp_wr_req;
     dla_b_transport_payload *bt_payload;
+    int      atom_num;
 
     while(true) {
         // Read one write command
@@ -2393,83 +1862,71 @@ void NV_NVDLA_mcif::WriteRequest_sdp2mcif() {
         payload_addr = sdp_wr_req->addr;   // It's aligend to 32B, not 64B
         payload_size = sdp_wr_req->size;
 
-        is_base_64byte_align = (payload_addr%AXI_TRANSACTION_ATOM_SIZE) == 0;
-        first_base_addr = is_base_64byte_align? payload_addr: payload_addr - DMA_TRANSACTION_ATOM_SIZE; // Align to 64B
-
-        is_rear_64byte_align = ((payload_addr + payload_size) % AXI_TRANSACTION_ATOM_SIZE) == 0;
-        total_axi_size = payload_size + (is_base_64byte_align? 0: DMA_TRANSACTION_ATOM_SIZE) + (is_rear_64byte_align? 0: DMA_TRANSACTION_ATOM_SIZE);
-        last_base_addr  = first_base_addr + total_axi_size - AXI_TRANSACTION_ATOM_SIZE;
+        is_base_aligned      = (payload_addr%AXI_ALIGN_SIZE) == 0;
+        first_base_addr     = (payload_addr/AXI_ALIGN_SIZE)*AXI_ALIGN_SIZE;
+        last_actual_addr    = payload_addr + payload_size;
+        last_aligned_addr   = ((last_actual_addr + AXI_ALIGN_SIZE -1)/AXI_ALIGN_SIZE)*AXI_ALIGN_SIZE;
+        last_base_addr      = last_aligned_addr - MEM_TRANSACTION_SIZE;
+        is_rear_aligned     = ((payload_addr + payload_size) % AXI_ALIGN_SIZE) == 0;
+        total_axi_size      = last_aligned_addr - first_base_addr;
         cslDebug((30, "XXXXXXX NV_NVDLA_mcif::WriteRequest_sdp2mcif, first_base_addr=0x%lx total_axi_size is 0x%x payload_addr=0x%lx payload_size=0x%x\x0A", first_base_addr, total_axi_size, payload_addr, payload_size));
 
-        base_addr = first_base_addr;
+        cur_address = base_addr = first_base_addr;
+        while (cur_address <= last_base_addr) {
+            base_addr = cur_address;
+            size_in_byte = MEM_TRANSACTION_SIZE;
 
-        if (total_axi_size <= (MCIF_MAX_MEM_TRANSACTION_SIZE - first_base_addr % MCIF_MAX_MEM_TRANSACTION_SIZE))
-            user_size_first = total_axi_size / AXI_TRANSACTION_ATOM_SIZE - 1;
-        else
-            user_size_first = (MCIF_MAX_MEM_TRANSACTION_SIZE - first_base_addr % MCIF_MAX_MEM_TRANSACTION_SIZE) / AXI_TRANSACTION_ATOM_SIZE - 1;
+            // Check whether next ATOM belongs to current AXI transaction
+            while (((cur_address + MEM_TRANSACTION_SIZE) < last_aligned_addr) && ((cur_address + MEM_TRANSACTION_SIZE) % MCIF_MAX_MEM_TRANSACTION_SIZE != 0)) {
+                size_in_byte += MEM_TRANSACTION_SIZE;
+                cur_address  += MEM_TRANSACTION_SIZE;
+            }
+            // start address of next axi transaction
+            cur_address += MEM_TRANSACTION_SIZE;
 
-        if ((first_base_addr + total_axi_size) % MCIF_MAX_MEM_TRANSACTION_SIZE == 0)
-            user_size_last = 3;
-        else
-            user_size_last = ((first_base_addr + total_axi_size) % MCIF_MAX_MEM_TRANSACTION_SIZE) / AXI_TRANSACTION_ATOM_SIZE - 1;
-
-        cslDebug((50, "NV_NVDLA_mcif::WriteRequest_sdp2mcif, before spliting DMA transaction. user_size_first=0x%x user_size_first=0x%x\x0A", user_size_first, user_size_last));
-        while (base_addr <= last_base_addr) {
-            size_in_byte = AXI_TRANSACTION_ATOM_SIZE;   //64B
+            atom_num = size_in_byte / MIN_BUS_WIDTH;
             bt_payload = new dla_b_transport_payload(size_in_byte, dla_b_transport_payload::DLA_B_TRANSPORT_PAYLOAD_TYPE_MC);
             axi_byte_enable_ptr = bt_payload->gp.get_byte_enable_ptr();
+            for (byte_iter=0; byte_iter < size_in_byte; byte_iter++) {
+                if ( base_addr + byte_iter < payload_addr) {
+                    // Diable 1st DMA atom of the unaligned first_base_addr
+                    assert(is_base_aligned == false);
+                    axi_byte_enable_ptr[byte_iter] = TLM_BYTE_DISABLED;  // All bytes should be enabled
+                } else if (base_addr + byte_iter >= last_actual_addr) {
+                    // Diable last unaligned last_base_addr
+                    assert(is_rear_aligned == false);
+                    axi_byte_enable_ptr[byte_iter] = TLM_BYTE_DISABLED;  // All bytes should be enabled
+                } else {
+                    axi_byte_enable_ptr[byte_iter] = TLM_BYTE_ENABLED;  // All bytes should be enabled
+                }
+            }
+            cslDebug((50, "NV_NVDLA_mcif::WriteRequest_sdp2mcif, TLM_BYTE_ENABLE is done\x0A"));
 
-            if (((base_addr - first_base_addr) < MCIF_MAX_MEM_TRANSACTION_SIZE) && (base_addr / MCIF_MAX_MEM_TRANSACTION_SIZE == first_base_addr / MCIF_MAX_MEM_TRANSACTION_SIZE))
-                user_size = user_size_first;
-            else if (((last_base_addr - base_addr) < MCIF_MAX_MEM_TRANSACTION_SIZE) && (base_addr / MCIF_MAX_MEM_TRANSACTION_SIZE == last_base_addr / MCIF_MAX_MEM_TRANSACTION_SIZE))
-                user_size = user_size_last;
-            else
-                user_size = 3;
-
-            if((base_addr==last_base_addr) && (false == is_rear_64byte_align)) {
-                // last axi transaction contains only 32B
-                axi_atom_ptr = sdp2mcif_wr_data_fifo_->read();
-                memcpy(&bt_payload->data[0], axi_atom_ptr, DMA_TRANSACTION_ATOM_SIZE);
-                memset(&bt_payload->data[DMA_TRANSACTION_ATOM_SIZE], 0x55, DMA_TRANSACTION_ATOM_SIZE);  // Dummy data
-                delete[] axi_atom_ptr;
-                for (byte_iter=0; byte_iter < size_in_byte; byte_iter++) {
-                    if ( byte_iter < DMA_TRANSACTION_ATOM_SIZE ) {
-                        axi_byte_enable_ptr[byte_iter] = TLM_BYTE_ENABLED;  // Only the first 32B is byte_enabled
-                    } else {
-                        axi_byte_enable_ptr[byte_iter] = TLM_BYTE_DISABLED;
+            for (int atom_iter=0; atom_iter < atom_num; atom_iter++) {
+                if ( axi_byte_enable_ptr[atom_iter*MIN_BUS_WIDTH] == TLM_BYTE_DISABLED) {
+                    // Disable 1st DMA atom of the unaligned first_base_addr
+                    // Use unaligned address as required by DBB_PV
+                    for(int elt_iter = 0; elt_iter < MIN_BUS_WIDTH; elt_iter++) {
+                        bt_payload->data[atom_iter*MIN_BUS_WIDTH + elt_iter] = 0;
                     }
-                }
-            }
-            else if((base_addr==first_base_addr) && (false == is_base_64byte_align)) {
-                // first axi transaction contains only 32B
-                axi_atom_ptr = sdp2mcif_wr_data_fifo_->read();
-                memset(&bt_payload->data[0], 0x55, DMA_TRANSACTION_ATOM_SIZE); //Dummy data
-                // Copy to the 2nd half 32B
-                memcpy(&bt_payload->data[DMA_TRANSACTION_ATOM_SIZE], axi_atom_ptr, DMA_TRANSACTION_ATOM_SIZE);
-                delete[] axi_atom_ptr;
-                for (byte_iter=0; byte_iter < size_in_byte; byte_iter++) {
-                    if ( byte_iter >= DMA_TRANSACTION_ATOM_SIZE ) {
-                        axi_byte_enable_ptr[byte_iter] = TLM_BYTE_ENABLED; // Only the last 32B is byte_enabled
-                    } else {
-                        axi_byte_enable_ptr[byte_iter] = TLM_BYTE_DISABLED;
+                } else {
+                    cslDebug((50, "NV_NVDLA_mcif::WriteRequest_sdp2mcif, before read an atom from sdp2mcif_wr_data_fifo_, base_addr = 0x%lx, atom_iter=0x%x\x0A", base_addr, atom_iter));
+
+                    axi_atom_ptr = sdp2mcif_wr_data_fifo_->read();
+                    cslDebug((50, "NV_NVDLA_mcif::WriteRequest_sdp2mcif, after read an atom from sdp2mcif_wr_data_fifo_\x0A"));
+                    for(int i=0; i<MIN_BUS_WIDTH; i++) {
+                        cslDebug((50, "%02x ", axi_atom_ptr[i]));
                     }
-                }
-            }
-            else {
-                // First 32B
-                axi_atom_ptr = sdp2mcif_wr_data_fifo_->read();
-                memcpy(&bt_payload->data[0], axi_atom_ptr, DMA_TRANSACTION_ATOM_SIZE);
-                delete[] axi_atom_ptr;
-                // Second 32B
-                axi_atom_ptr = sdp2mcif_wr_data_fifo_->read();
-                memcpy(&bt_payload->data[DMA_TRANSACTION_ATOM_SIZE], axi_atom_ptr, DMA_TRANSACTION_ATOM_SIZE);
-                delete[] axi_atom_ptr;
-                for (byte_iter=0; byte_iter < size_in_byte; byte_iter++) {
-                    axi_byte_enable_ptr[byte_iter] = TLM_BYTE_ENABLED;
+                    cslDebug((50, "\x0A"));
+                    for(int elt_iter = 0; elt_iter < MIN_BUS_WIDTH; elt_iter++) {
+                        bt_payload->data[atom_iter*MIN_BUS_WIDTH + elt_iter] = axi_atom_ptr[elt_iter];
+                    }
+                    delete[] axi_atom_ptr;
                 }
             }
 
-            if ( (base_addr==last_base_addr) && (sdp_wr_req->require_ack != 0) ) {
+
+            if ( (cur_address >= last_actual_addr) && (sdp_wr_req->require_ack != 0) ) {
                 cslDebug((30, "NV_NVDLA_mcif::WriteRequest_sdp2mcif, required ack.\x0A"));
                 sdp_wr_required_ack_fifo_->write(true);
             }
@@ -2485,20 +1942,16 @@ void NV_NVDLA_mcif::WriteRequest_sdp2mcif() {
             cslDebug((50, "    addr: 0x%lx\x0A", base_addr));
             cslDebug((50, "    size: %d\x0A", size_in_byte));
             nvdla_dbb_ext->set_id(SDP_AXI_ID);
-            nvdla_dbb_ext->set_size(64);
-            nvdla_dbb_ext->set_length(size_in_byte/AXI_TRANSACTION_ATOM_SIZE);
-            // avoid warinig for unused variable
-            (void)user_size;
+            nvdla_dbb_ext->set_size(MEM_TRANSACTION_SIZE);
+            nvdla_dbb_ext->set_length(size_in_byte/MEM_TRANSACTION_SIZE);
 
 #pragma CTC SKIP
-            if(size_in_byte%AXI_TRANSACTION_ATOM_SIZE!=0)
-                FAIL(("NV_NVDLA_mcif::sdp2mcif_rd_req_b_transport, size_in_byte is not multiple of AXI_TRANSACTION_ATOM_SIZE. size_in_byte=0x%x", size_in_byte));
+            if(size_in_byte%AXI_ALIGN_SIZE!=0)
+                FAIL(("NV_NVDLA_mcif::sdp2mcif_rd_req_b_transport, size_in_byte is not multiple of AXI_ALIGN_SIZE. size_in_byte=0x%x", size_in_byte));
 #pragma CTC ENDSKIP
 
             // write payload to arbiter fifo
             sdp_wr_req_fifo_->write(bt_payload);
-
-            base_addr    += AXI_TRANSACTION_ATOM_SIZE;
         }
         delete sdp_wr_req;
     }
@@ -2519,15 +1972,15 @@ void NV_NVDLA_mcif::pdp2mcif_wr_req_b_transport(int ID, nvdla_dma_wr_req_t* payl
             FAIL(("NV_NVDLA_mcif::pdp2mcif_wr_req_b_transport, got two consective command request, one command request shall be followed by one or more data request."));
         }
 #pragma CTC ENDSKIP
-	else {
+	    else {
             has_pdp_onging_wr_req_ = true;
         }
 
         pdp_wr_req = new client_wr_req_t;
         pdp_wr_req->addr  = payload->pd.dma_write_cmd.addr;
-        pdp_wr_req->size  = (payload->pd.dma_write_cmd.size + 1) * DMA_TRANSACTION_ATOM_SIZE;    //In byte
+        pdp_wr_req->size  = (payload->pd.dma_write_cmd.size + 1) * DLA_ATOM_SIZE;    //In byte
         pdp_wr_req->require_ack = payload->pd.dma_write_cmd.require_ack;
-        cslDebug((50, "write to pdp2mcif_wr_cmd_fifo_, addr:%lx, size:%d, num_free:%d\x0A", pdp_wr_req->addr, pdp_wr_req->size, pdp2mcif_wr_cmd_fifo_->num_free()));
+        cslDebug((50, "write to pdp2mcif_wr_cmd_fifo_, addr:%lx, size:%d, num_free:%d, req_ack:%d\x0A", pdp_wr_req->addr, pdp_wr_req->size, pdp2mcif_wr_cmd_fifo_->num_free(),pdp_wr_req->require_ack));
         pdp2mcif_wr_cmd_fifo_->write(pdp_wr_req);
         pdp_wr_req_got_size_ = 0;
         pdp_wr_req_size_ = pdp_wr_req->size;
@@ -2535,54 +1988,46 @@ void NV_NVDLA_mcif::pdp2mcif_wr_req_b_transport(int ID, nvdla_dma_wr_req_t* payl
     } else {
         dma_payload_data_ptr = reinterpret_cast <uint8_t *> (payload->pd.dma_write_data.data);
         rest_size = pdp_wr_req_size_ - pdp_wr_req_got_size_;
-        incoming_size = min(rest_size, uint32_t (DMA_TRANSACTION_MAX_SIZE));
-        data_ptr = new uint8_t[DMA_TRANSACTION_ATOM_SIZE];
-        memcpy(data_ptr, dma_payload_data_ptr, DMA_TRANSACTION_ATOM_SIZE);
-        cslDebug((50, "write to pdp2mcif_wr_data_fifo_, num_free:%d\x0A", pdp2mcif_wr_data_fifo_->num_free()));
-        pdp2mcif_wr_data_fifo_->write(data_ptr);   // Write to FIFO in 32Byte atom
-        pdp_wr_req_got_size_ += incoming_size;
-        cslDebug((50, "pdp2mcif_wr_data_fifo_ data:\x0A"));
-        for(int i = 0; i < DMA_TRANSACTION_ATOM_SIZE; i++) {
-            cslDebug((50, "%x ", data_ptr[i]));
-        }
-        cslDebug((50, "\x0A"));
-
-        if (incoming_size==DMA_TRANSACTION_MAX_SIZE) { // The payload is 64B
-            data_ptr = new uint8_t[DMA_TRANSACTION_ATOM_SIZE];
-            memcpy(data_ptr, &dma_payload_data_ptr[DMA_TRANSACTION_ATOM_SIZE], DMA_TRANSACTION_ATOM_SIZE);
+        incoming_size = min(rest_size, uint32_t (DMAIF_WIDTH));
+        for(int atom_iter = 0; atom_iter < incoming_size/MIN_BUS_WIDTH; atom_iter++) {
+            data_ptr = new uint8_t[MIN_BUS_WIDTH];
+            memcpy(data_ptr, dma_payload_data_ptr + MIN_BUS_WIDTH*atom_iter, MIN_BUS_WIDTH);
             cslDebug((50, "write to pdp2mcif_wr_data_fifo_, num_free:%d\x0A", pdp2mcif_wr_data_fifo_->num_free()));
-            pdp2mcif_wr_data_fifo_->write(data_ptr);
             cslDebug((50, "pdp2mcif_wr_data_fifo_ data:\x0A"));
-            for(int i = 0; i < DMA_TRANSACTION_ATOM_SIZE; i++) {
+            for(int i = 0; i < MIN_BUS_WIDTH; i++) {
                 cslDebug((50, "%x ", data_ptr[i]));
             }
             cslDebug((50, "\x0A"));
-        }
 
+            pdp2mcif_wr_data_fifo_->write(data_ptr);   // Write to FIFO in 32Byte atom
+        }
+        pdp_wr_req_got_size_ += incoming_size;
+       
         if (pdp_wr_req_got_size_ == pdp_wr_req_size_) {
+            cslDebug((50, "one write request done on pdp\x0A"));
             has_pdp_onging_wr_req_ = false;
         }
     }
 }
 
 void NV_NVDLA_mcif::WriteRequest_pdp2mcif() {
-    uint64_t base_addr;
+    uint64_t base_addr, cur_address;
     uint64_t first_base_addr;
-    uint64_t last_base_addr;
+    uint64_t last_base_addr, last_actual_addr, last_aligned_addr;
     uint32_t size_in_byte;
     uint32_t total_axi_size;
     uint64_t payload_addr;
     uint32_t payload_size;
-    int32_t  user_size_first, user_size_last, user_size;
     uint8_t* axi_byte_enable_ptr;
     uint32_t byte_iter;
-    bool     is_base_64byte_align;
-    bool     is_rear_64byte_align;
+    bool     is_base_aligned;
+    bool     is_rear_aligned;
     bool     is_read=false;
     uint8_t  *axi_atom_ptr;
     nvdla_dbb_extension *nvdla_dbb_ext = NULL;
     client_wr_req_t   * pdp_wr_req;
     dla_b_transport_payload *bt_payload;
+    int      atom_num;
 
     while(true) {
         // Read one write command
@@ -2590,83 +2035,71 @@ void NV_NVDLA_mcif::WriteRequest_pdp2mcif() {
         payload_addr = pdp_wr_req->addr;   // It's aligend to 32B, not 64B
         payload_size = pdp_wr_req->size;
 
-        is_base_64byte_align = (payload_addr%AXI_TRANSACTION_ATOM_SIZE) == 0;
-        first_base_addr = is_base_64byte_align? payload_addr: payload_addr - DMA_TRANSACTION_ATOM_SIZE; // Align to 64B
-
-        is_rear_64byte_align = ((payload_addr + payload_size) % AXI_TRANSACTION_ATOM_SIZE) == 0;
-        total_axi_size = payload_size + (is_base_64byte_align? 0: DMA_TRANSACTION_ATOM_SIZE) + (is_rear_64byte_align? 0: DMA_TRANSACTION_ATOM_SIZE);
-        last_base_addr  = first_base_addr + total_axi_size - AXI_TRANSACTION_ATOM_SIZE;
+        is_base_aligned      = (payload_addr%AXI_ALIGN_SIZE) == 0;
+        first_base_addr     = (payload_addr/AXI_ALIGN_SIZE)*AXI_ALIGN_SIZE;
+        last_actual_addr    = payload_addr + payload_size;
+        last_aligned_addr   = ((last_actual_addr + AXI_ALIGN_SIZE -1)/AXI_ALIGN_SIZE)*AXI_ALIGN_SIZE;
+        last_base_addr      = last_aligned_addr - MEM_TRANSACTION_SIZE;
+        is_rear_aligned     = ((payload_addr + payload_size) % AXI_ALIGN_SIZE) == 0;
+        total_axi_size      = last_aligned_addr - first_base_addr;
         cslDebug((30, "XXXXXXX NV_NVDLA_mcif::WriteRequest_pdp2mcif, first_base_addr=0x%lx total_axi_size is 0x%x payload_addr=0x%lx payload_size=0x%x\x0A", first_base_addr, total_axi_size, payload_addr, payload_size));
 
-        base_addr = first_base_addr;
+        cur_address = base_addr = first_base_addr;
+        while (cur_address <= last_base_addr) {
+            base_addr = cur_address;
+            size_in_byte = MEM_TRANSACTION_SIZE;
 
-        if (total_axi_size <= (MCIF_MAX_MEM_TRANSACTION_SIZE - first_base_addr % MCIF_MAX_MEM_TRANSACTION_SIZE))
-            user_size_first = total_axi_size / AXI_TRANSACTION_ATOM_SIZE - 1;
-        else
-            user_size_first = (MCIF_MAX_MEM_TRANSACTION_SIZE - first_base_addr % MCIF_MAX_MEM_TRANSACTION_SIZE) / AXI_TRANSACTION_ATOM_SIZE - 1;
+            // Check whether next ATOM belongs to current AXI transaction
+            while (((cur_address + MEM_TRANSACTION_SIZE) < last_aligned_addr) && ((cur_address + MEM_TRANSACTION_SIZE) % MCIF_MAX_MEM_TRANSACTION_SIZE != 0)) {
+                size_in_byte += MEM_TRANSACTION_SIZE;
+                cur_address  += MEM_TRANSACTION_SIZE;
+            }
+            // start address of next axi transaction
+            cur_address += MEM_TRANSACTION_SIZE;
 
-        if ((first_base_addr + total_axi_size) % MCIF_MAX_MEM_TRANSACTION_SIZE == 0)
-            user_size_last = 3;
-        else
-            user_size_last = ((first_base_addr + total_axi_size) % MCIF_MAX_MEM_TRANSACTION_SIZE) / AXI_TRANSACTION_ATOM_SIZE - 1;
-
-        cslDebug((50, "NV_NVDLA_mcif::WriteRequest_pdp2mcif, before spliting DMA transaction. user_size_first=0x%x user_size_first=0x%x\x0A", user_size_first, user_size_last));
-        while (base_addr <= last_base_addr) {
-            size_in_byte = AXI_TRANSACTION_ATOM_SIZE;   //64B
+            atom_num = size_in_byte / MIN_BUS_WIDTH;
             bt_payload = new dla_b_transport_payload(size_in_byte, dla_b_transport_payload::DLA_B_TRANSPORT_PAYLOAD_TYPE_MC);
             axi_byte_enable_ptr = bt_payload->gp.get_byte_enable_ptr();
+            for (byte_iter=0; byte_iter < size_in_byte; byte_iter++) {
+                if ( base_addr + byte_iter < payload_addr) {
+                    // Diable 1st DMA atom of the unaligned first_base_addr
+                    assert(is_base_aligned == false);
+                    axi_byte_enable_ptr[byte_iter] = TLM_BYTE_DISABLED;  // All bytes should be enabled
+                } else if (base_addr + byte_iter >= last_actual_addr) {
+                    // Diable last unaligned last_base_addr
+                    assert(is_rear_aligned == false);
+                    axi_byte_enable_ptr[byte_iter] = TLM_BYTE_DISABLED;  // All bytes should be enabled
+                } else {
+                    axi_byte_enable_ptr[byte_iter] = TLM_BYTE_ENABLED;  // All bytes should be enabled
+                }
+            }
+            cslDebug((50, "NV_NVDLA_mcif::WriteRequest_pdp2mcif, TLM_BYTE_ENABLE is done\x0A"));
 
-            if (((base_addr - first_base_addr) < MCIF_MAX_MEM_TRANSACTION_SIZE) && (base_addr / MCIF_MAX_MEM_TRANSACTION_SIZE == first_base_addr / MCIF_MAX_MEM_TRANSACTION_SIZE))
-                user_size = user_size_first;
-            else if (((last_base_addr - base_addr) < MCIF_MAX_MEM_TRANSACTION_SIZE) && (base_addr / MCIF_MAX_MEM_TRANSACTION_SIZE == last_base_addr / MCIF_MAX_MEM_TRANSACTION_SIZE))
-                user_size = user_size_last;
-            else
-                user_size = 3;
-
-            if((base_addr==last_base_addr) && (false == is_rear_64byte_align)) {
-                // last axi transaction contains only 32B
-                axi_atom_ptr = pdp2mcif_wr_data_fifo_->read();
-                memcpy(&bt_payload->data[0], axi_atom_ptr, DMA_TRANSACTION_ATOM_SIZE);
-                memset(&bt_payload->data[DMA_TRANSACTION_ATOM_SIZE], 0x55, DMA_TRANSACTION_ATOM_SIZE);  // Dummy data
-                delete[] axi_atom_ptr;
-                for (byte_iter=0; byte_iter < size_in_byte; byte_iter++) {
-                    if ( byte_iter < DMA_TRANSACTION_ATOM_SIZE ) {
-                        axi_byte_enable_ptr[byte_iter] = TLM_BYTE_ENABLED;  // Only the first 32B is byte_enabled
-                    } else {
-                        axi_byte_enable_ptr[byte_iter] = TLM_BYTE_DISABLED;
+            for (int atom_iter=0; atom_iter < atom_num; atom_iter++) {
+                if ( axi_byte_enable_ptr[atom_iter*MIN_BUS_WIDTH] == TLM_BYTE_DISABLED) {
+                    // Disable 1st DMA atom of the unaligned first_base_addr
+                    // Use unaligned address as required by DBB_PV
+                    for(int elt_iter = 0; elt_iter < MIN_BUS_WIDTH; elt_iter++) {
+                        bt_payload->data[atom_iter*MIN_BUS_WIDTH + elt_iter] = 0;
                     }
-                }
-            }
-            else if((base_addr==first_base_addr) && (false == is_base_64byte_align)) {
-                // first axi transaction contains only 32B
-                axi_atom_ptr = pdp2mcif_wr_data_fifo_->read();
-                memset(&bt_payload->data[0], 0x55, DMA_TRANSACTION_ATOM_SIZE); //Dummy data
-                // Copy to the 2nd half 32B
-                memcpy(&bt_payload->data[DMA_TRANSACTION_ATOM_SIZE], axi_atom_ptr, DMA_TRANSACTION_ATOM_SIZE);
-                delete[] axi_atom_ptr;
-                for (byte_iter=0; byte_iter < size_in_byte; byte_iter++) {
-                    if ( byte_iter >= DMA_TRANSACTION_ATOM_SIZE ) {
-                        axi_byte_enable_ptr[byte_iter] = TLM_BYTE_ENABLED; // Only the last 32B is byte_enabled
-                    } else {
-                        axi_byte_enable_ptr[byte_iter] = TLM_BYTE_DISABLED;
+                } else {
+                    cslDebug((50, "NV_NVDLA_mcif::WriteRequest_pdp2mcif, before read an atom from pdp2mcif_wr_data_fifo_, base_addr = 0x%lx, atom_iter=0x%x\x0A", base_addr, atom_iter));
+
+                    axi_atom_ptr = pdp2mcif_wr_data_fifo_->read();
+                    cslDebug((50, "NV_NVDLA_mcif::WriteRequest_pdp2mcif, after read an atom from pdp2mcif_wr_data_fifo_\x0A"));
+                    for(int i=0; i<MIN_BUS_WIDTH; i++) {
+                        cslDebug((50, "%02x ", axi_atom_ptr[i]));
                     }
-                }
-            }
-            else {
-                // First 32B
-                axi_atom_ptr = pdp2mcif_wr_data_fifo_->read();
-                memcpy(&bt_payload->data[0], axi_atom_ptr, DMA_TRANSACTION_ATOM_SIZE);
-                delete[] axi_atom_ptr;
-                // Second 32B
-                axi_atom_ptr = pdp2mcif_wr_data_fifo_->read();
-                memcpy(&bt_payload->data[DMA_TRANSACTION_ATOM_SIZE], axi_atom_ptr, DMA_TRANSACTION_ATOM_SIZE);
-                delete[] axi_atom_ptr;
-                for (byte_iter=0; byte_iter < size_in_byte; byte_iter++) {
-                    axi_byte_enable_ptr[byte_iter] = TLM_BYTE_ENABLED;
+                    cslDebug((50, "\x0A"));
+                    for(int elt_iter = 0; elt_iter < MIN_BUS_WIDTH; elt_iter++) {
+                        bt_payload->data[atom_iter*MIN_BUS_WIDTH + elt_iter] = axi_atom_ptr[elt_iter];
+                    }
+                    delete[] axi_atom_ptr;
                 }
             }
 
-            if ( (base_addr==last_base_addr) && (pdp_wr_req->require_ack != 0) ) {
+
+            if ( (cur_address >= last_actual_addr) && (pdp_wr_req->require_ack != 0) ) {
                 cslDebug((30, "NV_NVDLA_mcif::WriteRequest_pdp2mcif, required ack.\x0A"));
                 pdp_wr_required_ack_fifo_->write(true);
             }
@@ -2682,20 +2115,16 @@ void NV_NVDLA_mcif::WriteRequest_pdp2mcif() {
             cslDebug((50, "    addr: 0x%lx\x0A", base_addr));
             cslDebug((50, "    size: %d\x0A", size_in_byte));
             nvdla_dbb_ext->set_id(PDP_AXI_ID);
-            nvdla_dbb_ext->set_size(64);
-            nvdla_dbb_ext->set_length(size_in_byte/AXI_TRANSACTION_ATOM_SIZE);
-            // avoid warinig for unused variable
-            (void)user_size;
+            nvdla_dbb_ext->set_size(MEM_TRANSACTION_SIZE);
+            nvdla_dbb_ext->set_length(size_in_byte/MEM_TRANSACTION_SIZE);
 
 #pragma CTC SKIP
-            if(size_in_byte%AXI_TRANSACTION_ATOM_SIZE!=0)
-                FAIL(("NV_NVDLA_mcif::pdp2mcif_rd_req_b_transport, size_in_byte is not multiple of AXI_TRANSACTION_ATOM_SIZE. size_in_byte=0x%x", size_in_byte));
+            if(size_in_byte%AXI_ALIGN_SIZE!=0)
+                FAIL(("NV_NVDLA_mcif::pdp2mcif_rd_req_b_transport, size_in_byte is not multiple of AXI_ALIGN_SIZE. size_in_byte=0x%x", size_in_byte));
 #pragma CTC ENDSKIP
 
             // write payload to arbiter fifo
             pdp_wr_req_fifo_->write(bt_payload);
-
-            base_addr    += AXI_TRANSACTION_ATOM_SIZE;
         }
         delete pdp_wr_req;
     }
@@ -2716,15 +2145,15 @@ void NV_NVDLA_mcif::cdp2mcif_wr_req_b_transport(int ID, nvdla_dma_wr_req_t* payl
             FAIL(("NV_NVDLA_mcif::cdp2mcif_wr_req_b_transport, got two consective command request, one command request shall be followed by one or more data request."));
         }
 #pragma CTC ENDSKIP
-	else {
+	    else {
             has_cdp_onging_wr_req_ = true;
         }
 
         cdp_wr_req = new client_wr_req_t;
         cdp_wr_req->addr  = payload->pd.dma_write_cmd.addr;
-        cdp_wr_req->size  = (payload->pd.dma_write_cmd.size + 1) * DMA_TRANSACTION_ATOM_SIZE;    //In byte
+        cdp_wr_req->size  = (payload->pd.dma_write_cmd.size + 1) * DLA_ATOM_SIZE;    //In byte
         cdp_wr_req->require_ack = payload->pd.dma_write_cmd.require_ack;
-        cslDebug((50, "write to cdp2mcif_wr_cmd_fifo_, addr:%lx, size:%d, num_free:%d\x0A", cdp_wr_req->addr, cdp_wr_req->size, cdp2mcif_wr_cmd_fifo_->num_free()));
+        cslDebug((50, "write to cdp2mcif_wr_cmd_fifo_, addr:%lx, size:%d, num_free:%d, req_ack:%d\x0A", cdp_wr_req->addr, cdp_wr_req->size, cdp2mcif_wr_cmd_fifo_->num_free(),cdp_wr_req->require_ack));
         cdp2mcif_wr_cmd_fifo_->write(cdp_wr_req);
         cdp_wr_req_got_size_ = 0;
         cdp_wr_req_size_ = cdp_wr_req->size;
@@ -2732,54 +2161,46 @@ void NV_NVDLA_mcif::cdp2mcif_wr_req_b_transport(int ID, nvdla_dma_wr_req_t* payl
     } else {
         dma_payload_data_ptr = reinterpret_cast <uint8_t *> (payload->pd.dma_write_data.data);
         rest_size = cdp_wr_req_size_ - cdp_wr_req_got_size_;
-        incoming_size = min(rest_size, uint32_t (DMA_TRANSACTION_MAX_SIZE));
-        data_ptr = new uint8_t[DMA_TRANSACTION_ATOM_SIZE];
-        memcpy(data_ptr, dma_payload_data_ptr, DMA_TRANSACTION_ATOM_SIZE);
-        cslDebug((50, "write to cdp2mcif_wr_data_fifo_, num_free:%d\x0A", cdp2mcif_wr_data_fifo_->num_free()));
-        cdp2mcif_wr_data_fifo_->write(data_ptr);   // Write to FIFO in 32Byte atom
-        cdp_wr_req_got_size_ += incoming_size;
-        cslDebug((50, "cdp2mcif_wr_data_fifo_ data:\x0A"));
-        for(int i = 0; i < DMA_TRANSACTION_ATOM_SIZE; i++) {
-            cslDebug((50, "%x ", data_ptr[i]));
-        }
-        cslDebug((50, "\x0A"));
-
-        if (incoming_size==DMA_TRANSACTION_MAX_SIZE) { // The payload is 64B
-            data_ptr = new uint8_t[DMA_TRANSACTION_ATOM_SIZE];
-            memcpy(data_ptr, &dma_payload_data_ptr[DMA_TRANSACTION_ATOM_SIZE], DMA_TRANSACTION_ATOM_SIZE);
+        incoming_size = min(rest_size, uint32_t (DMAIF_WIDTH));
+        for(int atom_iter = 0; atom_iter < incoming_size/MIN_BUS_WIDTH; atom_iter++) {
+            data_ptr = new uint8_t[MIN_BUS_WIDTH];
+            memcpy(data_ptr, dma_payload_data_ptr + MIN_BUS_WIDTH*atom_iter, MIN_BUS_WIDTH);
             cslDebug((50, "write to cdp2mcif_wr_data_fifo_, num_free:%d\x0A", cdp2mcif_wr_data_fifo_->num_free()));
-            cdp2mcif_wr_data_fifo_->write(data_ptr);
             cslDebug((50, "cdp2mcif_wr_data_fifo_ data:\x0A"));
-            for(int i = 0; i < DMA_TRANSACTION_ATOM_SIZE; i++) {
+            for(int i = 0; i < MIN_BUS_WIDTH; i++) {
                 cslDebug((50, "%x ", data_ptr[i]));
             }
             cslDebug((50, "\x0A"));
-        }
 
+            cdp2mcif_wr_data_fifo_->write(data_ptr);   // Write to FIFO in 32Byte atom
+        }
+        cdp_wr_req_got_size_ += incoming_size;
+       
         if (cdp_wr_req_got_size_ == cdp_wr_req_size_) {
+            cslDebug((50, "one write request done on cdp\x0A"));
             has_cdp_onging_wr_req_ = false;
         }
     }
 }
 
 void NV_NVDLA_mcif::WriteRequest_cdp2mcif() {
-    uint64_t base_addr;
+    uint64_t base_addr, cur_address;
     uint64_t first_base_addr;
-    uint64_t last_base_addr;
+    uint64_t last_base_addr, last_actual_addr, last_aligned_addr;
     uint32_t size_in_byte;
     uint32_t total_axi_size;
     uint64_t payload_addr;
     uint32_t payload_size;
-    int32_t  user_size_first, user_size_last, user_size;
     uint8_t* axi_byte_enable_ptr;
     uint32_t byte_iter;
-    bool     is_base_64byte_align;
-    bool     is_rear_64byte_align;
+    bool     is_base_aligned;
+    bool     is_rear_aligned;
     bool     is_read=false;
     uint8_t  *axi_atom_ptr;
     nvdla_dbb_extension *nvdla_dbb_ext = NULL;
     client_wr_req_t   * cdp_wr_req;
     dla_b_transport_payload *bt_payload;
+    int      atom_num;
 
     while(true) {
         // Read one write command
@@ -2787,83 +2208,71 @@ void NV_NVDLA_mcif::WriteRequest_cdp2mcif() {
         payload_addr = cdp_wr_req->addr;   // It's aligend to 32B, not 64B
         payload_size = cdp_wr_req->size;
 
-        is_base_64byte_align = (payload_addr%AXI_TRANSACTION_ATOM_SIZE) == 0;
-        first_base_addr = is_base_64byte_align? payload_addr: payload_addr - DMA_TRANSACTION_ATOM_SIZE; // Align to 64B
-
-        is_rear_64byte_align = ((payload_addr + payload_size) % AXI_TRANSACTION_ATOM_SIZE) == 0;
-        total_axi_size = payload_size + (is_base_64byte_align? 0: DMA_TRANSACTION_ATOM_SIZE) + (is_rear_64byte_align? 0: DMA_TRANSACTION_ATOM_SIZE);
-        last_base_addr  = first_base_addr + total_axi_size - AXI_TRANSACTION_ATOM_SIZE;
+        is_base_aligned      = (payload_addr%AXI_ALIGN_SIZE) == 0;
+        first_base_addr     = (payload_addr/AXI_ALIGN_SIZE)*AXI_ALIGN_SIZE;
+        last_actual_addr    = payload_addr + payload_size;
+        last_aligned_addr   = ((last_actual_addr + AXI_ALIGN_SIZE -1)/AXI_ALIGN_SIZE)*AXI_ALIGN_SIZE;
+        last_base_addr      = last_aligned_addr - MEM_TRANSACTION_SIZE;
+        is_rear_aligned     = ((payload_addr + payload_size) % AXI_ALIGN_SIZE) == 0;
+        total_axi_size      = last_aligned_addr - first_base_addr;
         cslDebug((30, "XXXXXXX NV_NVDLA_mcif::WriteRequest_cdp2mcif, first_base_addr=0x%lx total_axi_size is 0x%x payload_addr=0x%lx payload_size=0x%x\x0A", first_base_addr, total_axi_size, payload_addr, payload_size));
 
-        base_addr = first_base_addr;
+        cur_address = base_addr = first_base_addr;
+        while (cur_address <= last_base_addr) {
+            base_addr = cur_address;
+            size_in_byte = MEM_TRANSACTION_SIZE;
 
-        if (total_axi_size <= (MCIF_MAX_MEM_TRANSACTION_SIZE - first_base_addr % MCIF_MAX_MEM_TRANSACTION_SIZE))
-            user_size_first = total_axi_size / AXI_TRANSACTION_ATOM_SIZE - 1;
-        else
-            user_size_first = (MCIF_MAX_MEM_TRANSACTION_SIZE - first_base_addr % MCIF_MAX_MEM_TRANSACTION_SIZE) / AXI_TRANSACTION_ATOM_SIZE - 1;
+            // Check whether next ATOM belongs to current AXI transaction
+            while (((cur_address + MEM_TRANSACTION_SIZE) < last_aligned_addr) && ((cur_address + MEM_TRANSACTION_SIZE) % MCIF_MAX_MEM_TRANSACTION_SIZE != 0)) {
+                size_in_byte += MEM_TRANSACTION_SIZE;
+                cur_address  += MEM_TRANSACTION_SIZE;
+            }
+            // start address of next axi transaction
+            cur_address += MEM_TRANSACTION_SIZE;
 
-        if ((first_base_addr + total_axi_size) % MCIF_MAX_MEM_TRANSACTION_SIZE == 0)
-            user_size_last = 3;
-        else
-            user_size_last = ((first_base_addr + total_axi_size) % MCIF_MAX_MEM_TRANSACTION_SIZE) / AXI_TRANSACTION_ATOM_SIZE - 1;
-
-        cslDebug((50, "NV_NVDLA_mcif::WriteRequest_cdp2mcif, before spliting DMA transaction. user_size_first=0x%x user_size_first=0x%x\x0A", user_size_first, user_size_last));
-        while (base_addr <= last_base_addr) {
-            size_in_byte = AXI_TRANSACTION_ATOM_SIZE;   //64B
+            atom_num = size_in_byte / MIN_BUS_WIDTH;
             bt_payload = new dla_b_transport_payload(size_in_byte, dla_b_transport_payload::DLA_B_TRANSPORT_PAYLOAD_TYPE_MC);
             axi_byte_enable_ptr = bt_payload->gp.get_byte_enable_ptr();
+            for (byte_iter=0; byte_iter < size_in_byte; byte_iter++) {
+                if ( base_addr + byte_iter < payload_addr) {
+                    // Diable 1st DMA atom of the unaligned first_base_addr
+                    assert(is_base_aligned == false);
+                    axi_byte_enable_ptr[byte_iter] = TLM_BYTE_DISABLED;  // All bytes should be enabled
+                } else if (base_addr + byte_iter >= last_actual_addr) {
+                    // Diable last unaligned last_base_addr
+                    assert(is_rear_aligned == false);
+                    axi_byte_enable_ptr[byte_iter] = TLM_BYTE_DISABLED;  // All bytes should be enabled
+                } else {
+                    axi_byte_enable_ptr[byte_iter] = TLM_BYTE_ENABLED;  // All bytes should be enabled
+                }
+            }
+            cslDebug((50, "NV_NVDLA_mcif::WriteRequest_cdp2mcif, TLM_BYTE_ENABLE is done\x0A"));
 
-            if (((base_addr - first_base_addr) < MCIF_MAX_MEM_TRANSACTION_SIZE) && (base_addr / MCIF_MAX_MEM_TRANSACTION_SIZE == first_base_addr / MCIF_MAX_MEM_TRANSACTION_SIZE))
-                user_size = user_size_first;
-            else if (((last_base_addr - base_addr) < MCIF_MAX_MEM_TRANSACTION_SIZE) && (base_addr / MCIF_MAX_MEM_TRANSACTION_SIZE == last_base_addr / MCIF_MAX_MEM_TRANSACTION_SIZE))
-                user_size = user_size_last;
-            else
-                user_size = 3;
-
-            if((base_addr==last_base_addr) && (false == is_rear_64byte_align)) {
-                // last axi transaction contains only 32B
-                axi_atom_ptr = cdp2mcif_wr_data_fifo_->read();
-                memcpy(&bt_payload->data[0], axi_atom_ptr, DMA_TRANSACTION_ATOM_SIZE);
-                memset(&bt_payload->data[DMA_TRANSACTION_ATOM_SIZE], 0x55, DMA_TRANSACTION_ATOM_SIZE);  // Dummy data
-                delete[] axi_atom_ptr;
-                for (byte_iter=0; byte_iter < size_in_byte; byte_iter++) {
-                    if ( byte_iter < DMA_TRANSACTION_ATOM_SIZE ) {
-                        axi_byte_enable_ptr[byte_iter] = TLM_BYTE_ENABLED;  // Only the first 32B is byte_enabled
-                    } else {
-                        axi_byte_enable_ptr[byte_iter] = TLM_BYTE_DISABLED;
+            for (int atom_iter=0; atom_iter < atom_num; atom_iter++) {
+                if ( axi_byte_enable_ptr[atom_iter*MIN_BUS_WIDTH] == TLM_BYTE_DISABLED) {
+                    // Disable 1st DMA atom of the unaligned first_base_addr
+                    // Use unaligned address as required by DBB_PV
+                    for(int elt_iter = 0; elt_iter < MIN_BUS_WIDTH; elt_iter++) {
+                        bt_payload->data[atom_iter*MIN_BUS_WIDTH + elt_iter] = 0;
                     }
-                }
-            }
-            else if((base_addr==first_base_addr) && (false == is_base_64byte_align)) {
-                // first axi transaction contains only 32B
-                axi_atom_ptr = cdp2mcif_wr_data_fifo_->read();
-                memset(&bt_payload->data[0], 0x55, DMA_TRANSACTION_ATOM_SIZE); //Dummy data
-                // Copy to the 2nd half 32B
-                memcpy(&bt_payload->data[DMA_TRANSACTION_ATOM_SIZE], axi_atom_ptr, DMA_TRANSACTION_ATOM_SIZE);
-                delete[] axi_atom_ptr;
-                for (byte_iter=0; byte_iter < size_in_byte; byte_iter++) {
-                    if ( byte_iter >= DMA_TRANSACTION_ATOM_SIZE ) {
-                        axi_byte_enable_ptr[byte_iter] = TLM_BYTE_ENABLED; // Only the last 32B is byte_enabled
-                    } else {
-                        axi_byte_enable_ptr[byte_iter] = TLM_BYTE_DISABLED;
+                } else {
+                    cslDebug((50, "NV_NVDLA_mcif::WriteRequest_cdp2mcif, before read an atom from cdp2mcif_wr_data_fifo_, base_addr = 0x%lx, atom_iter=0x%x\x0A", base_addr, atom_iter));
+
+                    axi_atom_ptr = cdp2mcif_wr_data_fifo_->read();
+                    cslDebug((50, "NV_NVDLA_mcif::WriteRequest_cdp2mcif, after read an atom from cdp2mcif_wr_data_fifo_\x0A"));
+                    for(int i=0; i<MIN_BUS_WIDTH; i++) {
+                        cslDebug((50, "%02x ", axi_atom_ptr[i]));
                     }
-                }
-            }
-            else {
-                // First 32B
-                axi_atom_ptr = cdp2mcif_wr_data_fifo_->read();
-                memcpy(&bt_payload->data[0], axi_atom_ptr, DMA_TRANSACTION_ATOM_SIZE);
-                delete[] axi_atom_ptr;
-                // Second 32B
-                axi_atom_ptr = cdp2mcif_wr_data_fifo_->read();
-                memcpy(&bt_payload->data[DMA_TRANSACTION_ATOM_SIZE], axi_atom_ptr, DMA_TRANSACTION_ATOM_SIZE);
-                delete[] axi_atom_ptr;
-                for (byte_iter=0; byte_iter < size_in_byte; byte_iter++) {
-                    axi_byte_enable_ptr[byte_iter] = TLM_BYTE_ENABLED;
+                    cslDebug((50, "\x0A"));
+                    for(int elt_iter = 0; elt_iter < MIN_BUS_WIDTH; elt_iter++) {
+                        bt_payload->data[atom_iter*MIN_BUS_WIDTH + elt_iter] = axi_atom_ptr[elt_iter];
+                    }
+                    delete[] axi_atom_ptr;
                 }
             }
 
-            if ( (base_addr==last_base_addr) && (cdp_wr_req->require_ack != 0) ) {
+
+            if ( (cur_address >= last_actual_addr) && (cdp_wr_req->require_ack != 0) ) {
                 cslDebug((30, "NV_NVDLA_mcif::WriteRequest_cdp2mcif, required ack.\x0A"));
                 cdp_wr_required_ack_fifo_->write(true);
             }
@@ -2879,20 +2288,16 @@ void NV_NVDLA_mcif::WriteRequest_cdp2mcif() {
             cslDebug((50, "    addr: 0x%lx\x0A", base_addr));
             cslDebug((50, "    size: %d\x0A", size_in_byte));
             nvdla_dbb_ext->set_id(CDP_AXI_ID);
-            nvdla_dbb_ext->set_size(64);
-            nvdla_dbb_ext->set_length(size_in_byte/AXI_TRANSACTION_ATOM_SIZE);
-            // avoid warinig for unused variable
-            (void)user_size;
+            nvdla_dbb_ext->set_size(MEM_TRANSACTION_SIZE);
+            nvdla_dbb_ext->set_length(size_in_byte/MEM_TRANSACTION_SIZE);
 
 #pragma CTC SKIP
-            if(size_in_byte%AXI_TRANSACTION_ATOM_SIZE!=0)
-                FAIL(("NV_NVDLA_mcif::cdp2mcif_rd_req_b_transport, size_in_byte is not multiple of AXI_TRANSACTION_ATOM_SIZE. size_in_byte=0x%x", size_in_byte));
+            if(size_in_byte%AXI_ALIGN_SIZE!=0)
+                FAIL(("NV_NVDLA_mcif::cdp2mcif_rd_req_b_transport, size_in_byte is not multiple of AXI_ALIGN_SIZE. size_in_byte=0x%x", size_in_byte));
 #pragma CTC ENDSKIP
 
             // write payload to arbiter fifo
             cdp_wr_req_fifo_->write(bt_payload);
-
-            base_addr    += AXI_TRANSACTION_ATOM_SIZE;
         }
         delete cdp_wr_req;
     }
@@ -2913,15 +2318,15 @@ void NV_NVDLA_mcif::rbk2mcif_wr_req_b_transport(int ID, nvdla_dma_wr_req_t* payl
             FAIL(("NV_NVDLA_mcif::rbk2mcif_wr_req_b_transport, got two consective command request, one command request shall be followed by one or more data request."));
         }
 #pragma CTC ENDSKIP
-	else {
+	    else {
             has_rbk_onging_wr_req_ = true;
         }
 
         rbk_wr_req = new client_wr_req_t;
         rbk_wr_req->addr  = payload->pd.dma_write_cmd.addr;
-        rbk_wr_req->size  = (payload->pd.dma_write_cmd.size + 1) * DMA_TRANSACTION_ATOM_SIZE;    //In byte
+        rbk_wr_req->size  = (payload->pd.dma_write_cmd.size + 1) * DLA_ATOM_SIZE;    //In byte
         rbk_wr_req->require_ack = payload->pd.dma_write_cmd.require_ack;
-        cslDebug((50, "write to rbk2mcif_wr_cmd_fifo_, addr:%lx, size:%d, num_free:%d\x0A", rbk_wr_req->addr, rbk_wr_req->size, rbk2mcif_wr_cmd_fifo_->num_free()));
+        cslDebug((50, "write to rbk2mcif_wr_cmd_fifo_, addr:%lx, size:%d, num_free:%d, req_ack:%d\x0A", rbk_wr_req->addr, rbk_wr_req->size, rbk2mcif_wr_cmd_fifo_->num_free(),rbk_wr_req->require_ack));
         rbk2mcif_wr_cmd_fifo_->write(rbk_wr_req);
         rbk_wr_req_got_size_ = 0;
         rbk_wr_req_size_ = rbk_wr_req->size;
@@ -2929,54 +2334,46 @@ void NV_NVDLA_mcif::rbk2mcif_wr_req_b_transport(int ID, nvdla_dma_wr_req_t* payl
     } else {
         dma_payload_data_ptr = reinterpret_cast <uint8_t *> (payload->pd.dma_write_data.data);
         rest_size = rbk_wr_req_size_ - rbk_wr_req_got_size_;
-        incoming_size = min(rest_size, uint32_t (DMA_TRANSACTION_MAX_SIZE));
-        data_ptr = new uint8_t[DMA_TRANSACTION_ATOM_SIZE];
-        memcpy(data_ptr, dma_payload_data_ptr, DMA_TRANSACTION_ATOM_SIZE);
-        cslDebug((50, "write to rbk2mcif_wr_data_fifo_, num_free:%d\x0A", rbk2mcif_wr_data_fifo_->num_free()));
-        rbk2mcif_wr_data_fifo_->write(data_ptr);   // Write to FIFO in 32Byte atom
-        rbk_wr_req_got_size_ += incoming_size;
-        cslDebug((50, "rbk2mcif_wr_data_fifo_ data:\x0A"));
-        for(int i = 0; i < DMA_TRANSACTION_ATOM_SIZE; i++) {
-            cslDebug((50, "%x ", data_ptr[i]));
-        }
-        cslDebug((50, "\x0A"));
-
-        if (incoming_size==DMA_TRANSACTION_MAX_SIZE) { // The payload is 64B
-            data_ptr = new uint8_t[DMA_TRANSACTION_ATOM_SIZE];
-            memcpy(data_ptr, &dma_payload_data_ptr[DMA_TRANSACTION_ATOM_SIZE], DMA_TRANSACTION_ATOM_SIZE);
+        incoming_size = min(rest_size, uint32_t (DMAIF_WIDTH));
+        for(int atom_iter = 0; atom_iter < incoming_size/MIN_BUS_WIDTH; atom_iter++) {
+            data_ptr = new uint8_t[MIN_BUS_WIDTH];
+            memcpy(data_ptr, dma_payload_data_ptr + MIN_BUS_WIDTH*atom_iter, MIN_BUS_WIDTH);
             cslDebug((50, "write to rbk2mcif_wr_data_fifo_, num_free:%d\x0A", rbk2mcif_wr_data_fifo_->num_free()));
-            rbk2mcif_wr_data_fifo_->write(data_ptr);
             cslDebug((50, "rbk2mcif_wr_data_fifo_ data:\x0A"));
-            for(int i = 0; i < DMA_TRANSACTION_ATOM_SIZE; i++) {
+            for(int i = 0; i < MIN_BUS_WIDTH; i++) {
                 cslDebug((50, "%x ", data_ptr[i]));
             }
             cslDebug((50, "\x0A"));
-        }
 
+            rbk2mcif_wr_data_fifo_->write(data_ptr);   // Write to FIFO in 32Byte atom
+        }
+        rbk_wr_req_got_size_ += incoming_size;
+       
         if (rbk_wr_req_got_size_ == rbk_wr_req_size_) {
+            cslDebug((50, "one write request done on rbk\x0A"));
             has_rbk_onging_wr_req_ = false;
         }
     }
 }
 
 void NV_NVDLA_mcif::WriteRequest_rbk2mcif() {
-    uint64_t base_addr;
+    uint64_t base_addr, cur_address;
     uint64_t first_base_addr;
-    uint64_t last_base_addr;
+    uint64_t last_base_addr, last_actual_addr, last_aligned_addr;
     uint32_t size_in_byte;
     uint32_t total_axi_size;
     uint64_t payload_addr;
     uint32_t payload_size;
-    int32_t  user_size_first, user_size_last, user_size;
     uint8_t* axi_byte_enable_ptr;
     uint32_t byte_iter;
-    bool     is_base_64byte_align;
-    bool     is_rear_64byte_align;
+    bool     is_base_aligned;
+    bool     is_rear_aligned;
     bool     is_read=false;
     uint8_t  *axi_atom_ptr;
     nvdla_dbb_extension *nvdla_dbb_ext = NULL;
     client_wr_req_t   * rbk_wr_req;
     dla_b_transport_payload *bt_payload;
+    int      atom_num;
 
     while(true) {
         // Read one write command
@@ -2984,83 +2381,71 @@ void NV_NVDLA_mcif::WriteRequest_rbk2mcif() {
         payload_addr = rbk_wr_req->addr;   // It's aligend to 32B, not 64B
         payload_size = rbk_wr_req->size;
 
-        is_base_64byte_align = (payload_addr%AXI_TRANSACTION_ATOM_SIZE) == 0;
-        first_base_addr = is_base_64byte_align? payload_addr: payload_addr - DMA_TRANSACTION_ATOM_SIZE; // Align to 64B
-
-        is_rear_64byte_align = ((payload_addr + payload_size) % AXI_TRANSACTION_ATOM_SIZE) == 0;
-        total_axi_size = payload_size + (is_base_64byte_align? 0: DMA_TRANSACTION_ATOM_SIZE) + (is_rear_64byte_align? 0: DMA_TRANSACTION_ATOM_SIZE);
-        last_base_addr  = first_base_addr + total_axi_size - AXI_TRANSACTION_ATOM_SIZE;
+        is_base_aligned      = (payload_addr%AXI_ALIGN_SIZE) == 0;
+        first_base_addr     = (payload_addr/AXI_ALIGN_SIZE)*AXI_ALIGN_SIZE;
+        last_actual_addr    = payload_addr + payload_size;
+        last_aligned_addr   = ((last_actual_addr + AXI_ALIGN_SIZE -1)/AXI_ALIGN_SIZE)*AXI_ALIGN_SIZE;
+        last_base_addr      = last_aligned_addr - MEM_TRANSACTION_SIZE;
+        is_rear_aligned     = ((payload_addr + payload_size) % AXI_ALIGN_SIZE) == 0;
+        total_axi_size      = last_aligned_addr - first_base_addr;
         cslDebug((30, "XXXXXXX NV_NVDLA_mcif::WriteRequest_rbk2mcif, first_base_addr=0x%lx total_axi_size is 0x%x payload_addr=0x%lx payload_size=0x%x\x0A", first_base_addr, total_axi_size, payload_addr, payload_size));
 
-        base_addr = first_base_addr;
+        cur_address = base_addr = first_base_addr;
+        while (cur_address <= last_base_addr) {
+            base_addr = cur_address;
+            size_in_byte = MEM_TRANSACTION_SIZE;
 
-        if (total_axi_size <= (MCIF_MAX_MEM_TRANSACTION_SIZE - first_base_addr % MCIF_MAX_MEM_TRANSACTION_SIZE))
-            user_size_first = total_axi_size / AXI_TRANSACTION_ATOM_SIZE - 1;
-        else
-            user_size_first = (MCIF_MAX_MEM_TRANSACTION_SIZE - first_base_addr % MCIF_MAX_MEM_TRANSACTION_SIZE) / AXI_TRANSACTION_ATOM_SIZE - 1;
+            // Check whether next ATOM belongs to current AXI transaction
+            while (((cur_address + MEM_TRANSACTION_SIZE) < last_aligned_addr) && ((cur_address + MEM_TRANSACTION_SIZE) % MCIF_MAX_MEM_TRANSACTION_SIZE != 0)) {
+                size_in_byte += MEM_TRANSACTION_SIZE;
+                cur_address  += MEM_TRANSACTION_SIZE;
+            }
+            // start address of next axi transaction
+            cur_address += MEM_TRANSACTION_SIZE;
 
-        if ((first_base_addr + total_axi_size) % MCIF_MAX_MEM_TRANSACTION_SIZE == 0)
-            user_size_last = 3;
-        else
-            user_size_last = ((first_base_addr + total_axi_size) % MCIF_MAX_MEM_TRANSACTION_SIZE) / AXI_TRANSACTION_ATOM_SIZE - 1;
-
-        cslDebug((50, "NV_NVDLA_mcif::WriteRequest_rbk2mcif, before spliting DMA transaction. user_size_first=0x%x user_size_first=0x%x\x0A", user_size_first, user_size_last));
-        while (base_addr <= last_base_addr) {
-            size_in_byte = AXI_TRANSACTION_ATOM_SIZE;   //64B
+            atom_num = size_in_byte / MIN_BUS_WIDTH;
             bt_payload = new dla_b_transport_payload(size_in_byte, dla_b_transport_payload::DLA_B_TRANSPORT_PAYLOAD_TYPE_MC);
             axi_byte_enable_ptr = bt_payload->gp.get_byte_enable_ptr();
+            for (byte_iter=0; byte_iter < size_in_byte; byte_iter++) {
+                if ( base_addr + byte_iter < payload_addr) {
+                    // Diable 1st DMA atom of the unaligned first_base_addr
+                    assert(is_base_aligned == false);
+                    axi_byte_enable_ptr[byte_iter] = TLM_BYTE_DISABLED;  // All bytes should be enabled
+                } else if (base_addr + byte_iter >= last_actual_addr) {
+                    // Diable last unaligned last_base_addr
+                    assert(is_rear_aligned == false);
+                    axi_byte_enable_ptr[byte_iter] = TLM_BYTE_DISABLED;  // All bytes should be enabled
+                } else {
+                    axi_byte_enable_ptr[byte_iter] = TLM_BYTE_ENABLED;  // All bytes should be enabled
+                }
+            }
+            cslDebug((50, "NV_NVDLA_mcif::WriteRequest_rbk2mcif, TLM_BYTE_ENABLE is done\x0A"));
 
-            if (((base_addr - first_base_addr) < MCIF_MAX_MEM_TRANSACTION_SIZE) && (base_addr / MCIF_MAX_MEM_TRANSACTION_SIZE == first_base_addr / MCIF_MAX_MEM_TRANSACTION_SIZE))
-                user_size = user_size_first;
-            else if (((last_base_addr - base_addr) < MCIF_MAX_MEM_TRANSACTION_SIZE) && (base_addr / MCIF_MAX_MEM_TRANSACTION_SIZE == last_base_addr / MCIF_MAX_MEM_TRANSACTION_SIZE))
-                user_size = user_size_last;
-            else
-                user_size = 3;
-
-            if((base_addr==last_base_addr) && (false == is_rear_64byte_align)) {
-                // last axi transaction contains only 32B
-                axi_atom_ptr = rbk2mcif_wr_data_fifo_->read();
-                memcpy(&bt_payload->data[0], axi_atom_ptr, DMA_TRANSACTION_ATOM_SIZE);
-                memset(&bt_payload->data[DMA_TRANSACTION_ATOM_SIZE], 0x55, DMA_TRANSACTION_ATOM_SIZE);  // Dummy data
-                delete[] axi_atom_ptr;
-                for (byte_iter=0; byte_iter < size_in_byte; byte_iter++) {
-                    if ( byte_iter < DMA_TRANSACTION_ATOM_SIZE ) {
-                        axi_byte_enable_ptr[byte_iter] = TLM_BYTE_ENABLED;  // Only the first 32B is byte_enabled
-                    } else {
-                        axi_byte_enable_ptr[byte_iter] = TLM_BYTE_DISABLED;
+            for (int atom_iter=0; atom_iter < atom_num; atom_iter++) {
+                if ( axi_byte_enable_ptr[atom_iter*MIN_BUS_WIDTH] == TLM_BYTE_DISABLED) {
+                    // Disable 1st DMA atom of the unaligned first_base_addr
+                    // Use unaligned address as required by DBB_PV
+                    for(int elt_iter = 0; elt_iter < MIN_BUS_WIDTH; elt_iter++) {
+                        bt_payload->data[atom_iter*MIN_BUS_WIDTH + elt_iter] = 0;
                     }
-                }
-            }
-            else if((base_addr==first_base_addr) && (false == is_base_64byte_align)) {
-                // first axi transaction contains only 32B
-                axi_atom_ptr = rbk2mcif_wr_data_fifo_->read();
-                memset(&bt_payload->data[0], 0x55, DMA_TRANSACTION_ATOM_SIZE); //Dummy data
-                // Copy to the 2nd half 32B
-                memcpy(&bt_payload->data[DMA_TRANSACTION_ATOM_SIZE], axi_atom_ptr, DMA_TRANSACTION_ATOM_SIZE);
-                delete[] axi_atom_ptr;
-                for (byte_iter=0; byte_iter < size_in_byte; byte_iter++) {
-                    if ( byte_iter >= DMA_TRANSACTION_ATOM_SIZE ) {
-                        axi_byte_enable_ptr[byte_iter] = TLM_BYTE_ENABLED; // Only the last 32B is byte_enabled
-                    } else {
-                        axi_byte_enable_ptr[byte_iter] = TLM_BYTE_DISABLED;
+                } else {
+                    cslDebug((50, "NV_NVDLA_mcif::WriteRequest_rbk2mcif, before read an atom from rbk2mcif_wr_data_fifo_, base_addr = 0x%lx, atom_iter=0x%x\x0A", base_addr, atom_iter));
+
+                    axi_atom_ptr = rbk2mcif_wr_data_fifo_->read();
+                    cslDebug((50, "NV_NVDLA_mcif::WriteRequest_rbk2mcif, after read an atom from rbk2mcif_wr_data_fifo_\x0A"));
+                    for(int i=0; i<MIN_BUS_WIDTH; i++) {
+                        cslDebug((50, "%02x ", axi_atom_ptr[i]));
                     }
-                }
-            }
-            else {
-                // First 32B
-                axi_atom_ptr = rbk2mcif_wr_data_fifo_->read();
-                memcpy(&bt_payload->data[0], axi_atom_ptr, DMA_TRANSACTION_ATOM_SIZE);
-                delete[] axi_atom_ptr;
-                // Second 32B
-                axi_atom_ptr = rbk2mcif_wr_data_fifo_->read();
-                memcpy(&bt_payload->data[DMA_TRANSACTION_ATOM_SIZE], axi_atom_ptr, DMA_TRANSACTION_ATOM_SIZE);
-                delete[] axi_atom_ptr;
-                for (byte_iter=0; byte_iter < size_in_byte; byte_iter++) {
-                    axi_byte_enable_ptr[byte_iter] = TLM_BYTE_ENABLED;
+                    cslDebug((50, "\x0A"));
+                    for(int elt_iter = 0; elt_iter < MIN_BUS_WIDTH; elt_iter++) {
+                        bt_payload->data[atom_iter*MIN_BUS_WIDTH + elt_iter] = axi_atom_ptr[elt_iter];
+                    }
+                    delete[] axi_atom_ptr;
                 }
             }
 
-            if ( (base_addr==last_base_addr) && (rbk_wr_req->require_ack != 0) ) {
+
+            if ( (cur_address >= last_actual_addr) && (rbk_wr_req->require_ack != 0) ) {
                 cslDebug((30, "NV_NVDLA_mcif::WriteRequest_rbk2mcif, required ack.\x0A"));
                 rbk_wr_required_ack_fifo_->write(true);
             }
@@ -3076,20 +2461,16 @@ void NV_NVDLA_mcif::WriteRequest_rbk2mcif() {
             cslDebug((50, "    addr: 0x%lx\x0A", base_addr));
             cslDebug((50, "    size: %d\x0A", size_in_byte));
             nvdla_dbb_ext->set_id(RBK_AXI_ID);
-            nvdla_dbb_ext->set_size(64);
-            nvdla_dbb_ext->set_length(size_in_byte/AXI_TRANSACTION_ATOM_SIZE);
-            // avoid warinig for unused variable
-            (void)user_size;
+            nvdla_dbb_ext->set_size(MEM_TRANSACTION_SIZE);
+            nvdla_dbb_ext->set_length(size_in_byte/MEM_TRANSACTION_SIZE);
 
 #pragma CTC SKIP
-            if(size_in_byte%AXI_TRANSACTION_ATOM_SIZE!=0)
-                FAIL(("NV_NVDLA_mcif::rbk2mcif_rd_req_b_transport, size_in_byte is not multiple of AXI_TRANSACTION_ATOM_SIZE. size_in_byte=0x%x", size_in_byte));
+            if(size_in_byte%AXI_ALIGN_SIZE!=0)
+                FAIL(("NV_NVDLA_mcif::rbk2mcif_rd_req_b_transport, size_in_byte is not multiple of AXI_ALIGN_SIZE. size_in_byte=0x%x", size_in_byte));
 #pragma CTC ENDSKIP
 
             // write payload to arbiter fifo
             rbk_wr_req_fifo_->write(bt_payload);
-
-            base_addr    += AXI_TRANSACTION_ATOM_SIZE;
         }
         delete rbk_wr_req;
     }
@@ -3120,7 +2501,7 @@ void NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport(int ID, tlm::tlm_generic_payload
 #pragma CTC ENDSKIP
 
     axi_data_ptr           =  tlm_gp.get_data_ptr();
-    axi_length             =  tlm_gp.get_data_length();  // axi_length is 64B for MCIF
+    axi_length             =  tlm_gp.get_data_length();
     axi_id                 =  nvdla_dbb_ext->get_id();
     axi_byte_enable_ptr    =  tlm_gp.get_byte_enable_ptr();
     axi_byte_enable_length =  tlm_gp.get_byte_enable_length();
@@ -3133,20 +2514,17 @@ void NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport(int ID, tlm::tlm_generic_payload
     cslDebug((50, "axi_byte_enable_length: %d\x0A", axi_byte_enable_length));
 
     // Data from general payload
-    //  # AXI transaction size shall not be greater than 256 bytes
-    //  # NVDLA dma request atom size is 32 byte, so the AXI lenght shall also be 32 byte algined
-    //  # byte enables within 32 bytes shall be the same
 #pragma CTC SKIP
     if (axi_length > MCIF_MAX_MEM_TRANSACTION_SIZE) {
         FAIL(("NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, Max AXI transaction length is %d byte, current AXI transaction length is %d byte", MCIF_MAX_MEM_TRANSACTION_SIZE, axi_length));
     }
-    if (0 != (axi_length%DMA_TRANSACTION_ATOM_SIZE)) {
-        FAIL(("NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, AXI transaction length shall be an integral multiple of %d byte, current AXI transaction length is %d byte", DMA_TRANSACTION_ATOM_SIZE, axi_length));
+    if (0 != (axi_length%MIN_BUS_WIDTH)) {
+        FAIL(("NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, AXI transaction length shall be an integral multiple of %d byte, current AXI transaction length is %d byte", MIN_BUS_WIDTH, axi_length));
     }
 #pragma CTC ENDSKIP
     //  Parsing AXI payload and generating DMA response payloads
     dma_sent_size = 0;
-    for (dma_sent_size = 0; dma_sent_size < axi_length; dma_sent_size += DMA_TRANSACTION_ATOM_SIZE) {
+    for (dma_sent_size = 0; dma_sent_size < axi_length; dma_sent_size += MIN_BUS_WIDTH) {
         cslDebug((50, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, dma_sent_size: 0x%x\x0A", dma_sent_size));
         switch (axi_id) {
 
@@ -3198,13 +2576,15 @@ void NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport(int ID, tlm::tlm_generic_payload
         }
         // Push read returned data atom(32B) into fifo
         if (0x1 == dma_payload_atom_mask) {
-            axi_atom_ptr = new uint8_t[DMA_TRANSACTION_ATOM_SIZE];
-            memcpy (axi_atom_ptr, &axi_data_ptr[dma_sent_size], DMA_TRANSACTION_ATOM_SIZE);
+            axi_atom_ptr = new uint8_t[MIN_BUS_WIDTH];
+            for(int elt_iter = 0; elt_iter < MIN_BUS_WIDTH; elt_iter++) {{
+                axi_atom_ptr[elt_iter] = axi_data_ptr[dma_sent_size + elt_iter];
+            }}
             switch (axi_id) {
 
                  case BDMA_AXI_ID:
                         cslDebug((70, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, num_free:%d, axi_atom_ptr value:\x0A", mcif2bdma_rd_rsp_fifo_->num_free()));
-                        for (idx = 0; idx < DMA_TRANSACTION_ATOM_SIZE; idx ++) {
+                        for (idx = 0; idx < MIN_BUS_WIDTH; idx ++) {
                             cslDebug((70, "    0x%lx\x0A", uint64_t (axi_atom_ptr[idx])));
                         }
                         mcif2bdma_rd_rsp_fifo_->write(axi_atom_ptr);
@@ -3212,7 +2592,7 @@ void NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport(int ID, tlm::tlm_generic_payload
                     break;
                  case SDP_AXI_ID:
                         cslDebug((70, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, num_free:%d, axi_atom_ptr value:\x0A", mcif2sdp_rd_rsp_fifo_->num_free()));
-                        for (idx = 0; idx < DMA_TRANSACTION_ATOM_SIZE; idx ++) {
+                        for (idx = 0; idx < MIN_BUS_WIDTH; idx ++) {
                             cslDebug((70, "    0x%lx\x0A", uint64_t (axi_atom_ptr[idx])));
                         }
                         mcif2sdp_rd_rsp_fifo_->write(axi_atom_ptr);
@@ -3220,7 +2600,7 @@ void NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport(int ID, tlm::tlm_generic_payload
                     break;
                  case PDP_AXI_ID:
                         cslDebug((70, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, num_free:%d, axi_atom_ptr value:\x0A", mcif2pdp_rd_rsp_fifo_->num_free()));
-                        for (idx = 0; idx < DMA_TRANSACTION_ATOM_SIZE; idx ++) {
+                        for (idx = 0; idx < MIN_BUS_WIDTH; idx ++) {
                             cslDebug((70, "    0x%lx\x0A", uint64_t (axi_atom_ptr[idx])));
                         }
                         mcif2pdp_rd_rsp_fifo_->write(axi_atom_ptr);
@@ -3228,7 +2608,7 @@ void NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport(int ID, tlm::tlm_generic_payload
                     break;
                  case CDP_AXI_ID:
                         cslDebug((70, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, num_free:%d, axi_atom_ptr value:\x0A", mcif2cdp_rd_rsp_fifo_->num_free()));
-                        for (idx = 0; idx < DMA_TRANSACTION_ATOM_SIZE; idx ++) {
+                        for (idx = 0; idx < MIN_BUS_WIDTH; idx ++) {
                             cslDebug((70, "    0x%lx\x0A", uint64_t (axi_atom_ptr[idx])));
                         }
                         mcif2cdp_rd_rsp_fifo_->write(axi_atom_ptr);
@@ -3236,7 +2616,7 @@ void NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport(int ID, tlm::tlm_generic_payload
                     break;
                  case RBK_AXI_ID:
                         cslDebug((70, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, num_free:%d, axi_atom_ptr value:\x0A", mcif2rbk_rd_rsp_fifo_->num_free()));
-                        for (idx = 0; idx < DMA_TRANSACTION_ATOM_SIZE; idx ++) {
+                        for (idx = 0; idx < MIN_BUS_WIDTH; idx ++) {
                             cslDebug((70, "    0x%lx\x0A", uint64_t (axi_atom_ptr[idx])));
                         }
                         mcif2rbk_rd_rsp_fifo_->write(axi_atom_ptr);
@@ -3244,7 +2624,7 @@ void NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport(int ID, tlm::tlm_generic_payload
                     break;
                  case SDP_B_AXI_ID:
                         cslDebug((70, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, num_free:%d, axi_atom_ptr value:\x0A", mcif2sdp_b_rd_rsp_fifo_->num_free()));
-                        for (idx = 0; idx < DMA_TRANSACTION_ATOM_SIZE; idx ++) {
+                        for (idx = 0; idx < MIN_BUS_WIDTH; idx ++) {
                             cslDebug((70, "    0x%lx\x0A", uint64_t (axi_atom_ptr[idx])));
                         }
                         mcif2sdp_b_rd_rsp_fifo_->write(axi_atom_ptr);
@@ -3252,7 +2632,7 @@ void NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport(int ID, tlm::tlm_generic_payload
                     break;
                  case SDP_N_AXI_ID:
                         cslDebug((70, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, num_free:%d, axi_atom_ptr value:\x0A", mcif2sdp_n_rd_rsp_fifo_->num_free()));
-                        for (idx = 0; idx < DMA_TRANSACTION_ATOM_SIZE; idx ++) {
+                        for (idx = 0; idx < MIN_BUS_WIDTH; idx ++) {
                             cslDebug((70, "    0x%lx\x0A", uint64_t (axi_atom_ptr[idx])));
                         }
                         mcif2sdp_n_rd_rsp_fifo_->write(axi_atom_ptr);
@@ -3260,7 +2640,7 @@ void NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport(int ID, tlm::tlm_generic_payload
                     break;
                  case SDP_E_AXI_ID:
                         cslDebug((70, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, num_free:%d, axi_atom_ptr value:\x0A", mcif2sdp_e_rd_rsp_fifo_->num_free()));
-                        for (idx = 0; idx < DMA_TRANSACTION_ATOM_SIZE; idx ++) {
+                        for (idx = 0; idx < MIN_BUS_WIDTH; idx ++) {
                             cslDebug((70, "    0x%lx\x0A", uint64_t (axi_atom_ptr[idx])));
                         }
                         mcif2sdp_e_rd_rsp_fifo_->write(axi_atom_ptr);
@@ -3268,7 +2648,7 @@ void NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport(int ID, tlm::tlm_generic_payload
                     break;
                  case CDMA_DAT_AXI_ID:
                         cslDebug((70, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, num_free:%d, axi_atom_ptr value:\x0A", mcif2cdma_dat_rd_rsp_fifo_->num_free()));
-                        for (idx = 0; idx < DMA_TRANSACTION_ATOM_SIZE; idx ++) {
+                        for (idx = 0; idx < MIN_BUS_WIDTH; idx ++) {
                             cslDebug((70, "    0x%lx\x0A", uint64_t (axi_atom_ptr[idx])));
                         }
                         mcif2cdma_dat_rd_rsp_fifo_->write(axi_atom_ptr);
@@ -3276,7 +2656,7 @@ void NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport(int ID, tlm::tlm_generic_payload
                     break;
                  case CDMA_WT_AXI_ID:
                         cslDebug((70, "NV_NVDLA_mcif::ext2mcif_rd_rsp_b_transport, num_free:%d, axi_atom_ptr value:\x0A", mcif2cdma_wt_rd_rsp_fifo_->num_free()));
-                        for (idx = 0; idx < DMA_TRANSACTION_ATOM_SIZE; idx ++) {
+                        for (idx = 0; idx < MIN_BUS_WIDTH; idx ++) {
                             cslDebug((70, "    0x%lx\x0A", uint64_t (axi_atom_ptr[idx])));
                         }
                         mcif2cdma_wt_rd_rsp_fifo_->write(axi_atom_ptr);
@@ -3318,13 +2698,7 @@ void NV_NVDLA_mcif::ext2mcif_wr_rsp_b_transport(int ID, tlm::tlm_generic_payload
             cslDebug((50, "NV_NVDLA_mcif::ext2bdma_wr_rsp_b_transport, bdma_wr_req_expected_ack=0x%x\x0A", bdma_wr_req_expected_ack));
             if (true == bdma_wr_req_expected_ack) {
                 cslDebug((50, "send wr rsp to bdma\x0A"));
-                //FIXME(skip-t194): we can add assertion bdma_wr_rsp_count_ == bdma_wr_cmd_count_fifo_->read
                 NV_NVDLA_mcif_base::mcif2bdma_wr_rsp.write(true);
-                //FIXME(skip-t194): WAR to add wait here. Otherwise, the client will not receive the signal when two "true" are sent to client continuously.
-                // wait(0, SC_NS);
-                // NV_NVDLA_mcif_base::mcif2bdma_wr_rsp.write(false);
-            } else {
-                // NV_NVDLA_mcif_base::mcif2bdma_wr_rsp.write(false);
             }
             break;
         case SDP_AXI_ID:
@@ -3334,13 +2708,7 @@ void NV_NVDLA_mcif::ext2mcif_wr_rsp_b_transport(int ID, tlm::tlm_generic_payload
             cslDebug((50, "NV_NVDLA_mcif::ext2sdp_wr_rsp_b_transport, sdp_wr_req_expected_ack=0x%x\x0A", sdp_wr_req_expected_ack));
             if (true == sdp_wr_req_expected_ack) {
                 cslDebug((50, "send wr rsp to sdp\x0A"));
-                //FIXME(skip-t194): we can add assertion sdp_wr_rsp_count_ == sdp_wr_cmd_count_fifo_->read
                 NV_NVDLA_mcif_base::mcif2sdp_wr_rsp.write(true);
-                //FIXME(skip-t194): WAR to add wait here. Otherwise, the client will not receive the signal when two "true" are sent to client continuously.
-                // wait(0, SC_NS);
-                // NV_NVDLA_mcif_base::mcif2sdp_wr_rsp.write(false);
-            } else {
-                // NV_NVDLA_mcif_base::mcif2sdp_wr_rsp.write(false);
             }
             break;
         case PDP_AXI_ID:
@@ -3350,13 +2718,7 @@ void NV_NVDLA_mcif::ext2mcif_wr_rsp_b_transport(int ID, tlm::tlm_generic_payload
             cslDebug((50, "NV_NVDLA_mcif::ext2pdp_wr_rsp_b_transport, pdp_wr_req_expected_ack=0x%x\x0A", pdp_wr_req_expected_ack));
             if (true == pdp_wr_req_expected_ack) {
                 cslDebug((50, "send wr rsp to pdp\x0A"));
-                //FIXME(skip-t194): we can add assertion pdp_wr_rsp_count_ == pdp_wr_cmd_count_fifo_->read
                 NV_NVDLA_mcif_base::mcif2pdp_wr_rsp.write(true);
-                //FIXME(skip-t194): WAR to add wait here. Otherwise, the client will not receive the signal when two "true" are sent to client continuously.
-                // wait(0, SC_NS);
-                // NV_NVDLA_mcif_base::mcif2pdp_wr_rsp.write(false);
-            } else {
-                // NV_NVDLA_mcif_base::mcif2pdp_wr_rsp.write(false);
             }
             break;
         case CDP_AXI_ID:
@@ -3366,13 +2728,7 @@ void NV_NVDLA_mcif::ext2mcif_wr_rsp_b_transport(int ID, tlm::tlm_generic_payload
             cslDebug((50, "NV_NVDLA_mcif::ext2cdp_wr_rsp_b_transport, cdp_wr_req_expected_ack=0x%x\x0A", cdp_wr_req_expected_ack));
             if (true == cdp_wr_req_expected_ack) {
                 cslDebug((50, "send wr rsp to cdp\x0A"));
-                //FIXME(skip-t194): we can add assertion cdp_wr_rsp_count_ == cdp_wr_cmd_count_fifo_->read
                 NV_NVDLA_mcif_base::mcif2cdp_wr_rsp.write(true);
-                //FIXME(skip-t194): WAR to add wait here. Otherwise, the client will not receive the signal when two "true" are sent to client continuously.
-                // wait(0, SC_NS);
-                // NV_NVDLA_mcif_base::mcif2cdp_wr_rsp.write(false);
-            } else {
-                // NV_NVDLA_mcif_base::mcif2cdp_wr_rsp.write(false);
             }
             break;
         case RBK_AXI_ID:
@@ -3382,13 +2738,7 @@ void NV_NVDLA_mcif::ext2mcif_wr_rsp_b_transport(int ID, tlm::tlm_generic_payload
             cslDebug((50, "NV_NVDLA_mcif::ext2rbk_wr_rsp_b_transport, rbk_wr_req_expected_ack=0x%x\x0A", rbk_wr_req_expected_ack));
             if (true == rbk_wr_req_expected_ack) {
                 cslDebug((50, "send wr rsp to rbk\x0A"));
-                //FIXME(skip-t194): we can add assertion rbk_wr_rsp_count_ == rbk_wr_cmd_count_fifo_->read
                 NV_NVDLA_mcif_base::mcif2rbk_wr_rsp.write(true);
-                //FIXME(skip-t194): WAR to add wait here. Otherwise, the client will not receive the signal when two "true" are sent to client continuously.
-                // wait(0, SC_NS);
-                // NV_NVDLA_mcif_base::mcif2rbk_wr_rsp.write(false);
-            } else {
-                // NV_NVDLA_mcif_base::mcif2rbk_wr_rsp.write(false);
             }
             break;
 
@@ -3410,7 +2760,7 @@ void NV_NVDLA_mcif::ReadRequestArbiter() {
         }
         if (bdma_rd_req_payload_ != NULL) {
             int payload_size = (bdma_rd_req_payload_->gp.get_data_length());
-            int atom_num = payload_size/DMA_TRANSACTION_ATOM_SIZE;
+            int atom_num = payload_size/MIN_BUS_WIDTH;
             if (credit_mcif2bdma_rd_rsp_fifo_ >= atom_num) {
                 bdma_ready = true;
             } else {
@@ -3424,7 +2774,7 @@ void NV_NVDLA_mcif::ReadRequestArbiter() {
         }
         if (cdma_dat_rd_req_payload_ != NULL) {
             int payload_size = (cdma_dat_rd_req_payload_->gp.get_data_length());
-            int atom_num = payload_size/DMA_TRANSACTION_ATOM_SIZE;
+            int atom_num = payload_size/MIN_BUS_WIDTH;
             if (credit_mcif2cdma_dat_rd_rsp_fifo_ >= atom_num) {
                 cdma_dat_ready = true;
             } else {
@@ -3439,7 +2789,7 @@ void NV_NVDLA_mcif::ReadRequestArbiter() {
         }
         if (cdma_wt_rd_req_payload_ != NULL) {
             int payload_size = (cdma_wt_rd_req_payload_->gp.get_data_length());
-            int atom_num = payload_size/DMA_TRANSACTION_ATOM_SIZE;
+            int atom_num = payload_size/MIN_BUS_WIDTH;
             if (credit_mcif2cdma_wt_rd_rsp_fifo_ >= atom_num) {
                 cdma_wt_ready = true;
             } else {
@@ -3454,7 +2804,7 @@ void NV_NVDLA_mcif::ReadRequestArbiter() {
         }
         if (sdp_rd_req_payload_ != NULL) {
             int payload_size = (sdp_rd_req_payload_->gp.get_data_length());
-            int atom_num = payload_size/DMA_TRANSACTION_ATOM_SIZE;
+            int atom_num = payload_size/MIN_BUS_WIDTH;
             if (credit_mcif2sdp_rd_rsp_fifo_ >= atom_num) {
                 sdp_ready = true;
             } else {
@@ -3468,7 +2818,7 @@ void NV_NVDLA_mcif::ReadRequestArbiter() {
         }
         if (sdp_b_rd_req_payload_ != NULL) {
             int payload_size = (sdp_b_rd_req_payload_->gp.get_data_length());
-            int atom_num = payload_size/DMA_TRANSACTION_ATOM_SIZE;
+            int atom_num = payload_size/MIN_BUS_WIDTH;
             if (credit_mcif2sdp_b_rd_rsp_fifo_ >= atom_num) {
                 sdp_b_ready = true;
             } else {
@@ -3482,7 +2832,7 @@ void NV_NVDLA_mcif::ReadRequestArbiter() {
         }
         if (sdp_n_rd_req_payload_ != NULL) {
             int payload_size = (sdp_n_rd_req_payload_->gp.get_data_length());
-            int atom_num = payload_size/DMA_TRANSACTION_ATOM_SIZE;
+            int atom_num = payload_size/MIN_BUS_WIDTH;
             if (credit_mcif2sdp_n_rd_rsp_fifo_ >= atom_num) {
                 sdp_n_ready = true;
             } else {
@@ -3496,7 +2846,7 @@ void NV_NVDLA_mcif::ReadRequestArbiter() {
         }
         if (sdp_e_rd_req_payload_ != NULL) {
             int payload_size = (sdp_e_rd_req_payload_->gp.get_data_length());
-            int atom_num = payload_size/DMA_TRANSACTION_ATOM_SIZE;
+            int atom_num = payload_size/MIN_BUS_WIDTH;
             if (credit_mcif2sdp_e_rd_rsp_fifo_ >= atom_num) {
                 sdp_e_ready = true;
             } else {
@@ -3510,7 +2860,7 @@ void NV_NVDLA_mcif::ReadRequestArbiter() {
         }
         if (rbk_rd_req_payload_ != NULL) {
             int payload_size = (rbk_rd_req_payload_->gp.get_data_length());
-            int atom_num = payload_size/DMA_TRANSACTION_ATOM_SIZE;
+            int atom_num = payload_size/MIN_BUS_WIDTH;
             if (credit_mcif2rbk_rd_rsp_fifo_ >= atom_num) {
                 rbk_ready = true;
             } else {
@@ -3524,7 +2874,7 @@ void NV_NVDLA_mcif::ReadRequestArbiter() {
         }
         if (pdp_rd_req_payload_ != NULL) {
             int payload_size = (pdp_rd_req_payload_->gp.get_data_length());
-            int atom_num = payload_size/DMA_TRANSACTION_ATOM_SIZE;
+            int atom_num = payload_size/MIN_BUS_WIDTH;
             if (credit_mcif2pdp_rd_rsp_fifo_ >= atom_num) {
                 pdp_ready = true;
             } else {
@@ -3538,7 +2888,7 @@ void NV_NVDLA_mcif::ReadRequestArbiter() {
         }
         if (cdp_rd_req_payload_ != NULL) {
             int payload_size = (cdp_rd_req_payload_->gp.get_data_length());
-            int atom_num = payload_size/DMA_TRANSACTION_ATOM_SIZE;
+            int atom_num = payload_size/MIN_BUS_WIDTH;
             if (credit_mcif2cdp_rd_rsp_fifo_ >= atom_num) {
                 cdp_ready = true;
             } else {
@@ -3560,7 +2910,10 @@ void NV_NVDLA_mcif::ReadRequestArbiter() {
         // For BDMA
         if (bdma_rd_req_payload_ != NULL) {
             uint8_t* axi_byte_enable_ptr = (bdma_rd_req_payload_->gp.get_byte_enable_ptr());
-            int atom_num = (axi_byte_enable_ptr[0] == TLM_BYTE_ENABLED) + (axi_byte_enable_ptr[32] == TLM_BYTE_ENABLED);
+            int payload_size = bdma_rd_req_payload_->gp.get_data_length();
+            int atom_num = 0;
+            for (int i=0; i<payload_size/MIN_BUS_WIDTH; i++)
+                atom_num += axi_byte_enable_ptr[i*MIN_BUS_WIDTH] == TLM_BYTE_ENABLED;
             if (credit_mcif2bdma_rd_rsp_fifo_ >= atom_num) {   // Same as bdma_ready
                 credit_mcif2bdma_rd_rsp_fifo_ -= atom_num;
                 cslDebug((50, "NV_NVDLA_mcif::ReadRequestArbiter, send read request, payload from bdma, begin, atom:%d, num_free:%d credit_mcif2bdma_rd_rsp_fifo_=%d.\x0A", atom_num, mcif2bdma_rd_rsp_fifo_->num_free(), credit_mcif2bdma_rd_rsp_fifo_));
@@ -3575,7 +2928,10 @@ void NV_NVDLA_mcif::ReadRequestArbiter() {
         // For SDP
         if (sdp_rd_req_payload_ != NULL) {
             uint8_t* axi_byte_enable_ptr = (sdp_rd_req_payload_->gp.get_byte_enable_ptr());
-            int atom_num = (axi_byte_enable_ptr[0] == TLM_BYTE_ENABLED) + (axi_byte_enable_ptr[32] == TLM_BYTE_ENABLED);
+            int payload_size = sdp_rd_req_payload_->gp.get_data_length();
+            int atom_num = 0;
+            for (int i=0; i<payload_size/MIN_BUS_WIDTH; i++)
+                atom_num += axi_byte_enable_ptr[i*MIN_BUS_WIDTH] == TLM_BYTE_ENABLED;
             if (credit_mcif2sdp_rd_rsp_fifo_ >= atom_num) {   // Same as sdp_ready
                 credit_mcif2sdp_rd_rsp_fifo_ -= atom_num;
                 cslDebug((50, "NV_NVDLA_mcif::ReadRequestArbiter, send read request, payload from sdp, begin, atom:%d, num_free:%d credit_mcif2sdp_rd_rsp_fifo_=%d.\x0A", atom_num, mcif2sdp_rd_rsp_fifo_->num_free(), credit_mcif2sdp_rd_rsp_fifo_));
@@ -3590,7 +2946,10 @@ void NV_NVDLA_mcif::ReadRequestArbiter() {
         // For PDP
         if (pdp_rd_req_payload_ != NULL) {
             uint8_t* axi_byte_enable_ptr = (pdp_rd_req_payload_->gp.get_byte_enable_ptr());
-            int atom_num = (axi_byte_enable_ptr[0] == TLM_BYTE_ENABLED) + (axi_byte_enable_ptr[32] == TLM_BYTE_ENABLED);
+            int payload_size = pdp_rd_req_payload_->gp.get_data_length();
+            int atom_num = 0;
+            for (int i=0; i<payload_size/MIN_BUS_WIDTH; i++)
+                atom_num += axi_byte_enable_ptr[i*MIN_BUS_WIDTH] == TLM_BYTE_ENABLED;
             if (credit_mcif2pdp_rd_rsp_fifo_ >= atom_num) {   // Same as pdp_ready
                 credit_mcif2pdp_rd_rsp_fifo_ -= atom_num;
                 cslDebug((50, "NV_NVDLA_mcif::ReadRequestArbiter, send read request, payload from pdp, begin, atom:%d, num_free:%d credit_mcif2pdp_rd_rsp_fifo_=%d.\x0A", atom_num, mcif2pdp_rd_rsp_fifo_->num_free(), credit_mcif2pdp_rd_rsp_fifo_));
@@ -3605,7 +2964,10 @@ void NV_NVDLA_mcif::ReadRequestArbiter() {
         // For CDP
         if (cdp_rd_req_payload_ != NULL) {
             uint8_t* axi_byte_enable_ptr = (cdp_rd_req_payload_->gp.get_byte_enable_ptr());
-            int atom_num = (axi_byte_enable_ptr[0] == TLM_BYTE_ENABLED) + (axi_byte_enable_ptr[32] == TLM_BYTE_ENABLED);
+            int payload_size = cdp_rd_req_payload_->gp.get_data_length();
+            int atom_num = 0;
+            for (int i=0; i<payload_size/MIN_BUS_WIDTH; i++)
+                atom_num += axi_byte_enable_ptr[i*MIN_BUS_WIDTH] == TLM_BYTE_ENABLED;
             if (credit_mcif2cdp_rd_rsp_fifo_ >= atom_num) {   // Same as cdp_ready
                 credit_mcif2cdp_rd_rsp_fifo_ -= atom_num;
                 cslDebug((50, "NV_NVDLA_mcif::ReadRequestArbiter, send read request, payload from cdp, begin, atom:%d, num_free:%d credit_mcif2cdp_rd_rsp_fifo_=%d.\x0A", atom_num, mcif2cdp_rd_rsp_fifo_->num_free(), credit_mcif2cdp_rd_rsp_fifo_));
@@ -3620,7 +2982,10 @@ void NV_NVDLA_mcif::ReadRequestArbiter() {
         // For RBK
         if (rbk_rd_req_payload_ != NULL) {
             uint8_t* axi_byte_enable_ptr = (rbk_rd_req_payload_->gp.get_byte_enable_ptr());
-            int atom_num = (axi_byte_enable_ptr[0] == TLM_BYTE_ENABLED) + (axi_byte_enable_ptr[32] == TLM_BYTE_ENABLED);
+            int payload_size = rbk_rd_req_payload_->gp.get_data_length();
+            int atom_num = 0;
+            for (int i=0; i<payload_size/MIN_BUS_WIDTH; i++)
+                atom_num += axi_byte_enable_ptr[i*MIN_BUS_WIDTH] == TLM_BYTE_ENABLED;
             if (credit_mcif2rbk_rd_rsp_fifo_ >= atom_num) {   // Same as rbk_ready
                 credit_mcif2rbk_rd_rsp_fifo_ -= atom_num;
                 cslDebug((50, "NV_NVDLA_mcif::ReadRequestArbiter, send read request, payload from rbk, begin, atom:%d, num_free:%d credit_mcif2rbk_rd_rsp_fifo_=%d.\x0A", atom_num, mcif2rbk_rd_rsp_fifo_->num_free(), credit_mcif2rbk_rd_rsp_fifo_));
@@ -3635,7 +3000,10 @@ void NV_NVDLA_mcif::ReadRequestArbiter() {
         // For SDP_B
         if (sdp_b_rd_req_payload_ != NULL) {
             uint8_t* axi_byte_enable_ptr = (sdp_b_rd_req_payload_->gp.get_byte_enable_ptr());
-            int atom_num = (axi_byte_enable_ptr[0] == TLM_BYTE_ENABLED) + (axi_byte_enable_ptr[32] == TLM_BYTE_ENABLED);
+            int payload_size = sdp_b_rd_req_payload_->gp.get_data_length();
+            int atom_num = 0;
+            for (int i=0; i<payload_size/MIN_BUS_WIDTH; i++)
+                atom_num += axi_byte_enable_ptr[i*MIN_BUS_WIDTH] == TLM_BYTE_ENABLED;
             if (credit_mcif2sdp_b_rd_rsp_fifo_ >= atom_num) {   // Same as sdp_b_ready
                 credit_mcif2sdp_b_rd_rsp_fifo_ -= atom_num;
                 cslDebug((50, "NV_NVDLA_mcif::ReadRequestArbiter, send read request, payload from sdp_b, begin, atom:%d, num_free:%d credit_mcif2sdp_b_rd_rsp_fifo_=%d.\x0A", atom_num, mcif2sdp_b_rd_rsp_fifo_->num_free(), credit_mcif2sdp_b_rd_rsp_fifo_));
@@ -3650,7 +3018,10 @@ void NV_NVDLA_mcif::ReadRequestArbiter() {
         // For SDP_N
         if (sdp_n_rd_req_payload_ != NULL) {
             uint8_t* axi_byte_enable_ptr = (sdp_n_rd_req_payload_->gp.get_byte_enable_ptr());
-            int atom_num = (axi_byte_enable_ptr[0] == TLM_BYTE_ENABLED) + (axi_byte_enable_ptr[32] == TLM_BYTE_ENABLED);
+            int payload_size = sdp_n_rd_req_payload_->gp.get_data_length();
+            int atom_num = 0;
+            for (int i=0; i<payload_size/MIN_BUS_WIDTH; i++)
+                atom_num += axi_byte_enable_ptr[i*MIN_BUS_WIDTH] == TLM_BYTE_ENABLED;
             if (credit_mcif2sdp_n_rd_rsp_fifo_ >= atom_num) {   // Same as sdp_n_ready
                 credit_mcif2sdp_n_rd_rsp_fifo_ -= atom_num;
                 cslDebug((50, "NV_NVDLA_mcif::ReadRequestArbiter, send read request, payload from sdp_n, begin, atom:%d, num_free:%d credit_mcif2sdp_n_rd_rsp_fifo_=%d.\x0A", atom_num, mcif2sdp_n_rd_rsp_fifo_->num_free(), credit_mcif2sdp_n_rd_rsp_fifo_));
@@ -3665,7 +3036,10 @@ void NV_NVDLA_mcif::ReadRequestArbiter() {
         // For SDP_E
         if (sdp_e_rd_req_payload_ != NULL) {
             uint8_t* axi_byte_enable_ptr = (sdp_e_rd_req_payload_->gp.get_byte_enable_ptr());
-            int atom_num = (axi_byte_enable_ptr[0] == TLM_BYTE_ENABLED) + (axi_byte_enable_ptr[32] == TLM_BYTE_ENABLED);
+            int payload_size = sdp_e_rd_req_payload_->gp.get_data_length();
+            int atom_num = 0;
+            for (int i=0; i<payload_size/MIN_BUS_WIDTH; i++)
+                atom_num += axi_byte_enable_ptr[i*MIN_BUS_WIDTH] == TLM_BYTE_ENABLED;
             if (credit_mcif2sdp_e_rd_rsp_fifo_ >= atom_num) {   // Same as sdp_e_ready
                 credit_mcif2sdp_e_rd_rsp_fifo_ -= atom_num;
                 cslDebug((50, "NV_NVDLA_mcif::ReadRequestArbiter, send read request, payload from sdp_e, begin, atom:%d, num_free:%d credit_mcif2sdp_e_rd_rsp_fifo_=%d.\x0A", atom_num, mcif2sdp_e_rd_rsp_fifo_->num_free(), credit_mcif2sdp_e_rd_rsp_fifo_));
@@ -3680,7 +3054,10 @@ void NV_NVDLA_mcif::ReadRequestArbiter() {
         // For CDMA_DAT
         if (cdma_dat_rd_req_payload_ != NULL) {
             uint8_t* axi_byte_enable_ptr = (cdma_dat_rd_req_payload_->gp.get_byte_enable_ptr());
-            int atom_num = (axi_byte_enable_ptr[0] == TLM_BYTE_ENABLED) + (axi_byte_enable_ptr[32] == TLM_BYTE_ENABLED);
+            int payload_size = cdma_dat_rd_req_payload_->gp.get_data_length();
+            int atom_num = 0;
+            for (int i=0; i<payload_size/MIN_BUS_WIDTH; i++)
+                atom_num += axi_byte_enable_ptr[i*MIN_BUS_WIDTH] == TLM_BYTE_ENABLED;
             if (credit_mcif2cdma_dat_rd_rsp_fifo_ >= atom_num) {   // Same as cdma_dat_ready
                 credit_mcif2cdma_dat_rd_rsp_fifo_ -= atom_num;
                 cslDebug((50, "NV_NVDLA_mcif::ReadRequestArbiter, send read request, payload from cdma_dat, begin, atom:%d, num_free:%d credit_mcif2cdma_dat_rd_rsp_fifo_=%d.\x0A", atom_num, mcif2cdma_dat_rd_rsp_fifo_->num_free(), credit_mcif2cdma_dat_rd_rsp_fifo_));
@@ -3695,7 +3072,10 @@ void NV_NVDLA_mcif::ReadRequestArbiter() {
         // For CDMA_WT
         if (cdma_wt_rd_req_payload_ != NULL) {
             uint8_t* axi_byte_enable_ptr = (cdma_wt_rd_req_payload_->gp.get_byte_enable_ptr());
-            int atom_num = (axi_byte_enable_ptr[0] == TLM_BYTE_ENABLED) + (axi_byte_enable_ptr[32] == TLM_BYTE_ENABLED);
+            int payload_size = cdma_wt_rd_req_payload_->gp.get_data_length();
+            int atom_num = 0;
+            for (int i=0; i<payload_size/MIN_BUS_WIDTH; i++)
+                atom_num += axi_byte_enable_ptr[i*MIN_BUS_WIDTH] == TLM_BYTE_ENABLED;
             if (credit_mcif2cdma_wt_rd_rsp_fifo_ >= atom_num) {   // Same as cdma_wt_ready
                 credit_mcif2cdma_wt_rd_rsp_fifo_ -= atom_num;
                 cslDebug((50, "NV_NVDLA_mcif::ReadRequestArbiter, send read request, payload from cdma_wt, begin, atom:%d, num_free:%d credit_mcif2cdma_wt_rd_rsp_fifo_=%d.\x0A", atom_num, mcif2cdma_wt_rd_rsp_fifo_->num_free(), credit_mcif2cdma_wt_rd_rsp_fifo_));

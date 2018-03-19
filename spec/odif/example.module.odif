@@ -1,0 +1,17 @@
+module sub_a
+  out request a2b_req
+
+module sub_b
+  in  request a2b_req
+
+module sub_c
+  out request_2d c2d_req
+
+module sub_d
+  in  request_2d c2d_req
+
+module sub_x
+  out command x2y_cmd
+
+module sub_y
+  in  command x2y_cmd

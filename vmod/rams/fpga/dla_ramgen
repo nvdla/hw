@@ -1,0 +1,207 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+######################################
+##  Process command-line arguments  ##
+######################################
+
+use Getopt::Long;
+Getopt::Long::config('no_auto_abbrev',
+                     'no_ignore_case',
+                     'no_ignore_case_always');
+
+my $width  = "" ;
+my $depth  = "" ;
+my $module = "" ;
+my $type   = 0 ;
+my $clk_name = "" ;
+my $ra_name  = "" ;
+my $re_name  = "" ;
+my $ore_name = "" ;
+my $dout_name= "" ;
+my $wa_name  = "" ;
+my $we_name  = "" ;
+my $di_name  = "" ;
+
+my %opt_ctl = (
+                "w|width=s"  => \$width,
+                "d|depth=s"  => \$depth,
+                "m|module=s" => \$module,
+                "t|type=s"   => \$type,
+                "clk"        => \$clk_name ,
+                "ra"         => \$ra_name  ,
+                "re"         => \$re_name  ,
+                "ore"        => \$ore_name  ,
+                "dout"       => \$dout_name,
+                "wa"         => \$wa_name  ,
+                "we"         => \$we_name  ,
+                "di"         => \$di_name  ,
+);
+
+if(!GetOptions(%opt_ctl)) {
+    &print_usage();
+    exit(1);
+}
+
+my $ram_name = $type==3 ? "rwsthp" : $type==2 ? "rwsp" : $type==1 ? "rwst" :"rws";
+
+if ($module ne "") {
+ if ($module =~ /.*_(rw\w+)_(\d+)x(\d+).*/) {
+   $ram_name  = $1;  
+   $depth = $2;  
+   $width = $3;
+   $type  = ($ram_name eq "rwsthp") ? 3 : ($ram_name eq "rwsp") ? 2 : ($ram_name eq "rwst") ? 1 : 0;
+   print "$type\n";
+   print "$depth\n";
+   print "$width\n";
+ }
+ else {
+   print "module name is illegal\n";
+   exit(1);
+ }
+}
+elsif(($depth ne "") && ($width ne "")) {
+   $module =  join "", "nv_ram_",$ram_name,"_",$depth,"x",$width,"_dlarr"; 
+   print "$module\n";
+}
+else {
+  &print_usage();
+  exit(1);
+}
+
+
+open(OUT_FILE, ">$module.v") || die "Cannot open target file $module.v!";
+
+my @ports = ();
+my $addrw_raw = log($depth)/log(2); 
+my $addrw_int = int(log($depth)/log(2)); 
+my $addrw = $addrw_raw > $addrw_int ? ($addrw_int+1) : $addrw_int; 
+
+$clk_name  = ( $clk_name  ne "" ) ? $clk_name  : "clk";
+$ra_name   = ( $ra_name   ne "" ) ? $ra_name   : "ra";
+$re_name   = ( $re_name   ne "" ) ? $re_name   : "re";
+$ore_name  = ( $ore_name  ne "" ) ? $ore_name  : "ore";
+$dout_name = ( $dout_name ne "" ) ? $dout_name : "dout";
+$wa_name   = ( $wa_name   ne "" ) ? $wa_name   : "wa";
+$we_name   = ( $we_name   ne "" ) ? $we_name   : "we";
+$di_name   = ( $di_name   ne "" ) ? $di_name   : "di";
+my $pwr_name  = "pwrbus_ram_pd";
+my $export1   = "byp_sel";
+my $export2   = "dbyp";
+
+push( @ports, "$clk_name",  "input", 1 );
+push( @ports, "$ra_name",   "input", "$addrw" );
+push( @ports, "$re_name",   "input", 1 );
+if($type ==3 || $type ==2) {
+push( @ports, "$ore_name",   "input", 1 );
+}
+push( @ports, "$dout_name", "output","$width" );
+push( @ports, "$wa_name",   "input", "$addrw" );
+push( @ports, "$we_name",   "input", 1 );
+push( @ports, "$di_name",   "input", "$width" );
+if($type==3) {
+push( @ports, "$export1",   "input", 1 );
+push( @ports, "$export2",   "input", "$width" );
+}
+push( @ports, "$pwr_name",  "input", 32 );
+
+
+print OUT_FILE "\n";
+print OUT_FILE "module $module ( \n";
+
+my $i;
+for( $i = 0; $i < @ports-3; $i += 3 ) {
+    print OUT_FILE "\t\t$ports[$i],\n";
+}
+    print OUT_FILE "\t\t$pwr_name\n";
+
+
+print OUT_FILE ");\n\n";
+print OUT_FILE "parameter FORCE_CONTENTION_ASSERTION_RESET_ACTIVE=1\'b0;\n\n";
+print OUT_FILE "\/\/ port list\n";
+
+for( $i = 0; $i < @ports; $i += 3 ) {
+   my $p = $ports[$i];
+   my $d = $ports[$i+1];
+   my $w = $ports[$i+2]-1;
+   my $wr= "[$w:0]";
+   if($w==0) { 
+    print OUT_FILE "$d\t\t\t$p;\n";
+   }
+   else {
+    print OUT_FILE "$d\t$wr\t$p;\n";
+  }
+}
+
+
+my $addrwr = $addrw-1; 
+my $widthr = $width-1; 
+my $depthr = $depth-1; 
+
+print OUT_FILE "
+\/\/reg and wire list
+reg\t\t[$addrwr:0]\tra_d;
+wire\t[$widthr:0]\tdout;
+reg\t\t[$widthr:0]\tM\t[$depthr:0];
+
+always @( posedge clk ) begin
+    if (we)
+       M[wa] <= di;
+end\n 
+always @( posedge clk ) begin
+    if (re) 
+       ra_d <= ra;
+end
+";
+
+if($type==3) {
+print OUT_FILE "
+wire\t[$widthr:0]\tdout_ram = M[ra_d];
+
+wire\t[$widthr:0]\tfbypass_dout_ram = (byp_sel ? dbyp : dout_ram);
+
+reg\t\t[$widthr:0]\tdout_r;
+always @( posedge clk ) begin
+   if (ore)
+       dout_r <= fbypass_dout_ram;
+end\n
+assign dout = dout_r;\n\n
+";
+}
+elsif($type==2) {
+print OUT_FILE "
+wire\t[$widthr:0]\tdout_ram = M[ra_d];
+
+reg\t\t[$widthr:0]\tdout_r;
+always @( posedge clk ) begin
+   if (ore)
+       dout_r <= dout_ram;
+end\n
+assign dout = dout_r;\n\n
+";
+}
+else {
+print OUT_FILE "assign  dout = M[ra_d];\n\n";
+}
+
+
+print OUT_FILE "endmodule\n";
+close(OUT_FILE);
+
+
+if(!defined($module)&& (!defined($width) || !defined($depth))) {
+    &print_usage();
+    exit(1);
+}
+
+
+sub print_usage {
+    print STDERR "
+Usage1:  $0 -m <module_name>;
+Example: dla_ramgen -m nv_ram_rws_32x16_dlarr 
+Usage2:  $0 -w <width> -d <depth>  -t <option.ram type: 0,rws; 1,rwst; 2,rwsp; 3,rwsthp>;
+Example: dla_ramgen -d 32 -w 16 
+         dla_ramgen -d 32 -w 16 -t 0
+";
+}
+

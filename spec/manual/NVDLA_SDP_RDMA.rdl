@@ -1,0 +1,957 @@
+// ================================================================
+// NVDLA Open Source Project
+//
+// Copyright(c) 2016 - 2017 NVIDIA Corporation.  Licensed under the
+// NVDLA Open Hardware License; Check "LICENSE" which comes with
+// this distribution for more information.
+// ================================================================
+
+property spec_sw_default {
+    type      = number;
+    component = field;
+};
+property spec_access {
+    type      = string;
+    component = field;
+};
+property sw_default_mask {
+    type      = number;
+    component = field;
+};
+property reset_mask {
+    type      = number;
+    component = field;
+};
+regfile regs_NVDLA_SDP_RDMA{
+    default regwidth=32;
+    reg {
+        name = "S_STATUS";
+        desc = "
+////Read DMA for Single Data Processor Registers
+";
+        enum S_STATUS_STATUS_0_enum {
+            IDLE = 2'd0;
+            RUNNING = 2'd1;
+            PENDING = 2'd2;
+        };
+        field {
+            encode          = S_STATUS_STATUS_0_enum;
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x0;
+            reset_mask      = 0x3;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } STATUS_0[1:0];
+        STATUS_0->desc="
+//// Status of configuration register group 0
+";
+        enum S_STATUS_STATUS_1_enum {
+            IDLE = 2'd0;
+            RUNNING = 2'd1;
+            PENDING = 2'd2;
+        };
+        field {
+            encode          = S_STATUS_STATUS_1_enum;
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x0;
+            reset_mask      = 0x3;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } STATUS_1[17:16];
+        STATUS_1->desc="
+//// Status of configuration register group 1
+";
+    }S_STATUS @0x0;
+    reg {
+        name = "S_POINTER";
+        enum S_POINTER_PRODUCER_enum {
+            GROUP_0 = 1'd0;
+            GROUP_1 = 1'd1;
+        };
+        field {
+            encode          = S_POINTER_PRODUCER_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } PRODUCER[0:0];
+        PRODUCER->desc="
+////Pointer for CSB master to access groups
+";
+        enum S_POINTER_CONSUMER_enum {
+            GROUP_0 = 1'd0;
+            GROUP_1 = 1'd1;
+        };
+        field {
+            encode          = S_POINTER_CONSUMER_enum;
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CONSUMER[16:16];
+        CONSUMER->desc="
+////Pointer for datapath to access groups
+";
+    }S_POINTER @0x4;
+    reg {
+        name = "D_OP_ENABLE";
+        desc = "
+//////////////////////////////////////////////////////////////////////////////////
+////                                                                            //
+////                    Define single group registers here                      //
+////                    Register name should shart with prefix D_               //
+////                                                                            //
+//////////////////////////////////////////////////////////////////////////////////
+//// 
+";
+        enum D_OP_ENABLE_OP_EN_enum {
+            DISABLE = 1'd0;
+            ENABLE = 1'd1;
+        };
+        field {
+            encode          = D_OP_ENABLE_OP_EN_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rwto;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } OP_EN[0:0];
+    }D_OP_ENABLE @0x8;
+    reg {
+        name = "D_DATA_CUBE_WIDTH";
+        desc = "
+//// Data cube configuration, begin
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1fff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } WIDTH[12:0];
+        WIDTH->desc="
+//// Element number in width direction, range is 1~8192, actual width = WIDTH+1
+";
+    }D_DATA_CUBE_WIDTH @0xc;
+    reg {
+        name = "D_DATA_CUBE_HEIGHT";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1fff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } HEIGHT[12:0];
+        HEIGHT->desc="
+//// Element number in height direction, range is 1~8192, actual height = HEIGHT+1
+";
+    }D_DATA_CUBE_HEIGHT @0x10;
+    reg {
+        name = "D_DATA_CUBE_CHANNEL";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1fff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CHANNEL[12:0];
+        CHANNEL->desc="
+//// Element number in channel direction, range is 1~8192, actual channel = CHANNEL+1
+";
+    }D_DATA_CUBE_CHANNEL @0x14;
+    reg {
+        name = "D_SRC_BASE_ADDR_LOW";
+        desc = "
+//// Data cube configuration, end
+//// Source data cube memory configuration, begin
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } SRC_BASE_ADDR_LOW[31:0];
+        SRC_BASE_ADDR_LOW->desc="
+////  Start address of the src data cube will be read from external memory
+";
+    }D_SRC_BASE_ADDR_LOW @0x18;
+    reg {
+        name = "D_SRC_BASE_ADDR_HIGH";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } SRC_BASE_ADDR_HIGH[31:0];
+        SRC_BASE_ADDR_HIGH->desc="
+////  Start address of the source data cube which will be read from external memory for normalization
+";
+    }D_SRC_BASE_ADDR_HIGH @0x1c;
+    reg {
+        name = "D_SRC_LINE_STRIDE";
+        desc = "
+////  stride between two consective lines within a surface, actual stride value = LINE_STRIDE
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } SRC_LINE_STRIDE[31:0];
+    }D_SRC_LINE_STRIDE @0x20;
+    reg {
+        name = "D_SRC_SURFACE_STRIDE";
+        desc = "
+////  stride between two consective surface, actual stride value = SURFACE_STRIDE
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } SRC_SURFACE_STRIDE[31:0];
+    }D_SRC_SURFACE_STRIDE @0x24;
+    reg {
+        name = "D_BRDMA_CFG";
+        desc = "
+////reg D_MRDMA_CFG                     NVDLA_INCR
+////    0:0     rw  MRDMA_DISABLE       init=0
+////                                    enum (  NO = 0,
+////                                            YES= 1
+////                                    )
+////
+////BRDMA_DISABLE:    when sdp.BS_ALU_SRC is from REG, BRDMA need be disabled
+////BRDMA_DATA_USE:   when enabled and set to MUL, sdp.BS_ALU_BYPASS should be set
+////                  when enabled and set to ALU, sdp.BS_MUL_BYPASS should be set
+////BRDMA_DATA_SIZE: tells the data size per element, and in INT16 Mode, should set to TWO_BYTE
+";
+        enum D_BRDMA_CFG_BRDMA_DISABLE_enum {
+            NO = 1'd0;
+            YES = 1'd1;
+        };
+        field {
+            encode          = D_BRDMA_CFG_BRDMA_DISABLE_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x1;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x1;
+            sw_default_mask = 0x0;
+        } BRDMA_DISABLE[0:0];
+        enum D_BRDMA_CFG_BRDMA_DATA_USE_enum {
+            MUL = 2'd0;
+            ALU = 2'd1;
+            BOTH = 2'd2;
+        };
+        field {
+            encode          = D_BRDMA_CFG_BRDMA_DATA_USE_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x3;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } BRDMA_DATA_USE[2:1];
+        enum D_BRDMA_CFG_BRDMA_DATA_SIZE_enum {
+            ONE_BYTE = 1'd0;
+            TWO_BYTE = 1'd1;
+        };
+        field {
+            encode          = D_BRDMA_CFG_BRDMA_DATA_SIZE_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } BRDMA_DATA_SIZE[3:3];
+        enum D_BRDMA_CFG_BRDMA_DATA_MODE_enum {
+            PER_KERNEL = 1'd0;
+            PER_ELEMENT = 1'd1;
+        };
+        field {
+            encode          = D_BRDMA_CFG_BRDMA_DATA_MODE_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } BRDMA_DATA_MODE[4:4];
+        enum D_BRDMA_CFG_BRDMA_RAM_TYPE_enum {
+            CV = 1'd0;
+            MC = 1'd1;
+        };
+        field {
+            encode          = D_BRDMA_CFG_BRDMA_RAM_TYPE_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } BRDMA_RAM_TYPE[5:5];
+    }D_BRDMA_CFG @0x28;
+    reg {
+        name = "D_BS_BASE_ADDR_LOW";
+        desc = "
+//// Source data cube memory configuration, begin
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } BS_BASE_ADDR_LOW[31:0];
+        BS_BASE_ADDR_LOW->desc="
+////  Start address of the bias data cube low
+";
+    }D_BS_BASE_ADDR_LOW @0x2c;
+    reg {
+        name = "D_BS_BASE_ADDR_HIGH";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } BS_BASE_ADDR_HIGH[31:0];
+        BS_BASE_ADDR_HIGH->desc="
+////  Start address of the bias data cube high
+";
+    }D_BS_BASE_ADDR_HIGH @0x30;
+    reg {
+        name = "D_BS_LINE_STRIDE";
+        desc = "
+////  stride between two consective lines within a surface, actual stride value = LINE_STRIDE
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } BS_LINE_STRIDE[31:0];
+    }D_BS_LINE_STRIDE @0x34;
+    reg {
+        name = "D_BS_SURFACE_STRIDE";
+        desc = "
+////  stride between two consective surface, actual stride value = SURFACE_STRIDE
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } BS_SURFACE_STRIDE[31:0];
+    }D_BS_SURFACE_STRIDE @0x38;
+    reg {
+        name = "D_BS_BATCH_STRIDE";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } BS_BATCH_STRIDE[31:0];
+    }D_BS_BATCH_STRIDE @0x3c;
+    reg {
+        name = "D_NRDMA_CFG";
+        desc = "
+////===================================================================
+////BRDMA
+////===================================================================
+";
+        enum D_NRDMA_CFG_NRDMA_DISABLE_enum {
+            NO = 1'd0;
+            YES = 1'd1;
+        };
+        field {
+            encode          = D_NRDMA_CFG_NRDMA_DISABLE_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x1;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x1;
+            sw_default_mask = 0x0;
+        } NRDMA_DISABLE[0:0];
+        enum D_NRDMA_CFG_NRDMA_DATA_USE_enum {
+            MUL = 2'd0;
+            ALU = 2'd1;
+            BOTH = 2'd2;
+        };
+        field {
+            encode          = D_NRDMA_CFG_NRDMA_DATA_USE_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x3;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } NRDMA_DATA_USE[2:1];
+        enum D_NRDMA_CFG_NRDMA_DATA_SIZE_enum {
+            ONE_BYTE = 1'd0;
+            TWO_BYTE = 1'd1;
+        };
+        field {
+            encode          = D_NRDMA_CFG_NRDMA_DATA_SIZE_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } NRDMA_DATA_SIZE[3:3];
+        enum D_NRDMA_CFG_NRDMA_DATA_MODE_enum {
+            PER_KERNEL = 1'd0;
+            PER_ELEMENT = 1'd1;
+        };
+        field {
+            encode          = D_NRDMA_CFG_NRDMA_DATA_MODE_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } NRDMA_DATA_MODE[4:4];
+        enum D_NRDMA_CFG_NRDMA_RAM_TYPE_enum {
+            CV = 1'd0;
+            MC = 1'd1;
+        };
+        field {
+            encode          = D_NRDMA_CFG_NRDMA_RAM_TYPE_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } NRDMA_RAM_TYPE[5:5];
+    }D_NRDMA_CFG @0x40;
+    reg {
+        name = "D_BN_BASE_ADDR_LOW";
+        desc = "
+//// Source data cube memory configuration, begin
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } BN_BASE_ADDR_LOW[31:0];
+        BN_BASE_ADDR_LOW->desc="
+////  Start address of the bias data cube low
+";
+    }D_BN_BASE_ADDR_LOW @0x44;
+    reg {
+        name = "D_BN_BASE_ADDR_HIGH";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } BN_BASE_ADDR_HIGH[31:0];
+        BN_BASE_ADDR_HIGH->desc="
+////  Start address of the bias data cube high
+";
+    }D_BN_BASE_ADDR_HIGH @0x48;
+    reg {
+        name = "D_BN_LINE_STRIDE";
+        desc = "
+////  stride between two consective lines within a surface, actual stride value = LINE_STRIDE
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } BN_LINE_STRIDE[31:0];
+    }D_BN_LINE_STRIDE @0x4c;
+    reg {
+        name = "D_BN_SURFACE_STRIDE";
+        desc = "
+////  stride between two consective surface, actual stride value = SURFACE_STRIDE
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } BN_SURFACE_STRIDE[31:0];
+    }D_BN_SURFACE_STRIDE @0x50;
+    reg {
+        name = "D_BN_BATCH_STRIDE";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } BN_BATCH_STRIDE[31:0];
+    }D_BN_BATCH_STRIDE @0x54;
+    reg {
+        name = "D_ERDMA_CFG";
+        desc = "
+////===================================================================
+////ERDMA
+////===================================================================
+////ERDMA_DISABLE:    when sdp.BS_ALU_SRC is from REG, ERDMA need be disabled
+////ERDMA_DATA_USE:   when enabled and set to MUL, sdp.BS_ALU_BYPASS should be set
+////                  when enabled and set to ALU, sdp.BS_MUL_BYPASS should be set
+////ERDMA_DATA_SIZE: tells the data size per element, and in INT16 Mode, should set to TWO_BYTE
+";
+        enum D_ERDMA_CFG_ERDMA_DISABLE_enum {
+            NO = 1'd0;
+            YES = 1'd1;
+        };
+        field {
+            encode          = D_ERDMA_CFG_ERDMA_DISABLE_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x1;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x1;
+            sw_default_mask = 0x0;
+        } ERDMA_DISABLE[0:0];
+        enum D_ERDMA_CFG_ERDMA_DATA_USE_enum {
+            MUL = 2'd0;
+            ALU = 2'd1;
+            BOTH = 2'd2;
+        };
+        field {
+            encode          = D_ERDMA_CFG_ERDMA_DATA_USE_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x3;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } ERDMA_DATA_USE[2:1];
+        enum D_ERDMA_CFG_ERDMA_DATA_SIZE_enum {
+            ONE_BYTE = 1'd0;
+            TWO_BYTE = 1'd1;
+        };
+        field {
+            encode          = D_ERDMA_CFG_ERDMA_DATA_SIZE_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } ERDMA_DATA_SIZE[3:3];
+        enum D_ERDMA_CFG_ERDMA_DATA_MODE_enum {
+            PER_KERNEL = 1'd0;
+            PER_ELEMENT = 1'd1;
+        };
+        field {
+            encode          = D_ERDMA_CFG_ERDMA_DATA_MODE_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } ERDMA_DATA_MODE[4:4];
+        enum D_ERDMA_CFG_ERDMA_RAM_TYPE_enum {
+            CV = 1'd0;
+            MC = 1'd1;
+        };
+        field {
+            encode          = D_ERDMA_CFG_ERDMA_RAM_TYPE_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } ERDMA_RAM_TYPE[5:5];
+    }D_ERDMA_CFG @0x58;
+    reg {
+        name = "D_EW_BASE_ADDR_LOW";
+        desc = "
+//// Source data cube memory configuration, begin
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } EW_BASE_ADDR_LOW[31:0];
+        EW_BASE_ADDR_LOW->desc="
+////  Start address of the bias data cube low
+";
+    }D_EW_BASE_ADDR_LOW @0x5c;
+    reg {
+        name = "D_EW_BASE_ADDR_HIGH";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } EW_BASE_ADDR_HIGH[31:0];
+        EW_BASE_ADDR_HIGH->desc="
+////  Start address of the bias data cube high
+";
+    }D_EW_BASE_ADDR_HIGH @0x60;
+    reg {
+        name = "D_EW_LINE_STRIDE";
+        desc = "
+////  stride between two consective lines within a surface, actual stride value = LINE_STRIDE
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } EW_LINE_STRIDE[31:0];
+    }D_EW_LINE_STRIDE @0x64;
+    reg {
+        name = "D_EW_SURFACE_STRIDE";
+        desc = "
+////  stride between two consective surface, actual stride value = SURFACE_STRIDE
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } EW_SURFACE_STRIDE[31:0];
+    }D_EW_SURFACE_STRIDE @0x68;
+    reg {
+        name = "D_EW_BATCH_STRIDE";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } EW_BATCH_STRIDE[31:0];
+    }D_EW_BATCH_STRIDE @0x6c;
+    reg {
+        name = "D_FEATURE_MODE_CFG";
+        desc = "
+//// Feature Configuration, Bias/BatchNorm/Elementwise
+";
+        enum D_FEATURE_MODE_CFG_FLYING_MODE_enum {
+            OFF = 1'd0 {desc = "
+//// input data is from MEM
+";};
+            ON = 1'd1 {desc = "
+//// input data is from Conv Core
+";};
+        };
+        field {
+            encode          = D_FEATURE_MODE_CFG_FLYING_MODE_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } FLYING_MODE[0:0];
+        enum D_FEATURE_MODE_CFG_WINOGRAD_enum {
+            OFF = 1'd0 {desc = "
+//// Direct Conv mode
+";};
+            ON = 1'd1 {desc = "
+//// Winograd mode
+";};
+        };
+        field {
+            encode          = D_FEATURE_MODE_CFG_WINOGRAD_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } WINOGRAD[1:1];
+        enum D_FEATURE_MODE_CFG_IN_PRECISION_enum {
+            INT8 = 2'd0;
+            INT16 = 2'd1;
+            FP16 = 2'd2;
+        };
+        field {
+            encode          = D_FEATURE_MODE_CFG_IN_PRECISION_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x1;
+            reset_mask      = 0x3;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } IN_PRECISION[3:2];
+        enum D_FEATURE_MODE_CFG_PROC_PRECISION_enum {
+            INT8 = 2'd0;
+            INT16 = 2'd1;
+            FP16 = 2'd2;
+        };
+        field {
+            encode          = D_FEATURE_MODE_CFG_PROC_PRECISION_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x1;
+            reset_mask      = 0x3;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } PROC_PRECISION[5:4];
+        enum D_FEATURE_MODE_CFG_OUT_PRECISION_enum {
+            INT8 = 2'd0;
+            INT16 = 2'd1;
+            FP16 = 2'd2;
+        };
+        field {
+            encode          = D_FEATURE_MODE_CFG_OUT_PRECISION_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x3;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } OUT_PRECISION[7:6];
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1f;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } BATCH_NUMBER[12:8];
+        BATCH_NUMBER->desc="
+//// Batch number, range is 1~32, actual value = BATCH_NUMBER+1
+";
+    }D_FEATURE_MODE_CFG @0x70;
+    reg {
+        name = "D_SRC_DMA_CFG";
+        enum D_SRC_DMA_CFG_SRC_RAM_TYPE_enum {
+            CV = 1'd0;
+            MC = 1'd1;
+        };
+        field {
+            encode          = D_SRC_DMA_CFG_SRC_RAM_TYPE_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } SRC_RAM_TYPE[0:0];
+    }D_SRC_DMA_CFG @0x74;
+    reg {
+        name = "D_STATUS_NAN_INPUT_NUM";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } STATUS_NAN_INPUT_NUM[31:0];
+        STATUS_NAN_INPUT_NUM->desc="
+//// input NaN element number
+";
+    }D_STATUS_NAN_INPUT_NUM @0x78;
+    reg {
+        name = "D_STATUS_INF_INPUT_NUM";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } STATUS_INF_INPUT_NUM[31:0];
+        STATUS_INF_INPUT_NUM->desc="
+//// input Infinity element number
+";
+    }D_STATUS_INF_INPUT_NUM @0x7c;
+    reg {
+        name = "D_PERF_ENABLE";
+        enum D_PERF_ENABLE_PERF_DMA_EN_enum {
+            NO = 1'd0;
+            YES = 1'd1;
+        };
+        field {
+            encode          = D_PERF_ENABLE_PERF_DMA_EN_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } PERF_DMA_EN[0:0];
+        enum D_PERF_ENABLE_PERF_NAN_INF_COUNT_EN_enum {
+            NO = 1'd0;
+            YES = 1'd1;
+        };
+        field {
+            encode          = D_PERF_ENABLE_PERF_NAN_INF_COUNT_EN_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } PERF_NAN_INF_COUNT_EN[1:1];
+    }D_PERF_ENABLE @0x80;
+    reg {
+        name = "D_PERF_MRDMA_READ_STALL";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } MRDMA_STALL[31:0];
+        MRDMA_STALL->desc="
+//// Count stall cycles of M read DMA for one layer
+";
+    }D_PERF_MRDMA_READ_STALL @0x84;
+    reg {
+        name = "D_PERF_BRDMA_READ_STALL";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } BRDMA_STALL[31:0];
+        BRDMA_STALL->desc="
+//// Count stall cycles of B read DMA for one layer
+";
+    }D_PERF_BRDMA_READ_STALL @0x88;
+    reg {
+        name = "D_PERF_NRDMA_READ_STALL";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } NRDMA_STALL[31:0];
+        NRDMA_STALL->desc="
+//// Count stall cycles of N read DMA for one layer
+";
+    }D_PERF_NRDMA_READ_STALL @0x8c;
+    reg {
+        name = "D_PERF_ERDMA_READ_STALL";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } ERDMA_STALL[31:0];
+        ERDMA_STALL->desc="
+//// Count stall cycles of E read DMA for one layer
+";
+    }D_PERF_ERDMA_READ_STALL @0x90;
+};
+addrmap  {
+    regs_NVDLA_SDP_RDMA NVDLA_SDP_RDMA @0x8000;
+}addrmap_NVDLA;

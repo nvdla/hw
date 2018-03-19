@@ -14,16 +14,24 @@ module NV_NVDLA_MCIF_WRITE_IG_arb (
   ,nvdla_core_rstn       //|< i
   ,arb2spt_cmd_ready     //|< i
   ,arb2spt_dat_ready     //|< i
+  #ifdef NVDLA_BDMA_ENABLE
   ,bpt2arb_cmd0_pd       //|< i
   ,bpt2arb_cmd0_valid    //|< i
+  #endif
   ,bpt2arb_cmd1_pd       //|< i
   ,bpt2arb_cmd1_valid    //|< i
+  #ifdef NVDLA_PDP_ENABLE
   ,bpt2arb_cmd2_pd       //|< i
   ,bpt2arb_cmd2_valid    //|< i
+  #endif
+  #ifdef NVDLA_CDP_ENABLE
   ,bpt2arb_cmd3_pd       //|< i
   ,bpt2arb_cmd3_valid    //|< i
+  #endif
+  #ifdef NVDLA_RUBIK_ENABLE
   ,bpt2arb_cmd4_pd       //|< i
   ,bpt2arb_cmd4_valid    //|< i
+  #endif
   ,bpt2arb_dat0_pd       //|< i
   ,bpt2arb_dat0_valid    //|< i
   ,bpt2arb_dat1_pd       //|< i
@@ -44,11 +52,21 @@ module NV_NVDLA_MCIF_WRITE_IG_arb (
   ,arb2spt_cmd_valid     //|> o
   ,arb2spt_dat_pd        //|> o
   ,arb2spt_dat_valid     //|> o
+  #ifdef NVDLA_BDMA_ENABLE
   ,bpt2arb_cmd0_ready    //|> o
+  #endif
+  #ifdef NVDLA_PDP_ENABLE
   ,bpt2arb_cmd1_ready    //|> o
+  #endif
+  #ifdef NVDLA_PDP_ENABLE
   ,bpt2arb_cmd2_ready    //|> o
+  #endif
+  #ifdef NVDLA_CDP_ENABLE
   ,bpt2arb_cmd3_ready    //|> o
+  #endif
+  #ifdef NVDLA_RUBIK_ENABLE
   ,bpt2arb_cmd4_ready    //|> o
+  #endif
   ,bpt2arb_dat0_ready    //|> o
   ,bpt2arb_dat1_ready    //|> o
   ,bpt2arb_dat2_ready    //|> o
@@ -61,45 +79,55 @@ module NV_NVDLA_MCIF_WRITE_IG_arb (
 input  nvdla_core_clk;   /* bpt2arb_cmd0, bpt2arb_cmd1, bpt2arb_cmd2, bpt2arb_cmd3, bpt2arb_cmd4, bpt2arb_dat0, bpt2arb_dat1, bpt2arb_dat2, bpt2arb_dat3, bpt2arb_dat4, arb2spt_cmd, arb2spt_dat */
 input  nvdla_core_rstn;  /* bpt2arb_cmd0, bpt2arb_cmd1, bpt2arb_cmd2, bpt2arb_cmd3, bpt2arb_cmd4, bpt2arb_dat0, bpt2arb_dat1, bpt2arb_dat2, bpt2arb_dat3, bpt2arb_dat4, arb2spt_cmd, arb2spt_dat */
 
+  #ifdef NVDLA_BDMA_ENABLE
 input         bpt2arb_cmd0_valid;  /* data valid */
 output        bpt2arb_cmd0_ready;  /* data return handshake */
 input  [76:0] bpt2arb_cmd0_pd;
+#endif
 
+  #ifdef NVDLA_PDP_ENABLE
 input         bpt2arb_cmd1_valid;  /* data valid */
 output        bpt2arb_cmd1_ready;  /* data return handshake */
 input  [76:0] bpt2arb_cmd1_pd;
+#endif
 
+  #ifdef NVDLA_PDP_ENABLE
 input         bpt2arb_cmd2_valid;  /* data valid */
 output        bpt2arb_cmd2_ready;  /* data return handshake */
 input  [76:0] bpt2arb_cmd2_pd;
+#endif
 
+  #ifdef NVDLA_CDP_ENABLE
 input         bpt2arb_cmd3_valid;  /* data valid */
 output        bpt2arb_cmd3_ready;  /* data return handshake */
 input  [76:0] bpt2arb_cmd3_pd;
+#endif
 
+  #ifdef NVDLA_RUBIK_ENABLE
 input         bpt2arb_cmd4_valid;  /* data valid */
 output        bpt2arb_cmd4_ready;  /* data return handshake */
 input  [76:0] bpt2arb_cmd4_pd;
+#endif
 
 input          bpt2arb_dat0_valid;  /* data valid */
 output         bpt2arb_dat0_ready;  /* data return handshake */
-input  [513:0] bpt2arb_dat0_pd;
+input  [NVDLA_PRIMARY_MEMIF_WIDTH+1:0] bpt2arb_dat0_pd;
 
 input          bpt2arb_dat1_valid;  /* data valid */
 output         bpt2arb_dat1_ready;  /* data return handshake */
-input  [513:0] bpt2arb_dat1_pd;
+input  [NVDLA_PRIMARY_MEMIF_WIDTH+1:0] bpt2arb_dat1_pd;
 
 input          bpt2arb_dat2_valid;  /* data valid */
 output         bpt2arb_dat2_ready;  /* data return handshake */
-input  [513:0] bpt2arb_dat2_pd;
+input  [NVDLA_PRIMARY_MEMIF_WIDTH+1:0] bpt2arb_dat2_pd;
 
 input          bpt2arb_dat3_valid;  /* data valid */
 output         bpt2arb_dat3_ready;  /* data return handshake */
-input  [513:0] bpt2arb_dat3_pd;
+input  [NVDLA_PRIMARY_MEMIF_WIDTH+1:0] bpt2arb_dat3_pd;
 
 input          bpt2arb_dat4_valid;  /* data valid */
 output         bpt2arb_dat4_ready;  /* data return handshake */
-input  [513:0] bpt2arb_dat4_pd;
+input  [NVDLA_PRIMARY_MEMIF_WIDTH+1:0] bpt2arb_dat4_pd;
 
 output        arb2spt_cmd_valid;  /* data valid */
 input         arb2spt_cmd_ready;  /* data return handshake */
@@ -107,7 +135,7 @@ output [76:0] arb2spt_cmd_pd;
 
 output         arb2spt_dat_valid;  /* data valid */
 input          arb2spt_dat_ready;  /* data return handshake */
-output [513:0] arb2spt_dat_pd;
+output [NVDLA_PRIMARY_MEMIF_WIDTH+1:0] arb2spt_dat_pd;
 
 input [31:0] pwrbus_ram_pd;
 
@@ -117,7 +145,7 @@ input   [7:0] reg2dp_wr_weight_pdp;
 input   [7:0] reg2dp_wr_weight_rbk;
 input   [7:0] reg2dp_wr_weight_sdp;
 reg    [76:0] arb_cmd_pd;
-reg   [513:0] arb_dat_pd;
+reg   [NVDLA_PRIMARY_MEMIF_WIDTH+1:0] arb_dat_pd;
 reg     [1:0] gnt_count;
 reg     [4:0] stick_gnts;
 reg           sticky;
@@ -184,19 +212,19 @@ wire    [2:0] src_cmd4_size;
 wire          src_cmd4_size_bit0_NC;
 wire          src_cmd4_vld;
 wire    [4:0] src_cmd_vlds;
-wire  [513:0] src_dat0_pd;
+wire  [NVDLA_PRIMARY_MEMIF_WIDTH+1:0] src_dat0_pd;
 wire          src_dat0_rdy;
 wire          src_dat0_vld;
-wire  [513:0] src_dat1_pd;
+wire  [NVDLA_PRIMARY_MEMIF_WIDTH+1:0] src_dat1_pd;
 wire          src_dat1_rdy;
 wire          src_dat1_vld;
-wire  [513:0] src_dat2_pd;
+wire  [NVDLA_PRIMARY_MEMIF_WIDTH+1:0] src_dat2_pd;
 wire          src_dat2_rdy;
 wire          src_dat2_vld;
-wire  [513:0] src_dat3_pd;
+wire  [NVDLA_PRIMARY_MEMIF_WIDTH+1:0] src_dat3_pd;
 wire          src_dat3_rdy;
 wire          src_dat3_vld;
-wire  [513:0] src_dat4_pd;
+wire  [NVDLA_PRIMARY_MEMIF_WIDTH+1:0] src_dat4_pd;
 wire          src_dat4_rdy;
 wire          src_dat4_vld;
 wire    [4:0] src_dat_gnts;
@@ -226,6 +254,7 @@ wire    [7:0] wt4;
     
 
 // CMD input
+  #ifdef NVDLA_BDMA_ENABLE
 NV_NVDLA_MCIF_WRITE_IG_ARB_pipe_p1 pipe_p1 (
    .nvdla_core_clk     (nvdla_core_clk)         //|< i
   ,.nvdla_core_rstn    (nvdla_core_rstn)        //|< i
@@ -243,12 +272,21 @@ NV_NVDLA_MCIF_WRITE_IG_ARB_dfifo u_dfifo0 (
   ,.dfifo_wr_count     (dfifo0_wr_count[2:0])   //|> w
   ,.dfifo_wr_prdy      (bpt2arb_dat0_ready)     //|> o
   ,.dfifo_wr_pvld      (bpt2arb_dat0_valid)     //|< i
-  ,.dfifo_wr_pd        (bpt2arb_dat0_pd[513:0]) //|< i
+  ,.dfifo_wr_pd        (bpt2arb_dat0_pd[NVDLA_PRIMARY_MEMIF_WIDTH+1:0]) //|< i
   ,.dfifo_rd_prdy      (src_dat0_rdy)           //|< w
   ,.dfifo_rd_pvld      (src_dat0_vld)           //|> w
-  ,.dfifo_rd_pd        (src_dat0_pd[513:0])     //|> w
+  ,.dfifo_rd_pd        (src_dat0_pd[NVDLA_PRIMARY_MEMIF_WIDTH+1:0])     //|> w
   ,.pwrbus_ram_pd      (pwrbus_ram_pd[31:0])    //|< i
   );
+#else
+assign src_cmd0_vld = 1'b0;
+assign src_cmd0_pd = 77'd0;
+assign src_dat0_pd = NVDLA_PRIMARY_MEMIF_WIDTH+2'd0;
+assign bpt2arb_dat0_ready = 1'b1;
+assign bpt2arb_cmd0_ready = 1'b1;
+assign dfifo0_wr_count = 3'd0;
+assign src_dat0_vld = 1'b0;
+#endif
 // CMD input
 NV_NVDLA_MCIF_WRITE_IG_ARB_pipe_p2 pipe_p2 (
    .nvdla_core_clk     (nvdla_core_clk)         //|< i
@@ -267,13 +305,14 @@ NV_NVDLA_MCIF_WRITE_IG_ARB_dfifo u_dfifo1 (
   ,.dfifo_wr_count     (dfifo1_wr_count[2:0])   //|> w
   ,.dfifo_wr_prdy      (bpt2arb_dat1_ready)     //|> o
   ,.dfifo_wr_pvld      (bpt2arb_dat1_valid)     //|< i
-  ,.dfifo_wr_pd        (bpt2arb_dat1_pd[513:0]) //|< i
+  ,.dfifo_wr_pd        (bpt2arb_dat1_pd[NVDLA_PRIMARY_MEMIF_WIDTH+1:0]) //|< i
   ,.dfifo_rd_prdy      (src_dat1_rdy)           //|< w
   ,.dfifo_rd_pvld      (src_dat1_vld)           //|> w
-  ,.dfifo_rd_pd        (src_dat1_pd[513:0])     //|> w
+  ,.dfifo_rd_pd        (src_dat1_pd[NVDLA_PRIMARY_MEMIF_WIDTH+1:0])     //|> w
   ,.pwrbus_ram_pd      (pwrbus_ram_pd[31:0])    //|< i
   );
 // CMD input
+  #ifdef NVDLA_CDP_ENABLE
 NV_NVDLA_MCIF_WRITE_IG_ARB_pipe_p3 pipe_p3 (
    .nvdla_core_clk     (nvdla_core_clk)         //|< i
   ,.nvdla_core_rstn    (nvdla_core_rstn)        //|< i
@@ -291,13 +330,23 @@ NV_NVDLA_MCIF_WRITE_IG_ARB_dfifo u_dfifo2 (
   ,.dfifo_wr_count     (dfifo2_wr_count[2:0])   //|> w
   ,.dfifo_wr_prdy      (bpt2arb_dat2_ready)     //|> o
   ,.dfifo_wr_pvld      (bpt2arb_dat2_valid)     //|< i
-  ,.dfifo_wr_pd        (bpt2arb_dat2_pd[513:0]) //|< i
+  ,.dfifo_wr_pd        (bpt2arb_dat2_pd[NVDLA_PRIMARY_MEMIF_WIDTH+1:0]) //|< i
   ,.dfifo_rd_prdy      (src_dat2_rdy)           //|< w
   ,.dfifo_rd_pvld      (src_dat2_vld)           //|> w
-  ,.dfifo_rd_pd        (src_dat2_pd[513:0])     //|> w
+  ,.dfifo_rd_pd        (src_dat2_pd[NVDLA_PRIMARY_MEMIF_WIDTH+1:0])     //|> w
   ,.pwrbus_ram_pd      (pwrbus_ram_pd[31:0])    //|< i
   );
+  #else
+assign src_cmd2_vld = 1'b0;
+assign src_cmd2_pd = 77'd0;
+assign src_dat2_pd = NVDLA_PRIMARY_MEMIF_WIDTH+2'd0;
+assign bpt2arb_dat2_ready = 1'b1;
+assign bpt2arb_cmd2_ready = 1'b1;
+assign dfifo2_wr_count = 3'd0;
+assign src_dat2_vld = 1'b0;
+  #endif
 // CMD input
+  #ifdef NVDLA_CDP_ENABLE
 NV_NVDLA_MCIF_WRITE_IG_ARB_pipe_p4 pipe_p4 (
    .nvdla_core_clk     (nvdla_core_clk)         //|< i
   ,.nvdla_core_rstn    (nvdla_core_rstn)        //|< i
@@ -315,13 +364,23 @@ NV_NVDLA_MCIF_WRITE_IG_ARB_dfifo u_dfifo3 (
   ,.dfifo_wr_count     (dfifo3_wr_count[2:0])   //|> w
   ,.dfifo_wr_prdy      (bpt2arb_dat3_ready)     //|> o
   ,.dfifo_wr_pvld      (bpt2arb_dat3_valid)     //|< i
-  ,.dfifo_wr_pd        (bpt2arb_dat3_pd[513:0]) //|< i
+  ,.dfifo_wr_pd        (bpt2arb_dat3_pd[NVDLA_PRIMARY_MEMIF_WIDTH+1:0]) //|< i
   ,.dfifo_rd_prdy      (src_dat3_rdy)           //|< w
   ,.dfifo_rd_pvld      (src_dat3_vld)           //|> w
-  ,.dfifo_rd_pd        (src_dat3_pd[513:0])     //|> w
+  ,.dfifo_rd_pd        (src_dat3_pd[NVDLA_PRIMARY_MEMIF_WIDTH+1:0])     //|> w
   ,.pwrbus_ram_pd      (pwrbus_ram_pd[31:0])    //|< i
   );
+#else
+assign src_cmd3_vld = 1'b0;
+assign src_cmd3_pd = 77'd0;
+assign src_dat3_pd = NVDLA_PRIMARY_MEMIF_WIDTH+2'd0;
+assign bpt2arb_dat3_ready = 1'b1;
+assign bpt2arb_cmd3_ready = 1'b1;
+assign dfifo3_wr_count = 3'd0;
+assign src_dat3_vld = 1'b0;
+#endif
 // CMD input
+  #ifdef NVDLA_RUBIK_ENABLE
 NV_NVDLA_MCIF_WRITE_IG_ARB_pipe_p5 pipe_p5 (
    .nvdla_core_clk     (nvdla_core_clk)         //|< i
   ,.nvdla_core_rstn    (nvdla_core_rstn)        //|< i
@@ -339,12 +398,21 @@ NV_NVDLA_MCIF_WRITE_IG_ARB_dfifo u_dfifo4 (
   ,.dfifo_wr_count     (dfifo4_wr_count[2:0])   //|> w
   ,.dfifo_wr_prdy      (bpt2arb_dat4_ready)     //|> o
   ,.dfifo_wr_pvld      (bpt2arb_dat4_valid)     //|< i
-  ,.dfifo_wr_pd        (bpt2arb_dat4_pd[513:0]) //|< i
+  ,.dfifo_wr_pd        (bpt2arb_dat4_pd[NVDLA_PRIMARY_MEMIF_WIDTH+1:0]) //|< i
   ,.dfifo_rd_prdy      (src_dat4_rdy)           //|< w
   ,.dfifo_rd_pvld      (src_dat4_vld)           //|> w
-  ,.dfifo_rd_pd        (src_dat4_pd[513:0])     //|> w
+  ,.dfifo_rd_pd        (src_dat4_pd[NVDLA_PRIMARY_MEMIF_WIDTH+1:0])     //|> w
   ,.pwrbus_ram_pd      (pwrbus_ram_pd[31:0])    //|< i
   );
+#else
+assign src_cmd4_vld = 1'b0;
+assign src_cmd4_pd = 77'd0;
+assign src_dat4_pd = NVDLA_PRIMARY_MEMIF_WIDTH+2'd0;
+assign bpt2arb_dat4_ready = 1'b1;
+assign bpt2arb_cmd4_ready = 1'b1;
+assign dfifo4_wr_count = 3'd0;
+assign src_dat4_vld = 1'b0;
+#endif
 
 assign src_cmd0_size= {3 {src_cmd0_vld}} & src_cmd0_pd[71:69];
 assign src_cmd0_inc = {1{src_cmd0_vld}} & src_cmd0_pd[74:74];
@@ -759,11 +827,27 @@ assign all_gnts = (sticky) ? (stick_gnts) : arb_gnts;
 assign gnt_busy = sticky || spt_is_busy;
 assign arb_reqs = src_cmd_vlds;
 
+#ifdef NVDLA_BDMA_ENABLE
 assign wt0 = reg2dp_wr_weight_bdma;
+#else
+assign wt0 = 8'd0;
+#endif
 assign wt1 = reg2dp_wr_weight_sdp;
+#ifdef NVDLA_PDP_ENABLE
 assign wt2 = reg2dp_wr_weight_pdp;
+#else
+assign wt2 = 8'd0;
+#endif
+#ifdef NVDLA_CDP_ENABLE
 assign wt3 = reg2dp_wr_weight_cdp;
+#else
+assign wt3 = 8'd0;
+#endif
+#ifdef NVDLA_RUBIK_ENABLE
 assign wt4 = reg2dp_wr_weight_rbk;
+#else
+assign wt4 = 8'd0;
+#endif
 
 write_ig_arb u_write_ig_arb (
    .req0               (arb_reqs[0])            //|< w
@@ -832,7 +916,7 @@ always @(
       all_gnts[4]: arb_dat_pd = src_dat4_pd;
     //VCS coverage off
     default : begin 
-                arb_dat_pd[513:0] = {514{`x_or_0}};
+                arb_dat_pd[NVDLA_PRIMARY_MEMIF_WIDTH+1:0] = {NVDLA_PRIMARY_MEMIF_WIDTH+2{`x_or_0}};
               end  
     //VCS coverage on
     endcase
@@ -861,6 +945,7 @@ endmodule // NV_NVDLA_MCIF_WRITE_IG_arb
 // **************************************************************************************************************
 // Generated by ::pipe -m -rand none -bc -os src_cmd0_pd (src_cmd0_vld,src_cmd0_rdy) <= bpt2arb_cmd0_pd[76:0] (bpt2arb_cmd0_valid,bpt2arb_cmd0_ready)
 // **************************************************************************************************************
+  #ifdef NVDLA_BDMA_ENABLE
 module NV_NVDLA_MCIF_WRITE_IG_ARB_pipe_p1 (
    nvdla_core_clk
   ,nvdla_core_rstn
@@ -1063,6 +1148,7 @@ wire p1_assert_clk = nvdla_core_clk;
 `endif // SPYGLASS_ASSERT_ON
 `endif
 endmodule // NV_NVDLA_MCIF_WRITE_IG_ARB_pipe_p1
+#endif
 
 
 
@@ -1279,6 +1365,7 @@ endmodule // NV_NVDLA_MCIF_WRITE_IG_ARB_pipe_p2
 // **************************************************************************************************************
 // Generated by ::pipe -m -rand none -bc -os src_cmd2_pd (src_cmd2_vld,src_cmd2_rdy) <= bpt2arb_cmd2_pd[76:0] (bpt2arb_cmd2_valid,bpt2arb_cmd2_ready)
 // **************************************************************************************************************
+  #ifdef NVDLA_PDP_ENABLE
 module NV_NVDLA_MCIF_WRITE_IG_ARB_pipe_p3 (
    nvdla_core_clk
   ,nvdla_core_rstn
@@ -1481,6 +1568,7 @@ wire p3_assert_clk = nvdla_core_clk;
 `endif // SPYGLASS_ASSERT_ON
 `endif
 endmodule // NV_NVDLA_MCIF_WRITE_IG_ARB_pipe_p3
+#endif
 
 
 
@@ -1488,6 +1576,7 @@ endmodule // NV_NVDLA_MCIF_WRITE_IG_ARB_pipe_p3
 // **************************************************************************************************************
 // Generated by ::pipe -m -rand none -bc -os src_cmd3_pd (src_cmd3_vld,src_cmd3_rdy) <= bpt2arb_cmd3_pd[76:0] (bpt2arb_cmd3_valid,bpt2arb_cmd3_ready)
 // **************************************************************************************************************
+  #ifdef NVDLA_CDP_ENABLE
 module NV_NVDLA_MCIF_WRITE_IG_ARB_pipe_p4 (
    nvdla_core_clk
   ,nvdla_core_rstn
@@ -1690,6 +1779,7 @@ wire p4_assert_clk = nvdla_core_clk;
 `endif // SPYGLASS_ASSERT_ON
 `endif
 endmodule // NV_NVDLA_MCIF_WRITE_IG_ARB_pipe_p4
+#endif
 
 
 
@@ -1697,6 +1787,7 @@ endmodule // NV_NVDLA_MCIF_WRITE_IG_ARB_pipe_p4
 // **************************************************************************************************************
 // Generated by ::pipe -m -rand none -bc -os src_cmd4_pd (src_cmd4_vld,src_cmd4_rdy) <= bpt2arb_cmd4_pd[76:0] (bpt2arb_cmd4_valid,bpt2arb_cmd4_ready)
 // **************************************************************************************************************
+  #ifdef NVDLA_RUBIK_ENABLE
 module NV_NVDLA_MCIF_WRITE_IG_ARB_pipe_p5 (
    nvdla_core_clk
   ,nvdla_core_rstn
@@ -1899,6 +1990,7 @@ wire p5_assert_clk = nvdla_core_clk;
 `endif // SPYGLASS_ASSERT_ON
 `endif
 endmodule // NV_NVDLA_MCIF_WRITE_IG_ARB_pipe_p5
+#endif
 
 
 // when use wr_count, should be care full that no -rd_reg and -wr_reg should be used, as -wr_count does not count in the entry in wr|rd_reg
@@ -1906,7 +1998,7 @@ endmodule // NV_NVDLA_MCIF_WRITE_IG_ARB_pipe_p5
 // AUTOMATICALLY GENERATED -- DO NOT EDIT OR CHECK IN
 //
 // /home/nvtools/engr/2017/03/11_05_00_06/nvtools/scripts/fifogen
-// fifogen -input_config_yaml ../../../../../../../socd/ip_chip_tools/1.0/defs/public/fifogen/golden/tlit5/fifogen.yml -no_make_ram -no_make_ram -stdout -m NV_NVDLA_MCIF_WRITE_IG_ARB_dfifo -clk_name nvdla_core_clk -reset_name nvdla_core_rstn -wr_pipebus dfifo_wr -rd_pipebus dfifo_rd -d 4 -wr_count -rand_none -w 514 -ram ff [Chosen ram type: ff - fifogen_flops (user specified, thus no other ram type is allowed)]
+// fifogen -input_config_yaml ../../../../../../../socd/ip_chip_tools/1.0/defs/public/fifogen/golden/tlit5/fifogen.yml -no_make_ram -no_make_ram -stdout -m NV_NVDLA_MCIF_WRITE_IG_ARB_dfifo -clk_name nvdla_core_clk -reset_name nvdla_core_rstn -wr_pipebus dfifo_wr -rd_pipebus dfifo_rd -d 4 -wr_count -rand_none -w NVDLA_PRIMARY_MEMIF_WIDTH+2 -ram ff [Chosen ram type: ff - fifogen_flops (user specified, thus no other ram type is allowed)]
 // chip config vars: assertion_module_prefix=nv_  strict_synchronizers=1  strict_synchronizers_use_lib_cells=1  strict_synchronizers_use_tm_lib_cells=1  strict_sync_randomizer=1  assertion_message_prefix=FIFOGEN_ASSERTION  allow_async_fifola=0  ignore_ramgen_fifola_variant=1  uses_p_SSYNC=0  uses_prand=1  uses_rammake_inc=1  use_x_or_0=1  force_wr_reg_gated=1  no_force_reset=1  no_timescale=1  no_pli_ifdef=1  requires_full_throughput=1  ram_auto_ff_bits_cutoff=16  ram_auto_ff_width_cutoff=2  ram_auto_ff_width_cutoff_max_depth=32  ram_auto_ff_depth_cutoff=-1  ram_auto_ff_no_la2_depth_cutoff=5  ram_auto_la2_width_cutoff=8  ram_auto_la2_width_cutoff_max_depth=56  ram_auto_la2_depth_cutoff=16  flopram_emu_model=1  dslp_single_clamp_port=1  dslp_clamp_port=1  slp_single_clamp_port=1  slp_clamp_port=1  master_clk_gated=1  clk_gate_module=NV_CLK_gate_power  redundant_timing_flops=0  hot_reset_async_force_ports_and_loopback=1  ram_sleep_en_width=1  async_cdc_reg_id=NV_AFIFO_  rd_reg_default_for_async=1  async_ram_instance_prefix=NV_ASYNC_RAM_  allow_rd_busy_reg_warning=0  do_dft_xelim_gating=1  add_dft_xelim_wr_clkgate=1  add_dft_xelim_rd_clkgate=1 
 //
 // leda B_3208_NV OFF -- Unequal length LHS and RHS in assignment
@@ -1934,10 +2026,10 @@ input         nvdla_core_rstn;
 output [2:0] dfifo_wr_count;
 output        dfifo_wr_prdy;
 input         dfifo_wr_pvld;
-input  [513:0] dfifo_wr_pd;
+input  [NVDLA_PRIMARY_MEMIF_WIDTH+1:0] dfifo_wr_pd;
 input         dfifo_rd_prdy;
 output        dfifo_rd_pvld;
-output [513:0] dfifo_rd_pd;
+output [NVDLA_PRIMARY_MEMIF_WIDTH+1:0] dfifo_rd_pd;
 input  [31:0] pwrbus_ram_pd;
 
 // Master Clock Gating (SLCG)
@@ -2025,7 +2117,7 @@ end
 
 reg [1:0] dfifo_rd_adr;          // read address this cycle
 wire ram_we = wr_pushing;   // note: write occurs next cycle
-wire [513:0] dfifo_rd_pd;                    // read data out of ram
+wire [NVDLA_PRIMARY_MEMIF_WIDTH+1:0] dfifo_rd_pd;                    // read data out of ram
 
 wire [31 : 0] pwrbus_ram_pd;
 
@@ -2033,7 +2125,7 @@ wire [31 : 0] pwrbus_ram_pd;
 // Fifogen handles this by ignoring the data on the ram data out for that cycle.
 
 
-NV_NVDLA_MCIF_WRITE_IG_ARB_dfifo_flopram_rwsa_4x514 ram (
+NV_NVDLA_MCIF_WRITE_IG_ARB_dfifo_flopram_rwsa_4xNVDLA_PRIMARY_MEMIF_WIDTHplus2 ram (
       .clk( nvdla_core_clk_mgated )
     , .pwrbus_ram_pd ( pwrbus_ram_pd )
     , .di        ( dfifo_wr_pd )
@@ -2322,7 +2414,7 @@ endmodule // NV_NVDLA_MCIF_WRITE_IG_ARB_dfifo
 // 
 // Flop-Based RAM 
 //
-module NV_NVDLA_MCIF_WRITE_IG_ARB_dfifo_flopram_rwsa_4x514 (
+module NV_NVDLA_MCIF_WRITE_IG_ARB_dfifo_flopram_rwsa_4xNVDLA_PRIMARY_MEMIF_WIDTHplus2 (
       clk
     , pwrbus_ram_pd
     , di
@@ -2334,44 +2426,108 @@ module NV_NVDLA_MCIF_WRITE_IG_ARB_dfifo_flopram_rwsa_4x514 (
 
 input  clk;  // write clock
 input [31 : 0] pwrbus_ram_pd;
-input  [513:0] di;
+input  [NVDLA_PRIMARY_MEMIF_WIDTH+1:0] di;
 input  we;
 input  [1:0] wa;
 input  [1:0] ra;
-output [513:0] dout;
+output [NVDLA_PRIMARY_MEMIF_WIDTH+1:0] dout;
 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_0 (.A(pwrbus_ram_pd[0]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_1 (.A(pwrbus_ram_pd[1]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_2 (.A(pwrbus_ram_pd[2]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_3 (.A(pwrbus_ram_pd[3]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_4 (.A(pwrbus_ram_pd[4]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_5 (.A(pwrbus_ram_pd[5]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_6 (.A(pwrbus_ram_pd[6]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_7 (.A(pwrbus_ram_pd[7]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_8 (.A(pwrbus_ram_pd[8]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_9 (.A(pwrbus_ram_pd[9]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_10 (.A(pwrbus_ram_pd[10]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_11 (.A(pwrbus_ram_pd[11]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_12 (.A(pwrbus_ram_pd[12]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_13 (.A(pwrbus_ram_pd[13]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_14 (.A(pwrbus_ram_pd[14]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_15 (.A(pwrbus_ram_pd[15]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_16 (.A(pwrbus_ram_pd[16]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_17 (.A(pwrbus_ram_pd[17]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_18 (.A(pwrbus_ram_pd[18]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_19 (.A(pwrbus_ram_pd[19]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_20 (.A(pwrbus_ram_pd[20]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_21 (.A(pwrbus_ram_pd[21]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_22 (.A(pwrbus_ram_pd[22]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_23 (.A(pwrbus_ram_pd[23]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_24 (.A(pwrbus_ram_pd[24]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_25 (.A(pwrbus_ram_pd[25]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_26 (.A(pwrbus_ram_pd[26]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_27 (.A(pwrbus_ram_pd[27]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_28 (.A(pwrbus_ram_pd[28]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_29 (.A(pwrbus_ram_pd[29]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_30 (.A(pwrbus_ram_pd[30]));
+`endif 
+`ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_31 (.A(pwrbus_ram_pd[31]));
+`endif 
 
 
 `ifdef EMU
@@ -2382,7 +2538,7 @@ NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_31 (.A(pwrbus_ram_pd[31]));
 //
 reg [1:0] Wa0_vmw;
 reg we0_vmw;
-reg [513:0] Di0_vmw;
+reg [NVDLA_PRIMARY_MEMIF_WIDTH+1:0] Di0_vmw;
 
 always @( posedge clk ) begin
     Wa0_vmw <=  wa;
@@ -2390,7 +2546,7 @@ always @( posedge clk ) begin
     Di0_vmw <=  di;
 end
 
-vmw_NV_NVDLA_MCIF_WRITE_IG_ARB_dfifo_flopram_rwsa_4x514 emu_ram (
+vmw_NV_NVDLA_MCIF_WRITE_IG_ARB_dfifo_flopram_rwsa_4xNVDLA_PRIMARY_MEMIF_WIDTHplus2 emu_ram (
      .Wa0( Wa0_vmw ) 
    , .we0( we0_vmw ) 
    , .Di0( Di0_vmw )
@@ -2400,10 +2556,10 @@ vmw_NV_NVDLA_MCIF_WRITE_IG_ARB_dfifo_flopram_rwsa_4x514 emu_ram (
 
 `else
 
-reg [513:0] ram_ff0;
-reg [513:0] ram_ff1;
-reg [513:0] ram_ff2;
-reg [513:0] ram_ff3;
+reg [NVDLA_PRIMARY_MEMIF_WIDTH+1:0] ram_ff0;
+reg [NVDLA_PRIMARY_MEMIF_WIDTH+1:0] ram_ff1;
+reg [NVDLA_PRIMARY_MEMIF_WIDTH+1:0] ram_ff2;
+reg [NVDLA_PRIMARY_MEMIF_WIDTH+1:0] ram_ff3;
 
 always @( posedge clk ) begin
     if ( we && wa == 2'd0 ) begin
@@ -2420,7 +2576,7 @@ always @( posedge clk ) begin
     end
 end
 
-reg [513:0] dout;
+reg [NVDLA_PRIMARY_MEMIF_WIDTH+1:0] dout;
 
 always @(*) begin
     case( ra ) 
@@ -2429,35 +2585,35 @@ always @(*) begin
     2'd2:       dout = ram_ff2;
     2'd3:       dout = ram_ff3;
     //VCS coverage off
-    default:    dout = {514{`x_or_0}};
+    default:    dout = {NVDLA_PRIMARY_MEMIF_WIDTH+2{`x_or_0}};
     //VCS coverage on
     endcase
 end
 
 `endif // EMU
 
-endmodule // NV_NVDLA_MCIF_WRITE_IG_ARB_dfifo_flopram_rwsa_4x514
+endmodule // NV_NVDLA_MCIF_WRITE_IG_ARB_dfifo_flopram_rwsa_4xNVDLA_PRIMARY_MEMIF_WIDTHplus2
 
 // emulation model of flopram guts
 //
 `ifdef EMU
 
 
-module vmw_NV_NVDLA_MCIF_WRITE_IG_ARB_dfifo_flopram_rwsa_4x514 (
+module vmw_NV_NVDLA_MCIF_WRITE_IG_ARB_dfifo_flopram_rwsa_4xNVDLA_PRIMARY_MEMIF_WIDTHplus2 (
    Wa0, we0, Di0,
    Ra0, Do0
    );
 
 input  [1:0] Wa0;
 input            we0;
-input  [513:0] Di0;
+input  [NVDLA_PRIMARY_MEMIF_WIDTH+1:0] Di0;
 input  [1:0] Ra0;
-output [513:0] Do0;
+output [NVDLA_PRIMARY_MEMIF_WIDTH+1:0] Do0;
 
 // Only visible during Spyglass to avoid blackboxes.
 `ifdef SPYGLASS_FLOPRAM
 
-assign Do0 = 514'd0;
+assign Do0 = NVDLA_PRIMARY_MEMIF_WIDTH+2'd0;
 wire dummy = 1'b0 | (|Wa0) | (|we0) | (|Di0) | (|Ra0);
 
 `endif
@@ -2465,14 +2621,14 @@ wire dummy = 1'b0 | (|Wa0) | (|we0) | (|Di0) | (|Ra0);
 // synopsys translate_off
 `ifndef SYNTH_LEVEL1_COMPILE
 `ifndef SYNTHESIS
-reg [513:0] mem[3:0];
+reg [NVDLA_PRIMARY_MEMIF_WIDTH+1:0] mem[3:0];
 
 // expand mem for debug ease
 `ifdef EMU_EXPAND_FLOPRAM_MEM
-wire [513:0] Q0 = mem[0];
-wire [513:0] Q1 = mem[1];
-wire [513:0] Q2 = mem[2];
-wire [513:0] Q3 = mem[3];
+wire [NVDLA_PRIMARY_MEMIF_WIDTH+1:0] Q0 = mem[0];
+wire [NVDLA_PRIMARY_MEMIF_WIDTH+1:0] Q1 = mem[1];
+wire [NVDLA_PRIMARY_MEMIF_WIDTH+1:0] Q2 = mem[2];
+wire [NVDLA_PRIMARY_MEMIF_WIDTH+1:0] Q3 = mem[3];
 `endif
 
 // asynchronous ram writes
@@ -2491,24 +2647,24 @@ assign Do0 = mem[Ra0];
 // synopsys dc_script_begin
 // synopsys dc_script_end
 
-// g2c if { [find / -null_ok -subdesign vmw_NV_NVDLA_MCIF_WRITE_IG_ARB_dfifo_flopram_rwsa_4x514] != {} } { set_attr preserve 1 [find / -subdesign vmw_NV_NVDLA_MCIF_WRITE_IG_ARB_dfifo_flopram_rwsa_4x514] }
-endmodule // vmw_NV_NVDLA_MCIF_WRITE_IG_ARB_dfifo_flopram_rwsa_4x514
+// g2c if { [find / -null_ok -subdesign vmw_NV_NVDLA_MCIF_WRITE_IG_ARB_dfifo_flopram_rwsa_4xNVDLA_PRIMARY_MEMIF_WIDTH+2] != {} } { set_attr preserve 1 [find / -subdesign vmw_NV_NVDLA_MCIF_WRITE_IG_ARB_dfifo_flopram_rwsa_4xPRIMARY_MEMIF_WIDTH+2] }
+endmodule // vmw_NV_NVDLA_MCIF_WRITE_IG_ARB_dfifo_flopram_rwsa_4xNVDLA_PRIMARY_MEMIF_WIDTHplus2
 
-//vmw: Memory vmw_NV_NVDLA_MCIF_WRITE_IG_ARB_dfifo_flopram_rwsa_4x514
+//vmw: Memory vmw_NV_NVDLA_MCIF_WRITE_IG_ARB_dfifo_flopram_rwsa_4xNVDLA_PRIMARY_MEMIF_WIDTHplus2
 //vmw: Address-size 2
-//vmw: Data-size 514
+//vmw: Data-size NVDLA_PRIMARY_MEMIF_WIDTH+2
 //vmw: Sensitivity level 1
 //vmw: Ports W R
 
 //vmw: terminal we0 WriteEnable0
 //vmw: terminal Wa0 address0
-//vmw: terminal Di0[513:0] data0[513:0]
+//vmw: terminal Di0[NVDLA_PRIMARY_MEMIF_WIDTH+1:0] data0[PRIMARY_MEMIF_WIDTH+1:0]
 //vmw: 
 //vmw: terminal Ra0 address1
-//vmw: terminal Do0[513:0] data1[513:0]
+//vmw: terminal Do0[NVDLA_PRIMARY_MEMIF_WIDTH+1:0] data1[PRIMARY_MEMIF_WIDTH+1:0]
 //vmw: 
 
-//qt: CELL vmw_NV_NVDLA_MCIF_WRITE_IG_ARB_dfifo_flopram_rwsa_4x514
+//qt: CELL vmw_NV_NVDLA_MCIF_WRITE_IG_ARB_dfifo_flopram_rwsa_4xNVDLA_PRIMARY_MEMIF_WIDTHplus2
 //qt: TERMINAL we0 TYPE=WE POLARITY=H PORT=1
 //qt: TERMINAL Wa0[%d] TYPE=ADDRESS DIR=W BIT=%1 PORT=1
 //qt: TERMINAL Di0[%d] TYPE=DATA DIR=I BIT=%1 PORT=1

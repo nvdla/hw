@@ -1,0 +1,29 @@
+# --- UVM Report catcher Summary ---
+# 
+# 
+# Number of demoted UVM_FATAL reports  :    0
+# Number of demoted UVM_ERROR reports  :    0
+# Number of demoted UVM_WARNING reports:    0
+# Number of caught UVM_FATAL reports   :    0
+# Number of caught UVM_ERROR reports   :    0
+# Number of caught UVM_WARNING reports :    0
+# 
+# --- UVM Report Summary ---
+# 
+# ** Report counts by severity
+# UVM_INFO :
+# UVM_WARNING :    0
+# UVM_ERROR :    0
+# UVM_FATAL :    0
+# ** Report counts by id
+# [INT_CONFIG]     1
+# [OBJECT_CONFIG]     1
+# [PRODUCER/SEND_PKT]     2
+# [PRODUCER/STOP_TEST]     1
+# [RNTST]     1
+# [SCOREBD/RECV]     2
+# [STRING_CONFIG]     1
+# [TEST_DONE]     1
+# [TOP/GET_CFG]     1
+# [TOP/SET_CFG]     1
+# [UVMC_WAIT_FOR_PHASE]     1

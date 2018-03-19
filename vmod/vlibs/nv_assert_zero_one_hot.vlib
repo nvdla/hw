@@ -66,8 +66,8 @@ end
   integer error_count;
   initial error_count = 0;
 
-  `include "assertion_header.h"
-  `include "assertion_task.h"
+  `include "assertion_header.vh"
+  `include "assertion_task.vh"
   
   `ifdef ASSERT_INIT_MSG
     initial

@@ -1,0 +1,1354 @@
+// ================================================================
+// NVDLA Open Source Project
+//
+// Copyright(c) 2016 - 2017 NVIDIA Corporation.  Licensed under the
+// NVDLA Open Hardware License; Check "LICENSE" which comes with
+// this distribution for more information.
+// ================================================================
+
+property spec_sw_default {
+    type      = number;
+    component = field;
+};
+property spec_access {
+    type      = string;
+    component = field;
+};
+property sw_default_mask {
+    type      = number;
+    component = field;
+};
+property reset_mask {
+    type      = number;
+    component = field;
+};
+regfile regs_NVDLA_CDMA{
+    default regwidth=32;
+    reg {
+        name = "S_STATUS";
+        desc = "
+////Convolution DMA Registers
+";
+        enum S_STATUS_STATUS_0_enum {
+            IDLE = 2'd0;
+            RUNNING = 2'd1;
+            PENDING = 2'd2;
+        };
+        field {
+            encode          = S_STATUS_STATUS_0_enum;
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x0;
+            reset_mask      = 0x3;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } STATUS_0[1:0];
+        STATUS_0->desc="
+//// Status of configuration register group 0
+";
+        enum S_STATUS_STATUS_1_enum {
+            IDLE = 2'd0;
+            RUNNING = 2'd1;
+            PENDING = 2'd2;
+        };
+        field {
+            encode          = S_STATUS_STATUS_1_enum;
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x0;
+            reset_mask      = 0x3;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } STATUS_1[17:16];
+        STATUS_1->desc="
+//// Status of configuration register group 1
+";
+    }S_STATUS @0x0;
+    reg {
+        name = "S_POINTER";
+        enum S_POINTER_PRODUCER_enum {
+            GROUP_0 = 1'd0;
+            GROUP_1 = 1'd1;
+        };
+        field {
+            encode          = S_POINTER_PRODUCER_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } PRODUCER[0:0];
+        PRODUCER->desc="
+////Pointer for CSB master to access groups
+";
+        enum S_POINTER_CONSUMER_enum {
+            GROUP_0 = 1'd0;
+            GROUP_1 = 1'd1;
+        };
+        field {
+            encode          = S_POINTER_CONSUMER_enum;
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CONSUMER[16:16];
+        CONSUMER->desc="
+////Pointer for datapath to access groups
+";
+    }S_POINTER @0x4;
+    reg {
+        name = "S_ARBITER";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0xf;
+            reset_mask      = 0xf;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } ARB_WEIGHT[3:0];
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x3;
+            reset_mask      = 0xf;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } ARB_WMB[19:16];
+    }S_ARBITER @0x8;
+    reg {
+        name = "S_CBUF_FLUSH_STATUS";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } FLUSH_DONE[0:0];
+    }S_CBUF_FLUSH_STATUS @0xc;
+    reg {
+        name = "D_OP_ENABLE";
+        desc = "
+//////////////////////////////////////////////////////////////////////////////////
+////                                                                            //
+////                    Define single group registers here                      //
+////                    Register name should shart with prefix D_               //
+////                                                                            //
+//////////////////////////////////////////////////////////////////////////////////
+";
+        enum D_OP_ENABLE_OP_EN_enum {
+            DISABLE = 1'd0;
+            ENABLE = 1'd1;
+        };
+        field {
+            encode          = D_OP_ENABLE_OP_EN_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rwto;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } OP_EN[0:0];
+    }D_OP_ENABLE @0x10;
+    reg {
+        name = "D_MISC_CFG";
+        enum D_MISC_CFG_CONV_MODE_enum {
+            DIRECT = 1'd0;
+            WINOGRAD = 1'd1;
+        };
+        field {
+            encode          = D_MISC_CFG_CONV_MODE_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CONV_MODE[0:0];
+        enum D_MISC_CFG_IN_PRECISION_enum {
+            INT8 = 2'd0;
+            INT16 = 2'd1;
+            FP16 = 2'd2;
+        };
+        field {
+            encode          = D_MISC_CFG_IN_PRECISION_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x1;
+            reset_mask      = 0x3;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } IN_PRECISION[9:8];
+        enum D_MISC_CFG_PROC_PRECISION_enum {
+            INT8 = 2'd0;
+            INT16 = 2'd1;
+            FP16 = 2'd2;
+        };
+        field {
+            encode          = D_MISC_CFG_PROC_PRECISION_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x1;
+            reset_mask      = 0x3;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } PROC_PRECISION[13:12];
+        enum D_MISC_CFG_DATA_REUSE_enum {
+            DISABLE = 1'd0;
+            ENABLE = 1'd1;
+        };
+        field {
+            encode          = D_MISC_CFG_DATA_REUSE_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } DATA_REUSE[16:16];
+        enum D_MISC_CFG_WEIGHT_REUSE_enum {
+            DISABLE = 1'd0;
+            ENABLE = 1'd1;
+        };
+        field {
+            encode          = D_MISC_CFG_WEIGHT_REUSE_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } WEIGHT_REUSE[20:20];
+        enum D_MISC_CFG_SKIP_DATA_RLS_enum {
+            DISABLE = 1'd0;
+            ENABLE = 1'd1;
+        };
+        field {
+            encode          = D_MISC_CFG_SKIP_DATA_RLS_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } SKIP_DATA_RLS[24:24];
+        enum D_MISC_CFG_SKIP_WEIGHT_RLS_enum {
+            DISABLE = 1'd0;
+            ENABLE = 1'd1;
+        };
+        field {
+            encode          = D_MISC_CFG_SKIP_WEIGHT_RLS_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } SKIP_WEIGHT_RLS[28:28];
+    }D_MISC_CFG @0x14;
+    reg {
+        name = "D_DATAIN_FORMAT";
+        enum D_DATAIN_FORMAT_DATAIN_FORMAT_enum {
+            FEATURE = 1'd0;
+            PIXEL = 1'd1;
+        };
+        field {
+            encode          = D_DATAIN_FORMAT_DATAIN_FORMAT_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } DATAIN_FORMAT[0:0];
+        enum D_DATAIN_FORMAT_PIXEL_FORMAT_enum {
+            T_R8 = 6'd0;
+            T_R10 = 6'd1;
+            T_R12 = 6'd2;
+            T_R16 = 6'd3;
+            T_R16_I = 6'd4;
+            T_R16_F = 6'd5;
+            T_A16B16G16R16 = 6'd6;
+            T_X16B16G16R16 = 6'd7;
+            T_A16B16G16R16_F = 6'd8;
+            T_A16Y16U16V16 = 6'd9;
+            T_V16U16Y16A16 = 6'd10;
+            T_A16Y16U16V16_F = 6'd11;
+            T_A8B8G8R8 = 6'd12;
+            T_A8R8G8B8 = 6'd13;
+            T_B8G8R8A8 = 6'd14;
+            T_R8G8B8A8 = 6'd15;
+            T_X8B8G8R8 = 6'd16;
+            T_X8R8G8B8 = 6'd17;
+            T_B8G8R8X8 = 6'd18;
+            T_R8G8B8X8 = 6'd19;
+            T_A2B10G10R10 = 6'd20;
+            T_A2R10G10B10 = 6'd21;
+            T_B10G10R10A2 = 6'd22;
+            T_R10G10B10A2 = 6'd23;
+            T_A2Y10U10V10 = 6'd24;
+            T_V10U10Y10A2 = 6'd25;
+            T_A8Y8U8V8 = 6'd26;
+            T_V8U8Y8A8 = 6'd27;
+            T_Y8___U8V8_N444 = 6'd28;
+            T_Y8___V8U8_N444 = 6'd29;
+            T_Y10___U10V10_N444 = 6'd30;
+            T_Y10___V10U10_N444 = 6'd31;
+            T_Y12___U12V12_N444 = 6'd32;
+            T_Y12___V12U12_N444 = 6'd33;
+            T_Y16___U16V16_N444 = 6'd34;
+            T_Y16___V16U16_N444 = 6'd35;
+        };
+        field {
+            encode          = D_DATAIN_FORMAT_PIXEL_FORMAT_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0xc;
+            reset_mask      = 0x3f;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } PIXEL_FORMAT[13:8];
+        enum D_DATAIN_FORMAT_PIXEL_MAPPING_enum {
+            PITCH_LINEAR = 1'd0;
+            RESERVED_LINEAR = 1'd1;
+        };
+        field {
+            encode          = D_DATAIN_FORMAT_PIXEL_MAPPING_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } PIXEL_MAPPING[16:16];
+        enum D_DATAIN_FORMAT_PIXEL_SIGN_OVERRIDE_enum {
+            UNSIGNED_INT = 1'd0;
+            SIGNED_INT = 1'd1;
+        };
+        field {
+            encode          = D_DATAIN_FORMAT_PIXEL_SIGN_OVERRIDE_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } PIXEL_SIGN_OVERRIDE[20:20];
+    }D_DATAIN_FORMAT @0x18;
+    reg {
+        name = "D_DATAIN_SIZE_0";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1fff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } DATAIN_WIDTH[12:0];
+        DATAIN_WIDTH->desc="
+////Input data cube width - 1
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1fff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } DATAIN_HEIGHT[28:16];
+        DATAIN_HEIGHT->desc="
+////Input data cube height - 1
+";
+    }D_DATAIN_SIZE_0 @0x1c;
+    reg {
+        name = "D_DATAIN_SIZE_1";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1fff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } DATAIN_CHANNEL[12:0];
+        DATAIN_CHANNEL->desc="
+////Input data cube channel - 1
+";
+    }D_DATAIN_SIZE_1 @0x20;
+    reg {
+        name = "D_DATAIN_SIZE_EXT_0";
+        desc = "
+////For winograd mode only
+////DATAIN_WIDTH_EXT = (PAD_LEFT + PAD_RIGHT + DATAIN_WIDTH + 1)/(CONV_X_STRIDE + 1) - 1;
+////DATAIN_HEIGHT_EXT = (PAD_TOP + PAD_BOTTOM + DATAIN_HEIGHT + 1)/(CONV_Y_STRIDE + 1) - 1;
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1fff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } DATAIN_WIDTH_EXT[12:0];
+        DATAIN_WIDTH_EXT->desc="
+////Input data cube width - 1
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1fff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } DATAIN_HEIGHT_EXT[28:16];
+        DATAIN_HEIGHT_EXT->desc="
+////Input data cube height - 1
+";
+    }D_DATAIN_SIZE_EXT_0 @0x24;
+    reg {
+        name = "D_PIXEL_OFFSET";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1f;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } PIXEL_X_OFFSET[4:0];
+        PIXEL_X_OFFSET->desc="
+////Pixel horizontal offset
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x7;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } PIXEL_Y_OFFSET[18:16];
+        PIXEL_Y_OFFSET->desc="
+////Pixel vertical offset
+";
+    }D_PIXEL_OFFSET @0x28;
+    reg {
+        name = "D_DAIN_RAM_TYPE";
+        enum D_DAIN_RAM_TYPE_DATAIN_RAM_TYPE_enum {
+            CVIF = 1'd0;
+            MCIF = 1'd1;
+        };
+        field {
+            encode          = D_DAIN_RAM_TYPE_DATAIN_RAM_TYPE_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } DATAIN_RAM_TYPE[0:0];
+        DATAIN_RAM_TYPE->desc="
+////indicate the source ram (CV or MC)
+";
+    }D_DAIN_RAM_TYPE @0x2c;
+    reg {
+        name = "D_DAIN_ADDR_HIGH_0";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } DATAIN_ADDR_HIGH_0[31:0];
+        DATAIN_ADDR_HIGH_0->desc="
+////Input data address, high 32 bits
+";
+    }D_DAIN_ADDR_HIGH_0 @0x30;
+    reg {
+        name = "D_DAIN_ADDR_LOW_0";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } DATAIN_ADDR_LOW_0[31:0];
+        DATAIN_ADDR_LOW_0->desc="
+////Input data address, low 32 bits
+";
+    }D_DAIN_ADDR_LOW_0 @0x34;
+    reg {
+        name = "D_DAIN_ADDR_HIGH_1";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } DATAIN_ADDR_HIGH_1[31:0];
+        DATAIN_ADDR_HIGH_1->desc="
+////Input data address, high 32 bits, for UV plane
+";
+    }D_DAIN_ADDR_HIGH_1 @0x38;
+    reg {
+        name = "D_DAIN_ADDR_LOW_1";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } DATAIN_ADDR_LOW_1[31:0];
+        DATAIN_ADDR_LOW_1->desc="
+////Input data address, low 32 bits, for UV plane
+";
+    }D_DAIN_ADDR_LOW_1 @0x3c;
+    reg {
+        name = "D_LINE_STRIDE";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } LINE_STRIDE[31:0];
+        LINE_STRIDE->desc="
+////bytes
+";
+    }D_LINE_STRIDE @0x40;
+    reg {
+        name = "D_LINE_UV_STRIDE";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } UV_LINE_STRIDE[31:0];
+        UV_LINE_STRIDE->desc="
+////bytes
+";
+    }D_LINE_UV_STRIDE @0x44;
+    reg {
+        name = "D_SURF_STRIDE";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } SURF_STRIDE[31:0];
+        SURF_STRIDE->desc="
+////bytes
+";
+    }D_SURF_STRIDE @0x48;
+    reg {
+        name = "D_DAIN_MAP";
+        enum D_DAIN_MAP_LINE_PACKED_enum {
+            FALSE = 1'd0;
+            TRUE = 1'd1;
+        };
+        field {
+            encode          = D_DAIN_MAP_LINE_PACKED_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } LINE_PACKED[0:0];
+        enum D_DAIN_MAP_SURF_PACKED_enum {
+            FALSE = 1'd0;
+            TRUE = 1'd1;
+        };
+        field {
+            encode          = D_DAIN_MAP_SURF_PACKED_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } SURF_PACKED[16:16];
+    }D_DAIN_MAP @0x4c;
+    reg {
+        name = "D_RESERVED_X_CFG";
+        desc = "
+////reserved register, do not touch
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x3ff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } RSV_PER_LINE[9:0];
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x3ff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } RSV_PER_UV_LINE[25:16];
+    }D_RESERVED_X_CFG @0x50;
+    reg {
+        name = "D_RESERVED_Y_CFG";
+        desc = "
+////reserved register, do not touch
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x7;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } RSV_HEIGHT[2:0];
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1f;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } RSV_Y_INDEX[20:16];
+    }D_RESERVED_Y_CFG @0x54;
+    reg {
+        name = "D_BATCH_NUMBER";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1f;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } BATCHES[4:0];
+        BATCHES->desc="
+////batch number - 1
+";
+    }D_BATCH_NUMBER @0x58;
+    reg {
+        name = "D_BATCH_STRIDE";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } BATCH_STRIDE[31:0];
+        BATCH_STRIDE->desc="
+////bytes
+";
+    }D_BATCH_STRIDE @0x5c;
+    reg {
+        name = "D_ENTRY_PER_SLICE";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x3fff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } ENTRIES[13:0];
+        ENTRIES->desc="
+////entries - 1
+";
+    }D_ENTRY_PER_SLICE @0x60;
+    reg {
+        name = "D_FETCH_GRAIN";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xfff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } GRAINS[11:0];
+        GRAINS->desc="
+////slice - 1
+";
+    }D_FETCH_GRAIN @0x64;
+    reg {
+        name = "D_WEIGHT_FORMAT";
+        enum D_WEIGHT_FORMAT_WEIGHT_FORMAT_enum {
+            UNCOMPRESSED = 1'd0;
+            COMPRESSED = 1'd1;
+        };
+        field {
+            encode          = D_WEIGHT_FORMAT_WEIGHT_FORMAT_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } WEIGHT_FORMAT[0:0];
+    }D_WEIGHT_FORMAT @0x68;
+    reg {
+        name = "D_WEIGHT_SIZE_0";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x3ffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } BYTE_PER_KERNEL[17:0];
+        BYTE_PER_KERNEL->desc="
+////BYTE_PER_KERNEL - 1
+";
+    }D_WEIGHT_SIZE_0 @0x6c;
+    reg {
+        name = "D_WEIGHT_SIZE_1";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1fff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } WEIGHT_KERNEL[12:0];
+        WEIGHT_KERNEL->desc="
+////kernel - 1
+";
+    }D_WEIGHT_SIZE_1 @0x70;
+    reg {
+        name = "D_WEIGHT_RAM_TYPE";
+        enum D_WEIGHT_RAM_TYPE_WEIGHT_RAM_TYPE_enum {
+            CVIF = 1'd0;
+            MCIF = 1'd1;
+        };
+        field {
+            encode          = D_WEIGHT_RAM_TYPE_WEIGHT_RAM_TYPE_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } WEIGHT_RAM_TYPE[0:0];
+        WEIGHT_RAM_TYPE->desc="
+////indicate the source ram (CV or MC)
+";
+    }D_WEIGHT_RAM_TYPE @0x74;
+    reg {
+        name = "D_WEIGHT_ADDR_HIGH";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } WEIGHT_ADDR_HIGH[31:0];
+        WEIGHT_ADDR_HIGH->desc="
+////Weight start address, high 32 bits
+";
+    }D_WEIGHT_ADDR_HIGH @0x78;
+    reg {
+        name = "D_WEIGHT_ADDR_LOW";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } WEIGHT_ADDR_LOW[31:0];
+        WEIGHT_ADDR_LOW->desc="
+////weight start address, low 32 bits
+";
+    }D_WEIGHT_ADDR_LOW @0x7c;
+    reg {
+        name = "D_WEIGHT_BYTES";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1ffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } WEIGHT_BYTES[31:3];
+        WEIGHT_BYTES->desc="
+////total bytes of entire weights
+";
+    }D_WEIGHT_BYTES @0x80;
+    reg {
+        name = "D_WGS_ADDR_HIGH";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } WGS_ADDR_HIGH[31:0];
+        WGS_ADDR_HIGH->desc="
+////start address of WGS, high 32 bits
+";
+    }D_WGS_ADDR_HIGH @0x84;
+    reg {
+        name = "D_WGS_ADDR_LOW";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } WGS_ADDR_LOW[31:0];
+        WGS_ADDR_LOW->desc="
+////start address of WGS, low 32 bits
+";
+    }D_WGS_ADDR_LOW @0x88;
+    reg {
+        name = "D_WMB_ADDR_HIGH";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } WMB_ADDR_HIGH[31:0];
+        WMB_ADDR_HIGH->desc="
+////start address of WMB, high 32 bits
+";
+    }D_WMB_ADDR_HIGH @0x8c;
+    reg {
+        name = "D_WMB_ADDR_LOW";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } WMB_ADDR_LOW[31:0];
+        WMB_ADDR_LOW->desc="
+////start address of WMB, low 32 bits
+";
+    }D_WMB_ADDR_LOW @0x90;
+    reg {
+        name = "D_WMB_BYTES";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1fffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } WMB_BYTES[27:3];
+        WMB_BYTES->desc="
+////total WMB bytes
+";
+    }D_WMB_BYTES @0x94;
+    reg {
+        name = "D_MEAN_FORMAT";
+        desc = "
+////Mean value is always signed integer value
+";
+        enum D_MEAN_FORMAT_MEAN_FORMAT_enum {
+            DISABLE = 1'd0;
+            ENABLE = 1'd1;
+        };
+        field {
+            encode          = D_MEAN_FORMAT_MEAN_FORMAT_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } MEAN_FORMAT[0:0];
+    }D_MEAN_FORMAT @0x98;
+    reg {
+        name = "D_MEAN_GLOBAL_0";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } MEAN_RY[15:0];
+        MEAN_RY->desc="
+////global mean value for red in RGB or Y in YUV
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } MEAN_GU[31:16];
+        MEAN_GU->desc="
+////global mean value for green in RGB or U in YUV
+";
+    }D_MEAN_GLOBAL_0 @0x9c;
+    reg {
+        name = "D_MEAN_GLOBAL_1";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } MEAN_BV[15:0];
+        MEAN_BV->desc="
+////global mean value for blue in RGB or V in YUV
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } MEAN_AX[31:16];
+        MEAN_AX->desc="
+////global mean value for alpha in ARGB/AYUV or X in XRGB
+";
+    }D_MEAN_GLOBAL_1 @0xa0;
+    reg {
+        name = "D_CVT_CFG";
+        desc = "
+////CVT_TRUNCATE is unsigned value
+";
+        enum D_CVT_CFG_CVT_EN_enum {
+            DISABLE = 1'd0;
+            ENABLE = 1'd1;
+        };
+        field {
+            encode          = D_CVT_CFG_CVT_EN_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CVT_EN[0:0];
+        CVT_EN->desc="
+////Control byte, enable/disable all CVT function in CDMA
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x3f;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CVT_TRUNCATE[9:4];
+        CVT_TRUNCATE->desc="
+////number of bits to be truncated
+";
+    }D_CVT_CFG @0xa4;
+    reg {
+        name = "D_CVT_OFFSET";
+        desc = "
+////CVT_OFFSET is signed 16-bit value
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CVT_OFFSET[15:0];
+        CVT_OFFSET->desc="
+////Offset to be added to feature data
+";
+    }D_CVT_OFFSET @0xa8;
+    reg {
+        name = "D_CVT_SCALE";
+        desc = "
+////CVT_SCALE is signed 16-bit value
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CVT_SCALE[15:0];
+        CVT_SCALE->desc="
+////scaling factor
+";
+    }D_CVT_SCALE @0xac;
+    reg {
+        name = "D_CONV_STRIDE";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x7;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CONV_X_STRIDE[2:0];
+        CONV_X_STRIDE->desc="
+////convolution x stride - 1
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x7;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CONV_Y_STRIDE[18:16];
+        CONV_Y_STRIDE->desc="
+////convolution y stride - 1
+";
+    }D_CONV_STRIDE @0xb0;
+    reg {
+        name = "D_ZERO_PADDING";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1f;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } PAD_LEFT[4:0];
+        PAD_LEFT->desc="
+////left zero padding size
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x3f;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } PAD_RIGHT[13:8];
+        PAD_RIGHT->desc="
+////right zero padding size
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1f;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } PAD_TOP[20:16];
+        PAD_TOP->desc="
+////top zero padding size
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x3f;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } PAD_BOTTOM[29:24];
+        PAD_BOTTOM->desc="
+////bottom zero padding size
+";
+    }D_ZERO_PADDING @0xb4;
+    reg {
+        name = "D_ZERO_PADDING_VALUE";
+        desc = "
+////For DC mode with feature input and Winograd mode, PAD_VALUE in CDMA is always signed integer
+////For image input mode, whether PAD_VALUE is signed or unsigned is depending on PIXEL_SIGN_OVERRIDE bit
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } PAD_VALUE[15:0];
+        PAD_VALUE->desc="
+////pad value. [7:0] for int8, [15:0] for int16/fp16.
+";
+    }D_ZERO_PADDING_VALUE @0xb8;
+    reg {
+        name = "D_BANK";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1f;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } DATA_BANK[4:0];
+        DATA_BANK->desc="
+////number of data banks - 1
+";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1f;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } WEIGHT_BANK[20:16];
+        WEIGHT_BANK->desc="
+////number of weight banks - 1
+";
+    }D_BANK @0xbc;
+    reg {
+        name = "D_NAN_FLUSH_TO_ZERO";
+        enum D_NAN_FLUSH_TO_ZERO_NAN_TO_ZERO_enum {
+            DISABLE = 1'd0;
+            ENABLE = 1'd1;
+        };
+        field {
+            encode          = D_NAN_FLUSH_TO_ZERO_NAN_TO_ZERO_enum;
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } NAN_TO_ZERO[0:0];
+        NAN_TO_ZERO->desc="
+////option to flush input NaN to zero
+";
+    }D_NAN_FLUSH_TO_ZERO @0xc0;
+    reg {
+        name = "D_NAN_INPUT_DATA_NUM";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } NAN_DATA_NUM[31:0];
+        NAN_DATA_NUM->desc="
+////count NaN number in input data cube, update per layer
+";
+    }D_NAN_INPUT_DATA_NUM @0xc4;
+    reg {
+        name = "D_NAN_INPUT_WEIGHT_NUM";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } NAN_WEIGHT_NUM[31:0];
+        NAN_WEIGHT_NUM->desc="
+////count NaN number in weight kernels, update per layer
+";
+    }D_NAN_INPUT_WEIGHT_NUM @0xc8;
+    reg {
+        name = "D_INF_INPUT_DATA_NUM";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } INF_DATA_NUM[31:0];
+        INF_DATA_NUM->desc="
+////count infinity number in input data cube, update per layer
+";
+    }D_INF_INPUT_DATA_NUM @0xcc;
+    reg {
+        name = "D_INF_INPUT_WEIGHT_NUM";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } INF_WEIGHT_NUM[31:0];
+        INF_WEIGHT_NUM->desc="
+////count infinity number in weight kernels, update per layer
+";
+    }D_INF_INPUT_WEIGHT_NUM @0xd0;
+    reg {
+        name = "D_PERF_ENABLE";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0x1;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } DMA_EN[0:0];
+        DMA_EN->desc="
+////enable/disable performance counter
+";
+    }D_PERF_ENABLE @0xd4;
+    reg {
+        name = "D_PERF_DAT_READ_STALL";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } DAT_RD_STALL[31:0];
+        DAT_RD_STALL->desc="
+////count blocking cycles of read request of input data, update per layer
+";
+    }D_PERF_DAT_READ_STALL @0xd8;
+    reg {
+        name = "D_PERF_WT_READ_STALL";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } WT_RD_STALL[31:0];
+        WT_RD_STALL->desc="
+////count blocking cycles of read request of weight data, update per layer
+";
+    }D_PERF_WT_READ_STALL @0xdc;
+    reg {
+        name = "D_PERF_DAT_READ_LATENCY";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } DAT_RD_LATENCY[31:0];
+        DAT_RD_LATENCY->desc="
+////count total latency cycles of read response of input data, update per layer
+";
+    }D_PERF_DAT_READ_LATENCY @0xe0;
+    reg {
+        name = "D_PERF_WT_READ_LATENCY";
+        field {
+            sw              = r;
+            hw              = w;
+            spec_access     = r;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } WT_RD_LATENCY[31:0];
+        WT_RD_LATENCY->desc="
+////count total latency cycles of read request of weight data, update per layer
+";
+    }D_PERF_WT_READ_LATENCY @0xe4;
+    reg {
+        name = "D_CYA";
+        field {
+            sw              = rw;
+            hw              = r;
+            spec_access     = rw;
+            reset           = 0x0;
+            reset_mask      = 0xffffffff;
+            spec_sw_default = 0x0;
+            sw_default_mask = 0x0;
+        } CYA[31:0];
+        CYA->desc="
+////CYA register
+";
+    }D_CYA @0xe8;
+};
+addrmap  {
+    regs_NVDLA_CDMA NVDLA_CDMA @0x3000;
+}addrmap_NVDLA;

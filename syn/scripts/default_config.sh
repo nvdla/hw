@@ -52,7 +52,6 @@ export WIRELOAD_MODEL_NAME=""
 export WIRELOAD_MODEL_FILE=""
 export DONT_USE_LIST=""
 
-
 # ==========================
 # MISCELLANEOUS VARIABLES 
 #===========================
@@ -71,6 +70,8 @@ export INCREMENTAL_RECOMPILE_COUNT="1"
 # Some other variables
 export CLK_GATING_CELL=""
 export DONT_UNGROUP_LIST=""
+export RETIME_LIST=""
+export RETIME_TRANSFORM="multiclass"
 
 # For Job management
 export COMMAND_PREFIX=""
