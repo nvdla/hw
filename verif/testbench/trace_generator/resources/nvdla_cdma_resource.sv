@@ -650,7 +650,7 @@ constraint nvdla_cdma_resource::c_ias_entries {
     // entries per slice (Wx1xC)
     // 256 entries per bank
     if(datain_format == datain_format_PIXEL) {
-        (entries+1) == ((datain_width+1 + pad_left + pad_right)*(datain_channel+1)*+atomic_e-1) / atomic_e;
+        (entries+1) == ((datain_width+1 + pad_left + pad_right)*(datain_channel+1)+atomic_e-1) / atomic_e;
     }
     else {  // feature
         if(conv_mode == conv_mode_DIRECT) {
