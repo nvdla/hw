@@ -1279,6 +1279,8 @@ wire [CBUF_ADDR_WIDTH-1:0] dat_req_addr_last_plus1_real;
 wire is_dat_req_addr_last_plus1_wrap;
 wire [CBUF_ADDR_WIDTH-1:0] dat_req_addr_last_plus1_wrap;
 wire [CBUF_ADDR_WIDTH-1:0] mon_dat_req_addr_last_plus1_wrap;
+//: &eperl::flop("-d is_stripe_end -q is_stripe_end_d1");
+//: &eperl::flop("-d is_stripe_end_d1 -q is_stripe_end_d2");
 
 assign dat_req_addr_last_plus1 = dat_req_addr_last+1'b1;
 assign is_dat_req_addr_last_plus1_wrap = (dat_req_addr_last_plus1 >= {1'b0, data_bank, {LOG2_CBUF_BANK_DEPTH{1'b0}}});
@@ -1286,8 +1288,9 @@ assign {mon_dat_req_addr_last_plus1_wrap,dat_req_addr_last_plus1_wrap} = dat_req
 assign dat_req_addr_last_plus1_real  = is_dat_req_addr_last_plus1_wrap ? dat_req_addr_last_plus1_wrap : dat_req_addr_last_plus1;
 //iamge data may encounter read jump, which happens when image data_read_address - last_rd_address >= 2 entries, and read form the middle of an entry.
 //then csc need read 2 entries simultaneously, then shift out unneeded part.
-assign sc2buf_dat_rd_next1_enable = is_img_d1[10]&&(~dat_req_dummy_d1)&&(dat_req_addr_w != dat_req_addr_last)&&(dat_req_addr_w != dat_req_addr_last_plus1_real)
-                                    &&(pixel_w_cnt[LOG2_ATOMC-1:0]!=(CSC_ATOMC-1));
+//this address jump should not happened because of execution of next stripe
+assign sc2buf_dat_rd_next1_enable = is_img_d1[10]&&sc2buf_dat_rd_en_w&&(dat_req_addr_w != dat_req_addr_last_plus1_real)
+                                    &&(pixel_w_cnt[LOG2_ATOMC-1:0]!=(CSC_ATOMC-1))&&(~is_stripe_end_d2);
 assign sc2buf_dat_rd_next1_disable_w = !sc2buf_dat_rd_next1_enable;
 assign sc2buf_dat_rd_shift_w = sc2buf_dat_rd_next1_enable ? {pixel_w_cnt[LOG2_ATOMC-1:0], {NVDLA_BPE_LOG2{1'b0}}} : {CBUF_RD_DATA_SHIFT_WIDTH{1'd0}};
 
