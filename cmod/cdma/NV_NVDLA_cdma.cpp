@@ -2364,8 +2364,8 @@ void NV_NVDLA_cdma::ImageConvDataResponseSequencerCommon() {
         p1_line_st = 17 - p1_line_st_minus;         //for pitch linear, unit is burst 
         pitch_buffer = new uint8_t *[cube_height];  //pitch_buffer contains all pixels in x_offset range
         for (height_iter=0; height_iter < cube_height; height_iter++) {
-            pitch_buffer[height_iter] = new uint8_t[pitch_line_bytes_rounded + atom_size * 2];  //+max(pad_right)+max(garbage_pixel)
-            memset(pitch_buffer[height_iter], 0, pitch_line_bytes_rounded + atom_size * 2);
+            pitch_buffer[height_iter] = new uint8_t[pitch_line_bytes_rounded + 32 * bytes_per_pixel * 2];
+            memset(pitch_buffer[height_iter], 0, pitch_line_bytes_rounded + 32 * bytes_per_pixel * 2);
         }
 
         for (height_iter = 0; height_iter < cube_height; height_iter++) {     // read data line by line and assemble into pitch_buffer
@@ -2456,10 +2456,8 @@ void NV_NVDLA_cdma::ImageConvDataResponseSequencerCommon() {
         }
     }   // end of pitch_linear
 
-    uint32_t garbage_pixel = (atom_size - ((pixel_x_offset + cube_width) * element_num * element_size) % atom_size) / (element_num * element_size);
-        
     cslInfo(("pad_value_8=0x%x pad_value_16=0x%x\n", pad_value_8, pad_value_16));
-    cslInfo(("pad_left=0x%x pad_right=0x%x garbage_pixel=0x%x pixel_format=0x%x element_num=%d\n", pad_left, pad_right, garbage_pixel, pixel_format, element_num));
+    cslInfo(("pad_left=0x%x pad_right=0x%x pixel_format=0x%x element_num=%d\n", pad_left, pad_right, pixel_format, element_num));
     
     // Perform conversion and append padding values
     for (height_iter = 0; height_iter < cube_height; height_iter++) {     // read data line by line and assemble into pad_buffer
@@ -2493,7 +2491,9 @@ void NV_NVDLA_cdma::ImageConvDataResponseSequencerCommon() {
             }
         }
 
-        while (pixel_idx < pad_left + cube_width + (pad_right + garbage_pixel)) {
+        uint32_t max_garbage_pixel = (atom_size / element_size) / element_num;
+
+        while (pixel_idx < pad_left + cube_width + pad_right + max_garbage_pixel) {
             int8_t  pixel_8, rgba_idx;
             int16_t pixel_16;
             int32_t pixel_32;
@@ -2807,7 +2807,7 @@ void NV_NVDLA_cdma::ImageConvDataResponseSequencerCommon() {
             pixel_idx++;
         }
         // Fill right padding values
-        for (pixel_idx -= pad_right + garbage_pixel; pixel_idx < pad_left + cube_width + pad_right; pixel_idx++) {    // pad_left is in pixel, not byte
+        for (pixel_idx -= pad_right + max_garbage_pixel; pixel_idx < pad_left + cube_width + pad_right; pixel_idx++) {    // pad_left is in pixel, not byte
             for (element_idx = 0; element_idx < element_num; element_idx++) {
                 if (DATA_FORMAT_INT8 == proc_precision)
                     memcpy(&pad_buffer_8[pixel_idx * element_num + element_idx], &pad_value_8, sizeof(uint8_t));
@@ -2830,12 +2830,11 @@ void NV_NVDLA_cdma::ImageConvDataResponseSequencerCommon() {
 #endif
 
         uint32_t write_line_bytes = 0;
-        uint32_t garbage_bytes = (pad_right < garbage_pixel)? ((garbage_pixel - pad_right) * element_num * element_size) : 0;
-        uint32_t total_line_bytes = pad_line_bytes + garbage_bytes;
+        uint32_t total_line_bytes = ((pad_line_bytes + atom_size - 1) / atom_size) * atom_size;
         while (write_line_bytes < total_line_bytes) {
             left_line_bytes = total_line_bytes - write_line_bytes;
             curr_cbuf_entry_size = min((uint32_t)NVDLA_CBUF_BANK_WIDTH, left_line_bytes);
-            cslDebug((70, "total_line_bytes=%d garbage_bytes=%d left_line_bytes=%d\n", total_line_bytes, garbage_bytes, left_line_bytes));
+            cslDebug((70, "total_line_bytes=%d, left_line_bytes=%d\n", total_line_bytes, left_line_bytes));
             if (curr_cbuf_entry_size == NVDLA_CBUF_BANK_WIDTH)
                 memcpy(to_cbuf, &pad_buffer[height_iter][write_line_bytes], NVDLA_CBUF_BANK_WIDTH);
             else {
