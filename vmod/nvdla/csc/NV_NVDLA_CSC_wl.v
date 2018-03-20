@@ -256,12 +256,9 @@ wire            mon_wt_entry_end_inc_wrap;
 wire            mon_wt_entry_st_inc_wrap;
 wire            mon_wt_req_addr_inc;
 wire            mon_wt_req_addr_out;
-wire     [31:0] mon_wt_req_emask_p1;
-wire     [47:0] mon_wt_req_emask_p2;
-wire     [47:0] mon_wt_req_emask_p3;
-wire     [31:0] mon_wt_req_emask_p5;
-wire     [47:0] mon_wt_req_emask_p6;
-wire     [47:0] mon_wt_req_emask_p7;
+wire     [CSC_ATOMC-1:0] mon_wt_req_emask_p1;
+wire     [CSC_ATOMC-1:0] mon_wt_req_emask_p2;
+wire     [CSC_ATOMC-1:0] mon_wt_req_emask_p3;
 wire            mon_wt_rls_cnt_inc;
 wire      [1:0] mon_wt_rsp_byte_remain_w;
 wire            mon_wt_shift_remain;
@@ -404,15 +401,10 @@ wire            wt_req_d1_rls;
 wire            wt_req_d1_stripe_end;
 wire      [8:0] wt_req_d1_wmb_rls_entries;
 wire     [CSC_ENTRIES_NUM_WIDTH-1:0] wt_req_d1_wt_rls_entries;
-wire     [CSC_ATOMC-1:0] wt_req_emask_hi;
 wire     [CSC_ATOMC-1:0] wt_req_emask_p0;
-wire     [31:0] wt_req_emask_p1;
-wire     [15:0] wt_req_emask_p2;
-wire     [15:0] wt_req_emask_p3;
-wire     [63:0] wt_req_emask_p4;
-wire     [31:0] wt_req_emask_p5;
-wire     [15:0] wt_req_emask_p6;
-wire     [15:0] wt_req_emask_p7;
+wire     [CSC_ATOMC-1:0] wt_req_emask_p1;
+wire     [CSC_ATOMC-1:0] wt_req_emask_p2;
+wire     [CSC_ATOMC-1:0] wt_req_emask_p3;
 wire            wt_req_mask_en;
 wire    [CSC_ATOMC-1:0] wt_req_mask_w;
 wire      [6:0] wt_req_ori_sft_1;
@@ -420,7 +412,7 @@ wire      [6:0] wt_req_ori_sft_2;
 wire     [35:0] wt_req_pipe_pd;
 wire            wt_req_pipe_pvld;
 wire            wt_req_valid;
-wire     [63:0] wt_req_vld_bit;
+wire     [CSC_ATOMC-1:0] wt_req_vld_bit;
 wire            wt_rls;
 wire     [CSC_ENTRIES_NUM_WIDTH-1:0] wt_rls_cnt_inc;
 wire            wt_rls_cnt_reg_en;
@@ -816,37 +808,31 @@ assign wt_req_bmask = wt_req_emask;
 
 //////////////////////////////////// generate element mask for decoding////////////////////////////////////
 //valid bit for each sub h line
-assign wt_req_vld_bit = ~({64{1'b1}} << wt_req_ori_element);
+assign wt_req_vld_bit = ~({CSC_ATOMC{1'b1}} << wt_req_ori_element);
 
 //valid bit to select sub h line
 //: my $kk=CSC_ATOMC;
-//: my $jj=$kk/2;
 //: print qq(
 //: assign sub_h_mask_1 = (wt_req_cur_sub_h >= 2'h1) ? {${kk}{1'b1}} : {${kk}{1'h0}};
-//: assign sub_h_mask_2 = (wt_req_cur_sub_h >= 2'h2) ? {${jj}{1'b1}} : {${kk}{1'h0}};
-//: assign sub_h_mask_3 = (wt_req_cur_sub_h == 2'h3) ? {${jj}{1'b1}} : {${kk}{1'h0}};
+//: assign sub_h_mask_2 = (wt_req_cur_sub_h >= 2'h2) ? {${kk}{1'b1}} : {${kk}{1'h0}};
+//: assign sub_h_mask_3 = (wt_req_cur_sub_h == 2'h3) ? {${kk}{1'b1}} : {${kk}{1'h0}};
 //: );
 
 //element number to be shifted
 assign wt_req_ori_sft_1 = wt_req_ori_element;
 assign wt_req_ori_sft_2 = {wt_req_ori_element[5:0], 1'b0};
 assign wt_req_emask_p0 = wt_req_emask[CSC_ATOMC-1:0] & wt_req_vld_bit;
-assign {mon_wt_req_emask_p1[31:0],wt_req_emask_p1} = (wt_req_emask[CSC_ATOMC-1:0] >> wt_req_ori_sft_1) & wt_req_vld_bit & sub_h_mask_1;
-assign {mon_wt_req_emask_p2[47:0],wt_req_emask_p2} = (wt_req_emask[CSC_ATOMC-1:0] >> wt_req_ori_sft_2) & wt_req_vld_bit & sub_h_mask_2;
-assign {mon_wt_req_emask_p3[47:0],wt_req_emask_p3} = (wt_req_emask[CSC_ATOMC-1:0] >> wt_req_ori_sft_3) & wt_req_vld_bit & sub_h_mask_3;
-assign wt_req_emask_hi =  {CSC_ATOMC{1'b0}};
-assign wt_req_emask_p4 = wt_req_emask_hi & wt_req_vld_bit;
-assign {mon_wt_req_emask_p5[31:0],wt_req_emask_p5} = (wt_req_emask_hi >> wt_req_ori_sft_1) & wt_req_vld_bit & sub_h_mask_1;
-assign {mon_wt_req_emask_p6[47:0],wt_req_emask_p6} = (wt_req_emask_hi >> wt_req_ori_sft_2) & wt_req_vld_bit & sub_h_mask_2;
-assign {mon_wt_req_emask_p7[47:0],wt_req_emask_p7} = (wt_req_emask_hi >> wt_req_ori_sft_3) & wt_req_vld_bit & sub_h_mask_3;
+assign {mon_wt_req_emask_p1[CSC_ATOMC-1:0],wt_req_emask_p1} = (wt_req_emask[CSC_ATOMC-1:0] >> wt_req_ori_sft_1) & wt_req_vld_bit & sub_h_mask_1;
+assign {mon_wt_req_emask_p2[CSC_ATOMC-1:0],wt_req_emask_p2} = (wt_req_emask[CSC_ATOMC-1:0] >> wt_req_ori_sft_2) & wt_req_vld_bit & sub_h_mask_2;
+assign {mon_wt_req_emask_p3[CSC_ATOMC-1:0],wt_req_emask_p3} = (wt_req_emask[CSC_ATOMC-1:0] >> wt_req_ori_sft_3) & wt_req_vld_bit & sub_h_mask_3;
 
 //Caution! Must reset wt_req_mask to all zero when layer started
 //other width wt_req_mask_en may gate wt_rsp_mask_d1_w improperly!
-//assign wt_req_mask_w = layer_st ? {CSC_ATOMC{1'b0}} :
-//                       (sub_h_total == 3'h1) ? {wt_req_emask_p4, wt_req_emask_p0} :
-//                       (sub_h_total == 3'h2) ? {wt_req_emask_p5, wt_req_emask_p4[31:0], wt_req_emask_p1, wt_req_emask_p0[31:0]} :
-//                       {wt_req_emask_p7, wt_req_emask_p6, wt_req_emask_p5[15:0], wt_req_emask_p4[15:0], wt_req_emask_p3, wt_req_emask_p2, wt_req_emask_p1[15:0], wt_req_emask_p0[15:0]};
-assign wt_req_mask_w = layer_st ? {CSC_ATOMC{1'b0}} : wt_req_emask_p0;  //need update for image 
+assign wt_req_mask_w = layer_st ? {CSC_ATOMC{1'b0}} :
+                       (sub_h_total == 3'h1) ? {wt_req_emask_p0} :
+                       (sub_h_total == 3'h2) ? {wt_req_emask_p1[CSC_ATOMC/2-1:0], wt_req_emask_p0[CSC_ATOMC/2-1:0]} :
+                       {wt_req_emask_p3[CSC_ATOMC/4-1:0], wt_req_emask_p2[CSC_ATOMC/4-1:0], wt_req_emask_p1[CSC_ATOMC/4-1:0], wt_req_emask_p0[CSC_ATOMC/4-1:0]};
+//assign wt_req_mask_w = layer_st ? {CSC_ATOMC{1'b0}} : wt_req_emask_p0;  //need update for image 
 
 assign wt_req_mask_en = wt_req_pipe_valid & (wt_req_mask_w != wt_req_mask_d1);
 
