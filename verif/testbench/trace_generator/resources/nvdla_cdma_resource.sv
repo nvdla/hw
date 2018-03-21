@@ -125,6 +125,7 @@ class nvdla_cdma_resource extends nvdla_base_resource;
 
     // field variables
     //:| spec2cons.state_gen(['NVDLA_CDMA'])
+    //:| spec2cons.state_gen(['NVDLA_CDMA'], 'prev_', False)
     //:) epython: generated_beg (DO NOT EDIT BELOW)
     rand bit [3:0]                  arb_weight;
     rand bit [3:0]                  arb_wmb;
@@ -170,12 +171,12 @@ class nvdla_cdma_resource extends nvdla_base_resource;
     rand weight_ram_type_t          weight_ram_type;
     rand bit [31:0]                 weight_addr_high;
     rand bit [31:0]                 weight_addr_low;
-    rand bit [24:0]                 weight_bytes;
+    rand bit [28:0]                 weight_bytes;
     rand bit [31:0]                 wgs_addr_high;
     rand bit [31:0]                 wgs_addr_low;
     rand bit [31:0]                 wmb_addr_high;
     rand bit [31:0]                 wmb_addr_low;
-    rand bit [20:0]                 wmb_bytes;
+    rand bit [24:0]                 wmb_bytes;
     rand mean_format_t              mean_format;
     rand bit [15:0]                 mean_ry;
     rand bit [15:0]                 mean_gu;
@@ -197,6 +198,77 @@ class nvdla_cdma_resource extends nvdla_base_resource;
     rand nan_to_zero_t              nan_to_zero;
     rand bit [0:0]                  dma_en;
     rand bit [31:0]                 cya;
+    bit [3:0]                       prev_arb_weight;
+    bit [3:0]                       prev_arb_wmb;
+    conv_mode_t                     prev_conv_mode;
+    in_precision_t                  prev_in_precision;
+    proc_precision_t                prev_proc_precision;
+    data_reuse_t                    prev_data_reuse;
+    weight_reuse_t                  prev_weight_reuse;
+    skip_data_rls_t                 prev_skip_data_rls;
+    skip_weight_rls_t               prev_skip_weight_rls;
+    datain_format_t                 prev_datain_format;
+    pixel_format_t                  prev_pixel_format;
+    pixel_mapping_t                 prev_pixel_mapping;
+    pixel_sign_override_t           prev_pixel_sign_override;
+    bit [12:0]                      prev_datain_width;
+    bit [12:0]                      prev_datain_height;
+    bit [12:0]                      prev_datain_channel;
+    bit [12:0]                      prev_datain_width_ext;
+    bit [12:0]                      prev_datain_height_ext;
+    bit [4:0]                       prev_pixel_x_offset;
+    bit [2:0]                       prev_pixel_y_offset;
+    datain_ram_type_t               prev_datain_ram_type;
+    bit [31:0]                      prev_datain_addr_high_0;
+    bit [31:0]                      prev_datain_addr_low_0;
+    bit [31:0]                      prev_datain_addr_high_1;
+    bit [31:0]                      prev_datain_addr_low_1;
+    bit [31:0]                      prev_line_stride;
+    bit [31:0]                      prev_uv_line_stride;
+    bit [31:0]                      prev_surf_stride;
+    line_packed_t                   prev_line_packed;
+    surf_packed_t                   prev_surf_packed;
+    bit [9:0]                       prev_rsv_per_line;
+    bit [9:0]                       prev_rsv_per_uv_line;
+    bit [2:0]                       prev_rsv_height;
+    bit [4:0]                       prev_rsv_y_index;
+    bit [4:0]                       prev_batches;
+    bit [31:0]                      prev_batch_stride;
+    bit [13:0]                      prev_entries;
+    bit [11:0]                      prev_grains;
+    weight_format_t                 prev_weight_format;
+    bit [17:0]                      prev_byte_per_kernel;
+    bit [12:0]                      prev_weight_kernel;
+    weight_ram_type_t               prev_weight_ram_type;
+    bit [31:0]                      prev_weight_addr_high;
+    bit [31:0]                      prev_weight_addr_low;
+    bit [28:0]                      prev_weight_bytes;
+    bit [31:0]                      prev_wgs_addr_high;
+    bit [31:0]                      prev_wgs_addr_low;
+    bit [31:0]                      prev_wmb_addr_high;
+    bit [31:0]                      prev_wmb_addr_low;
+    bit [24:0]                      prev_wmb_bytes;
+    mean_format_t                   prev_mean_format;
+    bit [15:0]                      prev_mean_ry;
+    bit [15:0]                      prev_mean_gu;
+    bit [15:0]                      prev_mean_bv;
+    bit [15:0]                      prev_mean_ax;
+    cvt_en_t                        prev_cvt_en;
+    bit [5:0]                       prev_cvt_truncate;
+    bit [15:0]                      prev_cvt_offset;
+    bit [15:0]                      prev_cvt_scale;
+    bit [2:0]                       prev_conv_x_stride;
+    bit [2:0]                       prev_conv_y_stride;
+    bit [4:0]                       prev_pad_left;
+    bit [5:0]                       prev_pad_right;
+    bit [4:0]                       prev_pad_top;
+    bit [5:0]                       prev_pad_bottom;
+    bit [15:0]                      prev_pad_value;
+    bit [4:0]                       prev_data_bank;
+    bit [4:0]                       prev_weight_bank;
+    nan_to_zero_t                   prev_nan_to_zero;
+    bit [0:0]                       prev_dma_en;
+    bit [31:0]                      prev_cya;
     //:) epython: generated_end (DO NOT EDIT ABOVE)
     rand byte                       plane_number;
     rand byte                       element_byte_size_plane_0;
@@ -324,6 +396,7 @@ class nvdla_cdma_resource extends nvdla_base_resource;
     extern constraint c_ias_reuse_mode;
     extern constraint c_ias_dataout;
     extern constraint c_ias_conv_stride;
+    extern constraint c_ias_reuse_keep_previouse_setting;
     extern constraint c_ias_dut_por_requirement;
     // sim constraint
     extern constraint c_sim_feature_none_zero_rate;
@@ -785,6 +858,178 @@ constraint nvdla_cdma_resource::c_ias_conv_stride {
     // move to sce layer
 }
 
+constraint nvdla_cdma_resource::c_ias_reuse_keep_previouse_setting {
+    if(data_reuse == data_reuse_ENABLE) {
+        conv_mode           == prev_conv_mode; 
+        in_precision        == prev_in_precision;        
+        proc_precision      == prev_proc_precision;      
+        datain_format       == prev_datain_format;      
+        pixel_format        == prev_pixel_format;       
+        pixel_mapping       == prev_pixel_mapping;       
+        pixel_sign_override == prev_pixel_sign_override; 
+        datain_width        == prev_datain_width; 
+        datain_height       == prev_datain_height;       
+        datain_channel      == prev_datain_channel;      
+        datain_width_ext    == prev_datain_width_ext;    
+        datain_height_ext   == prev_datain_height_ext;   
+        pixel_x_offset      == prev_pixel_x_offset;   
+        pixel_y_offset      == prev_pixel_y_offset;      
+        datain_ram_type     == prev_datain_ram_type;     
+        datain_addr_high_0  == prev_datain_addr_high_0;  
+        datain_addr_low_0   == prev_datain_addr_low_0;  
+        datain_addr_high_1  == prev_datain_addr_high_1;  
+        datain_addr_low_1   == prev_datain_addr_low_1;  
+        line_stride         == prev_line_stride;   
+        uv_line_stride      == prev_uv_line_stride;      
+        surf_stride         == prev_surf_stride;      
+        line_packed         == prev_line_packed;         
+        surf_packed         == prev_surf_packed;         
+        batches             == prev_batches;         
+        batch_stride        == prev_batch_stride;        
+        entries             == prev_entries;        
+        //grains            == 
+        weight_format       == prev_weight_format;
+        byte_per_kernel     == prev_byte_per_kernel;
+        //weight_kernel     ==
+        weight_ram_type     == prev_weight_ram_type;
+        //weight_addr_high  ==
+        //weight_addr_low   ==
+        //weight_bytes      ==
+        //wgs_addr_high     ==
+        //wgs_addr_low      ==
+        //wmb_addr_high     ==
+        //wmb_addr_low      ==
+        //wmb_bytes         ==
+        mean_format         == prev_mean_format;
+        //mean_ry           ==
+        //mean_gu           ==
+        //mean_bv           ==
+        //mean_ax           ==
+        cvt_en              == prev_cvt_en;         
+        cvt_truncate        == prev_cvt_truncate;     
+        cvt_offset          == prev_cvt_offset;      
+        cvt_scale           == prev_cvt_scale;        
+        conv_x_stride       == prev_conv_x_stride;   
+        conv_y_stride       == prev_conv_y_stride;     
+        pad_left            == prev_pad_left;     
+        pad_right           == prev_pad_right;         
+        pad_top             == prev_pad_top;         
+        pad_bottom          == prev_pad_bottom;        
+        pad_value           == prev_pad_value;        
+        data_bank           == prev_data_bank;         
+        weight_bank         == prev_weight_bank;      
+        nan_to_zero         == prev_nan_to_zero;       
+        //cya               ==        
+        // datain_channel_ext  == prev_datain_channel_ext;
+        // y_extension         == prev_y_extension; 
+        // weight_width_ext    == prev_weight_width_ext;  
+        // weight_height_ext   == prev_weight_height_ext; 
+        // weight_channel_ext  == prev_weight_channel_ext;
+        //dataout_width     == 
+        //dataout_height    == 
+        //dataout_channel   == 
+        //atomics           == 
+        //rls_slices        == 
+        // conv_x_stride_ext   == prev_conv_x_stride_ext;
+        // conv_y_stride_ext   == prev_conv_y_stride_ext;
+        // x_dilation_ext      == prev_x_dilation_ext;
+        // y_dilation_ext      == prev_y_dilation_ext; 
+        //pad_value_csc     == 
+        // pra_truncate        == prev_pra_truncate;
+        //dataout_addr      == 
+        //line_stride_cacc  == 
+        //surf_stride_cacc  == 
+        // clip_truncate       == prev_clip_truncate;
+    }
+    if(weight_reuse == weight_reuse_ENABLE) {
+        // weight_none_zero_rate == prev_weight_none_zero_rate;
+        conv_mode           == prev_conv_mode; 
+        in_precision        == prev_in_precision;        
+        proc_precision      == prev_proc_precision;      
+        datain_format       == prev_datain_format;      
+        pixel_format        == prev_pixel_format;       
+        pixel_mapping       == prev_pixel_mapping;       
+        pixel_sign_override == prev_pixel_sign_override; 
+        //datain_width        == prev_datain_width; 
+        //datain_height       == prev_datain_height;       
+        datain_channel      == prev_datain_channel;      
+        //datain_width_ext    == prev_datain_width_ext;    
+        //datain_height_ext   == prev_datain_height_ext;   
+        pixel_x_offset      == prev_pixel_x_offset;   
+        pixel_y_offset      == prev_pixel_y_offset;      
+        datain_ram_type     == prev_datain_ram_type;     
+        //datain_addr_high_0  == prev_datain_addr_high_0;  
+        //datain_addr_low_0   == prev_datain_addr_low_0;  
+        //datain_addr_high_1  == prev_datain_addr_high_1;  
+        //datain_addr_low_1   == prev_datain_addr_low_1;  
+        //line_stride         == prev_line_stride;   
+        //uv_line_stride      == prev_uv_line_stride;      
+        //surf_stride         == prev_surf_stride;      
+        //line_packed         == prev_line_packed;         
+        //surf_packed         == prev_surf_packed;         
+        //gob_per_line        == prev_gob_per_line;        
+        //gob_per_uv_line     == prev_gob_per_uv_line;     
+        //gob_height          == prev_gob_height;     
+        //gob_y_index         == prev_gob_y_index;         
+        //batches             == prev_batches;         
+        //batch_stride        == prev_batch_stride;        
+        //entries             == prev_entries;        
+        //grains            == 
+        weight_format       == prev_weight_format;
+        byte_per_kernel     == prev_byte_per_kernel;
+        weight_kernel       == prev_weight_kernel;
+        weight_ram_type     == prev_weight_ram_type;
+        //weight_addr_high  ==
+        //weight_addr_low   ==
+        weight_bytes        == prev_weight_bytes;
+        //wgs_addr_high     ==
+        //wgs_addr_low      ==
+        //wmb_addr_high     ==
+        //wmb_addr_low      ==
+        wmb_bytes           == prev_wmb_bytes;
+        mean_format         == prev_mean_format;
+        //mean_ry           ==
+        //mean_gu           ==
+        //mean_bv           ==
+        //mean_ax           ==
+        cvt_en              == prev_cvt_en;         
+        cvt_truncate        == prev_cvt_truncate;     
+        cvt_offset          == prev_cvt_offset;      
+        cvt_scale           == prev_cvt_scale;        
+        conv_x_stride       == prev_conv_x_stride;   
+        conv_y_stride       == prev_conv_y_stride;     
+        //pad_left            == prev_pad_left;     
+        //pad_right           == prev_pad_right;         
+        //pad_top             == prev_pad_top;         
+        //pad_bottom          == prev_pad_bottom;        
+        pad_value           == prev_pad_value;        
+        data_bank           == prev_data_bank;         
+        weight_bank         == prev_weight_bank;      
+        //nan_to_zero         == prev_nan_to_zero;       
+        //cya               ==        
+        // datain_channel_ext  == prev_datain_channel_ext;
+        //y_extension         == prev_y_extension; 
+        // weight_width_ext    == prev_weight_width_ext;  
+        // weight_height_ext   == prev_weight_height_ext; 
+        // weight_channel_ext  == prev_weight_channel_ext;
+        //dataout_width     == 
+        //dataout_height    == 
+        //dataout_channel   == 
+        //atomics           == 
+        //rls_slices        == 
+        // conv_x_stride_ext   == prev_conv_x_stride_ext;
+        // conv_y_stride_ext   == prev_conv_y_stride_ext;
+        // x_dilation_ext      == prev_x_dilation_ext;
+        // y_dilation_ext      == prev_y_dilation_ext; 
+        //pad_value_csc     == 
+        //pra_truncate        == prev_pra_truncate;
+        //dataout_addr      == 
+        //line_stride_cacc  == 
+        //surf_stride_cacc  == 
+        //clip_truncate       == prev_clip_truncate;
+    }
+}
+
 constraint nvdla_cdma_resource::c_ias_dut_por_requirement {
     conv_mode       == conv_mode_DIRECT ;
     in_precision    == in_precision_INT8 ;
@@ -972,77 +1217,77 @@ endfunction : set_mem_addr
 function void nvdla_cdma_resource::set_register();
     //:| spec2cons.ral_set(['NVDLA_CDMA'])
     //:) epython: generated_beg (DO NOT EDIT BELOW)
-    ral.nvdla.NVDLA_CDMA.S_ARBITER.ARB_WEIGHT.set(                                     arb_weight);
-    ral.nvdla.NVDLA_CDMA.S_ARBITER.ARB_WMB.set(                                        arb_wmb);
-    ral.nvdla.NVDLA_CDMA.D_MISC_CFG.CONV_MODE.set(                                     conv_mode);
-    ral.nvdla.NVDLA_CDMA.D_MISC_CFG.IN_PRECISION.set(                                  in_precision);
-    ral.nvdla.NVDLA_CDMA.D_MISC_CFG.PROC_PRECISION.set(                                proc_precision);
-    ral.nvdla.NVDLA_CDMA.D_MISC_CFG.DATA_REUSE.set(                                    data_reuse);
-    ral.nvdla.NVDLA_CDMA.D_MISC_CFG.WEIGHT_REUSE.set(                                  weight_reuse);
-    ral.nvdla.NVDLA_CDMA.D_MISC_CFG.SKIP_DATA_RLS.set(                                 skip_data_rls);
-    ral.nvdla.NVDLA_CDMA.D_MISC_CFG.SKIP_WEIGHT_RLS.set(                               skip_weight_rls);
-    ral.nvdla.NVDLA_CDMA.D_DATAIN_FORMAT.DATAIN_FORMAT.set(                            datain_format);
-    ral.nvdla.NVDLA_CDMA.D_DATAIN_FORMAT.PIXEL_FORMAT.set(                             pixel_format);
-    ral.nvdla.NVDLA_CDMA.D_DATAIN_FORMAT.PIXEL_MAPPING.set(                            pixel_mapping);
-    ral.nvdla.NVDLA_CDMA.D_DATAIN_FORMAT.PIXEL_SIGN_OVERRIDE.set(                      pixel_sign_override);
-    ral.nvdla.NVDLA_CDMA.D_DATAIN_SIZE_0.DATAIN_WIDTH.set(                             datain_width);
-    ral.nvdla.NVDLA_CDMA.D_DATAIN_SIZE_0.DATAIN_HEIGHT.set(                            datain_height);
-    ral.nvdla.NVDLA_CDMA.D_DATAIN_SIZE_1.DATAIN_CHANNEL.set(                           datain_channel);
-    ral.nvdla.NVDLA_CDMA.D_DATAIN_SIZE_EXT_0.DATAIN_WIDTH_EXT.set(                     datain_width_ext);
-    ral.nvdla.NVDLA_CDMA.D_DATAIN_SIZE_EXT_0.DATAIN_HEIGHT_EXT.set(                    datain_height_ext);
-    ral.nvdla.NVDLA_CDMA.D_PIXEL_OFFSET.PIXEL_X_OFFSET.set(                            pixel_x_offset);
-    ral.nvdla.NVDLA_CDMA.D_PIXEL_OFFSET.PIXEL_Y_OFFSET.set(                            pixel_y_offset);
-    ral.nvdla.NVDLA_CDMA.D_DAIN_RAM_TYPE.DATAIN_RAM_TYPE.set(                          datain_ram_type);
-    ral.nvdla.NVDLA_CDMA.D_DAIN_ADDR_HIGH_0.DATAIN_ADDR_HIGH_0.set(                    datain_addr_high_0);
-    ral.nvdla.NVDLA_CDMA.D_DAIN_ADDR_LOW_0.DATAIN_ADDR_LOW_0.set(                      datain_addr_low_0);
-    ral.nvdla.NVDLA_CDMA.D_DAIN_ADDR_HIGH_1.DATAIN_ADDR_HIGH_1.set(                    datain_addr_high_1);
-    ral.nvdla.NVDLA_CDMA.D_DAIN_ADDR_LOW_1.DATAIN_ADDR_LOW_1.set(                      datain_addr_low_1);
-    ral.nvdla.NVDLA_CDMA.D_LINE_STRIDE.LINE_STRIDE.set(                                line_stride);
-    ral.nvdla.NVDLA_CDMA.D_LINE_UV_STRIDE.UV_LINE_STRIDE.set(                          uv_line_stride);
-    ral.nvdla.NVDLA_CDMA.D_SURF_STRIDE.SURF_STRIDE.set(                                surf_stride);
-    ral.nvdla.NVDLA_CDMA.D_DAIN_MAP.LINE_PACKED.set(                                   line_packed);
-    ral.nvdla.NVDLA_CDMA.D_DAIN_MAP.SURF_PACKED.set(                                   surf_packed);
-    ral.nvdla.NVDLA_CDMA.D_RESERVED_X_CFG.RSV_PER_LINE.set(                            rsv_per_line);
-    ral.nvdla.NVDLA_CDMA.D_RESERVED_X_CFG.RSV_PER_UV_LINE.set(                         rsv_per_uv_line);
-    ral.nvdla.NVDLA_CDMA.D_RESERVED_Y_CFG.RSV_HEIGHT.set(                              rsv_height);
-    ral.nvdla.NVDLA_CDMA.D_RESERVED_Y_CFG.RSV_Y_INDEX.set(                             rsv_y_index);
-    ral.nvdla.NVDLA_CDMA.D_BATCH_NUMBER.BATCHES.set(                                   batches);
-    ral.nvdla.NVDLA_CDMA.D_BATCH_STRIDE.BATCH_STRIDE.set(                              batch_stride);
-    ral.nvdla.NVDLA_CDMA.D_ENTRY_PER_SLICE.ENTRIES.set(                                entries);
-    ral.nvdla.NVDLA_CDMA.D_FETCH_GRAIN.GRAINS.set(                                     grains);
-    ral.nvdla.NVDLA_CDMA.D_WEIGHT_FORMAT.WEIGHT_FORMAT.set(                            weight_format);
-    ral.nvdla.NVDLA_CDMA.D_WEIGHT_SIZE_0.BYTE_PER_KERNEL.set(                          byte_per_kernel);
-    ral.nvdla.NVDLA_CDMA.D_WEIGHT_SIZE_1.WEIGHT_KERNEL.set(                            weight_kernel);
-    ral.nvdla.NVDLA_CDMA.D_WEIGHT_RAM_TYPE.WEIGHT_RAM_TYPE.set(                        weight_ram_type);
-    ral.nvdla.NVDLA_CDMA.D_WEIGHT_ADDR_HIGH.WEIGHT_ADDR_HIGH.set(                      weight_addr_high);
-    ral.nvdla.NVDLA_CDMA.D_WEIGHT_ADDR_LOW.WEIGHT_ADDR_LOW.set(                        weight_addr_low);
-    ral.nvdla.NVDLA_CDMA.D_WEIGHT_BYTES.WEIGHT_BYTES.set(                              weight_bytes);
-    ral.nvdla.NVDLA_CDMA.D_WGS_ADDR_HIGH.WGS_ADDR_HIGH.set(                            wgs_addr_high);
-    ral.nvdla.NVDLA_CDMA.D_WGS_ADDR_LOW.WGS_ADDR_LOW.set(                              wgs_addr_low);
-    ral.nvdla.NVDLA_CDMA.D_WMB_ADDR_HIGH.WMB_ADDR_HIGH.set(                            wmb_addr_high);
-    ral.nvdla.NVDLA_CDMA.D_WMB_ADDR_LOW.WMB_ADDR_LOW.set(                              wmb_addr_low);
-    ral.nvdla.NVDLA_CDMA.D_WMB_BYTES.WMB_BYTES.set(                                    wmb_bytes);
-    ral.nvdla.NVDLA_CDMA.D_MEAN_FORMAT.MEAN_FORMAT.set(                                mean_format);
-    ral.nvdla.NVDLA_CDMA.D_MEAN_GLOBAL_0.MEAN_RY.set(                                  mean_ry);
-    ral.nvdla.NVDLA_CDMA.D_MEAN_GLOBAL_0.MEAN_GU.set(                                  mean_gu);
-    ral.nvdla.NVDLA_CDMA.D_MEAN_GLOBAL_1.MEAN_BV.set(                                  mean_bv);
-    ral.nvdla.NVDLA_CDMA.D_MEAN_GLOBAL_1.MEAN_AX.set(                                  mean_ax);
-    ral.nvdla.NVDLA_CDMA.D_CVT_CFG.CVT_EN.set(                                         cvt_en);
-    ral.nvdla.NVDLA_CDMA.D_CVT_CFG.CVT_TRUNCATE.set(                                   cvt_truncate);
-    ral.nvdla.NVDLA_CDMA.D_CVT_OFFSET.CVT_OFFSET.set(                                  cvt_offset);
-    ral.nvdla.NVDLA_CDMA.D_CVT_SCALE.CVT_SCALE.set(                                    cvt_scale);
-    ral.nvdla.NVDLA_CDMA.D_CONV_STRIDE.CONV_X_STRIDE.set(                              conv_x_stride);
-    ral.nvdla.NVDLA_CDMA.D_CONV_STRIDE.CONV_Y_STRIDE.set(                              conv_y_stride);
-    ral.nvdla.NVDLA_CDMA.D_ZERO_PADDING.PAD_LEFT.set(                                  pad_left);
-    ral.nvdla.NVDLA_CDMA.D_ZERO_PADDING.PAD_RIGHT.set(                                 pad_right);
-    ral.nvdla.NVDLA_CDMA.D_ZERO_PADDING.PAD_TOP.set(                                   pad_top);
-    ral.nvdla.NVDLA_CDMA.D_ZERO_PADDING.PAD_BOTTOM.set(                                pad_bottom);
-    ral.nvdla.NVDLA_CDMA.D_ZERO_PADDING_VALUE.PAD_VALUE.set(                           pad_value);
-    ral.nvdla.NVDLA_CDMA.D_BANK.DATA_BANK.set(                                         data_bank);
-    ral.nvdla.NVDLA_CDMA.D_BANK.WEIGHT_BANK.set(                                       weight_bank);
-    ral.nvdla.NVDLA_CDMA.D_NAN_FLUSH_TO_ZERO.NAN_TO_ZERO.set(                          nan_to_zero);
-    ral.nvdla.NVDLA_CDMA.D_PERF_ENABLE.DMA_EN.set(                                     dma_en);
-    ral.nvdla.NVDLA_CDMA.D_CYA.CYA.set(                                                cya);
+    ral.nvdla.NVDLA_CDMA.S_ARBITER.ARB_WEIGHT.set(                               arb_weight);
+    ral.nvdla.NVDLA_CDMA.S_ARBITER.ARB_WMB.set(                                  arb_wmb);
+    ral.nvdla.NVDLA_CDMA.D_MISC_CFG.CONV_MODE.set(                               conv_mode);
+    ral.nvdla.NVDLA_CDMA.D_MISC_CFG.IN_PRECISION.set(                            in_precision);
+    ral.nvdla.NVDLA_CDMA.D_MISC_CFG.PROC_PRECISION.set(                          proc_precision);
+    ral.nvdla.NVDLA_CDMA.D_MISC_CFG.DATA_REUSE.set(                              data_reuse);
+    ral.nvdla.NVDLA_CDMA.D_MISC_CFG.WEIGHT_REUSE.set(                            weight_reuse);
+    ral.nvdla.NVDLA_CDMA.D_MISC_CFG.SKIP_DATA_RLS.set(                           skip_data_rls);
+    ral.nvdla.NVDLA_CDMA.D_MISC_CFG.SKIP_WEIGHT_RLS.set(                         skip_weight_rls);
+    ral.nvdla.NVDLA_CDMA.D_DATAIN_FORMAT.DATAIN_FORMAT.set(                      datain_format);
+    ral.nvdla.NVDLA_CDMA.D_DATAIN_FORMAT.PIXEL_FORMAT.set(                       pixel_format);
+    ral.nvdla.NVDLA_CDMA.D_DATAIN_FORMAT.PIXEL_MAPPING.set(                      pixel_mapping);
+    ral.nvdla.NVDLA_CDMA.D_DATAIN_FORMAT.PIXEL_SIGN_OVERRIDE.set(                pixel_sign_override);
+    ral.nvdla.NVDLA_CDMA.D_DATAIN_SIZE_0.DATAIN_WIDTH.set(                       datain_width);
+    ral.nvdla.NVDLA_CDMA.D_DATAIN_SIZE_0.DATAIN_HEIGHT.set(                      datain_height);
+    ral.nvdla.NVDLA_CDMA.D_DATAIN_SIZE_1.DATAIN_CHANNEL.set(                     datain_channel);
+    ral.nvdla.NVDLA_CDMA.D_DATAIN_SIZE_EXT_0.DATAIN_WIDTH_EXT.set(               datain_width_ext);
+    ral.nvdla.NVDLA_CDMA.D_DATAIN_SIZE_EXT_0.DATAIN_HEIGHT_EXT.set(              datain_height_ext);
+    ral.nvdla.NVDLA_CDMA.D_PIXEL_OFFSET.PIXEL_X_OFFSET.set(                      pixel_x_offset);
+    ral.nvdla.NVDLA_CDMA.D_PIXEL_OFFSET.PIXEL_Y_OFFSET.set(                      pixel_y_offset);
+    ral.nvdla.NVDLA_CDMA.D_DAIN_RAM_TYPE.DATAIN_RAM_TYPE.set(                    datain_ram_type);
+    ral.nvdla.NVDLA_CDMA.D_DAIN_ADDR_HIGH_0.DATAIN_ADDR_HIGH_0.set(              datain_addr_high_0);
+    ral.nvdla.NVDLA_CDMA.D_DAIN_ADDR_LOW_0.DATAIN_ADDR_LOW_0.set(                datain_addr_low_0);
+    ral.nvdla.NVDLA_CDMA.D_DAIN_ADDR_HIGH_1.DATAIN_ADDR_HIGH_1.set(              datain_addr_high_1);
+    ral.nvdla.NVDLA_CDMA.D_DAIN_ADDR_LOW_1.DATAIN_ADDR_LOW_1.set(                datain_addr_low_1);
+    ral.nvdla.NVDLA_CDMA.D_LINE_STRIDE.LINE_STRIDE.set(                          line_stride);
+    ral.nvdla.NVDLA_CDMA.D_LINE_UV_STRIDE.UV_LINE_STRIDE.set(                    uv_line_stride);
+    ral.nvdla.NVDLA_CDMA.D_SURF_STRIDE.SURF_STRIDE.set(                          surf_stride);
+    ral.nvdla.NVDLA_CDMA.D_DAIN_MAP.LINE_PACKED.set(                             line_packed);
+    ral.nvdla.NVDLA_CDMA.D_DAIN_MAP.SURF_PACKED.set(                             surf_packed);
+    ral.nvdla.NVDLA_CDMA.D_RESERVED_X_CFG.RSV_PER_LINE.set(                      rsv_per_line);
+    ral.nvdla.NVDLA_CDMA.D_RESERVED_X_CFG.RSV_PER_UV_LINE.set(                   rsv_per_uv_line);
+    ral.nvdla.NVDLA_CDMA.D_RESERVED_Y_CFG.RSV_HEIGHT.set(                        rsv_height);
+    ral.nvdla.NVDLA_CDMA.D_RESERVED_Y_CFG.RSV_Y_INDEX.set(                       rsv_y_index);
+    ral.nvdla.NVDLA_CDMA.D_BATCH_NUMBER.BATCHES.set(                             batches);
+    ral.nvdla.NVDLA_CDMA.D_BATCH_STRIDE.BATCH_STRIDE.set(                        batch_stride);
+    ral.nvdla.NVDLA_CDMA.D_ENTRY_PER_SLICE.ENTRIES.set(                          entries);
+    ral.nvdla.NVDLA_CDMA.D_FETCH_GRAIN.GRAINS.set(                               grains);
+    ral.nvdla.NVDLA_CDMA.D_WEIGHT_FORMAT.WEIGHT_FORMAT.set(                      weight_format);
+    ral.nvdla.NVDLA_CDMA.D_WEIGHT_SIZE_0.BYTE_PER_KERNEL.set(                    byte_per_kernel);
+    ral.nvdla.NVDLA_CDMA.D_WEIGHT_SIZE_1.WEIGHT_KERNEL.set(                      weight_kernel);
+    ral.nvdla.NVDLA_CDMA.D_WEIGHT_RAM_TYPE.WEIGHT_RAM_TYPE.set(                  weight_ram_type);
+    ral.nvdla.NVDLA_CDMA.D_WEIGHT_ADDR_HIGH.WEIGHT_ADDR_HIGH.set(                weight_addr_high);
+    ral.nvdla.NVDLA_CDMA.D_WEIGHT_ADDR_LOW.WEIGHT_ADDR_LOW.set(                  weight_addr_low);
+    ral.nvdla.NVDLA_CDMA.D_WEIGHT_BYTES.WEIGHT_BYTES.set(                        weight_bytes);
+    ral.nvdla.NVDLA_CDMA.D_WGS_ADDR_HIGH.WGS_ADDR_HIGH.set(                      wgs_addr_high);
+    ral.nvdla.NVDLA_CDMA.D_WGS_ADDR_LOW.WGS_ADDR_LOW.set(                        wgs_addr_low);
+    ral.nvdla.NVDLA_CDMA.D_WMB_ADDR_HIGH.WMB_ADDR_HIGH.set(                      wmb_addr_high);
+    ral.nvdla.NVDLA_CDMA.D_WMB_ADDR_LOW.WMB_ADDR_LOW.set(                        wmb_addr_low);
+    ral.nvdla.NVDLA_CDMA.D_WMB_BYTES.WMB_BYTES.set(                              wmb_bytes);
+    ral.nvdla.NVDLA_CDMA.D_MEAN_FORMAT.MEAN_FORMAT.set(                          mean_format);
+    ral.nvdla.NVDLA_CDMA.D_MEAN_GLOBAL_0.MEAN_RY.set(                            mean_ry);
+    ral.nvdla.NVDLA_CDMA.D_MEAN_GLOBAL_0.MEAN_GU.set(                            mean_gu);
+    ral.nvdla.NVDLA_CDMA.D_MEAN_GLOBAL_1.MEAN_BV.set(                            mean_bv);
+    ral.nvdla.NVDLA_CDMA.D_MEAN_GLOBAL_1.MEAN_AX.set(                            mean_ax);
+    ral.nvdla.NVDLA_CDMA.D_CVT_CFG.CVT_EN.set(                                   cvt_en);
+    ral.nvdla.NVDLA_CDMA.D_CVT_CFG.CVT_TRUNCATE.set(                             cvt_truncate);
+    ral.nvdla.NVDLA_CDMA.D_CVT_OFFSET.CVT_OFFSET.set(                            cvt_offset);
+    ral.nvdla.NVDLA_CDMA.D_CVT_SCALE.CVT_SCALE.set(                              cvt_scale);
+    ral.nvdla.NVDLA_CDMA.D_CONV_STRIDE.CONV_X_STRIDE.set(                        conv_x_stride);
+    ral.nvdla.NVDLA_CDMA.D_CONV_STRIDE.CONV_Y_STRIDE.set(                        conv_y_stride);
+    ral.nvdla.NVDLA_CDMA.D_ZERO_PADDING.PAD_LEFT.set(                            pad_left);
+    ral.nvdla.NVDLA_CDMA.D_ZERO_PADDING.PAD_RIGHT.set(                           pad_right);
+    ral.nvdla.NVDLA_CDMA.D_ZERO_PADDING.PAD_TOP.set(                             pad_top);
+    ral.nvdla.NVDLA_CDMA.D_ZERO_PADDING.PAD_BOTTOM.set(                          pad_bottom);
+    ral.nvdla.NVDLA_CDMA.D_ZERO_PADDING_VALUE.PAD_VALUE.set(                     pad_value);
+    ral.nvdla.NVDLA_CDMA.D_BANK.DATA_BANK.set(                                   data_bank);
+    ral.nvdla.NVDLA_CDMA.D_BANK.WEIGHT_BANK.set(                                 weight_bank);
+    ral.nvdla.NVDLA_CDMA.D_NAN_FLUSH_TO_ZERO.NAN_TO_ZERO.set(                    nan_to_zero);
+    ral.nvdla.NVDLA_CDMA.D_PERF_ENABLE.DMA_EN.set(                               dma_en);
+    ral.nvdla.NVDLA_CDMA.D_CYA.CYA.set(                                          cya);
     //:) epython: generated_end (DO NOT EDIT ABOVE)
 endfunction : set_register
 

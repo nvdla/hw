@@ -63,7 +63,7 @@ class Spec2Cons:
         self._dla_regs   = opendla.registers
         self._black_list = ['OP_EN','PRODUCER','r','c']
 
-    def state_gen(self, blocks):
+    def state_gen(self, blocks, prefix='', is_random=True):
         fld_list = []
         for blk in blocks:
             for reg in self._dla_regs[blk]['register_list']:
@@ -72,10 +72,14 @@ class Spec2Cons:
                         field = self._dla_regs[blk][reg][item]
                         if (field['action'] not in self._black_list) and (item not in self._black_list): 
                             if len(field['enums']) != 0:
-                                str0 = '    rand '+item.lower()+'_t'
+                                str0 = item.lower()+'_t'
                             else:
-                                str0 = '    rand bit ['+str(field['size']-1)+':0]'
-                            print("%-35s %0s;" % (str0, item.lower()))
+                                str0 = 'bit ['+str(field['size']-1)+':0]'
+                            if is_random:
+                                str0 = '    rand '+str0
+                            else:
+                                str0 = '    '+str0
+                            print("%-35s %0s%0s;" % (str0, prefix, item.lower()))
                     fld_list.append(item)
 
     def enum_gen(self, blocks):
