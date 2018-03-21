@@ -1279,6 +1279,7 @@ wire [CBUF_ADDR_WIDTH-1:0] dat_req_addr_last_plus1_real;
 wire is_dat_req_addr_last_plus1_wrap;
 wire [CBUF_ADDR_WIDTH-1:0] dat_req_addr_last_plus1_wrap;
 wire [CBUF_ADDR_WIDTH-1:0] mon_dat_req_addr_last_plus1_wrap;
+wire [LOG2_ATOMC:0] pixel_w_cnt_plus1;
 //: &eperl::flop("-d is_stripe_end -q is_stripe_end_d1");
 //: &eperl::flop("-d is_stripe_end_d1 -q is_stripe_end_d2");
 
@@ -1290,9 +1291,10 @@ assign dat_req_addr_last_plus1_real  = is_dat_req_addr_last_plus1_wrap ? dat_req
 //then csc need read 2 entries simultaneously, then shift out unneeded part.
 //this address jump should not happened because of execution of next stripe
 assign sc2buf_dat_rd_next1_enable = is_img_d1[10]&&sc2buf_dat_rd_en_w&&(dat_req_addr_w != dat_req_addr_last_plus1_real)
-                                    &&(pixel_w_cnt[LOG2_ATOMC-1:0]!=(CSC_ATOMC-1))&&(~is_stripe_end_d2);
+                                    &&(pixel_w_cnt_plus1[LOG2_ATOMC:0]!=CSC_ATOMC)&&(~is_stripe_end_d2);
 assign sc2buf_dat_rd_next1_disable_w = !sc2buf_dat_rd_next1_enable;
-assign sc2buf_dat_rd_shift_w = sc2buf_dat_rd_next1_enable ? {pixel_w_cnt[LOG2_ATOMC-1:0], {NVDLA_BPE_LOG2{1'b0}}} : {CBUF_RD_DATA_SHIFT_WIDTH{1'd0}};
+assign pixel_w_cnt_plus1 = pixel_w_cnt[LOG2_ATOMC-1:0]+1'b1;   //element need shift
+assign sc2buf_dat_rd_shift_w = sc2buf_dat_rd_next1_enable ? {pixel_w_cnt_plus1[LOG2_ATOMC:0], {NVDLA_BPE_LOG2{1'b0}}} : {CBUF_RD_DATA_SHIFT_WIDTH{1'd0}};
 
 //: my $kk= CBUF_RD_DATA_SHIFT_WIDTH;
 //: &eperl::flop("-d sc2buf_dat_rd_next1_disable_w -q sc2buf_dat_rd_next1_disable");

@@ -372,6 +372,7 @@ wire[CBUF_ADDR_WIDTH-1:0] sc2buf_dat_rd_addr1 = sc2buf_dat_rd_addr+1'b1;
 //: }
 
 
+//: &eperl::retime("-O sc2buf_dat_rd_shift_5T -i sc2buf_dat_rd_shift -stage 5 -clk nvdla_core_clk");
 
 // pipe solution. for timing concern, 4 level pipe. 
 //: my $kk=CBUF_RD_PORT_WIDTH;
@@ -461,7 +462,7 @@ wire[CBUF_ADDR_WIDTH-1:0] sc2buf_dat_rd_addr1 = sc2buf_dat_rd_addr+1'b1;
 //: );
 //: }
 //: print qq(
-//: wire [${kk}-1:0] l4group_data_rd_data_w = {l4group_data_rd1_data,l4group_data_rd0_data}>>sc2buf_dat_rd_shift;
+//: wire [${kk}-1:0] l4group_data_rd_data_w = {l4group_data_rd1_data,l4group_data_rd0_data}>>sc2buf_dat_rd_shift_5T;
 //: );
 //: &eperl::flop("-wid ${kk} -norst -q l4group_data_rd_data   -d l4group_data_rd_data_w");
 //: print "wire[${kk}-1:0] sc2buf_dat_rd_data = l4group_data_rd_data[${kk}-1:0]; \n";
@@ -487,7 +488,7 @@ wire[CBUF_ADDR_WIDTH-1:0] sc2buf_dat_rd_addr1 = sc2buf_dat_rd_addr+1'b1;
 ////: print "wire[${kk}-1:0] sc2buf_dat_rd_data1 =".${t2}."{${kk}{1'b0}}; \n";
 ////: }
 ////:
-//wire[CBUF_RD_PORT_WIDTH*2-1:0] sc2buf_dat_rd_data_temp = {sc2buf_dat_rd_data1,sc2buf_dat_rd_data0} >> sc2buf_dat_rd_shift;
+//wire[CBUF_RD_PORT_WIDTH*2-1:0] sc2buf_dat_rd_data_temp = {sc2buf_dat_rd_data1,sc2buf_dat_rd_data0} >> sc2buf_dat_rd_shift_5T;
 //wire[CBUF_RD_PORT_WIDTH-1:0] sc2buf_dat_rd_data = sc2buf_dat_rd_data_temp[CBUF_RD_PORT_WIDTH-1:0];
 
 

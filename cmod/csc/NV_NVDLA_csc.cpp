@@ -1719,7 +1719,7 @@ void NV_NVDLA_csc::SendImageDataToMacSequencerConvCommon() {
                             if (post_y_extension == 1)
                                 csc_read_one_image_entry(post_y_extension, 0, input_atom_coor_width, input_atom_coor_height, cbuf_entry_per_line, element_size, last_super_channel, last_super_channel_element_num, cube_in_height, cube_in_channel, &read_data_ptr_tmp[0]);
                             else if (post_y_extension == 2) {   // post-extension parameter is 2
-                                if (!last_super_channel || (last_super_channel_element_num > (64 / element_size)))    // The bytes in channel direction should be not larger than 64
+                                if (!last_super_channel || (last_super_channel_element_num > (NVDLA_MAC_ATOMIC_C_SIZE / 2)))    // The bytes in channel direction should be not larger than 64
                                     FAIL(("There should be only one super channel when post-extension is enabled. last_super_channel=%d last_super_channel_element_num=%d\n", last_super_channel, last_super_channel_element_num));
                                 csc_read_one_image_entry(post_y_extension, 0, input_atom_coor_width, input_atom_coor_height, cbuf_entry_per_line, element_size, last_super_channel, last_super_channel_element_num, cube_in_height, cube_in_channel, &read_data_ptr_tmp0[0]);
                                 // Even if the line is out of the range of (0, pad_top+cube_height+pad_bottom), still use pad_value ( the corresponding weight is 0)
@@ -1728,16 +1728,16 @@ void NV_NVDLA_csc::SendImageDataToMacSequencerConvCommon() {
                                 else
                                     csc_read_one_image_entry(post_y_extension, 1, input_atom_coor_width, input_atom_coor_height, cbuf_entry_per_line, element_size, last_super_channel, last_super_channel_element_num, cube_in_height, cube_in_channel, &read_data_ptr_tmp1[0]);
                                 if (DATA_FORMAT_INT8 == precision) {
-                                    memcpy(&read_data_ptr_tmp,     read_data_ptr_tmp0, NVDLA_MAC_ATOMIC_C_SIZE / 2);
-                                    memcpy(&read_data_ptr_tmp[32], read_data_ptr_tmp1, NVDLA_MAC_ATOMIC_C_SIZE / 2);
+                                    memcpy(&read_data_ptr_tmp,                              read_data_ptr_tmp0, NVDLA_MAC_ATOMIC_C_SIZE / 2);
+                                    memcpy(&read_data_ptr_tmp[NVDLA_MAC_ATOMIC_C_SIZE / 2], read_data_ptr_tmp1, NVDLA_MAC_ATOMIC_C_SIZE / 2);
                                 } else {
                                     // Assemble two lines (each is 64Bytes) into one 128B. The second 64B should be aligned to 64B. 0 is already filled in the gap by csc_read_one_image_entry().
-                                    memcpy(&read_data_ptr_tmp,     read_data_ptr_tmp0, NVDLA_MAC_ATOMIC_C_SIZE);
-                                    memcpy(&read_data_ptr_tmp[64], read_data_ptr_tmp1, NVDLA_MAC_ATOMIC_C_SIZE);
+                                    memcpy(&read_data_ptr_tmp,                          read_data_ptr_tmp0, NVDLA_MAC_ATOMIC_C_SIZE);
+                                    memcpy(&read_data_ptr_tmp[NVDLA_MAC_ATOMIC_C_SIZE], read_data_ptr_tmp1, NVDLA_MAC_ATOMIC_C_SIZE);
                                 }
                             }
                             else { //if (post_y_extension == 4) {
-                                if (!last_super_channel || (last_super_channel_element_num > (32/element_size)))    // The bytes in channel direction should be not larger than 32
+                                if (!last_super_channel || (last_super_channel_element_num > (NVDLA_MAC_ATOMIC_C_SIZE / 4)))    // The bytes in channel direction should be not larger than 32
                                     FAIL(("There should be only one super channel when post-extension is enabled. last_super_channel=%d last_super_channel_element_num=%d\n", last_super_channel, last_super_channel_element_num));
                                 csc_read_one_image_entry(post_y_extension, 0, input_atom_coor_width, input_atom_coor_height, cbuf_entry_per_line, element_size, last_super_channel, last_super_channel_element_num, cube_in_height, cube_in_channel, &read_data_ptr_tmp0[0]);
                                 if ((kernel_atom_iter == kernel_atom_num-1) && ((kernel_height % post_y_extension) == 1))
@@ -1753,16 +1753,16 @@ void NV_NVDLA_csc::SendImageDataToMacSequencerConvCommon() {
                                 else
                                     csc_read_one_image_entry(post_y_extension, 3, input_atom_coor_width, input_atom_coor_height, cbuf_entry_per_line, element_size, last_super_channel, last_super_channel_element_num, cube_in_height, cube_in_channel, &read_data_ptr_tmp3[0]);
                                 if (DATA_FORMAT_INT8 == precision) {
-                                    memcpy(&read_data_ptr_tmp,     read_data_ptr_tmp0, NVDLA_MAC_ATOMIC_C_SIZE / 4);
-                                    memcpy(&read_data_ptr_tmp[16], read_data_ptr_tmp1, NVDLA_MAC_ATOMIC_C_SIZE / 4);
-                                    memcpy(&read_data_ptr_tmp[32], read_data_ptr_tmp2, NVDLA_MAC_ATOMIC_C_SIZE / 4);
-                                    memcpy(&read_data_ptr_tmp[48], read_data_ptr_tmp3, NVDLA_MAC_ATOMIC_C_SIZE / 4);
+                                    memcpy(&read_data_ptr_tmp,                                    read_data_ptr_tmp0, NVDLA_MAC_ATOMIC_C_SIZE / 4);
+                                    memcpy(&read_data_ptr_tmp[(NVDLA_MAC_ATOMIC_C_SIZE / 4) * 1], read_data_ptr_tmp1, NVDLA_MAC_ATOMIC_C_SIZE / 4);
+                                    memcpy(&read_data_ptr_tmp[(NVDLA_MAC_ATOMIC_C_SIZE / 4) * 2], read_data_ptr_tmp2, NVDLA_MAC_ATOMIC_C_SIZE / 4);
+                                    memcpy(&read_data_ptr_tmp[(NVDLA_MAC_ATOMIC_C_SIZE / 4) * 3], read_data_ptr_tmp3, NVDLA_MAC_ATOMIC_C_SIZE / 4);
                                 } else {
                                     // Assemble four lines (each is 32Bytes) into one 128B. Each 32B should be aligned to 32B. 0 is already filled in the gap by csc_read_one_image_entry().
                                     memcpy(&read_data_ptr_tmp,     read_data_ptr_tmp0, NVDLA_MAC_ATOMIC_C_SIZE / 2);
-                                    memcpy(&read_data_ptr_tmp[32], read_data_ptr_tmp1, NVDLA_MAC_ATOMIC_C_SIZE / 2);
-                                    memcpy(&read_data_ptr_tmp[64], read_data_ptr_tmp2, NVDLA_MAC_ATOMIC_C_SIZE / 2);
-                                    memcpy(&read_data_ptr_tmp[96], read_data_ptr_tmp3, NVDLA_MAC_ATOMIC_C_SIZE / 2);
+                                    memcpy(&read_data_ptr_tmp[(NVDLA_MAC_ATOMIC_C_SIZE / 2) * 1], read_data_ptr_tmp1, NVDLA_MAC_ATOMIC_C_SIZE / 2);
+                                    memcpy(&read_data_ptr_tmp[(NVDLA_MAC_ATOMIC_C_SIZE / 2) * 2], read_data_ptr_tmp2, NVDLA_MAC_ATOMIC_C_SIZE / 2);
+                                    memcpy(&read_data_ptr_tmp[(NVDLA_MAC_ATOMIC_C_SIZE / 2) * 3], read_data_ptr_tmp3, NVDLA_MAC_ATOMIC_C_SIZE / 2);
                                 }
                             }
 
