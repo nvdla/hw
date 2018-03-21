@@ -513,18 +513,18 @@ constraint nvdla_pdp_resource::c_sim_mem_weight_dist {
 }
 
 constraint nvdla_pdp_resource::c_sim_input_cube_size_small {
-    cube_in_width   inside {[0:'h3F]};
+    cube_in_width   inside {[0:'h1F]};
     cube_in_height  inside {[0:'h1F]};
-    cube_in_channel inside {[0:'h3F]};
-    (cube_in_width+1)*(cube_in_height+1)*(cube_in_channel+1)    <= 64'h2_0000;
+    cube_in_channel inside {[0:'h1F]};
+    (cube_in_width+1)*(cube_in_height+1)*(cube_in_channel+1)    <= 64'h8000;
 }
 
 constraint nvdla_pdp_resource::c_sim_input_cube_size_medium {
     cube_in_width   inside {[0:'h7F]};
     cube_in_height  inside {[0:'h7F]};
     cube_in_channel inside {[0:'h7F]};
-    (cube_in_width+1)*(cube_in_height+1)*(cube_in_channel+1)    >  64'h2_0000;
-    (cube_in_width+1)*(cube_in_height+1)*(cube_in_channel+1)    <= 64'h10_0000;
+    (cube_in_width+1)*(cube_in_height+1)*(cube_in_channel+1)    >  64'h8000;
+    (cube_in_width+1)*(cube_in_height+1)*(cube_in_channel+1)    <= 64'h2_0000;
 }
 
 constraint nvdla_pdp_resource::c_sim_input_cube_size_large {

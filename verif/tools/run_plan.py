@@ -338,17 +338,17 @@ def main():
                         help='Enable multi processing')
     parser.add_argument('--UVM_VERBOSITY', '-uverb', dest='uverb', required=False, type=str, default='UVM_NONE',
                         help='Specify UVM_VERBOSITY value')
-    parser.add_argument('--cc_input_cube_size', '-cc_input_cube_size', '-cics', dest='cc_input_cube_size', required=False, type=str.lower, choices=cube_size_list, default='normal',
+    parser.add_argument('--cc_input_cube_size', '-cc_input_cube_size', '-cics', dest='cc_input_cube_size', required=False, type=str.lower, choices=cube_size_list, default=None,
                         help='Specify convolution input cube size range')
-    parser.add_argument('--cc_weight_cube_size', '-cc_weight_cube_size', '-cwcs', dest='cc_weight_cube_size', required=False, type=str.lower, choices=cube_size_list, default='normal',
+    parser.add_argument('--cc_weight_cube_size', '-cc_weight_cube_size', '-cwcs', dest='cc_weight_cube_size', required=False, type=str.lower, choices=cube_size_list, default=None,
                         help='Specify convolution weight cube size range')
-    parser.add_argument('--cc_output_cube_size', '-cc_output_cube_size', '-cocs', dest='cc_output_cube_size', required=False, type=str.lower, choices=cube_size_list, default='normal',
+    parser.add_argument('--cc_output_cube_size', '-cc_output_cube_size', '-cocs', dest='cc_output_cube_size', required=False, type=str.lower, choices=cube_size_list, default=None,
                         help='Specify convolution output cube size range')
-    parser.add_argument('--sdp_cube_size', '-sdp_cube_size', '-scs', dest='sdp_cube_size', required=False, type=str.lower, choices=cube_size_list, default='normal',
+    parser.add_argument('--sdp_cube_size', '-sdp_cube_size', '-scs', dest='sdp_cube_size', required=False, type=str.lower, choices=cube_size_list, default=None,
                         help='Specify sdp cube size range')
-    parser.add_argument('--pdp_input_cube_size', '-pdp_input_cube_size', '-pics', dest='pdp_input_cube_size', required=False, type=str.lower, choices=cube_size_list, default='normal',
+    parser.add_argument('--pdp_input_cube_size', '-pdp_input_cube_size', '-pics', dest='pdp_input_cube_size', required=False, type=str.lower, choices=cube_size_list, default=None,
                         help='Specify pdp input cube size range')
-    parser.add_argument('--cdp_cube_size', '-cdp_cube_size', '-ccs', dest='cdp_cube_size', required=False, type=str.lower, choices=cube_size_list, default='normal',
+    parser.add_argument('--cdp_cube_size', '-cdp_cube_size', '-ccs', dest='cdp_cube_size', required=False, type=str.lower, choices=cube_size_list, default=None,
                         help='Specify cdp cube size range')
     parser.add_argument('--extra_args', '-extra_args', dest='extra_args', required=False, type=str, default='',
                         help='Extra arguments which will be appended to test command line')
@@ -373,12 +373,18 @@ def main():
     # Prepare rtlarg
     config['rtlarg'] = []
     config['rtlarg'].append('+UVM_VERBOSITY=%s'                                 % config['uverb'])
-    config['rtlarg'].append('+uvm_set_config_string=*,cc_input_cube_size,%s'    % config['cc_input_cube_size'])
-    config['rtlarg'].append('+uvm_set_config_string=*,cc_weight_cube_size,%s'   % config['cc_weight_cube_size'])
-    config['rtlarg'].append('+uvm_set_config_string=*,cc_output_cube_size,%s'   % config['cc_output_cube_size'])
-    config['rtlarg'].append('+uvm_set_config_string=*,sdp_cube_size,%s'         % config['sdp_cube_size'])
-    config['rtlarg'].append('+uvm_set_config_string=*,pdp_input_cube_size,%s'   % config['pdp_input_cube_size'])
-    config['rtlarg'].append('+uvm_set_config_string=*,cdp_cube_size,%s'         % config['cdp_cube_size'])
+    if config['cc_input_cube_size'] is not None:
+        config['rtlarg'].append('+uvm_set_config_string=*,cc_input_cube_size,%s'    % config['cc_input_cube_size'])
+    if  config['cc_weight_cube_size'] is not None:
+        config['rtlarg'].append('+uvm_set_config_string=*,cc_weight_cube_size,%s'   % config['cc_weight_cube_size'])
+    if  config['cc_output_cube_size'] is not None:
+        config['rtlarg'].append('+uvm_set_config_string=*,cc_output_cube_size,%s'   % config['cc_output_cube_size'])
+    if  config['sdp_cube_size'] is not None:
+        config['rtlarg'].append('+uvm_set_config_string=*,sdp_cube_size,%s'         % config['sdp_cube_size'])
+    if  config['pdp_input_cube_size'] is not None:
+        config['rtlarg'].append('+uvm_set_config_string=*,pdp_input_cube_size,%s'   % config['pdp_input_cube_size'])
+    if  config['cdp_cube_size'] is not None:
+        config['rtlarg'].append('+uvm_set_config_string=*,cdp_cube_size,%s'         % config['cdp_cube_size'])
 
     # set random seed
     random.seed(config['seed'])

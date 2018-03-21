@@ -530,13 +530,21 @@ constraint nvdla_cc_dp_resource::c_sim_weight_cube_size_small {
 
 constraint nvdla_cc_dp_resource::c_sim_weight_cube_size_medium {
     weight_kernel       inside {[0:'h7F]};
-    (weight_width_ext+1)*(weight_height_ext+1)*(weight_channel_ext+1)    >  64'h200;
+    if (conv_mode == conv_mode_DIRECT && datain_format == datain_format_PIXEL) {
+        (weight_width_ext+1)*(weight_height_ext+1)*(weight_channel_ext+1) > 64'h100;
+    } else {
+        (weight_width_ext+1)*(weight_height_ext+1)*(weight_channel_ext+1) > 64'h200;
+    }
     (weight_width_ext+1)*(weight_height_ext+1)*(weight_channel_ext+1)*(weight_kernel+1) <= 64'h8000; // 0x1000*0x80 = 0x8_0000
 }
 
 constraint nvdla_cc_dp_resource::c_sim_weight_cube_size_large {
     weight_kernel       inside {[0:'h1FFF]};
-    (weight_width_ext+1)*(weight_height_ext+1)*(weight_channel_ext+1)    > 64'h1000;
+    if (conv_mode == conv_mode_DIRECT && datain_format == datain_format_PIXEL) {
+        (weight_width_ext+1)*(weight_height_ext+1)*(weight_channel_ext+1) > 64'h100;
+    } else {
+        (weight_width_ext+1)*(weight_height_ext+1)*(weight_channel_ext+1) > 64'h1000;
+    }
     (weight_width_ext+1)*(weight_height_ext+1)*(weight_channel_ext+1)*(weight_kernel+1) <= 64'h10_0000;
 }
 
