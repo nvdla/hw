@@ -254,7 +254,7 @@ wire          is_pending;
 wire          is_pixel;
 wire          is_running;
 wire          is_stripe_be_2x;
-wire          is_stripe_le_2x;
+wire          is_stripe_le_1x;
 #ifdef NVDLA_WINOGRAD_ENABLE
 wire          is_winograd;
 #endif

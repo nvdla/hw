@@ -248,15 +248,15 @@ reg             dl_pvld_d4;
 reg      [CSC_ENTRIES_NUM_WIDTH-1:0] entries;
 reg      [CSC_ENTRIES_NUM_WIDTH-1:0] entries_batch;
 reg      [CSC_ENTRIES_NUM_WIDTH-1:0] entries_cmp;
-reg      [CBUF_ADDR_WIDTH-1:0] h_bias_0_d1;
-reg      [CBUF_ADDR_WIDTH-1:0] h_bias_0_stride;
-reg      [CBUF_ADDR_WIDTH-1:0] h_bias_1_d1;
-reg      [CBUF_ADDR_WIDTH-1:0] h_bias_1_stride;
-reg      [CBUF_ADDR_WIDTH-1:0] h_bias_2_d1;
-reg      [CBUF_ADDR_WIDTH-1:0] h_bias_2_stride;
-reg      [CBUF_ADDR_WIDTH-1:0] h_bias_3_d1;
-reg      [CBUF_ADDR_WIDTH-1:0] h_bias_3_stride;
-reg      [CBUF_ADDR_WIDTH-1:0] h_offset_slice;
+reg      [CSC_ENTRIES_NUM_WIDTH-1:0] h_bias_0_d1;
+reg      [CSC_ENTRIES_NUM_WIDTH-1:0] h_bias_0_stride;
+reg      [CSC_ENTRIES_NUM_WIDTH-1:0] h_bias_1_d1;
+reg      [CSC_ENTRIES_NUM_WIDTH-1:0] h_bias_1_stride;
+reg      [CSC_ENTRIES_NUM_WIDTH-1:0] h_bias_2_d1;
+reg      [CSC_ENTRIES_NUM_WIDTH-1:0] h_bias_2_stride;
+reg      [CSC_ENTRIES_NUM_WIDTH-1:0] h_bias_3_d1;
+reg      [CSC_ENTRIES_NUM_WIDTH-1:0] h_bias_3_stride;
+reg      [CSC_ENTRIES_NUM_WIDTH-1:0] h_offset_slice;
 reg      [33:0] is_img_d1;
 reg             is_sg_running_d1;
 reg      [21:0] is_winograd_d1;
@@ -335,15 +335,15 @@ wire            dat_dummy_l0_en;
 wire            dat_dummy_l1_en;
 wire            dat_dummy_l2_en;
 wire            dat_dummy_l3_en;
-wire     [11:0] dat_entry_avl_add;
-wire     [11:0] dat_entry_avl_sub;
-wire     [11:0] dat_entry_avl_w;
-wire     [12:0] dat_entry_end_inc;
-wire     [11:0] dat_entry_end_inc_wrap;
-wire     [11:0] dat_entry_end_w;
-wire     [12:0] dat_entry_st_inc;
-wire     [11:0] dat_entry_st_inc_wrap;
-wire     [11:0] dat_entry_st_w;
+wire  [CSC_ENTRIES_NUM_WIDTH-1:0] dat_entry_avl_add;
+wire  [CSC_ENTRIES_NUM_WIDTH-1:0] dat_entry_avl_sub;
+wire  [CSC_ENTRIES_NUM_WIDTH-1:0] dat_entry_avl_w;
+wire  [CSC_ENTRIES_NUM_WIDTH-1:0] dat_entry_end_inc;
+wire  [CSC_ENTRIES_NUM_WIDTH-1:0] dat_entry_end_inc_wrap;
+wire  [CSC_ENTRIES_NUM_WIDTH-1:0] dat_entry_end_w;
+wire  [CSC_ENTRIES_NUM_WIDTH-1:0] dat_entry_st_inc;
+wire  [CSC_ENTRIES_NUM_WIDTH-1:0] dat_entry_st_inc_wrap;
+wire  [CSC_ENTRIES_NUM_WIDTH-1:0] dat_entry_st_w;
 wire            dat_exec_valid;
 wire            dat_img_req_dummy;
 wire            dat_img_req_skip;
@@ -873,7 +873,7 @@ assign pra_truncate_w = (reg2dp_pra_truncate == 2'h3) ? 2'h2 : reg2dp_pra_trunca
 //: &eperl::flop("-nodeclare   -rval \"{16{1'b0}}\"  -en \"layer_st\" -d \"reg2dp_pad_value\" -q pad_value");
 //: &eperl::flop("-nodeclare   -rval \"{${kk}{1'b0}}\"  -en \"layer_st\" -d \"entries_w\" -q entries");
 //: &eperl::flop("-nodeclare   -rval \"{${kk}{1'b0}}\"  -en \"layer_st\" -d \"entries_batch_w\" -q entries_batch");
-//: &eperl::flop("-nodeclare   -rval \"{${kk}{1'b0}}\"  -en \"layer_st\" -d \"{3'h0,reg2dp_entries}\" -q entries_cmp");
+//: &eperl::flop("-nodeclare   -rval \"{${kk}{1'b0}}\"  -en \"layer_st\" -d \"{1'h0,reg2dp_entries}\" -q entries_cmp");
 //: &eperl::flop("-nodeclare   -rval \"{12{1'b0}}\"  -en \"layer_st\" -d \"h_offset_slice_w\" -q h_offset_slice");
 //: &eperl::flop("-nodeclare   -rval \"{12{1'b0}}\"  -en \"layer_st_d1\" -d \"h_bias_0_stride_w\" -q h_bias_0_stride");
 //: &eperl::flop("-nodeclare   -rval \"{12{1'b0}}\"  -en \"layer_st_d1\" -d \"h_bias_1_stride_w\" -q h_bias_1_stride");
@@ -914,7 +914,7 @@ assign {mon_dat_slice_avl_w, dat_slice_avl_w} = (cbuf_reset) ? 13'b0 : dat_slice
 //////////////////////////////////// calculate how many avaliable dat entries in cbuf////////////////////////////////////
 assign dat_entry_avl_add = cdma2sc_dat_updt ? cdma2sc_dat_entries :{CSC_ENTRIES_NUM_WIDTH{1'b0}};
 assign dat_entry_avl_sub = dat_rls ? sc2cdma_dat_entries_w : {CSC_ENTRIES_NUM_WIDTH{1'b0}};
-assign {mon_dat_entry_avl_w,dat_entry_avl_w} = (cbuf_reset) ? 13'b0 : dat_entry_avl + dat_entry_avl_add - dat_entry_avl_sub;
+assign {mon_dat_entry_avl_w,dat_entry_avl_w} = (cbuf_reset) ? {CSC_ENTRIES_NUM_WIDTH{1'b0}} : dat_entry_avl + dat_entry_avl_add - dat_entry_avl_sub;
 
 //////////////////////////////////// calculate avilable data entries start offset in cbuf banks ////////////////////////////////////
 // data_bank is the highest bank for storing data
@@ -1350,6 +1350,7 @@ assign dat_req_pipe_pd[1:0] =     dat_req_pipe_sub_w[1:0];
 assign dat_req_pipe_pd[3:2] =     dat_req_pipe_sub_h[1:0];
 assign dat_req_pipe_pd[4] =     dat_req_pipe_sub_c ;
 assign dat_req_pipe_pd[5] =     dat_req_pipe_ch_end ;
+assign dat_req_pipe_pd[6] =     1'b0 ;
 assign dat_req_pipe_pd[14:7] =     dat_req_pipe_bytes[7:0];
 assign dat_req_pipe_pd[16:15] =     dat_req_pipe_cur_sub_h[1:0];
 assign dat_req_pipe_pd[17] =     dat_req_pipe_dummy ;
@@ -1722,9 +1723,9 @@ assign dat_rsp_img_8b = (~is_img_d1[32])? 'b0 :
 
 assign dat_rsp_img = dat_rsp_img_8b;
 
-assign dat_rsp_sft_d1_en = dat_rsp_l0_pvld & (sub_h_total_g9 != 3'h1);
-assign dat_rsp_sft_d2_en = dat_rsp_l1_pvld & (sub_h_total_g9 == 3'h4);
-assign dat_rsp_sft_d3_en = dat_rsp_l2_pvld & (sub_h_total_g9 == 3'h4);
+wire dat_rsp_sft_d1_en = dat_rsp_l0_pvld & (sub_h_total_g9 != 3'h1);
+wire dat_rsp_sft_d2_en = dat_rsp_l1_pvld & (sub_h_total_g9 == 3'h4);
+wire dat_rsp_sft_d3_en = dat_rsp_l2_pvld & (sub_h_total_g9 == 3'h4);
 
 //: my $half=CSC_HALF_ENTRY_BITS;
 //: my $quat=CSC_QUAT_ENTRY_BITS;

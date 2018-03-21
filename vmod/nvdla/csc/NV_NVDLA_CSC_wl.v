@@ -361,8 +361,7 @@ wire            wmb_rsp_pipe_pvld_d0;
 wire            wmb_rsp_rls;
 wire      [8:0] wmb_rsp_rls_entries;
 wire            wmb_rsp_stripe_end;
-wire     [63:0] wmb_rsp_vld_d;
-wire     [63:0] wmb_rsp_vld_s;
+wire     [CSC_ATOMC-1:0] wmb_rsp_vld_s;
 wire      [7:0] wmb_shift_remain;
 wire      [7:0] wt_byte_avl_add;
 wire      [7:0] wt_byte_avl_inc;
@@ -704,6 +703,7 @@ assign wmb_req_pipe_pd[24] =     wmb_req_d1_stripe_end ;
 assign wmb_req_pipe_pd[25] =     wmb_req_d1_channel_end ;
 assign wmb_req_pipe_pd[26] =     wmb_req_d1_group_end ;
 assign wmb_req_pipe_pd[27] =     wmb_req_d1_rls ;
+assign wmb_req_pipe_pd[28] =     1'b0 ;
 assign wmb_req_pipe_pd[30:29] =     wmb_req_d1_cur_sub_h[1:0];
 
 //: my $pipe_depth = NVDLA_CBUF_READ_LATENCY;
