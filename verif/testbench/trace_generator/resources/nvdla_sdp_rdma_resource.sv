@@ -9,6 +9,8 @@
 //-------------------------------------------------------------------------------------
 
 class nvdla_sdp_rdma_resource extends nvdla_base_resource;
+    // singleton handle
+    static local nvdla_sdp_rdma_resource        inst;
 
     // enum define
     //:| import spec2constrain
@@ -208,6 +210,7 @@ class nvdla_sdp_rdma_resource extends nvdla_base_resource;
         Methods
     */
     extern function         new(string name="nvdla_sdp_rdma_resource", uvm_component parent);
+    extern static function  nvdla_sdp_rdma_resource get_sdp_rdma(uvm_component parent);
     extern function void    trace_dump(int fh);
     extern function void    surface_dump(int fh);
     extern function void    set_mem_addr();
@@ -240,6 +243,13 @@ function nvdla_sdp_rdma_resource::new(string name="nvdla_sdp_rdma_resource", uvm
     super.new(name, parent);
     `uvm_info(inst_name, $sformatf("Initialize resource %s ... ",inst_name),UVM_LOW);
 endfunction: new
+
+static function  nvdla_sdp_rdma_resource nvdla_sdp_rdma_resource::get_sdp_rdma(uvm_component parent);
+    if (null == inst) begin
+        inst = new("NVDLA_SDP_RDMA", parent);
+    end
+    return inst;
+endfunction: get_sdp_rdma
 
 function void nvdla_sdp_rdma_resource::surface_dump(int fh);
     // Use surface generator to dump memory surface

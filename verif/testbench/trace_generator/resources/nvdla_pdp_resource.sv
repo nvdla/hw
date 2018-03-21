@@ -9,6 +9,8 @@
 //-------------------------------------------------------------------------------------
 
 class nvdla_pdp_resource extends nvdla_base_resource;
+    // singleton handle
+    static local nvdla_pdp_resource         inst;
     string  pdp_input_cube_size             = "NORMAL";
     string  pdp_output_cube_size            = "NORMAL";
 
@@ -136,6 +138,7 @@ class nvdla_pdp_resource extends nvdla_base_resource;
         Methods
     */
     extern function         new(string name="nvdla_pdp_resource", uvm_component parent);
+    extern static function  nvdla_pdp_resource get_pdp(uvm_component parent);
     extern function void    trace_dump(int fh);
     extern function void    set_fp16_padding();
     extern function void    set_mem_addr();
@@ -202,6 +205,13 @@ function nvdla_pdp_resource::new(string name="nvdla_pdp_resource", uvm_component
     super.new(name, parent);
     `uvm_info(inst_name, $sformatf("Initialize resource %s ... ",inst_name),UVM_LOW);
 endfunction: new
+
+static function  nvdla_pdp_resource nvdla_pdp_resource::get_pdp(uvm_component parent);
+    if (null == inst) begin
+        inst = new("NVDLA_PDP", parent);
+    end
+    return inst;
+endfunction: get_pdp
 
 function void nvdla_pdp_resource::trace_dump(int fh);
     if(fh==null) begin

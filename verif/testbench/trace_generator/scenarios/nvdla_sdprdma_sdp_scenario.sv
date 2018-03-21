@@ -45,12 +45,14 @@ endclass : nvdla_sdprdma_sdp_scenario
 function nvdla_sdprdma_sdp_scenario::new(string name, uvm_component parent);
     super.new(name, parent);
     this.inst_name = name;
+    sdp         = nvdla_sdp_resource::get_sdp(this);
+    sdp_rdma    = nvdla_sdp_rdma_resource::get_sdp_rdma(this);
 endfunction : new
 
 function void nvdla_sdprdma_sdp_scenario::build_phase(uvm_phase phase);
     super.build_phase(phase);
-    sdp = nvdla_sdp_resource::type_id::create("NVDLA_SDP", this);
-    sdp_rdma = nvdla_sdp_rdma_resource::type_id::create("NVDLA_SDP_RDMA", this);
+    // sdp = nvdla_sdp_resource::type_id::create("NVDLA_SDP", this);
+    // sdp_rdma = nvdla_sdp_rdma_resource::type_id::create("NVDLA_SDP_RDMA", this);
 endfunction: build_phase
 
 function void nvdla_sdprdma_sdp_scenario::trace_dump(int fh);

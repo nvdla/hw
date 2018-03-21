@@ -331,7 +331,7 @@ def main():
                         help='Specify job running timeout value in minutes')
     parser.add_argument('--no_lsf', '-no_lsf', dest='no_lsf', required=False, default=False, action='store_true',
                         help='Do not Use LSF to run tests')
-    parser.add_argument('--lsf_command', '-lsf_cmd', dest='lsf_cmd', required=False, default='',
+    parser.add_argument('--lsf_command', '-lsf_command', '--lsf_cmd', '-lsf_cmd', dest='lsf_cmd', required=False, default='',
                         help='LSF command to run tests')
     parser.add_argument('--disable_multi_processing', '-dmp', dest='disable_multi_processing', required=False,
                         default=False, action='store_true',

@@ -25,6 +25,7 @@ class nvdla_tg_core extends uvm_component;
 
     scenario_e                  scenario_pool[$];
 
+
     /*
         scenarioes
     */
@@ -113,7 +114,7 @@ function void nvdla_tg_core::generate_trace(int fh);
     scenario_pool.shuffle();
     curr_scenario = scenario_pool.pop_front();
     
-    `uvm_info(inst_name, $sformatf("Pick up scenario: %s",curr_scenario.name()),UVM_LOW);
+    `uvm_info(inst_name, $sformatf("Pick up scenario: %s",curr_scenario.name()),UVM_NONE);
     
     case (curr_scenario)
         SCE_PDPRDMA_PDP: begin

@@ -46,11 +46,12 @@ endclass : nvdla_pdprdma_pdp_scenario
 function nvdla_pdprdma_pdp_scenario::new(string name, uvm_component parent);
     super.new(name, parent);
     this.inst_name = name;
+    pdp   = nvdla_pdp_resource::get_pdp(this);
 endfunction : new
 
 function void nvdla_pdprdma_pdp_scenario::build_phase(uvm_phase phase);
     super.build_phase(phase);
-    pdp = nvdla_pdp_resource::type_id::create("NVDLA_PDP", this);
+    // pdp = nvdla_pdp_resource::type_id::create("NVDLA_PDP", this);
     pdp_rdma = nvdla_pdp_rdma_resource::type_id::create("NVDLA_PDP_RDMA", this);
 endfunction: build_phase
 

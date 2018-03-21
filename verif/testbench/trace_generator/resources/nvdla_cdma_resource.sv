@@ -9,6 +9,9 @@
 //-------------------------------------------------------------------------------------
 
 class nvdla_cdma_resource extends nvdla_base_resource;
+
+    // singleton handle
+    static local nvdla_cdma_resource        inst;
     string  cdma_feature_surface_pattern    = "random";
     string  cdma_image_surface_pattern      = "random";
     string  cdma_weight_surface_pattern     = "random";
@@ -287,6 +290,7 @@ class nvdla_cdma_resource extends nvdla_base_resource;
         Methods
     */
     extern function         new(string name="nvdla_cdma_resource", uvm_component parent);
+    extern static function  nvdla_cdma_resource get_cdma(uvm_component parent);
     extern function void    trace_dump(int fh);
     extern function void    set_mem_addr();
     extern function void    surface_dump(int fh);
@@ -342,6 +346,13 @@ function nvdla_cdma_resource::new(string name="nvdla_cdma_resource", uvm_compone
     `uvm_info(inst_name, $sformatf("Initialize resource %s ... ",inst_name),UVM_LOW);
 endfunction: new
 
+static function  nvdla_cdma_resource nvdla_cdma_resource::get_cdma(uvm_component parent);
+    if (null == inst) begin
+        inst = new("NVDLA_CDMA", parent);
+    end
+    return inst;
+endfunction: get_cdma
+
 function void nvdla_cdma_resource::trace_dump(int fh);
     if(fh==null) begin
         `uvm_fatal(inst_name, "Null handle of trace file ...")
@@ -362,7 +373,7 @@ function void nvdla_cdma_resource::trace_dump(int fh);
         sync_wait(fh,inst_name,{sync_group_name, "_WEIGHT"});
     end
 
-    reg_write(fh,{inst_name.toupper(),".S_POINTER"},group_to_use);
+    reg_write(fh,"NVDLA_CDMA.S_POINTER",group_to_use);
 
     begin
         uvm_reg        reg_q[$];
@@ -378,12 +389,12 @@ function void nvdla_cdma_resource::trace_dump(int fh);
             case(reg_q[i].get_name())
                 "D_OP_ENABLE",
                 "S_POINTER": ;
-                default: reg_write(fh,{inst_name.toupper(),".",reg_q[i].get_name()},int'(reg_q[i].get()));
+                default: reg_write(fh,{"NVDLA_CDMA.",reg_q[i].get_name()},int'(reg_q[i].get()));
             endcase
         end
     end
     ral.nvdla.NVDLA_CDMA.D_OP_ENABLE.set(1);
-    reg_write(fh,{inst_name.toupper(),".D_OP_ENABLE"},1);
+    reg_write(fh,"NVDLA_CDMA.D_OP_ENABLE",1);
     // There are two interrupt events needs to be waited
     //   Data done interrupt
     //   Weight done interrupt

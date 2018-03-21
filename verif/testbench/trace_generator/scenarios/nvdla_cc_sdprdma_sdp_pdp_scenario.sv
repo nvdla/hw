@@ -53,15 +53,22 @@ endclass : nvdla_cc_sdprdma_sdp_pdp_scenario
 
 function nvdla_cc_sdprdma_sdp_pdp_scenario::new(string name, uvm_component parent);
     super.new(name, parent);
+    cdma        = nvdla_cdma_resource::get_cdma(this);
+    cc_dp       = nvdla_cc_dp_resource::get_cc_dp(this);
+    sdp         = nvdla_sdp_resource::get_sdp(this);
+    sdp_rdma    = nvdla_sdp_rdma_resource::get_sdp_rdma(this);
+    pdp         = nvdla_pdp_resource::get_pdp(this);
 endfunction : new
 
 function void nvdla_cc_sdprdma_sdp_pdp_scenario::build_phase(uvm_phase phase);
     super.build_phase(phase);
-    cdma = nvdla_cdma_resource::type_id::create("NVDLA_CDMA", this);
-    cc_dp = nvdla_cc_dp_resource::type_id::create("NVDLA_CCDP", this);
-    sdp = nvdla_sdp_resource::type_id::create("NVDLA_SDP", this);
-    sdp_rdma = nvdla_sdp_rdma_resource::type_id::create("NVDLA_SDP_RDMA", this);
-    pdp = nvdla_pdp_resource::type_id::create("NVDLA_PDP", this);
+    // cdma = nvdla_cdma_resource::type_id::create("NVDLA_CDMA", this);
+    // cc_dp = nvdla_cc_dp_resource::type_id::create("NVDLA_CCDP", this);
+    // sdp = nvdla_sdp_resource::type_id::create("NVDLA_SDP", this);
+    // sdp_rdma = nvdla_sdp_rdma_resource::type_id::create("NVDLA_SDP_RDMA", this);
+    // pdp = nvdla_pdp_resource::type_id::create("NVDLA_PDP", this);
+    // cdma  = nvdla_cdma_resource::get_cdma();
+    // cc_dp = nvdla_cc_dp_resource::get_cc_dp();
 endfunction: build_phase
 
 function void nvdla_cc_sdprdma_sdp_pdp_scenario::trace_dump(int fh);

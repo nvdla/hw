@@ -9,6 +9,8 @@
 //-------------------------------------------------------------------------------------
 
 class nvdla_sdp_resource extends nvdla_base_resource;
+    // singleton handle
+    static local nvdla_sdp_resource        inst;
     string  sdp_cube_size = "NORMAL";
 
     // enum define
@@ -348,6 +350,7 @@ class nvdla_sdp_resource extends nvdla_base_resource;
         Methods
     */
     extern function         new(string name="nvdla_sdp_resource", uvm_component parent);
+    extern static function  nvdla_sdp_resource get_sdp(uvm_component parent);
     extern function void    trace_dump(int fh);
     extern function void    set_lut();
     extern function void    set_mem_addr();
@@ -393,6 +396,13 @@ function nvdla_sdp_resource::new(string name="nvdla_sdp_resource", uvm_component
     `uvm_info(inst_name, $sformatf("Initialize resource %s ... \n",inst_name),UVM_LOW);
 endfunction: new
 
+static function  nvdla_sdp_resource nvdla_sdp_resource::get_sdp(uvm_component parent);
+    if (null == inst) begin
+        inst = new("NVDLA_SDP", parent);
+    end
+    return inst;
+endfunction: get_sdp
+
 function void nvdla_sdp_resource::trace_dump(int fh);
     // FIXME need to handle lut config dump
     if(fh==null) begin
@@ -404,7 +414,7 @@ function void nvdla_sdp_resource::trace_dump(int fh);
         sync_wait(fh,inst_name,sync_evt_queue.pop_front());
     end
     
-    reg_write(fh,{inst_name.toupper(),".S_POINTER"},group_to_use);
+    reg_write(fh,"NVDLA_SDP.S_POINTER",group_to_use);
     
     begin
         uvm_reg        reg_q[$];

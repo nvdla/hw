@@ -9,6 +9,8 @@
 //-------------------------------------------------------------------------------------
 
 class nvdla_cc_dp_resource extends nvdla_base_resource;
+    // singleton handle
+    static local nvdla_cc_dp_resource       inst;
     string  cc_weight_cube_size             = "NORMAL";
     string  cc_output_cube_size             = "NORMAL";
 
@@ -163,6 +165,7 @@ class nvdla_cc_dp_resource extends nvdla_base_resource;
         Methods
     */
     extern function         new(string name="nvdla_cc_dp_resource", uvm_component parent);
+    extern static function  nvdla_cc_dp_resource get_cc_dp(uvm_component parent);
     extern function void    trace_dump(int fh);
     extern function void    set_register();
     extern function void    post_randomize();
@@ -205,6 +208,13 @@ function nvdla_cc_dp_resource::new(string name="nvdla_cc_dp_resource", uvm_compo
     super.new(name, parent);
     `uvm_info(inst_name, $sformatf("Initialize resource %s ... ",inst_name),UVM_LOW);
 endfunction: new
+
+static function  nvdla_cc_dp_resource nvdla_cc_dp_resource::get_cc_dp(uvm_component parent);
+    if (null == inst) begin
+        inst = new("nvdla_cc_dp_resource", parent);
+    end
+    return inst;
+endfunction: get_cc_dp
 
 function void nvdla_cc_dp_resource::trace_dump(int fh);
     if(fh==null) begin
