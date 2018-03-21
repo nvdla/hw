@@ -752,18 +752,17 @@ constraint nvdla_cdma_resource::c_ias_pad_size {
 constraint nvdla_cdma_resource::c_ias_bank_size {
     // data_bank assignment is not allowed to be changed when data reuse is set
     if((datain_format == datain_format_PIXEL) || (conv_mode == conv_mode_DIRECT &&  datain_format == datain_format_FEATURE)) {
-        (data_bank+1) >= ((entries+1)*(datain_height+1)*(batches+1) + 255) / 256;
+        (data_bank+1) >= ((entries+1)*(datain_height+1)*(batches+1) + `NVDLA_CBUF_BANK_DEPTH - 1) / `NVDLA_CBUF_BANK_DEPTH;
     }
     else {
-        (data_bank+1) >= ((entries+1)*(datain_height_ext+1)*(batches+1) + 255) / 256;
+        (data_bank+1) >= ((entries+1)*(datain_height_ext+1)*(batches+1) + `NVDLA_CBUF_BANK_DEPTH - 1) / `NVDLA_CBUF_BANK_DEPTH;
     }
-    if(weight_format == weight_format_COMPRESSED) { // one bank for weight, one for WMB
-        (data_bank+1) <= 14;
-        (data_bank+1) + (weight_bank+1) <=15;
+    if(weight_format == weight_format_COMPRESSED) {
+        // one bank for WMB
+        (data_bank+1) + (weight_bank+1) <= `NVDLA_CBUF_BANK_NUMBER - 1;
     }
-    else { // one for weight
-        (data_bank+1) <= 15;
-        (data_bank+1) + (weight_bank+1) <=16;
+    else {
+        (data_bank+1) + (weight_bank+1) <= `NVDLA_CBUF_BANK_NUMBER;
     }
 }
 
