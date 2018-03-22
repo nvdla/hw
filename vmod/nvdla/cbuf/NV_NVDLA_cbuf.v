@@ -197,7 +197,7 @@ end
 
 
 // 1 pipe before write to sram, for timing
-//: my $kk=CBUF_ADDR_WIDTH;
+//: my $kk=CBUF_RAM_DEPTH_BITS;
 //: my $jj=CBUF_WR_PORT_WIDTH;
 //: for(my $j=0; $j<CBUF_BANK_NUMBER ; $j++){
 //:     for(my $k=0; $k<CBUF_RAM_PER_BANK ; $k++){
@@ -372,7 +372,8 @@ wire[CBUF_ADDR_WIDTH-1:0] sc2buf_dat_rd_addr1 = sc2buf_dat_rd_addr+1'b1;
 //: }
 
 
-//: &eperl::retime("-O sc2buf_dat_rd_shift_5T -i sc2buf_dat_rd_shift -stage 5 -clk nvdla_core_clk");
+//: my $kk=CBUF_RD_DATA_SHIFT_WIDTH;
+//: &eperl::retime("-O sc2buf_dat_rd_shift_5T -i sc2buf_dat_rd_shift -wid ${kk} -stage 5 -clk nvdla_core_clk");
 
 // pipe solution. for timing concern, 4 level pipe. 
 //: my $kk=CBUF_RD_PORT_WIDTH;
@@ -462,9 +463,9 @@ wire[CBUF_ADDR_WIDTH-1:0] sc2buf_dat_rd_addr1 = sc2buf_dat_rd_addr+1'b1;
 //: );
 //: }
 //: print qq(
-//: wire [${kk}-1:0] l4group_data_rd_data_w = {l4group_data_rd1_data,l4group_data_rd0_data}>>sc2buf_dat_rd_shift_5T;
+//: wire [${kk}*2-1:0] l4group_data_rd_data_w = {l4group_data_rd1_data,l4group_data_rd0_data}>>sc2buf_dat_rd_shift_5T;
 //: );
-//: &eperl::flop("-wid ${kk} -norst -q l4group_data_rd_data   -d l4group_data_rd_data_w");
+//: &eperl::flop("-wid ${kk} -norst -q l4group_data_rd_data   -d l4group_data_rd_data_w[${kk}-1:0]");
 //: print "wire[${kk}-1:0] sc2buf_dat_rd_data = l4group_data_rd_data[${kk}-1:0]; \n";
 //: }
 

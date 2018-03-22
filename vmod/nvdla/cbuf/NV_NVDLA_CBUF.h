@@ -12,7 +12,6 @@
 #define CBUF_ENTRY_WIDTH            NVDLA_CBUF_ENTRY_WIDTH
 #define CBUF_ENTRY_BYTE             CBUF_ENTRY_WIDTH/8
 #define CBUF_RAM_DEPTH              NVDLA_CBUF_BANK_DEPTH 
-#define CBUF_RAM_DEPTH_BITS         NVDLA_CBUF_BANK_DEPTH_LOG2  //log2(ram_depth),how many bits need to give an address in SRAM
 #define CBUF_BANK_DEPTH_BITS        NVDLA_CBUF_BANK_DEPTH_LOG2  //log2(bank_depth), how many bits need to give an address in BANK
 #define CBUF_RD_DATA_SHIFT_WIDTH    NVDLA_CBUF_WIDTH_LOG2       //log2(ram_width),width of data shift
 #define CBUF_ADDR_WIDTH             NVDLA_CBUF_DEPTH_LOG2       //log2(bank_depth*bank_num)for both read and write
@@ -46,30 +45,34 @@
     #define CBUF_WR_BANK_SEL_WIDTH      1
     #define CBUF_RAM_WIDTH              NVDLA_CBUF_ENTRY_WIDTH  
     #define CBUF_RAM_DEPTH              NVDLA_CBUF_BANK_DEPTH 
+    #define CBUF_RAM_DEPTH_BITS         CBUF_BANK_DEPTH_BITS
 #elif (CBUF_BANK_RAM_CASE==1)
     #define CBUF_RAM_PER_BANK           2   
     #define CBUF_WR_BANK_SEL_WIDTH      2
     #define CBUF_RAM_WIDTH              NVDLA_CBUF_ENTRY_WIDTH/2
     #define CBUF_RAM_DEPTH              NVDLA_CBUF_BANK_DEPTH 
+    #define CBUF_RAM_DEPTH_BITS         CBUF_BANK_DEPTH_BITS
 #elif (CBUF_BANK_RAM_CASE==2)
     #define CBUF_RAM_PER_BANK           2   
     #define CBUF_WR_BANK_SEL_WIDTH      1
     #define CBUF_RAM_WIDTH              NVDLA_CBUF_ENTRY_WIDTH
     #define CBUF_RAM_DEPTH              NVDLA_CBUF_BANK_DEPTH/2 
+    #define CBUF_RAM_DEPTH_BITS         CBUF_BANK_DEPTH_BITS-1
 #elif (CBUF_BANK_RAM_CASE==3)
     #define CBUF_RAM_PER_BANK           4   
     #define CBUF_WR_BANK_SEL_WIDTH      2
     #define CBUF_RAM_WIDTH              NVDLA_CBUF_ENTRY_WIDTH/2
     #define CBUF_RAM_DEPTH              NVDLA_CBUF_BANK_DEPTH/2 
+    #define CBUF_RAM_DEPTH_BITS         CBUF_BANK_DEPTH_BITS-1
 #elif (CBUF_BANK_RAM_CASE==4)
     #define CBUF_RAM_PER_BANK           4   
     #define CBUF_WR_BANK_SEL_WIDTH      4
     #define CBUF_RAM_WIDTH              NVDLA_CBUF_ENTRY_WIDTH/4
     #define CBUF_RAM_DEPTH              NVDLA_CBUF_BANK_DEPTH 
+    #define CBUF_RAM_DEPTH_BITS         CBUF_BANK_DEPTH_BITS
 #endif
 
 #define CBUF_WR_PORT_WIDTH          CBUF_RAM_WIDTH 
-#define CBUF_RAM_DEPTH_BITS         NVDLA_CBUF_BANK_DEPTH_LOG2  
 
 #if (CBUF_BANK_NUMBER==16)
     #if (CBUF_BANK_DEPTH==512)
