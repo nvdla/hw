@@ -162,8 +162,8 @@ reg      [10:0] wmb_element_avl_last;
 reg    [CBUF_ENTRY_BITS-1:0] wmb_emask_remain;
 reg    [CBUF_ENTRY_BITS-1:0] wmb_emask_remain_last;
 reg       [8:0] wmb_entry_avl;
-reg       [7:0] wmb_entry_end;
-reg       [7:0] wmb_entry_st;
+reg       [8:0] wmb_entry_end;
+reg       [8:0] wmb_entry_st;
 reg             wmb_pipe_valid_d1;
 reg       [CBUF_ADDR_WIDTH-1:0] wmb_req_addr;
 reg       [CBUF_ADDR_WIDTH-1:0] wmb_req_addr_last;
@@ -183,11 +183,11 @@ reg       [7:0] wt_byte_avl;
 reg       [7:0] wt_byte_avl_last;
 reg    [CBUF_ENTRY_BITS-1:0] wt_data_remain;
 reg    [CBUF_ENTRY_BITS-1:0] wt_data_remain_last;
-reg      [11:0] wt_entry_avl;
-reg      [11:0] wt_entry_end;
-reg      [11:0] wt_entry_st;
-reg      [CBUF_ADDR_WIDTH-1:0] wt_req_addr;
-reg      [CBUF_ADDR_WIDTH-1:0] wt_req_addr_last;
+reg    [CSC_ENTRIES_NUM_WIDTH-1:0] wt_entry_avl;
+reg    [CSC_ENTRIES_NUM_WIDTH-1:0] wt_entry_end;
+reg    [CSC_ENTRIES_NUM_WIDTH-1:0] wt_entry_st;
+reg    [CBUF_ADDR_WIDTH-1:0] wt_req_addr;
+reg    [CBUF_ADDR_WIDTH-1:0] wt_req_addr_last;
 reg       [7:0] wt_req_bytes_d1;
 reg             wt_req_channel_end;
 reg             wt_req_channel_end_d1;
@@ -250,15 +250,11 @@ wire            mon_wmb_rls_cnt_inc;
 wire      [1:0] mon_wmb_rsp_bit_remain_w;
 wire            mon_wmb_shift_remain;
 wire            mon_wt_byte_avl_inc;
-wire      [7:0] mon_wt_data_input_rs;
 wire            mon_wt_entry_avl_w;
 wire            mon_wt_entry_end_inc_wrap;
 wire            mon_wt_entry_st_inc_wrap;
 wire            mon_wt_req_addr_inc;
 wire            mon_wt_req_addr_out;
-wire     [CSC_ATOMC-1:0] mon_wt_req_emask_p1;
-wire     [CSC_ATOMC-1:0] mon_wt_req_emask_p2;
-wire     [CSC_ATOMC-1:0] mon_wt_req_emask_p3;
 wire            mon_wt_rls_cnt_inc;
 wire      [1:0] mon_wt_rsp_byte_remain_w;
 wire            mon_wt_shift_remain;
@@ -315,9 +311,9 @@ wire      [8:0] wmb_entry_avl_add;
 wire      [8:0] wmb_entry_avl_sub;
 wire      [8:0] wmb_entry_avl_w;
 wire      [8:0] wmb_entry_end_inc;
-wire      [7:0] wmb_entry_end_w;
+wire      [8:0] wmb_entry_end_w;
 wire      [8:0] wmb_entry_st_inc;
-wire      [7:0] wmb_entry_st_w;
+wire      [8:0] wmb_entry_st_w;
 wire            wmb_pipe_valid;
 wire      [CBUF_ADDR_WIDTH-1:0] wmb_req_addr_inc;
 wire            wmb_req_addr_last_reg_en;
@@ -385,6 +381,8 @@ wire     [CSC_ENTRIES_NUM_WIDTH-1:0] wt_entry_end_w;
 wire     [CSC_ENTRIES_NUM_WIDTH-1:0] wt_entry_st_inc;
 wire     [CSC_ENTRIES_NUM_WIDTH-1:0] wt_entry_st_inc_wrap;
 wire     [CSC_ENTRIES_NUM_WIDTH-1:0] wt_entry_st_w;
+wire     mon_wt_entry_end_inc;
+wire     mon_wt_entry_st_inc;
 wire     [CBUF_ADDR_WIDTH-1:0] wt_req_addr_inc;
 wire     [CBUF_ADDR_WIDTH-1:0] wt_req_addr_inc_wrap;
 wire            wt_req_addr_last_reg_en;
@@ -519,7 +517,7 @@ assign wmb_entry_avl_sub = wt_rls ? wt_rls_wmb_entries : 9'b0;
 assign {mon_wmb_entry_avl_w,wmb_entry_avl_w} = (cbuf_reset) ? 10'b0 : wmb_entry_avl + wmb_entry_avl_add - wmb_entry_avl_sub;
 
 //////////////////////////////////// calculate weight entries start offset ////////////////////////////////////
-assign wt_entry_st_inc = wt_entry_st + wt_rls_wt_entries;
+assign {mon_wt_entry_st_inc,wt_entry_st_inc} = wt_entry_st + wt_rls_wt_entries;
 assign {mon_wt_entry_st_inc_wrap,wt_entry_st_inc_wrap} = wt_entry_st_inc[CSC_ENTRIES_NUM_WIDTH-1:0] - {weight_bank, {LOG2_CBUF_BANK_DEPTH{1'b0}}};
 assign is_wt_entry_st_wrap = (wt_entry_st_inc >= {1'b0, weight_bank, {LOG2_CBUF_BANK_DEPTH{1'b0}}});
 assign wt_entry_st_w = (cbuf_reset) ? {CSC_ENTRIES_NUM_WIDTH{1'b0}} :
@@ -528,26 +526,26 @@ assign wt_entry_st_w = (cbuf_reset) ? {CSC_ENTRIES_NUM_WIDTH{1'b0}} :
                        wt_entry_st_inc[CSC_ENTRIES_NUM_WIDTH-1:0];
 
 //////////////////////////////////// calculate weight entries end offset ////////////////////////////////////
-assign wt_entry_end_inc = wt_entry_end + cdma2sc_wt_entries;
+assign {mon_wt_entry_end_inc,wt_entry_end_inc} = wt_entry_end + cdma2sc_wt_entries;
 assign {mon_wt_entry_end_inc_wrap,wt_entry_end_inc_wrap} = wt_entry_end_inc[CSC_ENTRIES_NUM_WIDTH-1:0] - {weight_bank, {LOG2_CBUF_BANK_DEPTH{1'b0}}};
 assign is_wt_entry_end_wrap = (wt_entry_end_inc >= {1'b0, weight_bank, {LOG2_CBUF_BANK_DEPTH{1'b0}}});
 assign wt_entry_end_w = (cbuf_reset) ? {CSC_ENTRIES_NUM_WIDTH{1'b0}} : is_wt_entry_end_wrap ? wt_entry_end_inc_wrap : wt_entry_end_inc[CSC_ENTRIES_NUM_WIDTH-1:0];
 
 //////////////////////////////////// calculate wmb entries start offset ////////////////////////////////////
 assign {mon_wmb_entry_st_inc,wmb_entry_st_inc} = wmb_entry_st + wt_rls_wmb_entries;
-assign wmb_entry_st_w = (cbuf_reset) ? 8'b0 : (~wt_rls) ? wmb_entry_st : wmb_entry_st_inc[8 -1:0];
+assign wmb_entry_st_w = (cbuf_reset) ? 9'b0 : (~wt_rls) ? wmb_entry_st : wmb_entry_st_inc[8:0];
 
 //////////////////////////////////// calculate wmb entries end offset ////////////////////////////////////
 assign {mon_wmb_entry_end_inc,wmb_entry_end_inc} = wmb_entry_end + cdma2sc_wmb_entries;
-assign wmb_entry_end_w = (cbuf_reset) ? 8'b0 : wmb_entry_end_inc[8 -1:0];
+assign wmb_entry_end_w = (cbuf_reset) ? 9'b0 : wmb_entry_end_inc[8:0];
 
 //////////////////////////////////// registers and assertions ////////////////////////////////////
 //: &eperl::flop("-nodeclare -clk nvdla_core_ng_clk  -rval \"{12{1'b0}}\"  -en \"cdma2sc_wt_updt | wt_rls | cbuf_reset\" -d \"wt_entry_avl_w\" -q wt_entry_avl");
 //: &eperl::flop("-nodeclare -clk nvdla_core_ng_clk  -rval \"{9{1'b0}}\"  -en \"cdma2sc_wt_updt | wt_rls | cbuf_reset\" -d \"wmb_entry_avl_w\" -q wmb_entry_avl");
 //: &eperl::flop("-nodeclare -clk nvdla_core_ng_clk  -rval \"{12{1'b0}}\"  -en \"cbuf_reset | wt_rls\" -d \"wt_entry_st_w\" -q wt_entry_st");
 //: &eperl::flop("-nodeclare -clk nvdla_core_ng_clk  -rval \"{12{1'b0}}\"  -en \"cbuf_reset | cdma2sc_wt_updt\" -d \"wt_entry_end_w\" -q wt_entry_end");
-//: &eperl::flop("-nodeclare -clk nvdla_core_ng_clk  -rval \"{8{1'b0}}\"  -en \"cbuf_reset | wt_rls\" -d \"wmb_entry_st_w\" -q wmb_entry_st");
-//: &eperl::flop("-nodeclare -clk nvdla_core_ng_clk  -rval \"{8{1'b0}}\"  -en \"cbuf_reset | cdma2sc_wt_updt\" -d \"wmb_entry_end_w\" -q wmb_entry_end");
+//: &eperl::flop("-nodeclare -clk nvdla_core_ng_clk  -rval \"{9{1'b0}}\"  -en \"cbuf_reset | wt_rls\" -d \"wmb_entry_st_w\" -q wmb_entry_st");
+//: &eperl::flop("-nodeclare -clk nvdla_core_ng_clk  -rval \"{9{1'b0}}\"  -en \"cbuf_reset | cdma2sc_wt_updt\" -d \"wmb_entry_end_w\" -q wmb_entry_end");
 
 
 //================  Non-SLCG clock domain end ================//
@@ -642,7 +640,7 @@ assign wmb_element_avl_last_reg_en = layer_st | (wmb_pipe_valid & is_compressed_
 //////////////////////////////////// generate wmb read address ////////////////////////////////////
 assign {mon_wmb_req_addr_inc,wmb_req_addr_inc} = wmb_req_addr + 1'b1;
 
-assign wmb_req_addr_w = addr_init ? wmb_entry_st_w :
+assign wmb_req_addr_w = addr_init ? {{CBUF_ADDR_WIDTH-9{1'b0}},wmb_entry_st_w} :
                         (is_stripe_end & wl_channel_end & ~wl_group_end) ? wmb_req_addr_last :
                         wmb_req_valid ? wmb_req_addr_inc :
                         wmb_req_addr;
@@ -756,7 +754,7 @@ assign wmb_rsp_bit_remain_last_reg_en = layer_st | (wmb_rsp_pipe_pvld & wmb_rsp_
 assign wmb_emask_rd_ls = ~sc2buf_wmb_rd_valid ? {CSC_ATOMC{1'b0}} : (sc2buf_wmb_rd_data[CSC_ATOMC-1:0] << wmb_rsp_bit_remain[6:0]);
 assign wmb_rsp_emask_in = (wmb_emask_rd_ls | wmb_emask_remain[CSC_ATOMC-1:0] | {CSC_ATOMC{~is_compressed_d1}}); //wmb for current atomic op
 assign wmb_rsp_vld_s = ~({CSC_ATOMC{1'b1}} << wmb_rsp_element);
-assign wmb_rsp_emask = {{CSC_ATOMC{1'b0}}, (wmb_rsp_emask_in[CSC_ATOMC-1:0] & wmb_rsp_vld_s)};  //the mask needed
+assign wmb_rsp_emask = wmb_rsp_emask_in[CSC_ATOMC-1:0] & wmb_rsp_vld_s;  //the mask needed
 //: my $kk=CSC_ATOMC;
 //: &eperl::flop("-nodeclare   -rval \"{${kk}{1'b0}}\"  -en \"wmb_rsp_pipe_pvld\" -d \"wmb_rsp_emask\" -q wt_req_emask");
 
@@ -822,9 +820,9 @@ assign wt_req_vld_bit = ~({CSC_ATOMC{1'b1}} << wt_req_ori_element);
 assign wt_req_ori_sft_1 = wt_req_ori_element;
 assign wt_req_ori_sft_2 = {wt_req_ori_element[5:0], 1'b0};
 assign wt_req_emask_p0 = wt_req_emask[CSC_ATOMC-1:0] & wt_req_vld_bit;
-assign {mon_wt_req_emask_p1[CSC_ATOMC-1:0],wt_req_emask_p1} = (wt_req_emask[CSC_ATOMC-1:0] >> wt_req_ori_sft_1) & wt_req_vld_bit & sub_h_mask_1;
-assign {mon_wt_req_emask_p2[CSC_ATOMC-1:0],wt_req_emask_p2} = (wt_req_emask[CSC_ATOMC-1:0] >> wt_req_ori_sft_2) & wt_req_vld_bit & sub_h_mask_2;
-assign {mon_wt_req_emask_p3[CSC_ATOMC-1:0],wt_req_emask_p3} = (wt_req_emask[CSC_ATOMC-1:0] >> wt_req_ori_sft_3) & wt_req_vld_bit & sub_h_mask_3;
+assign wt_req_emask_p1 = (wt_req_emask[CSC_ATOMC-1:0] >> wt_req_ori_sft_1) & wt_req_vld_bit & sub_h_mask_1;
+assign wt_req_emask_p2 = (wt_req_emask[CSC_ATOMC-1:0] >> wt_req_ori_sft_2) & wt_req_vld_bit & sub_h_mask_2;
+assign wt_req_emask_p3 = (wt_req_emask[CSC_ATOMC-1:0] >> wt_req_ori_sft_3) & wt_req_vld_bit & sub_h_mask_3;
 
 //Caution! Must reset wt_req_mask to all zero when layer started
 //other width wt_req_mask_en may gate wt_rsp_mask_d1_w improperly!
@@ -854,7 +852,7 @@ assign {mon_wt_req_addr_inc,wt_req_addr_inc} = wt_req_addr + 1'b1;
 assign is_wr_req_addr_wrap = (wt_req_addr_inc == {weight_bank, {LOG2_CBUF_BANK_DEPTH{1'b0}}});
 assign wt_req_addr_inc_wrap = is_wr_req_addr_wrap ? {CBUF_ADDR_WIDTH{1'b0}} : wt_req_addr_inc;
 
-assign wt_req_addr_w = addr_init ? wt_entry_st_w :
+assign wt_req_addr_w = addr_init ? wt_entry_st_w[CBUF_ADDR_WIDTH-1:0] :
                        (wt_req_channel_end & ~wt_req_group_end) ? wt_req_addr_last :
                        wt_req_valid ? wt_req_addr_inc_wrap :
                        wt_req_addr;
@@ -977,7 +975,7 @@ assign wt_rsp_byte_remain_last_en = layer_st | (wt_rsp_pipe_pvld & wt_rsp_group_
 
 //////////////////////////////////// generate local remain bytes ////////////////////////////////////
 assign {mon_wt_shift_remain,wt_shift_remain} = wt_rsp_bytes - wt_rsp_byte_remain[6:0];
-assign {mon_wt_data_input_rs[7:0],wt_data_input_rs} = (sc2buf_wt_rd_data[CBUF_ENTRY_BITS-1:0] >> {wt_shift_remain, 3'b0});
+assign wt_data_input_rs = (sc2buf_wt_rd_data[CBUF_ENTRY_BITS-1:0] >> {wt_shift_remain, 3'b0});
 assign wt_data_remain_masked = ~(|wt_rsp_byte_remain) ? {CBUF_ENTRY_BITS{1'b0}}: wt_data_remain;
 assign wt_data_remain_rs = (wt_data_remain >> {wt_rsp_bytes, 3'b0});
 //weight data local remain, 1 entry at most
@@ -1025,6 +1023,8 @@ NV_NVDLA_CSC_WL_dec u_dec (
   ,.output_mask      (sc2mac_out_mask[CSC_ATOMC-1:0])  //|> w
   ,.output_pvld      (sc2mac_out_pvld)         //|> w
   ,.output_sel       (sc2mac_out_sel[CSC_ATOMK-1:0])    //|> w
+  ,.is_fp16          (1'b0) //|< i
+  ,.is_int8          (1'b1) //|< i
   );
 
 //////////////////////////////////////////////////////////////

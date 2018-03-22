@@ -142,9 +142,9 @@ reg      [CBUF_ADDR_WIDTH-1:0] c_bias;
 reg      [CBUF_ADDR_WIDTH-1:0] c_bias_d1;
 reg       [3:0] conv_x_stride;
 reg       [3:0] conv_y_stride;
-reg      [CBUF_ADDR_WIDTH-1:0] dat_entry_avl;
-reg      [CBUF_ADDR_WIDTH-1:0] dat_entry_end;
-reg      [CBUF_ADDR_WIDTH-1:0] dat_entry_st;
+reg      [CSC_ENTRIES_NUM_WIDTH-1:0] dat_entry_avl;
+reg      [CSC_ENTRIES_NUM_WIDTH-1:0] dat_entry_end;
+reg      [CSC_ENTRIES_NUM_WIDTH-1:0] dat_entry_st;
 reg             dat_exec_valid_d1;
 reg             dat_exec_valid_d2;
 reg             dat_l0c0_dummy;
@@ -248,15 +248,15 @@ reg             dl_pvld_d4;
 reg      [CSC_ENTRIES_NUM_WIDTH-1:0] entries;
 reg      [CSC_ENTRIES_NUM_WIDTH-1:0] entries_batch;
 reg      [CSC_ENTRIES_NUM_WIDTH-1:0] entries_cmp;
-reg      [CSC_ENTRIES_NUM_WIDTH-1:0] h_bias_0_d1;
-reg      [CSC_ENTRIES_NUM_WIDTH-1:0] h_bias_0_stride;
-reg      [CSC_ENTRIES_NUM_WIDTH-1:0] h_bias_1_d1;
-reg      [CSC_ENTRIES_NUM_WIDTH-1:0] h_bias_1_stride;
-reg      [CSC_ENTRIES_NUM_WIDTH-1:0] h_bias_2_d1;
-reg      [CSC_ENTRIES_NUM_WIDTH-1:0] h_bias_2_stride;
-reg      [CSC_ENTRIES_NUM_WIDTH-1:0] h_bias_3_d1;
-reg      [CSC_ENTRIES_NUM_WIDTH-1:0] h_bias_3_stride;
-reg      [CSC_ENTRIES_NUM_WIDTH-1:0] h_offset_slice;
+reg      [CBUF_ADDR_WIDTH-1:0] h_bias_0_d1;
+reg      [CBUF_ADDR_WIDTH-1:0] h_bias_0_stride;
+reg      [CBUF_ADDR_WIDTH-1:0] h_bias_1_d1;
+reg      [CBUF_ADDR_WIDTH-1:0] h_bias_1_stride;
+reg      [CBUF_ADDR_WIDTH-1:0] h_bias_2_d1;
+reg      [CBUF_ADDR_WIDTH-1:0] h_bias_2_stride;
+reg      [CBUF_ADDR_WIDTH-1:0] h_bias_3_d1;
+reg      [CBUF_ADDR_WIDTH-1:0] h_bias_3_stride;
+reg      [11:0] h_offset_slice;
 reg      [33:0] is_img_d1;
 reg             is_sg_running_d1;
 reg      [21:0] is_winograd_d1;
@@ -344,6 +344,8 @@ wire  [CSC_ENTRIES_NUM_WIDTH-1:0] dat_entry_end_w;
 wire  [CSC_ENTRIES_NUM_WIDTH-1:0] dat_entry_st_inc;
 wire  [CSC_ENTRIES_NUM_WIDTH-1:0] dat_entry_st_inc_wrap;
 wire  [CSC_ENTRIES_NUM_WIDTH-1:0] dat_entry_st_w;
+wire            mon_dat_entry_end_inc;
+wire            mon_dat_entry_st_inc;
 wire            dat_exec_valid;
 wire            dat_img_req_dummy;
 wire            dat_img_req_skip;
@@ -393,7 +395,8 @@ wire     [CBUF_ADDR_WIDTH-1:0] dat_req_addr_last;
 wire     [CBUF_ADDR_WIDTH-1:0] dat_req_addr_sum;
 wire     [CBUF_ADDR_WIDTH-1:0] dat_req_addr_w;
 wire     [CBUF_ADDR_WIDTH-1:0] dat_req_addr_wrap;
-wire     [11:0] dat_req_base_d1;
+wire     [CBUF_ADDR_WIDTH-1:0] dat_req_base_d1;
+wire      mon_dat_req_addr_sum;
 wire      [4:0] dat_req_batch_index;
 wire      [7:0] dat_req_bytes;
 wire            dat_req_channel_end;
@@ -631,14 +634,14 @@ wire            layer_st;
 wire            mon_batch_cnt_w;
 wire            mon_c_bias_w;
 wire            mon_dat_entry_avl_w;
-wire      [1:0] mon_dat_entry_end_inc_wrap;
-wire      [1:0] mon_dat_entry_st_inc_wrap;
+wire            mon_dat_entry_end_inc_wrap;
+wire            mon_dat_entry_st_inc_wrap;
 wire      [3:0] mon_dat_out_pra_vld;
 wire            mon_dat_req_addr_wrap;
-wire   [1023:0] mon_dat_rsp_l0_sft;
-wire    [511:0] mon_dat_rsp_l1_sft;
-wire    [767:0] mon_dat_rsp_l2_sft;
-wire    [767:0] mon_dat_rsp_l3_sft;
+wire   [CBUF_ENTRY_BITS-1:0] mon_dat_rsp_l0_sft;
+wire   [CBUF_ENTRY_BITS-1:0] mon_dat_rsp_l1_sft;
+wire   [CBUF_ENTRY_BITS-1:0] mon_dat_rsp_l2_sft;
+wire   [CBUF_ENTRY_BITS-1:0] mon_dat_rsp_l3_sft;
 wire      [3:0] mon_dat_rsp_pra_rdy;
 wire            mon_dat_slice_avl_w;
 wire            mon_data_bank_w;
@@ -653,7 +656,7 @@ wire            mon_entries_single_w;
 wire            mon_entries_w;
 wire      [5:0] mon_h_bias_0_stride_w;
 wire     [CBUF_ADDR_WIDTH-1:0] mon_h_bias_0_w;
-wire     [CBUF_ADDR_WIDTH-1:0] mon_h_bias_1_stride_w;
+wire     [12:0] mon_h_bias_1_stride_w;
 wire      [4:0] mon_h_bias_1_w;
 wire      [4:0] mon_h_bias_2_w;
 wire      [1:0] mon_h_bias_3_w;
@@ -665,7 +668,7 @@ wire            mon_rsp_sft_cnt_l0_w;
 wire            mon_rsp_sft_cnt_l1_w;
 wire            mon_rsp_sft_cnt_l2_w;
 wire            mon_rsp_sft_cnt_l3_w;
-wire     [CSC_ENTRIES_NUM_WIDTH-1:0] mon_slice_entries_w;
+wire     [11:0] mon_slice_entries_w;
 wire      [1:0] mon_slice_left_w;
 wire            mon_stripe_cnt_inc;
 wire      [2:0] mon_sub_h_total_w;
@@ -675,7 +678,7 @@ wire            pixel_force_clr;
 wire            pixel_force_fetch;
 wire            pixel_w_cnt_reg_en;
 wire     [15:0] pixel_w_cnt_w;
-wire      [9:0] pixel_w_cur;
+wire      [14:0] pixel_w_cur;
 wire            pixel_w_ori_reg_en;
 wire      [7:0] pixel_x_add_w;
 wire      [6:0] pixel_x_byte_stride_w;
@@ -818,7 +821,7 @@ assign pixel_x_add_w = (reg2dp_y_extension == 2'h2) ? {pixel_x_stride_w, 2'b0} :
                        (reg2dp_y_extension == 2'h1) ? {1'b0, pixel_x_stride_w, 1'b0} : //*2
                        {2'b0, pixel_x_stride_w};
 assign pixel_x_byte_stride_w =  {1'b0, pixel_x_stride_w};
-assign pixel_ch_stride_w = {pixel_x_stride_w, {LOG2_ATOMK+1{1'b0}}}; //stick to 2*atomK  no matter which config.  
+assign pixel_ch_stride_w = {{5-LOG2_ATOMK{1'b0}},pixel_x_stride_w, {LOG2_ATOMK+1{1'b0}}}; //stick to 2*atomK  no matter which config.  
 assign conv_y_stride_w = (is_winograd) ? 4'b1 : reg2dp_conv_y_stride_ext + 1'b1;
 assign x_dilate_w = (is_winograd | is_img) ? 6'b1 : reg2dp_x_dilation_ext + 1'b1;
 assign y_dilate_w = (is_winograd | is_img) ? 6'b1 : reg2dp_y_dilation_ext + 1'b1;
@@ -836,6 +839,7 @@ assign {mon_slice_entries_w,slice_entries_w} = entries_batch * slices_oprand;
 assign dataout_width_cmp_w = reg2dp_dataout_width;
 assign pra_truncate_w = (reg2dp_pra_truncate == 2'h3) ? 2'h2 : reg2dp_pra_truncate;
 //: my $kk=CSC_ENTRIES_NUM_WIDTH;
+//: my $jj=CBUF_ADDR_WIDTH;
 //: &eperl::flop("-nodeclare   -rval \"1'b0\"   -d \"layer_st\" -q layer_st_d1");
 //: &eperl::flop("-nodeclare   -rval \"{22{1'b0}}\"  -en \"layer_st\" -d \"{22{is_winograd}}\" -q is_winograd_d1");
 //: &eperl::flop("-nodeclare   -rval \"{34{1'b0}}\"  -en \"layer_st\" -d \"{34{is_img}}\" -q is_img_d1");
@@ -877,8 +881,8 @@ assign pra_truncate_w = (reg2dp_pra_truncate == 2'h3) ? 2'h2 : reg2dp_pra_trunca
 //: &eperl::flop("-nodeclare   -rval \"{12{1'b0}}\"  -en \"layer_st\" -d \"h_offset_slice_w\" -q h_offset_slice");
 //: &eperl::flop("-nodeclare   -rval \"{12{1'b0}}\"  -en \"layer_st_d1\" -d \"h_bias_0_stride_w\" -q h_bias_0_stride");
 //: &eperl::flop("-nodeclare   -rval \"{12{1'b0}}\"  -en \"layer_st_d1\" -d \"h_bias_1_stride_w\" -q h_bias_1_stride");
-//: &eperl::flop("-nodeclare   -rval \"{${kk}{1'b0}}\"  -en \"layer_st_d1\" -d \"entries\" -q h_bias_2_stride");
-//: &eperl::flop("-nodeclare   -rval \"{${kk}{1'b0}}\"  -en \"layer_st_d1\" -d \"entries\" -q h_bias_3_stride");
+//: &eperl::flop("-nodeclare   -rval \"{${jj}{1'b0}}\"  -en \"layer_st_d1\" -d \"entries[${jj}-1:0]\" -q h_bias_2_stride");
+//: &eperl::flop("-nodeclare   -rval \"{${jj}{1'b0}}\"  -en \"layer_st_d1\" -d \"entries[${jj}-1:0]\" -q h_bias_3_stride");
 //: &eperl::flop("-nodeclare   -rval \"{12{1'b0}}\"  -en \"layer_st\" -d \"rls_slices_w\" -q rls_slices");
 //: &eperl::flop("-nodeclare   -rval \"{${kk}{1'b0}}\"  -en \"layer_st_d1\" -d \"slice_entries_w\" -q rls_entries");
 //: &eperl::flop("-nodeclare   -rval \"{12{1'b0}}\"  -en \"layer_st\" -d \"slice_left_w[12 -1:0]\" -q slice_left");
@@ -918,14 +922,14 @@ assign {mon_dat_entry_avl_w,dat_entry_avl_w} = (cbuf_reset) ? {CSC_ENTRIES_NUM_W
 
 //////////////////////////////////// calculate avilable data entries start offset in cbuf banks ////////////////////////////////////
 // data_bank is the highest bank for storing data
-assign dat_entry_st_inc = dat_entry_st + dat_entry_avl_sub;
-assign {mon_dat_entry_st_inc_wrap[1:0], dat_entry_st_inc_wrap} = dat_entry_st_inc - {data_bank, {LOG2_CBUF_BANK_DEPTH{1'b0}} };  
+assign {mon_dat_entry_st_inc,dat_entry_st_inc} = dat_entry_st + dat_entry_avl_sub;
+assign {mon_dat_entry_st_inc_wrap, dat_entry_st_inc_wrap} = dat_entry_st_inc - {data_bank, {LOG2_CBUF_BANK_DEPTH{1'b0}} };  
 assign is_dat_entry_st_wrap = (dat_entry_st_inc >= {1'b0, data_bank, {LOG2_CBUF_BANK_DEPTH{1'b0}} });
 assign dat_entry_st_w = (cbuf_reset) ? 12'b0 : is_dat_entry_st_wrap ? dat_entry_st_inc_wrap : dat_entry_st_inc[12 -1:0];
 
 //////////////////////////////////// calculate avilable data entries end offset in cbuf banks////////////////////////////////////
-assign dat_entry_end_inc = dat_entry_end + dat_entry_avl_add;
-assign {mon_dat_entry_end_inc_wrap[1:0],dat_entry_end_inc_wrap} = dat_entry_end_inc - {data_bank, {LOG2_CBUF_BANK_DEPTH{1'b0}} };
+assign {mon_dat_entry_end_inc,dat_entry_end_inc} = dat_entry_end + dat_entry_avl_add;
+assign {mon_dat_entry_end_inc_wrap,dat_entry_end_inc_wrap} = dat_entry_end_inc - {data_bank, {LOG2_CBUF_BANK_DEPTH{1'b0}} };
 assign is_dat_entry_end_wrap = (dat_entry_end_inc >= {1'b0, data_bank, {LOG2_CBUF_BANK_DEPTH{1'b0}} });
 assign dat_entry_end_w = (cbuf_reset) ? 12'b0 : is_dat_entry_end_wrap ? dat_entry_end_inc_wrap : dat_entry_end_inc[12 -1:0];
 
@@ -968,7 +972,7 @@ assign sc2cdma_dat_entries_w = sub_rls ? rls_entries : last_entries;
 //: for(my $i = 0; $i < $total_depth; $i ++) {
 //:     my $j = $i + 1;
 //:     &eperl::flop("-wid 1    -rval \"1'b0\"                                 -d \"dl_in_pvld_d${i}\" -q dl_in_pvld_d${j}");
-//:     &eperl::flop("-wid 32   -rval \"{31{1'b0}}\"  -en \"dl_in_pvld_d${i}\" -d \"dl_in_pd_d${i}\"   -q dl_in_pd_d${j}");
+//:     &eperl::flop("-wid 31   -rval \"{31{1'b0}}\"  -en \"dl_in_pvld_d${i}\" -d \"dl_in_pd_d${i}\"   -q dl_in_pd_d${j}");
 //: }
 //: 
 //: my $d0 = $total_depth;
@@ -1109,7 +1113,7 @@ assign {mon_pixel_w_cnt_w,pixel_w_cnt_w} = (layer_st_d1) ? {{11{1'b0}}, pixel_x_
                         (is_stripe_end & ~dl_block_end) ? {1'b0, pixel_w_ori} :
                         (pixel_w_cnt + pixel_x_cnt_add);
 
-assign pixel_w_cur = pixel_w_cnt[15:LOG2_ATOMC];   //by entry 
+assign pixel_w_cur = {{LOG2_ATOMC-1{1'b0}},pixel_w_cnt[15:LOG2_ATOMC]};   //by entry 
 assign pixel_w_cnt_reg_en = layer_st_d1 | (dat_exec_valid & is_img_d1[2] & (is_sub_h_end | is_w_end));
 assign pixel_w_ori_reg_en = layer_st_d1 | (dat_exec_valid & is_img_d1[3] & is_stripe_end & dl_block_end);
 assign pixel_ch_ori_reg_en = layer_st_d1 | (dat_exec_valid & is_img_d1[4] & is_stripe_end & dl_block_end & dl_channel_end);
@@ -1146,8 +1150,8 @@ assign dat_conv_req_dummy = (datain_w_cur[13  ]) | (datain_w_cur > {1'b0, datain
 
 assign dat_wg_req_dummy = 1'b0;
 assign dat_wg_req_skip = ((|datain_w_cur[13:2]) & datain_w_cur[1] & (|stripe_cnt[6:1]));
-assign dat_img_req_dummy = (datain_h_cur[13  ]) | (datain_h_cur > {1'b0, datain_height_cmp});
-assign dat_img_req_skip = (w_bias_w[12 +1:2] > entries_cmp);  //w address(in entry) is bigger than avilable entrys 
+assign dat_img_req_dummy = (datain_h_cur[13]) | (datain_h_cur > {1'b0, datain_height_cmp});
+assign dat_img_req_skip = (w_bias_w[13:2] > entries_cmp[11:0]);  //w address(in entry) is bigger than avilable entrys 
 assign dat_req_dummy = is_img_d1[5] ? dat_img_req_dummy : is_winograd_d1[4] ? dat_wg_req_dummy : dat_conv_req_dummy;
 assign dat_req_skip = (is_winograd_d1[5] & dat_wg_req_skip) | (is_img_d1[6] & dat_img_req_skip);
 assign dat_req_valid = (dat_exec_valid & ~dat_req_dummy & ~dat_req_skip);
@@ -1205,14 +1209,14 @@ assign h_bias_reg_en[1] = layer_st | (dat_exec_valid & (is_winograd_d1[7] | is_i
 
 //width bias, by entry in image, by element in feature data
 `ifdef CC_ATOMC_DIV_ATOMK_EQUAL_1
-assign w_bias_int8 = is_img_d1[10] ? {5'b0, pixel_w_cur} :   //by entry in image 
+assign w_bias_int8 = is_img_d1[10] ? {pixel_w_cur} :   //by entry in image 
                      is_winograd_d1[8] ? {1'b0, datain_w_cnt} :
                      (~is_last_channel | datain_c_cnt[0] | is_winograd_d1[8]) ? {2'b0,datain_w_cur[12:0]} ://by element
                      {2'b0, datain_w_cur[12:0]}; //by element, last channel and current c is even, atomC=atomM
 `endif
 
 `ifdef CC_ATOMC_DIV_ATOMK_EQUAL_2
-assign w_bias_int8 = is_img_d1[10] ? {5'b0, pixel_w_cur} :   //by entry in image 
+assign w_bias_int8 = is_img_d1[10] ? {pixel_w_cur} :   //by entry in image 
                      is_winograd_d1[8] ? {1'b0, datain_w_cnt} :
                      (~is_last_channel | is_winograd_d1[8]) ? {2'b0,datain_w_cur[12:0]} ://not last channel, by element
                      (dat_req_bytes > CSC_HALF_ENTRY_HEX) ? {2'b0,datain_w_cur[12:0]} :  //last channel & request >1/2*entry
@@ -1220,7 +1224,7 @@ assign w_bias_int8 = is_img_d1[10] ? {5'b0, pixel_w_cur} :   //by entry in image
 `endif
 
 `ifdef CC_ATOMC_DIV_ATOMK_EQUAL_4
-assign w_bias_int8 = is_img_d1[10] ? {5'b0, pixel_w_cur} :   //by entry in image 
+assign w_bias_int8 = is_img_d1[10] ? {pixel_w_cur} :   //by entry in image 
                      is_winograd_d1[8] ? {1'b0, datain_w_cnt} :
                      (~is_last_channel | is_winograd_d1[8]) ? {2'b0,datain_w_cur[12:0]} ://not last channel, by element
                      (dat_req_bytes > CSC_HALF_ENTRY_HEX) ? {2'b0,datain_w_cur[12:0]} :  //last channel & request >1/2*entry
@@ -1230,7 +1234,7 @@ assign w_bias_int8 = is_img_d1[10] ? {5'b0, pixel_w_cur} :   //by entry in image
 
 assign w_bias_w = w_bias_int8[13:0];
 assign w_bias_reg_en = dat_exec_valid;
-assign dat_req_base_d1 = dat_entry_st;
+assign dat_req_base_d1 = dat_entry_st[CBUF_ADDR_WIDTH-1:0];
 //: my $kk=CBUF_ADDR_WIDTH;
 //: &eperl::flop("-nodeclare   -rval \"{${kk}{1'b0}}\"  -en \"c_bias_reg_en\" -d \"c_bias_w\" -q c_bias");
 //: &eperl::flop("-nodeclare   -rval \"{${kk}{1'b0}}\"  -en \"c_bias_d1_reg_en\" -d \"c_bias\" -q c_bias_d1");
@@ -1243,8 +1247,8 @@ assign dat_req_base_d1 = dat_entry_st;
 
 ////////////////////////// data read index generator: 2st stage //////////////////////////
 assign {mon_h_bias_d1,h_bias_d1} = h_bias_0_d1 + h_bias_1_d1 + h_bias_2_d1 + h_bias_3_d1;
-assign dat_req_addr_sum = dat_req_base_d1 + c_bias_d1 + h_bias_d1 + w_bias_d1; //by entry
-assign is_dat_req_addr_wrap = (dat_req_addr_sum >= {1'b0, data_bank, {LOG2_CBUF_BANK_DEPTH{1'b0}}});
+assign {mon_dat_req_addr_sum,dat_req_addr_sum} = dat_req_base_d1 + c_bias_d1 + h_bias_d1 + w_bias_d1; //by entry
+assign is_dat_req_addr_wrap = (dat_req_addr_sum >= {data_bank, {LOG2_CBUF_BANK_DEPTH{1'b0}}});
 assign {mon_dat_req_addr_wrap,dat_req_addr_wrap} = dat_req_addr_sum[CBUF_ADDR_WIDTH-1:0] - {data_bank, {LOG2_CBUF_BANK_DEPTH{1'b0}}};
 assign dat_req_addr_w = (layer_st | dat_req_dummy_d1) ? {CBUF_ADDR_WIDTH{1'b1}} : is_dat_req_addr_wrap ? dat_req_addr_wrap : dat_req_addr_sum[CBUF_ADDR_WIDTH-1:0]; //get the adress sends to cbuf
 assign sc2buf_dat_rd_en_w = dat_req_valid_d1 & ((dat_req_addr_last != dat_req_addr_w) | pixel_force_fetch_d1);
@@ -1278,13 +1282,13 @@ wire [CBUF_ADDR_WIDTH-1:0] dat_req_addr_last_plus1;
 wire [CBUF_ADDR_WIDTH-1:0] dat_req_addr_last_plus1_real;
 wire is_dat_req_addr_last_plus1_wrap;
 wire [CBUF_ADDR_WIDTH-1:0] dat_req_addr_last_plus1_wrap;
-wire [CBUF_ADDR_WIDTH-1:0] mon_dat_req_addr_last_plus1_wrap;
+wire mon_dat_req_addr_last_plus1_wrap;
 wire [LOG2_ATOMC:0] pixel_w_cnt_plus1;
 //: &eperl::flop("-d is_stripe_end -q is_stripe_end_d1");
 //: &eperl::flop("-d is_stripe_end_d1 -q is_stripe_end_d2");
 
 assign dat_req_addr_last_plus1 = dat_req_addr_last+1'b1;
-assign is_dat_req_addr_last_plus1_wrap = (dat_req_addr_last_plus1 >= {1'b0, data_bank, {LOG2_CBUF_BANK_DEPTH{1'b0}}});
+assign is_dat_req_addr_last_plus1_wrap = (dat_req_addr_last_plus1 >= {data_bank, {LOG2_CBUF_BANK_DEPTH{1'b0}}});
 assign {mon_dat_req_addr_last_plus1_wrap,dat_req_addr_last_plus1_wrap} = dat_req_addr_last_plus1[CBUF_ADDR_WIDTH-1:0] - {data_bank, {LOG2_CBUF_BANK_DEPTH{1'b0}}};
 assign dat_req_addr_last_plus1_real  = is_dat_req_addr_last_plus1_wrap ? dat_req_addr_last_plus1_wrap : dat_req_addr_last_plus1;
 //iamge data may encounter read jump, which happens when image data_read_address - last_rd_address >= 2 entries, and read form the middle of an entry.
@@ -1294,7 +1298,7 @@ assign sc2buf_dat_rd_next1_enable = is_img_d1[10]&&sc2buf_dat_rd_en_w&&(dat_req_
                                     &&(pixel_w_cnt_plus1[LOG2_ATOMC:0]!=CSC_ATOMC)&&(~is_stripe_end_d2);
 assign sc2buf_dat_rd_next1_disable_w = !sc2buf_dat_rd_next1_enable;
 assign pixel_w_cnt_plus1 = pixel_w_cnt[LOG2_ATOMC-1:0]+1'b1;   //element need shift
-assign sc2buf_dat_rd_shift_w = sc2buf_dat_rd_next1_enable ? {pixel_w_cnt_plus1[LOG2_ATOMC:0], {NVDLA_BPE_LOG2{1'b0}}} : {CBUF_RD_DATA_SHIFT_WIDTH{1'd0}};
+assign sc2buf_dat_rd_shift_w = sc2buf_dat_rd_next1_enable ? {pixel_w_cnt_plus1[LOG2_ATOMC-1:0], {NVDLA_BPE_LOG2{1'b0}}} : {CBUF_RD_DATA_SHIFT_WIDTH{1'd0}};
 
 //: my $kk= CBUF_RD_DATA_SHIFT_WIDTH;
 //: &eperl::flop("-d sc2buf_dat_rd_next1_disable_w -q sc2buf_dat_rd_next1_disable");
@@ -1464,6 +1468,7 @@ assign dat_rsp_pd_d0[1:0]   =     dat_rsp_pipe_sub_w[1:0];
 assign dat_rsp_pd_d0[3:2]   =     dat_rsp_pipe_sub_h[1:0];
 assign dat_rsp_pd_d0[4]     =     dat_rsp_pipe_sub_c ;
 assign dat_rsp_pd_d0[5]     =     dat_rsp_pipe_ch_end ;
+assign dat_rsp_pd_d0[6]     =     1'b0 ;
 assign dat_rsp_pd_d0[14:7]  =     dat_rsp_pipe_bytes[7:0];
 assign dat_rsp_pd_d0[16:15] =     dat_rsp_pipe_cur_sub_h[1:0];
 assign dat_rsp_pd_d0[17]    =     dat_rsp_pipe_rls ;
@@ -1939,8 +1944,8 @@ assign dat_out_wg_mask_int8 = {(|dat_out_wg_data[ 511: 504]), (|dat_out_wg_data[
 
 assign dat_out_wg_mask = {2{dat_out_wg_mask_int8}};
 `else
-assign dat_out_wg_data = 1024'b0;
-assign dat_out_wg_mask = 128'b0;
+assign dat_out_wg_data = {CBUF_ENTRY_BITS{1'b0}};
+assign dat_out_wg_mask = {CSC_ATOMC{1'b0}};
 `endif
 
 //////////////////////////////////////////////////////////////
@@ -1949,8 +1954,9 @@ assign dat_out_wg_mask = 128'b0;
 assign dat_out_data = is_winograd_d1[20] ? dat_out_wg_data : dat_out_bypass_data;
 assign dat_out_mask = ~dat_out_pvld ? 'b0 : is_winograd_d1[21] ? dat_out_wg_mask : dat_out_bypass_mask;
 
+//: my $kk=CSC_ATOMC;
 //: &eperl::flop("-nodeclare   -rval \"1'b0\"   -d \"dat_out_pvld\" -q dl_out_pvld");
-//: &eperl::flop("-nodeclare   -rval \"{128{1'b0}}\"  -en \"dat_out_pvld | dl_out_pvld\" -d \"dat_out_mask\" -q dl_out_mask");
+//: &eperl::flop("-nodeclare   -rval \"{${kk}{1'b0}}\"  -en \"dat_out_pvld | dl_out_pvld\" -d \"dat_out_mask\" -q dl_out_mask");
 //: &eperl::flop("-nodeclare   -rval \"{9{1'b0}}\"  -en \"dat_out_pvld\" -d \"dat_out_flag\" -q dl_out_flag");
 
 //: my $i;
@@ -1972,12 +1978,13 @@ assign sc2mac_dat_pd_w = ~dl_out_pvld ? 9'b0 : dl_out_flag;
 
 //: &eperl::flop("-nodeclare   -rval \"1'b0\"   -d \"dl_out_pvld\" -q dl_out_pvld_d1");
 
+//: my $kk=CSC_ATOMC;
 //: &eperl::flop("-nodeclare   -rval \"1'b0\"   -d \"dl_out_pvld\" -q sc2mac_dat_a_pvld");
 //: &eperl::flop("-nodeclare   -rval \"1'b0\"   -d \"dl_out_pvld\" -q sc2mac_dat_b_pvld");
 //: &eperl::flop("-nodeclare   -rval \"{9{1'b0}}\"  -en \"dl_out_pvld | dl_out_pvld_d1\" -d \"sc2mac_dat_pd_w\" -q sc2mac_dat_a_pd");
 //: &eperl::flop("-nodeclare   -rval \"{9{1'b0}}\"  -en \"dl_out_pvld | dl_out_pvld_d1\" -d \"sc2mac_dat_pd_w\" -q sc2mac_dat_b_pd");
-//: &eperl::flop("-nodeclare   -rval \"{128{1'b0}}\"  -en \"dl_out_pvld | dl_out_pvld_d1\" -d \"dl_out_mask\" -q sc2mac_dat_a_mask");
-//: &eperl::flop("-nodeclare   -rval \"{128{1'b0}}\"  -en \"dl_out_pvld | dl_out_pvld_d1\" -d \"dl_out_mask\" -q sc2mac_dat_b_mask");
+//: &eperl::flop("-nodeclare   -rval \"{${kk}{1'b0}}\"  -en \"dl_out_pvld | dl_out_pvld_d1\" -d \"dl_out_mask\" -q sc2mac_dat_a_mask");
+//: &eperl::flop("-nodeclare   -rval \"{${kk}{1'b0}}\"  -en \"dl_out_pvld | dl_out_pvld_d1\" -d \"dl_out_mask\" -q sc2mac_dat_b_mask");
 
 
 //: my $i;

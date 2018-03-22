@@ -12,7 +12,6 @@
 #define CSC_ATOMK                                           NVDLA_MAC_ATOMIC_K_SIZE
 #define CBUF_BANK_NUM                                       NVDLA_CBUF_BANK_NUMBER
 #define CBUF_BANK_DEPTH                                     NVDLA_CBUF_BANK_DEPTH
-#define CBUF_SRAM_DEPTH                                     CBUF_BANK_DEPTH
 #define CSC_BPE                                             NVDLA_BPE
 #define CBUF_ENTRY_BITS                                     NVDLA_CBUF_ENTRY_WIDTH
 #define CSC_ATOMK_HF                                        CSC_ATOMK/2
@@ -28,7 +27,6 @@
 #define LOG2_ATOMK                                          NVDLA_MAC_ATOMIC_K_SIZE_LOG2           //log2(atomK)
 #define LOG2_CBUF_BANK_DEPTH                                NVDLA_CBUF_BANK_DEPTH_LOG2              //log2(bank_depth)
 #define CBUF_ADDR_WIDTH                                     NVDLA_CBUF_DEPTH_LOG2                   //log2(bank_num*bank_depth)
-#define CBUF_SRAM_ADDR_WIDTH                                VDLA_CBUF_BANK_DEPTH_LOG2               //log2(sram_depth)
 #define LOG2_BANK_NUM                                       NVDLA_CBUF_BANK_NUMBER_LOG2             //log2(bank_num)
 #define NVDLA_VMOD_CBUF_WRITE_LATENCY                       3
 #define NVDLA_VMOD_CBUF_READ_LATENCY                        6

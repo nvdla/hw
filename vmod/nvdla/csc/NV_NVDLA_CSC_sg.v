@@ -183,12 +183,12 @@ reg           wt_pending_ack;
 reg           wt_pending_clr;
 reg           wt_pending_req;
 reg     [2:0] wt_pkg_cur_sub_h;
-reg     [5:0] wt_pkg_kernel_size;
+reg     [6:0] wt_pkg_kernel_size;
 reg     [6:0] wt_pkg_weight_size;
 reg           wt_pkg_wt_release;
 reg    [17:0] wt_pop_pd;
 reg           wt_pop_ready_d1;
-wire    [6:0] c_fetch_size;
+wire    [7:0] c_fetch_size;
 wire          cbuf_ready;
 wire   [13:0] channel_up_cnt_inc;
 wire   [13:0] channel_up_cnt_w;
@@ -198,7 +198,7 @@ wire    [8:0] credit_cnt_w;
 wire          credit_ready;
 wire    [8:0] credit_req_size;
 wire    [6:0] cur_channel;
-wire    [5:0] cur_kernel;
+wire    [6:0] cur_kernel;
 wire    [2:0] cur_mode;
 wire    [2:0] cur_r;
 wire    [6:0] cur_stripe;
@@ -516,7 +516,7 @@ assign upper_limit_w = is_img ? CSC_IMG_STRIPE :
                        CSC_ATOMK_MUL2_HEX;
 
 #ifdef NVDLA_WINOGRAD_ENABLE
-assign c_fetch_size = is_winograd ? 7'h4 : CSC_ENTRY_HEX;
+assign c_fetch_size = is_winograd ? 8'h4 : CSC_ENTRY_HEX;
 #else
 assign c_fetch_size = CSC_ENTRY_HEX;
 #endif
@@ -586,13 +586,13 @@ assign cur_stripe = is_stripe_be_2x ? upper_limit : is_stripe_le_1x ? cur_stripe
 
 
 //--------------------------- channel count -----------------------------//
-assign {mon_channel_up_cnt_inc, channel_up_cnt_inc} = channel_up_cnt + c_fetch_size;
+assign {mon_channel_up_cnt_inc, channel_up_cnt_inc} = channel_up_cnt + c_fetch_size[6:0];
 assign is_last_channel = (channel_up_cnt_inc >= weight_channel);
 assign channel_up_cnt_w = layer_st ? 14'b0 : is_last_channel ? 14'b0 : channel_up_cnt_inc;
 #ifdef NVDLA_WINOGRAD_ENABLE
-assign cur_channel = (is_winograd_d1 | ~is_last_channel) ? c_fetch_size : (reg2dp_weight_channel_ext[LOG2_ATOMC-1:0] + 1'b1);
+assign cur_channel = (is_winograd_d1 | ~is_last_channel) ? c_fetch_size[6:0] : (reg2dp_weight_channel_ext[LOG2_ATOMC-1:0] + 1'b1);
 #else
-assign cur_channel = (~is_last_channel) ? c_fetch_size : (reg2dp_weight_channel_ext[LOG2_ATOMC-1:0] + 1'b1);
+assign cur_channel = (~is_last_channel) ? c_fetch_size[6:0] : (reg2dp_weight_channel_ext[LOG2_ATOMC-1:0] + 1'b1);
 #endif
 //: &eperl::flop("-nodeclare   -rval \"{14{1'b0}}\"  -en \"layer_st | op_channel_en\" -d \"channel_up_cnt_w\" -q channel_up_cnt");
 
@@ -679,7 +679,7 @@ assign dat_pkg_pd[30] =     dat_pkg_dat_release ;
 
 assign dat_push_data = {pkg_idx, dat_pkg_pd};
 
-//: &eperl::flop("-nodeclare   -rval \"{6{1'b0}}\"  -en \"pkg_adv\" -d \"cur_kernel\" -q wt_pkg_kernel_size");
+//: &eperl::flop("-nodeclare   -rval \"{7{1'b0}}\"  -en \"pkg_adv\" -d \"cur_kernel\" -q wt_pkg_kernel_size");
 //: &eperl::flop("-nodeclare   -rval \"{7{1'b0}}\"  -en \"pkg_adv\" -d \"pkg_weight_size_w\" -q wt_pkg_weight_size");
 //: &eperl::flop("-nodeclare   -rval \"{3{1'b0}}\"  -en \"pkg_adv\" -d \"cur_r\" -q wt_pkg_cur_sub_h");
 //: &eperl::flop("-nodeclare   -rval \"1'b0\"  -en \"pkg_adv\" -d \"~reg2dp_skip_weight_rls & pkg_group_end_w\" -q wt_pkg_wt_release");
@@ -759,7 +759,7 @@ assign {mon_sg2wt_kernel_size_inc, sg2wt_kernel_size_inc} = sg2wt_kernel_size + 
 #ifdef NVDLA_BATCH_ENABLE
 assign {mon_dat_stripe_batch_size_w, dat_stripe_batch_size_w} = sg2dat_stripe_length * data_batch;
 #else
-assign {mon_dat_stripe_batch_size_w, dat_stripe_batch_size_w} = sg2dat_stripe_length;
+assign {mon_dat_stripe_batch_size_w[0], dat_stripe_batch_size_w} = sg2dat_stripe_length;
 #endif
 assign dat_stripe_img_size_w = sg2dat_stripe_length;
 assign dat_stripe_size_w = is_img_d1 ? dat_stripe_img_size_w : {1'b0, dat_stripe_batch_size_w};
@@ -836,7 +836,7 @@ assign {mon_slices_avl_w, slices_avl_w} = (dat_pending_req) ? 14'b0 : (slices_av
 assign wt_release = pkg_adv & ~reg2dp_skip_weight_rls & pkg_group_end_w;
 assign wt_reuse_release = is_idle & reg2dp_op_en & ~reg2dp_weight_reuse & last_skip_weight_rls;
 assign kernels_avl_add = cdma2sc_wt_updt ? cdma2sc_wt_kernels : 14'b0;
-assign kernels_avl_sub = wt_release ? {{8{1'b0}}, cur_kernel} : wt_reuse_release ? last_kernels[13:0] : 14'b0;
+assign kernels_avl_sub = wt_release ? {{7{1'b0}}, cur_kernel} : wt_reuse_release ? last_kernels[13:0] : 14'b0;
 assign {mon_kernels_avl_w, kernels_avl_w} = (wt_pending_req) ? 15'b0 : kernels_avl + kernels_avl_add - kernels_avl_sub;
 
 //: &eperl::flop("-nodeclare -clk nvdla_core_ng_clk  -rval \"{12{1'b0}}\"  -en \"dat_pending_req | dat_release | dat_reuse_release | cdma2sc_dat_updt\" -d \"slices_avl_w\" -q slices_avl");
