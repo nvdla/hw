@@ -15,26 +15,26 @@ for i in range(plan_arguments['RUN_NUM']):
              desc=''' None reuse CC random case, input data format is fixed as image ''')
 
 
-#    add_test(name='cc_feature_data_full_reuse_rtest',
-#             tags=['L10', 'cc'],
-#             args=[' -rtlarg +uvm_set_config_int=uvm_test_top,layers,2 ', get_seed_args(), DISABLE_COMPARE_ALL_UNITS_SB_ARG], # for reuse case, at least 2 layers are required
-#             module='nvdla_uvm_test',
-#             config=['nvdla_utb'],
-#             desc=''' CC reuse input data random case, input data format is fixed as feature ''')
-#
-#    add_test(name='cc_feature_weight_full_reuse_rtest',
-#             tags=['L10', 'cc'],
-#             args=[' -rtlarg +uvm_set_config_int=uvm_test_top,layers,2 ', get_seed_args(), DISABLE_COMPARE_ALL_UNITS_SB_ARG], # for reuse case, at least 2 layers are required
-#             module='nvdla_uvm_test',
-#             config=['nvdla_utb'],
-#             desc=''' CC reuse weight random case, input data format is fixed as feature ''')
-#
-#    add_test(name='cc_image_data_full_reuse_rtest',
-#             tags=['L10', 'cc'],
-#             args=[' -rtlarg +uvm_set_config_int=uvm_test_top,layers,2 ', get_seed_args(), DISABLE_COMPARE_ALL_UNITS_SB_ARG], # for reuse case, at least 2 layers are required
-#             module='nvdla_uvm_test',
-#             config=['nvdla_utb'],
-#             desc=''' CC reuse input data random case, input data format is fixed as image ''')
+    add_test(name='cc_feature_data_full_reuse_rtest',
+             tags=['L10', 'cc'],
+             args=[' -rtlarg +uvm_set_config_int=uvm_test_top,layers,2 ', get_seed_args(), DISABLE_COMPARE_ALL_UNITS_SB_ARG], # for reuse case, at least 2 layers are required
+             module='nvdla_uvm_test',
+             config=['nvdla_utb'],
+             desc=''' CC reuse input data random case, input data format is fixed as feature ''')
+
+    add_test(name='cc_feature_weight_full_reuse_rtest',
+             tags=['L10', 'cc'],
+             args=[' -rtlarg +uvm_set_config_int=uvm_test_top,layers,2 ', get_seed_args(), DISABLE_COMPARE_ALL_UNITS_SB_ARG], # for reuse case, at least 2 layers are required
+             module='nvdla_uvm_test',
+             config=['nvdla_utb'],
+             desc=''' CC reuse weight random case, input data format is fixed as feature ''')
+
+    add_test(name='cc_image_data_full_reuse_rtest',
+             tags=['L10', 'cc'],
+             args=[' -rtlarg +uvm_set_config_int=uvm_test_top,layers,2 ', get_seed_args(), DISABLE_COMPARE_ALL_UNITS_SB_ARG], # for reuse case, at least 2 layers are required
+             module='nvdla_uvm_test',
+             config=['nvdla_utb'],
+             desc=''' CC reuse input data random case, input data format is fixed as image ''')
 
     add_test(name='cc_rtest',
              tags=['L10', 'cc'],

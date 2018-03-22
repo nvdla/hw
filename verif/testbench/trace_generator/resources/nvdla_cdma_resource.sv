@@ -367,6 +367,7 @@ class nvdla_cdma_resource extends nvdla_base_resource;
     extern function void    set_mem_addr();
     extern function void    surface_dump(int fh);
     extern function void    set_register();
+    extern function void    record_rand_variable();
     extern function void    post_randomize();
     extern function void    set_sim_constraint();
 
@@ -1050,10 +1051,6 @@ constraint nvdla_cdma_resource::c_sim_feature_none_zero_rate {
 constraint nvdla_cdma_resource::c_sim_datain_dist {
     `weight_dist_13bit(datain_width_ext)
     `weight_dist_13bit(datain_height_ext)
-    `weight_dist_8bit(datain_addr_high_0)
-    `weight_dist_27bit(datain_addr_low_0)
-    `weight_dist_8bit(datain_addr_high_1)
-    `weight_dist_27bit(datain_addr_low_1)
     `weight_dist_32bit(line_stride)
     `weight_dist_32bit(surf_stride)
     `weight_dist_5bit(batches)
@@ -1128,9 +1125,178 @@ constraint nvdla_cdma_resource::c_sim_input_cube_size_normal {
     (datain_width+1)*(datain_height+1)*(datain_channel+1) <= 64'h10_0000;
 }
 
+function void nvdla_cdma_resource::record_rand_variable();
+    prev_conv_mode           = conv_mode; 
+    prev_in_precision        = in_precision;        
+    prev_proc_precision      = proc_precision;      
+    prev_datain_format       = datain_format;      
+    prev_pixel_format        = pixel_format;       
+    prev_pixel_mapping       = pixel_mapping;       
+    prev_pixel_sign_override = pixel_sign_override; 
+    prev_datain_width        = datain_width; 
+    prev_datain_height       = datain_height;       
+    prev_datain_channel      = datain_channel;      
+    prev_datain_width_ext    = datain_width_ext;    
+    prev_datain_height_ext   = datain_height_ext;   
+    prev_pixel_x_offset      = pixel_x_offset;   
+    prev_pixel_y_offset      = pixel_y_offset;      
+    prev_datain_ram_type     = datain_ram_type;     
+    prev_datain_addr_high_0  = datain_addr_high_0;  
+    prev_datain_addr_low_0   = datain_addr_low_0;  
+    prev_datain_addr_high_1  = datain_addr_high_1;  
+    prev_datain_addr_low_1   = datain_addr_low_1;  
+    prev_line_stride         = line_stride;   
+    prev_uv_line_stride      = uv_line_stride;      
+    prev_surf_stride         = surf_stride;      
+    prev_line_packed         = line_packed;         
+    prev_surf_packed         = surf_packed;         
+    prev_batches             = batches;         
+    prev_batch_stride        = batch_stride;        
+    prev_entries             = entries;        
+    //grains            = 
+    prev_weight_format       = weight_format;
+    prev_byte_per_kernel     = byte_per_kernel;
+    //weight_kernel     =
+    prev_weight_ram_type     = weight_ram_type;
+    //weight_addr_high  =
+    //weight_addr_low   =
+    //weight_bytes      =
+    //wgs_addr_high     =
+    //wgs_addr_low      =
+    //wmb_addr_high     =
+    //wmb_addr_low      =
+    //wmb_bytes         =
+    prev_mean_format         = mean_format;
+    //mean_ry           =
+    //mean_gu           =
+    //mean_bv           =
+    //mean_ax           =
+    prev_cvt_en              = cvt_en;         
+    prev_cvt_truncate        = cvt_truncate;     
+    prev_cvt_offset          = cvt_offset;      
+    prev_cvt_scale           = cvt_scale;        
+    prev_conv_x_stride       = conv_x_stride;   
+    prev_conv_y_stride       = conv_y_stride;     
+    prev_pad_left            = pad_left;     
+    prev_pad_right           = pad_right;         
+    prev_pad_top             = pad_top;         
+    prev_pad_bottom          = pad_bottom;        
+    prev_pad_value           = pad_value;        
+    prev_data_bank           = data_bank;         
+    prev_weight_bank         = weight_bank;      
+    prev_nan_to_zero         = nan_to_zero;       
+    //cya               =        
+    // datain_channel_ext  = datain_channel_ext;
+    // y_extension         = y_extension; 
+    // weight_width_ext    = weight_width_ext;  
+    // weight_height_ext   = weight_height_ext; 
+    // weight_channel_ext  = weight_channel_ext;
+    //dataout_width     = 
+    //dataout_height    = 
+    //dataout_channel   = 
+    //atomics           = 
+    //rls_slices        = 
+    // conv_x_stride_ext   = conv_x_stride_ext;
+    // conv_y_stride_ext   = conv_y_stride_ext;
+    // x_dilation_ext      = x_dilation_ext;
+    // y_dilation_ext      = y_dilation_ext; 
+    //pad_value_csc     = 
+    // pra_truncate        = pra_truncate;
+    //dataout_addr      = 
+    //line_stride_cacc  = 
+    //surf_stride_cacc  = 
+    // clip_truncate       = clip_truncate;
+    // weight_none_zero_rate = weight_none_zero_rate;
+    prev_conv_mode           = conv_mode; 
+    prev_in_precision        = in_precision;        
+    prev_proc_precision      = proc_precision;      
+    prev_datain_format       = datain_format;      
+    prev_pixel_format        = pixel_format;       
+    prev_pixel_mapping       = pixel_mapping;       
+    prev_pixel_sign_override = pixel_sign_override; 
+    //datain_width        = datain_width; 
+    //datain_height       = datain_height;       
+    prev_datain_channel      = datain_channel;      
+    //datain_width_ext    = datain_width_ext;    
+    //datain_height_ext   = datain_height_ext;   
+    prev_pixel_x_offset      = pixel_x_offset;   
+    prev_pixel_y_offset      = pixel_y_offset;      
+    prev_datain_ram_type     = datain_ram_type;     
+    //datain_addr_high_0  = datain_addr_high_0;  
+    //datain_addr_low_0   = datain_addr_low_0;  
+    //datain_addr_high_1  = datain_addr_high_1;  
+    //datain_addr_low_1   = datain_addr_low_1;  
+    //line_stride         = line_stride;   
+    //uv_line_stride      = uv_line_stride;      
+    //surf_stride         = surf_stride;      
+    //line_packed         = line_packed;         
+    //surf_packed         = surf_packed;         
+    //gob_per_line        = gob_per_line;        
+    //gob_per_uv_line     = gob_per_uv_line;     
+    //gob_height          = gob_height;     
+    //gob_y_index         = gob_y_index;         
+    //batches             = batches;         
+    //batch_stride        = batch_stride;        
+    //entries             = entries;        
+    //grains            = 
+    prev_weight_format       = weight_format;
+    prev_byte_per_kernel     = byte_per_kernel;
+    prev_weight_kernel       = weight_kernel;
+    prev_weight_ram_type     = weight_ram_type;
+    //weight_addr_high  =
+    //weight_addr_low   =
+    prev_weight_bytes        = weight_bytes;
+    //wgs_addr_high     =
+    //wgs_addr_low      =
+    //wmb_addr_high     =
+    //wmb_addr_low      =
+    prev_wmb_bytes           = wmb_bytes;
+    prev_mean_format         = mean_format;
+    //mean_ry           =
+    //mean_gu           =
+    //mean_bv           =
+    //mean_ax           =
+    prev_cvt_en              = cvt_en;         
+    prev_cvt_truncate        = cvt_truncate;     
+    prev_cvt_offset          = cvt_offset;      
+    prev_cvt_scale           = cvt_scale;        
+    prev_conv_x_stride       = conv_x_stride;   
+    prev_conv_y_stride       = conv_y_stride;     
+    //pad_left            = pad_left;     
+    //pad_right           = pad_right;         
+    //pad_top             = pad_top;         
+    //pad_bottom          = pad_bottom;        
+    prev_pad_value           = pad_value;        
+    prev_data_bank           = data_bank;         
+    prev_weight_bank         = weight_bank;      
+    //nan_to_zero         = nan_to_zero;       
+    //cya               =        
+    // datain_channel_ext  = datain_channel_ext;
+    //y_extension         = y_extension; 
+    // weight_width_ext    = weight_width_ext;  
+    // weight_height_ext   = weight_height_ext; 
+    // weight_channel_ext  = weight_channel_ext;
+    //dataout_width     = 
+    //dataout_height    = 
+    //dataout_channel   = 
+    //atomics           = 
+    //rls_slices        = 
+    // conv_x_stride_ext   = conv_x_stride_ext;
+    // conv_y_stride_ext   = conv_y_stride_ext;
+    // x_dilation_ext      = x_dilation_ext;
+    // y_dilation_ext      = y_dilation_ext; 
+    //pad_value_csc     = 
+    //pra_truncate        = pra_truncate;
+    //dataout_addr      = 
+    //line_stride_cacc  = 
+    //surf_stride_cacc  = 
+    //clip_truncate       = clip_truncate;
+endfunction : record_rand_variable
+
 function void nvdla_cdma_resource::post_randomize();
     set_mem_addr();
     set_register();
+    record_rand_variable();
 
     `uvm_info(inst_name, {"\n", sprint()}, UVM_HIGH)
 endfunction : post_randomize
