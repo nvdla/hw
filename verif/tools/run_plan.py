@@ -397,9 +397,9 @@ def main():
     if  config['cdp_cube_size'] is not None:
         config['rtlarg'].append('+uvm_set_config_string=*,cdp_cube_size,%s'         % config['cdp_cube_size'])
     if config['enable_functional_coverage']:
-        config['rtlarg'].append('+fcov_en -cm_dir dummy.cm')
+        config['rtlarg'].append('+fcov_en -cm_dir test')
     if config['enable_code_coverage']:
-        config['rtlarg'].append('-cm line+tgl+cond+fsm+branch+assert -cm_dir dummy.cm')
+        config['rtlarg'].append('-cm line+tgl+cond+fsm+branch+assert -cm_dir test')
 
     # set random seed
     random.seed(config['seed'])
