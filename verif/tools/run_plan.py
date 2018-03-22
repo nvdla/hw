@@ -142,8 +142,9 @@ class RunPlan(object):
             module      = test_dict['module']
             for config in config_list:
                 cmd_exe = os.path.join(_get_abs_path_to_tree_root(), 'verif/tools/run_test.py')
-                rtlargs = ' '.join(list('-rtlarg '+ item for item in self.config['rtlarg']))
-                print(rtlargs)
+                #print(self.config['rtlarg'])
+                rtlargs = ' '.join(list('-rtlarg '+"'"+ item + "'" for item in self.config['rtlarg']))
+                #print(rtlargs)
                 cmd_args = "-P %(project)s -mod %(module)s -o testout %(args)s -timeout %(timeout)i %(rtlargs)s %(extra_args)s %(name)s -v %(config)s" % {'project':self.config['project'], 'module':module, 'args':' '.join(args), 'config':config, 'name':name, 'timeout':self.config['timeout'], 'rtlargs':rtlargs, 'extra_args':self.config['extra_args']}
                 if self.config['dump_waveform']:
                     cmd_args += ' -waves'
@@ -333,6 +334,12 @@ def main():
                         help='Do not Use LSF to run tests')
     parser.add_argument('--lsf_command', '-lsf_command', '--lsf_cmd', '-lsf_cmd', dest='lsf_cmd', required=False, default='',
                         help='LSF command to run tests')
+    parser.add_argument('--enable_coverage', '-enable_coverage', '--en_cov', '-en_cov', dest='enable_coverage', required=False, default=False, action='store_true',
+                        help='Enable both code and functional coverage')
+    parser.add_argument('--enable_functional_coverage', '-enable_functional_coverage', '--en_fcov', '-en_fcov', dest='enable_functional_coverage', required=False, default=False, action='store_true',
+                        help='Enable functional coverage')
+    parser.add_argument('--enable_code_coverage', '-enable_code_coverage', '--en_ccov', '-en_ccov', dest='enable_code_coverage', required=False, default=False, action='store_true',
+                        help='Enable code coverage')
     parser.add_argument('--disable_multi_processing', '-dmp', dest='disable_multi_processing', required=False,
                         default=False, action='store_true',
                         help='Enable multi processing')
@@ -370,6 +377,10 @@ def main():
     config['or_tag_list'] = [] if config['or_tag_list'] is None else [item for sublist in config['or_tag_list'] for item in sublist]
     config['not_tag_list'] = [] if config['not_tag_list'] is None else [item for sublist in config['not_tag_list'] for item in sublist]
 
+    if config['enable_coverage']:
+        config['enable_functional_coverage'] = True
+        config['enable_code_coverage'] = True
+
     # Prepare rtlarg
     config['rtlarg'] = []
     config['rtlarg'].append('+UVM_VERBOSITY=%s'                                 % config['uverb'])
@@ -385,6 +396,10 @@ def main():
         config['rtlarg'].append('+uvm_set_config_string=*,pdp_input_cube_size,%s'   % config['pdp_input_cube_size'])
     if  config['cdp_cube_size'] is not None:
         config['rtlarg'].append('+uvm_set_config_string=*,cdp_cube_size,%s'         % config['cdp_cube_size'])
+    if config['enable_functional_coverage']:
+        config['rtlarg'].append('+fcov_en -cm_dir dummy.cm')
+    if config['enable_code_coverage']:
+        config['rtlarg'].append('-cm line+tgl+cond+fsm+branch+assert -cm_dir dummy.cm')
 
     # set random seed
     random.seed(config['seed'])
