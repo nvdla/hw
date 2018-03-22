@@ -126,7 +126,7 @@ class RunReport(object):
         for item_dict in submetrics:
             for key,tags in item_dict.items():
                 submetrics_name = '_'.join(tags)+'_'+key
-                if key not in regr_sts_data:
+                if key not in self.regr_sts_data:
                     self.regr_sts_data[key] = {}
                 self.regr_sts_data[key][submetrics_name]=tags;
                 if key == "passing_rate":
