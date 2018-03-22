@@ -620,21 +620,20 @@ constraint nvdla_cdma_resource::c_ias_pixel {
         (pixel_format == pixel_format_T_Y16___U16V16_N444) -> {(datain_channel+1) == 3; in_precision == in_precision_INT16; element_byte_size_plane_0 == 2; element_byte_size_plane_1 == 4; plane_number == 2; pixel_x_offset < `NVDLA_MEMORY_ATOMIC_SIZE/element_byte_size_plane_0;}
         (pixel_format == pixel_format_T_Y16___V16U16_N444) -> {(datain_channel+1) == 3; in_precision == in_precision_INT16; element_byte_size_plane_0 == 2; element_byte_size_plane_1 == 4; plane_number == 2; pixel_x_offset < `NVDLA_MEMORY_ATOMIC_SIZE/element_byte_size_plane_0;}
     }
-
     if(datain_format == datain_format_PIXEL && pixel_mapping == pixel_mapping_PITCH_LINEAR) {
         pixel_y_offset == 0;
     }
-
 }
+
 constraint nvdla_cdma_resource::c_ias_datain_winograd {
     if(conv_mode == conv_mode_WINOGRAD) {
-        (datain_width_ext+1)   == (pad_left + pad_right + datain_width+1) / (conv_x_stride+1);
+        (datain_width_ext+1)   == (pad_left + pad_right + datain_width+1)  / (conv_x_stride+1);
         (datain_height_ext+1)  == (pad_top + pad_bottom + datain_height+1) / (conv_y_stride+1);
 
         (pad_left + pad_right + datain_width+1) % (conv_x_stride+1)  == 0;
         (pad_top + pad_bottom + datain_height+1) % (conv_y_stride+1) == 0;
 
-        (datain_width_ext+1) % 4  == 0;
+        (datain_width_ext+1)  % 4 == 0;
         (datain_height_ext+1) % 4 == 0;
         (datain_width_ext+1)  > 4;
         (datain_height_ext+1) > 4;
@@ -691,7 +690,6 @@ constraint nvdla_cdma_resource::c_ias_stride_size {
         }
         line_stride * (datain_height + 1) / `NVDLA_MEMORY_ATOMIC_SIZE <= 64'h800_0000;
     }
-
 }
 
 constraint nvdla_cdma_resource::c_ias_reserved_linear {
@@ -780,7 +778,7 @@ constraint nvdla_cdma_resource::c_ias_cvt {
             cvt_en == cvt_en_ENABLE;
         }
         if(pixel_sign_override == pixel_sign_override_UNSIGNED_INT) {
-            cvt_en       == cvt_en_ENABLE;
+            cvt_en == cvt_en_ENABLE;
         }
     }
     if(in_precision != in_precision_FP16) {
@@ -1066,12 +1064,6 @@ constraint nvdla_cdma_resource::c_sim_reserved_linear_dist {
 
 constraint nvdla_cdma_resource::c_sim_weight_dist {
     `weight_dist_18bit(byte_per_kernel)
-    `weight_dist_32bit(weight_addr_high)
-    `weight_dist_32bit(weight_addr_low)
-    `weight_dist_32bit(wgs_addr_high)
-    `weight_dist_32bit(wgs_addr_low)
-    `weight_dist_32bit(wmb_addr_high)
-    `weight_dist_32bit(wmb_addr_low)
     `weight_dist_25bit(weight_bytes)
     `weight_dist_21bit(wmb_bytes)
 }
