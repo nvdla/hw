@@ -2507,6 +2507,7 @@ void NV_NVDLA_cdma::ImageConvDataResponseSequencerCommon() {
                         cvt_mean = cdma_mean_ry_;    // For INT8, still use 16bits mean (signed)
                     else
                         cvt_mean = cvt_offset;
+                    if(pixel_idx >= pad_left + cube_width + pad_right) cvt_mean = 0;
                     process_one_element_8(pixel_8, pixel_idx, element_num, 0, cvt_en, convert_8to16, pad_buffer_8, pad_buffer_16, cvt_mean, cvt_scale, cvt_truncate, precision, proc_precision);
                     break;
                 case NVDLA_CDMA_D_DATAIN_FORMAT_0_PIXEL_FORMAT_T_R10:
@@ -2518,6 +2519,7 @@ void NV_NVDLA_cdma::ImageConvDataResponseSequencerCommon() {
                         cvt_mean = cdma_mean_ry_;
                     else
                         cvt_mean = cvt_offset;
+                    if(pixel_idx >= pad_left + cube_width + pad_right) cvt_mean = 0;
                     process_one_element_16(pixel_16, pixel_idx, element_num, 0, PIXEL_UNSIGNED_INT16, cvt_en, convert_16to8, pad_buffer_8, pad_buffer_16, cvt_mean, cvt_scale, cvt_truncate, precision, proc_precision);
                     break;
                 case NVDLA_CDMA_D_DATAIN_FORMAT_0_PIXEL_FORMAT_T_R16_I:
@@ -2526,6 +2528,7 @@ void NV_NVDLA_cdma::ImageConvDataResponseSequencerCommon() {
                         cvt_mean = cdma_mean_ry_;
                     else
                         cvt_mean = cvt_offset;
+                    if(pixel_idx >= pad_left + cube_width + pad_right) cvt_mean = 0;
                     process_one_element_16(pixel_16, pixel_idx, element_num, 0, PIXEL_SIGNED_INT16, cvt_en, convert_16to8, pad_buffer_8, pad_buffer_16, cvt_mean, cvt_scale, cvt_truncate, precision, proc_precision);
                     break;
                 case NVDLA_CDMA_D_DATAIN_FORMAT_0_PIXEL_FORMAT_T_R16_F:
@@ -2534,6 +2537,7 @@ void NV_NVDLA_cdma::ImageConvDataResponseSequencerCommon() {
                         cvt_mean = cdma_mean_ry_;
                     else
                         cvt_mean = cvt_offset;
+                    if(pixel_idx >= pad_left + cube_width + pad_right) cvt_mean = 0;
                     process_one_element_16(pixel_16, pixel_idx, element_num, 0, PIXEL_FP16, cvt_en, convert_16to8, pad_buffer_8, pad_buffer_16, cvt_mean, cvt_scale, cvt_truncate, precision, proc_precision);
                     break;
                 case NVDLA_CDMA_D_DATAIN_FORMAT_0_PIXEL_FORMAT_T_A16B16G16R16:
@@ -2548,6 +2552,7 @@ void NV_NVDLA_cdma::ImageConvDataResponseSequencerCommon() {
                             (i == 2) ? cdma_mean_bv_ : cdma_mean_ax_; 
                         else
                             cvt_mean = cvt_offset;
+                        if(pixel_idx >= pad_left + cube_width + pad_right) cvt_mean = 0;
                         input_data_type = (pixel_format==NVDLA_CDMA_D_DATAIN_FORMAT_0_PIXEL_FORMAT_T_A16B16G16R16_F)? PIXEL_FP16: PIXEL_UNSIGNED_INT16;
                         process_one_element_16(pixel_16, pixel_idx, element_num, i, input_data_type, cvt_en, convert_16to8, pad_buffer_8, pad_buffer_16, cvt_mean, cvt_scale, cvt_truncate, precision, proc_precision);
                     }
@@ -2563,6 +2568,7 @@ void NV_NVDLA_cdma::ImageConvDataResponseSequencerCommon() {
                             (i == 2) ? cdma_mean_bv_ : cdma_mean_ax_;
                         else
                             cvt_mean = cvt_offset;
+                        if(pixel_idx >= pad_left + cube_width + pad_right) cvt_mean = 0;
                         input_data_type = (pixel_format==NVDLA_CDMA_D_DATAIN_FORMAT_0_PIXEL_FORMAT_T_A16Y16U16V16_F)? PIXEL_FP16: PIXEL_SIGNED_INT16;
                         process_one_element_16(pixel_16, pixel_idx, element_num, i, input_data_type, cvt_en, convert_16to8, pad_buffer_8, pad_buffer_16, cvt_mean, cvt_scale, cvt_truncate, precision, proc_precision);
                     }
@@ -2577,6 +2583,7 @@ void NV_NVDLA_cdma::ImageConvDataResponseSequencerCommon() {
                             (i == 2) ? cdma_mean_bv_ : cdma_mean_ax_;
                         else
                             cvt_mean = cvt_offset;
+                        if(pixel_idx >= pad_left + cube_width + pad_right) cvt_mean = 0;
                         process_one_element_16(pixel_16, pixel_idx, element_num, i, PIXEL_UNSIGNED_INT16, cvt_en, convert_16to8, pad_buffer_8, pad_buffer_16, cvt_mean, cvt_scale, cvt_truncate, precision, proc_precision);
                     }
                     break;
@@ -2591,6 +2598,7 @@ void NV_NVDLA_cdma::ImageConvDataResponseSequencerCommon() {
                             (i == 2) ? cdma_mean_bv_ : cdma_mean_ax_;
                         else
                             cvt_mean = cvt_offset;
+                        if(pixel_idx >= pad_left + cube_width + pad_right) cvt_mean = 0;
                         process_one_element_8(pixel_8, pixel_idx, element_num, i, cvt_en, convert_8to16, pad_buffer_8, pad_buffer_16, cvt_mean, cvt_scale, cvt_truncate, precision, proc_precision);
                     }
                     break;
@@ -2607,6 +2615,7 @@ void NV_NVDLA_cdma::ImageConvDataResponseSequencerCommon() {
                             (i == 2) ? cdma_mean_bv_ : cdma_mean_ax_;
                         else
                             cvt_mean = cvt_offset;
+                        if(pixel_idx >= pad_left + cube_width + pad_right) cvt_mean = 0;
                         process_one_element_8(pixel_8, pixel_idx, element_num, i, cvt_en, convert_8to16, pad_buffer_8, pad_buffer_16, cvt_mean, cvt_scale, cvt_truncate, precision, proc_precision);
                     }
                     break;
@@ -2622,6 +2631,7 @@ void NV_NVDLA_cdma::ImageConvDataResponseSequencerCommon() {
                             (i == 2) ? cdma_mean_bv_ : cdma_mean_ax_;
                         else
                             cvt_mean = cvt_offset;
+                        if(pixel_idx >= pad_left + cube_width + pad_right) cvt_mean = 0;
                         process_one_element_8(pixel_8, pixel_idx, element_num, i, cvt_en, convert_8to16, pad_buffer_8, pad_buffer_16, cvt_mean, cvt_scale, cvt_truncate, precision, proc_precision);
                     }
                     break;
@@ -2636,6 +2646,7 @@ void NV_NVDLA_cdma::ImageConvDataResponseSequencerCommon() {
                             (i == 2) ? cdma_mean_bv_ : cdma_mean_ax_;
                         else
                             cvt_mean = cvt_offset;
+                        if(pixel_idx >= pad_left + cube_width + pad_right) cvt_mean = 0;
                         process_one_element_8(pixel_8, pixel_idx, element_num, i, cvt_en, convert_8to16, pad_buffer_8, pad_buffer_16, cvt_mean, cvt_scale, cvt_truncate, precision, proc_precision);
                     }
                     break;
@@ -2662,6 +2673,7 @@ void NV_NVDLA_cdma::ImageConvDataResponseSequencerCommon() {
                             (i == 2) ? cdma_mean_bv_ : cdma_mean_ax_;
                         else
                             cvt_mean = cvt_offset;
+                        if(pixel_idx >= pad_left + cube_width + pad_right) cvt_mean = 0;
                         process_one_element_16(pixel_16, pixel_idx, element_num, i, PIXEL_UNSIGNED_INT16, cvt_en, convert_16to8, pad_buffer_8, pad_buffer_16, cvt_mean, cvt_scale, cvt_truncate, precision, proc_precision);
                     }
                     break;
@@ -2689,6 +2701,7 @@ void NV_NVDLA_cdma::ImageConvDataResponseSequencerCommon() {
                             (i == 2) ? cdma_mean_bv_ : cdma_mean_ax_;
                         else
                             cvt_mean = cvt_offset;
+                        if(pixel_idx >= pad_left + cube_width + pad_right) cvt_mean = 0;
                         process_one_element_16(pixel_16, pixel_idx, element_num, i, PIXEL_UNSIGNED_INT16, cvt_en, convert_16to8, pad_buffer_8, pad_buffer_16, cvt_mean, cvt_scale, cvt_truncate, precision, proc_precision);
                     }
                     break;
@@ -2716,6 +2729,7 @@ void NV_NVDLA_cdma::ImageConvDataResponseSequencerCommon() {
                             (i == 2) ? cdma_mean_bv_ : cdma_mean_ax_;
                         else
                             cvt_mean = cvt_offset;
+                        if(pixel_idx >= pad_left + cube_width + pad_right) cvt_mean = 0;
                         process_one_element_16(pixel_16, pixel_idx, element_num, i, PIXEL_UNSIGNED_INT16, cvt_en, convert_16to8, pad_buffer_8, pad_buffer_16, cvt_mean, cvt_scale, cvt_truncate, precision, proc_precision);
                     }
                     break;
@@ -2742,6 +2756,7 @@ void NV_NVDLA_cdma::ImageConvDataResponseSequencerCommon() {
                             (i == 2) ? cdma_mean_bv_ : cdma_mean_ax_;
                         else
                             cvt_mean = cvt_offset;
+                        if(pixel_idx >= pad_left + cube_width + pad_right) cvt_mean = 0;
                         process_one_element_16(pixel_16, pixel_idx, element_num, i, PIXEL_UNSIGNED_INT16, cvt_en, convert_16to8, pad_buffer_8, pad_buffer_16, cvt_mean, cvt_scale, cvt_truncate, precision, proc_precision);
                     }
                     break;
@@ -2755,6 +2770,7 @@ void NV_NVDLA_cdma::ImageConvDataResponseSequencerCommon() {
                             (i == 2) ? cdma_mean_bv_ : cdma_mean_ax_;
                         else
                             cvt_mean = cvt_offset;
+                        if(pixel_idx >= pad_left + cube_width + pad_right) cvt_mean = 0;
                         process_one_element_8(pixel_8, pixel_idx, element_num, i, cvt_en, convert_8to16, pad_buffer_8, pad_buffer_16, cvt_mean, cvt_scale, cvt_truncate, precision, proc_precision);
                     }
                     break;
@@ -2768,6 +2784,7 @@ void NV_NVDLA_cdma::ImageConvDataResponseSequencerCommon() {
                             (i == 2) ? cdma_mean_bv_ : cdma_mean_ax_;
                         else
                             cvt_mean = cvt_offset;
+                        if(pixel_idx >= pad_left + cube_width + pad_right) cvt_mean = 0;
                         process_one_element_8(pixel_8, pixel_idx, element_num, i, cvt_en, convert_8to16, pad_buffer_8, pad_buffer_16, cvt_mean, cvt_scale, cvt_truncate, precision, proc_precision);
                     }
                     break;
@@ -2783,6 +2800,7 @@ void NV_NVDLA_cdma::ImageConvDataResponseSequencerCommon() {
                             (i == 2) ? cdma_mean_bv_ : cdma_mean_ax_;
                         else
                             cvt_mean = cvt_offset;
+                        if(pixel_idx >= pad_left + cube_width + pad_right) cvt_mean = 0;
                         process_one_element_16(pixel_16, pixel_idx, element_num, i, PIXEL_UNSIGNED_INT16, cvt_en, convert_16to8, pad_buffer_8, pad_buffer_16, cvt_mean, cvt_scale, cvt_truncate, precision, proc_precision);
                     }
                     break;
@@ -2798,6 +2816,7 @@ void NV_NVDLA_cdma::ImageConvDataResponseSequencerCommon() {
                             (i == 2) ? cdma_mean_bv_ : cdma_mean_ax_;
                         else
                             cvt_mean = cvt_offset;
+                        if(pixel_idx >= pad_left + cube_width + pad_right) cvt_mean = 0;
                         process_one_element_16(pixel_16, pixel_idx, element_num, i, PIXEL_UNSIGNED_INT16, cvt_en, convert_16to8, pad_buffer_8, pad_buffer_16, cvt_mean, cvt_scale, cvt_truncate, precision, proc_precision);
                     }
                     break;
