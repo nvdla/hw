@@ -184,9 +184,9 @@ wire calc_layer_end_d0 = calc_layer_end;
 //: }
 //: my $fin = $start + CACC_CELL_FINAL_LATENCY;
 //: print qq(
-//: assign calc_dlv_valid_out   = calc_dlv_valid_d${fin};
-//: assign calc_stripe_end_out  = calc_stripe_end_d${fin};
-//: assign calc_layer_end_out   = calc_layer_end_d${fin};
+//: wire calc_dlv_valid_out   = calc_dlv_valid_d${fin};
+//: wire calc_stripe_end_out  = calc_stripe_end_d${fin};
+//: wire calc_layer_end_out   = calc_layer_end_d${fin};
 //: );
 
 
@@ -212,7 +212,7 @@ wire [CACC_ABUF_WIDTH-1:0] abuf_wr_data_w;
 //: assign abuf_wr_data_w[CACC_PARSUM_WIDTH*($i+1)-1:CACC_PARSUM_WIDTH*$i] = calc_pout_${i}; );
 //: }
 //: &eperl::flop(" -q  abuf_wr_en  -d \"calc_wr_en_out\" -clk nvdla_core_clk -rst nvdla_core_rstn -rval 0"); 
-//: &eperl::flop("-wid ${jj} -q  abuf_wr_addr  -en \"calc_wr_en_out\" -d  \"calc_addr_out\" -clk nvdla_core_clk -rst nvdla_core_rstn -rval 0"); 
+//: &eperl::flop("-wid ${jj} -q  abuf_wr_addr  -en \"calc_wr_en_out\" -d  \"calc_addr_out[${jj}-1:0]\" -clk nvdla_core_clk -rst nvdla_core_rstn -rval 0"); 
 //: &eperl::flop("-wid ${kk} -q  abuf_wr_data  -en \"calc_wr_en_out\" -d  \"abuf_wr_data_w\" -clk nvdla_core_clk -norst"); 
 
 
@@ -236,14 +236,15 @@ assign       dlv_pd[1] =     dlv_layer_end ;
 // overflow count                   
 reg dlv_sat_end_d1;
 wire [CACC_ATOMK-1:0] dlv_sat_bit = calc_fout_sat;
-assign dlv_sat_end = calc_layer_end_out & calc_stripe_end_out;
-assign dlv_sat_clr = calc_dlv_valid_out & ~dlv_sat_end & dlv_sat_end_d1;
+wire dlv_sat_end = calc_layer_end_out & calc_stripe_end_out;
+wire dlv_sat_clr = calc_dlv_valid_out & ~dlv_sat_end & dlv_sat_end_d1;
 //: my $kk= CACC_ATOMK;
+//: my $jj= CACC_ATOMK_LOG2;
 //: &eperl::flop(" -q  dlv_sat_vld_d1  -d \"calc_dlv_valid_out\" -clk nvdla_core_clk -rst nvdla_core_rstn -rval 0"); 
 //: &eperl::flop("-nodeclare  -q  dlv_sat_end_d1  -en \"calc_dlv_valid_out\" -d  \"dlv_sat_end\" -clk nvdla_core_clk -rst nvdla_core_rstn -rval 1"); 
 //: &eperl::flop(" -wid ${kk} -q  dlv_sat_bit_d1  -en \"calc_dlv_valid_out\" -d  \"dlv_sat_bit\" -clk nvdla_core_clk -rst nvdla_core_rstn -rval 0"); 
 //: &eperl::flop(" -q  dlv_sat_clr_d1  -d \"dlv_sat_clr\" -clk nvdla_core_clk -rst nvdla_core_rstn -rval 0"); 
-//: print "assign sat_sum = "; 
+//: print "wire [${jj}-1:0] sat_sum = "; 
 //: for(my $i=0; $i<CACC_ATOMK-1 ; $i++){
 //:     print "dlv_sat_bit_d1[${i}]+";
 //: }
@@ -251,6 +252,9 @@ assign dlv_sat_clr = calc_dlv_valid_out & ~dlv_sat_end & dlv_sat_end_d1;
 //: print "dlv_sat_bit_d1[${i}]; \n";
 wire [31:0] sat_count_inc;
 reg [31:0] sat_count;
+wire sat_carry;
+wire [31:0] sat_count_w;
+wire sat_reg_en;
 assign {sat_carry, sat_count_inc[31:0]} = sat_count + sat_sum;
 assign sat_count_w = (dlv_sat_clr_d1) ? {24'b0, sat_sum} : sat_carry ? {32{1'b1}} : sat_count_inc;
 assign sat_reg_en = dlv_sat_vld_d1 & ((|sat_sum) | dlv_sat_clr_d1);

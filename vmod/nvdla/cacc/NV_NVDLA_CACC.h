@@ -11,6 +11,7 @@
 #define CACC_IN_WIDTH                                   NVDLA_MAC_RESULT_WIDTH  //16+log2(atomC),sum result width for one atomic operation.
 #define SDP_MAX_THROUGHPUT                              NVDLA_SDP_MAX_THROUGHPUT  //2^n, no bigger than atomM
 #define CACC_ATOMK                                      NVDLA_MAC_ATOMIC_K_SIZE
+#define CACC_ATOMK_LOG2                                 NVDLA_MAC_ATOMIC_K_SIZE_LOG2
 #define CACC_ABUF_DEPTH                                 NVDLA_MAC_ATOMIC_K_SIZE*2  //2*atomK
 #define CACC_ABUF_WIDTH                                 CACC_PARSUM_WIDTH*CACC_ATOMK
 #define CACC_ABUF_AWIDTH                                NVDLA_MAC_ATOMIC_K_SIZE_LOG2+1   //log2(abuf_depth)

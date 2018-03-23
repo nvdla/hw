@@ -65,25 +65,25 @@ output                      wait_for_op_en;
 //////////////////////////////////////////////////////////////
 ///// generator input status signal                      /////
 //////////////////////////////////////////////////////////////
-assign         accu_stripe_st   =     accu_pd[5];
-assign         accu_stripe_end  =     accu_pd[6];
-assign         accu_channel_end =     accu_pd[7];
-assign         accu_layer_end   =     accu_pd[8];
+wire         accu_stripe_st   =     accu_pd[5];
+wire         accu_stripe_end  =     accu_pd[6];
+wire         accu_channel_end =     accu_pd[7];
+wire         accu_layer_end   =     accu_pd[8];
 
-assign    is_int8 = (reg2dp_proc_precision == NVDLA_CACC_D_MISC_CFG_0_PROC_PRECISION_INT8);
-assign    is_winograd = 1'b0;
+wire    is_int8 = (reg2dp_proc_precision == NVDLA_CACC_D_MISC_CFG_0_PROC_PRECISION_INT8);
+wire    is_winograd = 1'b0;
 
 
 // SLCG
-assign    slcg_cell_en_w = reg2dp_op_en;
+wire    slcg_cell_en_w = reg2dp_op_en;
 //: &eperl::flop(" -q  slcg_cell_en_d1  -d \"slcg_cell_en_w\" -clk nvdla_core_clk -rst nvdla_core_rstn -rval 0"); 
 //: &eperl::flop(" -q  slcg_cell_en_d2  -d \"slcg_cell_en_d1\" -clk nvdla_core_clk -rst nvdla_core_rstn -rval 0"); 
 //: &eperl::flop(" -q  slcg_cell_en_d3  -d \"slcg_cell_en_d2\" -clk nvdla_core_clk -rst nvdla_core_rstn -rval 0"); 
-assign slcg_cell_en = slcg_cell_en_d3;
+wire    slcg_cell_en = slcg_cell_en_d3;
 
 
 // get layer operation begin
-assign    wait_for_op_en_w = dp2reg_done ? 1'b1 : reg2dp_op_en ? 1'b0 : wait_for_op_en;
+wire    wait_for_op_en_w = dp2reg_done ? 1'b1 : reg2dp_op_en ? 1'b0 : wait_for_op_en;
 //: &eperl::flop(" -q  wait_for_op_en  -d \"wait_for_op_en_w\" -clk nvdla_core_clk -rst nvdla_core_rstn -rval 1"); 
 
 
@@ -92,6 +92,7 @@ reg         cfg_winograd;
 reg  [CACC_ABUF_AWIDTH-1:0]   accu_cnt;   
 wire [CACC_ABUF_AWIDTH-1:0]   accu_cnt_w;
 wire [CACC_ABUF_AWIDTH-1:0]   accu_cnt_inc;
+wire mon_accu_cnt_inc;
 reg         accu_channel_st;
 wire        layer_st                            = wait_for_op_en & reg2dp_op_en;
 assign      {mon_accu_cnt_inc, accu_cnt_inc}    = accu_cnt + 1'b1;

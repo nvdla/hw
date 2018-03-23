@@ -78,21 +78,22 @@ output                      dp2reg_done;
 //////////////////////////////////////////////////////////////
 ///// parse input status signal                          /////
 //////////////////////////////////////////////////////////////
-assign         dlv_stripe_end  =     dlv_pd[0];
-assign         dlv_layer_end   =     dlv_pd[1];
+wire         dlv_stripe_end  =     dlv_pd[0];
+wire         dlv_layer_end   =     dlv_pd[1];
 
 //////////////////////////////////////////////////////////////
 ///// register input signal from regfile                 /////
 //////////////////////////////////////////////////////////////
-assign    cur_channel_w =  {1'b0, reg2dp_dataout_channel[CACC_CHANNEL_BITS-1:5]} ;
+wire  [CACC_CHANNEL_BITS-6:0]  cur_channel_w =  {reg2dp_dataout_channel[CACC_CHANNEL_BITS-1:5]} ;
+//: my $kk= CACC_CHANNEL_BITS-5;
 //: &eperl::flop(" -q  cur_op_en  -en wait_for_op_en & \"reg2dp_op_en\" -d  \"reg2dp_op_en\" -clk nvdla_core_clk -rst nvdla_core_rstn -rval 0"); 
 //: &eperl::flop(" -q  cur_conv_mode  -en \"wait_for_op_en & reg2dp_op_en\" -d  \"reg2dp_conv_mode\" -clk nvdla_core_clk -rst nvdla_core_rstn -rval 0"); 
-//: &eperl::flop(" -q  cur_proc_precision  -en \"wait_for_op_en & reg2dp_op_en\" -d  \"reg2dp_proc_precision\" -clk nvdla_core_clk -rst nvdla_core_rstn -rval 0"); 
-//: &eperl::flop(" -q  cur_width  -en \"wait_for_op_en & reg2dp_op_en\" -d  \"reg2dp_dataout_width\" -clk nvdla_core_clk -rst nvdla_core_rstn -rval 0"); 
-//: &eperl::flop(" -q  cur_height  -en \"wait_for_op_en & reg2dp_op_en\" -d  \"reg2dp_dataout_height\" -clk nvdla_core_clk -rst nvdla_core_rstn -rval 0"); 
-//: &eperl::flop(" -q  cur_channel  -en \"wait_for_op_en & reg2dp_op_en\" -d  \"cur_channel_w\" -clk nvdla_core_clk -rst nvdla_core_rstn -rval 0"); 
-//: &eperl::flop(" -q  cur_dataout_addr  -en \"wait_for_op_en & reg2dp_op_en\" -d  \"reg2dp_dataout_addr\" -clk nvdla_core_clk -rst nvdla_core_rstn -rval 0"); 
-//: &eperl::flop(" -q  cur_batches  -en \"wait_for_op_en & reg2dp_op_en\" -d  \"reg2dp_batches\" -clk nvdla_core_clk -rst nvdla_core_rstn -rval 0"); 
+//: &eperl::flop("-wid 2 -q  cur_proc_precision  -en \"wait_for_op_en & reg2dp_op_en\" -d  \"reg2dp_proc_precision\" -clk nvdla_core_clk -rst nvdla_core_rstn -rval 0"); 
+//: &eperl::flop("-wid 13 -q  cur_width  -en \"wait_for_op_en & reg2dp_op_en\" -d  \"reg2dp_dataout_width\" -clk nvdla_core_clk -rst nvdla_core_rstn -rval 0"); 
+//: &eperl::flop("-wid 13 -q  cur_height  -en \"wait_for_op_en & reg2dp_op_en\" -d  \"reg2dp_dataout_height\" -clk nvdla_core_clk -rst nvdla_core_rstn -rval 0"); 
+//: &eperl::flop("-wid ${kk} -q  cur_channel  -en \"wait_for_op_en & reg2dp_op_en\" -d  \"cur_channel_w\" -clk nvdla_core_clk -rst nvdla_core_rstn -rval 0"); 
+//: &eperl::flop("-wid 27 -q  cur_dataout_addr  -en \"wait_for_op_en & reg2dp_op_en\" -d  \"reg2dp_dataout_addr\" -clk nvdla_core_clk -rst nvdla_core_rstn -rval 0"); 
+//: &eperl::flop("-wid 5 -q  cur_batches  -en \"wait_for_op_en & reg2dp_op_en\" -d  \"reg2dp_batches\" -clk nvdla_core_clk -rst nvdla_core_rstn -rval 0"); 
 //: &eperl::flop("-wid 24 -q  cur_line_stride  -en \"wait_for_op_en & reg2dp_op_en\" -d  \"reg2dp_line_stride\" -clk nvdla_core_clk -rst nvdla_core_rstn -rval 0"); 
 //: &eperl::flop("-wid 24 -q  cur_surf_stride  -en \"wait_for_op_en & reg2dp_op_en\" -d  \"reg2dp_surf_stride\" -clk nvdla_core_clk -rst nvdla_core_rstn -rval 0"); 
 //: &eperl::flop(" -q  cur_line_packed  -en \"wait_for_op_en & reg2dp_op_en\" -d  \"reg2dp_line_packed\" -clk nvdla_core_clk -rst nvdla_core_rstn -rval 0"); 
@@ -101,19 +102,20 @@ assign    cur_channel_w =  {1'b0, reg2dp_dataout_channel[CACC_CHANNEL_BITS-1:5]}
 //////////////////////////////////////////////////////////////
 ///// generate current status signals                    /////
 //////////////////////////////////////////////////////////////
-assign    is_int8_w = (reg2dp_proc_precision == NVDLA_CACC_D_MISC_CFG_0_PROC_PRECISION_INT8);
-assign    is_int8 = (cur_proc_precision == NVDLA_CACC_D_MISC_CFG_0_PROC_PRECISION_INT8);
-assign    is_winograd = 1'b0;
+wire    is_int8_w = (reg2dp_proc_precision == NVDLA_CACC_D_MISC_CFG_0_PROC_PRECISION_INT8);
+wire    is_int8 = (cur_proc_precision == NVDLA_CACC_D_MISC_CFG_0_PROC_PRECISION_INT8);
+wire    is_winograd = 1'b0;
 
 
 //////////////////////////////////////////////////////////////
 ///// generate write signal, 1 pipe for write data
 //////////////////////////////////////////////////////////////
-assign  dbuf_wr_en_w = dlv_valid;
+wire  dbuf_wr_en_w = dlv_valid;
 wire [CACC_DBUF_WIDTH-1:0]  dbuf_wr_data_w = dlv_data;
 reg [CACC_DBUF_AWIDTH-1:0] dbuf_wr_addr_pre;
 reg [CACC_DBUF_AWIDTH-1:0] dbuf_wr_addr;
 wire [CACC_DBUF_AWIDTH-1:0] dbuf_wr_addr_w;
+wire mon_dbuf_wr_addr_w;
 assign    {mon_dbuf_wr_addr_w, dbuf_wr_addr_w} =  dbuf_wr_addr_pre + 1'b1;
 //: my $kk=CACC_DBUF_WIDTH;
 //: &eperl::flop("-nodeclare -q  dbuf_wr_addr_pre  -en \"dlv_valid\" -d  \"dbuf_wr_addr_w\" -clk nvdla_core_clk -rst nvdla_core_rstn -rval 0"); 
@@ -127,8 +129,8 @@ assign    {mon_dbuf_wr_addr_w, dbuf_wr_addr_w} =  dbuf_wr_addr_pre + 1'b1;
 wire    dlv_push_valid = dlv_valid;
 wire    dlv_push_size = 1'b1; 
 //:     my $latency = CACC_D_RAM_WRITE_LATENCY;
-//:     print "assign dlv_push_valid_d0 = dlv_push_valid;\n";
-//:     print "assign dlv_push_size_d0 = dlv_push_size;\n";
+//:     print "wire dlv_push_valid_d0 = dlv_push_valid;\n";
+//:     print "wire dlv_push_size_d0 = dlv_push_size;\n";
 //: 
 //:     for(my $i = 0; $i < $latency; $i ++) {
 //:         my $j = $i + 1;
@@ -136,8 +138,8 @@ wire    dlv_push_size = 1'b1;
 //: &eperl::flop(" -q  dlv_push_size_d${j}  -en \"dlv_push_valid_d${i}\" -d  \"dlv_push_size_d${i}\" -clk nvdla_core_clk -rst nvdla_core_rstn -rval 0"); 
 //:     }
 //: 
-//:     print "assign dlv_data_add_valid = dlv_push_valid_d${latency};\n";
-//:     print "assign dlv_data_add_size = dlv_push_size_d${latency};\n";
+//:     print "wire dlv_data_add_valid = dlv_push_valid_d${latency};\n";
+//:     print "wire dlv_data_add_size = dlv_push_size_d${latency};\n";
 
 
 //// dbuffer data counter 
@@ -156,16 +158,17 @@ assign {mon_dlv_data_avl_w,dlv_data_avl_w} = dlv_data_avl + dlv_data_avl_add - d
 ///// generate dbuf read request                
 reg  [CACC_DBUF_AWIDTH-1:0]  dbuf_rd_addr_cnt;
 wire [CACC_DBUF_AWIDTH-1:0]  dbuf_rd_addr_cnt_inc;
+wire mon_dbuf_rd_addr_cnt_inc;
 assign    dlv_pop       = dbuf_rd_en & dbuf_rd_ready;
 assign    {mon_dbuf_rd_addr_cnt_inc,dbuf_rd_addr_cnt_inc} = dbuf_rd_addr_cnt + 1'b1;
-assign    dbuf_empty    = ~(|dlv_data_avl);
+wire      dbuf_empty    = ~(|dlv_data_avl);
 assign    dbuf_rd_en    = ~dbuf_empty;
 assign    dbuf_rd_addr  = dbuf_rd_addr_cnt;
 //: &eperl::flop("-nodeclare -q  dbuf_rd_addr_cnt  -en \"dlv_pop\" -d  \"dbuf_rd_addr_cnt_inc\" -clk nvdla_core_clk -rst nvdla_core_rstn -rval 0"); 
 
 
 /////// generate dp2reg_done signal
-assign dp2reg_done_w = dlv_valid & dlv_stripe_end & dlv_layer_end;
+wire  dp2reg_done_w = dlv_valid & dlv_stripe_end & dlv_layer_end;
 //: &eperl::flop(" -q  dp2reg_done  -d \"dp2reg_done_w\" -clk nvdla_core_clk -rst nvdla_core_rstn -rval 0"); 
 
 
