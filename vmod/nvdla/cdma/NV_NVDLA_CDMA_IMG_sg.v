@@ -1215,7 +1215,8 @@ assign rsp_img_c1l0_wr_en = (rsp_img_p0_vld &   rsp_img_planar);
 //: if($atmm_num == 1) {
 //:     print qq(
 //:     );
-//:     &eperl::flop("-nodeclare   -rval \"{${atmm}{1'b0}}\"  -en \"rsp_img_c0l0_wr_en\" -d \"rsp_img_p0_data\" -q rsp_img_p0_cache_data");
+//:     ##&eperl::flop("-nodeclare   -rval \"{${atmm}{1'b0}}\"  -en \"rsp_img_c0l0_wr_en\" -d \"rsp_img_p0_data\" -q rsp_img_p0_cache_data");
+//:     &eperl::flop("-nodeclare   -rval \"{${atmm}{1'b0}}\"  -en \"rsp_img_c0l0_wr_en | rsp_img_c1l0_wr_en \" -d \"rsp_img_p0_data\" -q rsp_img_p0_cache_data");
 //: } elsif($atmm_num == 2) {
 //:     print qq(
 //:         assign rsp_img_l0_data = rsp_img_p1_vld ? rsp_img_p1_data : rsp_img_p0_data;

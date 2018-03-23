@@ -652,7 +652,8 @@ assign is_last_planar = ~pixel_planar | rd_planar_cnt;
 //: my $atmm_num = int($dmaif/NVDLA_MEMORY_ATOMIC_SIZE/NVDLA_BPE);
 //: if($atmm_num == 1) {
 //:     print qq(
-//:         assign rd_pburst_limit = 2'b0;
+//:         //assign rd_pburst_limit = 2'b0;
+//:         assign rd_pburst_limit = (rd_planar_cnt & (~is_last_loop | ~img_p1_burst[0])) ? 2'b1 : 2'b0;
 //:     ) 
 //: } elsif($atmm_num == 2) {
 //:     print qq(
