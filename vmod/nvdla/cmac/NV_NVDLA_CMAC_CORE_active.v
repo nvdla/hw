@@ -93,14 +93,13 @@ input   [CMAC_ATOMK_HALF-1:0] in_wt_sel;
 //: for(my $i=0; $i<CMAC_ATOMK_HALF; $i++){
 //: print qq(
 //: reg  [CMAC_BPE*CMAC_ATOMC-1:0]  dat_actv_data_reg${i};
-//: wire [CMAC_ATOMC-1:0] dat_pre_mask${i};
 //: )
 //: }
 reg    [CMAC_BPE*CMAC_ATOMC-1:0]    dat_pre_data_w;
 wire   [CMAC_ATOMC-1:0]             dat_pre_mask_w;
 reg    [CMAC_ATOMC-1:0]             dat_pre_nz_w;
-reg    [CMAC_ATOMK_HALF-1:0]        dat_pre_stripe_end;
-reg    [CMAC_ATOMK_HALF-1:0]        dat_pre_stripe_st;
+reg                                 dat_pre_stripe_end;
+reg                                 dat_pre_stripe_st;
 reg    [CMAC_BPE*CMAC_ATOMC-1:0]    wt_pre_data;
 reg    [CMAC_BPE*CMAC_ATOMC-1:0]    wt_pre_data_w;
 reg    [CMAC_ATOMC-1:0]             wt_pre_mask;
@@ -108,6 +107,13 @@ reg    [CMAC_ATOMC-1:0]             wt_pre_mask_w;
 reg    [CMAC_ATOMC-1:0]             wt_pre_nz_w;
 
 
+//: my $kk=CMAC_ATOMC;
+//: for(my $i=0; $i<CMAC_ATOMK_HALF; $i++){
+//: print qq(
+//: wire [${kk}-1:0] wt${i}_sd_mask={${kk}{1'b0}};
+//: wire [${kk}-1:0] dat${i}_pre_mask={${kk}{1'b0}};
+//: )
+//: }
 
 /////////////////////////////////////// handle weight ///////////////////////
 // weight pack

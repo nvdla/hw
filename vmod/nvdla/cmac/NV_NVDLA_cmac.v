@@ -130,7 +130,7 @@ NV_NVDLA_CMAC_core u_core (
 //==========================================================
 // reg
 //==========================================================
-wire [1:0] reg2dp_proc_precision_NC = 0;
+wire [1:0] reg2dp_proc_precision_NC;
 NV_NVDLA_CMAC_reg u_reg (
    .nvdla_core_clk                (nvdla_core_clk)                //|< i
   ,.nvdla_core_rstn               (nvdla_core_rstn)               //|< i
