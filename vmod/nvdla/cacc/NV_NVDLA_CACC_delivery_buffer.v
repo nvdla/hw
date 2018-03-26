@@ -93,23 +93,27 @@ assign dbuf_rd_ready        = ~(|data_left_mask);
 //: my $t2= "{${kk}{1'b0}}";
 //: print "$t1"."$t2".";\n";
 
+//layer_end handle
+reg dbuf_rd_layer_end_latch;
+wire dbuf_rd_layer_end_latch_w = dbuf_rd_layer_end? 1'b1 : ~(|data_left_mask) ? 1'b0 : dbuf_rd_layer_end_latch;
+//: &eperl::flop("-q dbuf_rd_layer_end_latch -d dbuf_rd_layer_end_latch_w -nodeclare");
+
+
 //regout to SDP
 //: my $kk=CACC_SDP_DATA_WIDTH;
-//: &eperl::flop("-q  dbuf_rd_layer_end_d1 -en \"dbuf_rd_en \" -d \"dbuf_rd_layer_end \" -clk nvdla_core_clk -rst nvdla_core_rstn ");
 //: &eperl::flop("-q cacc2sdp_valid -d cacc2sdp_valid_w");
 //: &eperl::flop("-wid ${kk} -q cacc2sdp_pd_data -d cacc2sdp_pd_data_w");
 wire   cacc2sdp_batch_end   = 1'b0;
-wire   cacc2sdp_layer_end   = dbuf_rd_layer_end_d1;
+wire   cacc2sdp_layer_end   = dbuf_rd_layer_end_latch&&(~(|data_left_mask))&cacc2sdp_valid&cacc2sdp_ready; //data_left_mask=0;
 assign cacc2sdp_pd[CACC_SDP_DATA_WIDTH-1:0] =   cacc2sdp_pd_data;
 assign cacc2sdp_pd[CACC_SDP_WIDTH-2]        =   cacc2sdp_batch_end;
-assign cacc2sdp_pd[CACC_SDP_WIDTH-1]        =   cacc2sdp_layer_end&dbuf_rd_ready;
+assign cacc2sdp_pd[CACC_SDP_WIDTH-1]        =   cacc2sdp_layer_end;
 
 
 // generate CACC done interrupt  
 wire [1:0] cacc_done_intr_w;
 reg intr_sel;
-//assign cacc_done = dbuf_rd_valid & dbuf_rd_ready_d1 & dbuf_rd_layer_end_d1;
-wire cacc_done = cacc2sdp_valid & cacc2sdp_ready & dbuf_rd_ready& dbuf_rd_layer_end_d1;
+wire cacc_done = cacc2sdp_valid & cacc2sdp_ready & cacc2sdp_layer_end;
 assign cacc_done_intr_w[0] = cacc_done & ~intr_sel;
 assign cacc_done_intr_w[1] = cacc_done & intr_sel;
 wire intr_sel_w = cacc_done ? ~intr_sel : intr_sel;
