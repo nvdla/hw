@@ -75,6 +75,19 @@ def run_report(run_dir, db_dir, arguments, sub_metrics='', dry_run=False):
     else:
         return 0
 
+def run_coverage_report(run_dir, db_dir, report_dir, waver_path='', dry_run=False):
+    python_interpreter = sys.executable
+    cmd_exe = os.path.join(_get_abs_path_to_tree_root(), 'verif/tools/run_coverage_report.py')
+    #cmd_args = "-regress_dir %(run_dir)s -merged_cm_dir %(db_dir)s -report_dir %(report_dir)s -waver_path %(waver_path)s" % {'regress_dir':regress_dir, 'db_dir':db_dir, 'report_dir':report_dir, 'waver_path':waver_path}
+    cmd_args = "-regress_dir %(run_dir)s -merged_cm_dir %(db_dir)s -report_dir %(report_dir)s" % {'regress_dir':regress_dir, 'db_dir':db_dir, 'report_dir':report_dir}
+    cmd_str = ' '.join([python_interpreter, cmd_exe, cmd_args])
+    print ("Status monitor command:%s"%cmd_str)
+    if not dry_run:
+        ret = subprocess.run(cmd_str, shell=True)
+        return ret.returncode
+    else:
+        return 0
+
 def run_diagnose(regr_dir,synd_dir,publish_dir,levenshtein_py_path='',dry_run=False):
     cmd_exe  = os.path.join(_get_abs_path_to_tree_root(), 'verif/tools/run_diagnose.py')
     cmd_args = "-regr_dir %(regr_dir)s -synd_dir %(synd_dir)s -publish_dir %(publish_dir)s -publish -a diagnose " % {'regr_dir':regr_dir, 'synd_dir':synd_dir, 'publish_dir':publish_dir}
@@ -106,7 +119,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__DESCRIPTION__)
     parser.add_argument('--project','-P', dest='project', required=True,
                         help='Specify project name')
-    parser.add_argument('--kind', '-kind', dest='kind', type=str, default='sanity', choices=['protection','sanity','random','all'], required=True,
+    parser.add_argument('--kind', '-kind', dest='kind', type=str, default='sanity', choices=['protection','sanity','random','coverage','all'], required=True,
                         help='Specify regression kind')
     parser.add_argument('--timeout', '-timeout', dest='timeout', type=int, default=720, required=False,
                         help='Specify job running timeout value in minutes')
@@ -171,7 +184,8 @@ if __name__ == '__main__':
             print("TREE_BUILD_FAIL")
             sys.exit(ret)
     if (project_name in ['nv_small','nv_small_256']):
-        run_dir = 'nv_small_%s' % datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+        time_str = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+        run_dir = 'nv_small_%s' % time_str
         try:
             if 'protection' == config['kind']:
                 ret=run_plan(config['project'], project_name, '-otag protection %s -run_dir %s' % (args, run_dir), lsf_cmd)
@@ -182,6 +196,12 @@ if __name__ == '__main__':
             elif 'random' == config['kind']:
                 ret=run_plan(config['project'], project_name, '-otag L10 L11 -l_num 4 -r_num 5 %s -run_dir %s' % (args, run_dir), lsf_cmd, dry_run)
                 ret=run_report(run_dir, publish_dir, '-monitor_timeout %d' % max_regression_time, 'passing_rate:L10 passing_rate:L11', dry_run)
+            elif 'coverage' == config['kind']:
+                ret=run_plan(config['project'], project_name, '-otag L0 L1 L2 L10 L11 L20 -l_num 4 -r_num 4 %s -run_dir %s' % (args, run_dir), lsf_cmd, dry_run)
+                ret=run_report(run_dir, publish_dir, '-monitor_timeout %d' % max_regression_time, 'passing_rate:L0 passing_rate:L1 passing_rate:L2 passing_rate:L10 passing_rate:L11 passing_rate:L20', dry_run)
+                cov_vdb_dir = os.path.join(run_dir, 'merged_'+time_str+'.vdb')
+                cov_report_dir = os.path.join(run_dir, 'report_'+time_str)
+                ret=run_coverage_report(run_dir, cov_vdb_dir, cov_report_dir, dry_run)
             elif 'all' == config['kind']:
                 ret=run_plan(config['project'], project_name, '-l_num 5 -r_num 10 %s -run_dir %s' % (args, run_dir), lsf_cmd, dry_run)
                 ret=run_report(run_dir, publish_dir, '-monitor_timeout %d' % max_regression_time, 'passing_rate:L0 passing_rate:L1 passing_rate:L2 passing_rate:L10 passing_rate:L11', dry_run)
