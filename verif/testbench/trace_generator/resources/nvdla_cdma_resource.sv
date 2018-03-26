@@ -1098,7 +1098,12 @@ constraint nvdla_cdma_resource::c_sim_input_cube_size_medium {
     datain_width   inside {[0:'h7F]};
     datain_height  inside {[0:'h7F]};
     datain_channel inside {[0:'h7F]};
-    (datain_width+1)*(datain_height+1)*(datain_channel+1)    >  64'h8000;
+    if (conv_mode == conv_mode_DIRECT && datain_format == datain_format_PIXEL) {
+        // datain_channel = 0
+        (datain_width+1)*(datain_height+1)*(datain_channel+1) > 64'h2000;
+    } else {
+        (datain_width+1)*(datain_height+1)*(datain_channel+1) > 64'h8000;
+    }
     (datain_width+1)*(datain_height+1)*(datain_channel+1)    <= 64'h2_0000;
 }
 

@@ -786,7 +786,12 @@ constraint nvdla_cc_dp_resource::c_sim_output_cube_size_medium {
     dataout_width   inside {[0:'h7F]};
     dataout_height  inside {[0:'h7F]};
     dataout_channel inside {[0:'h7F]};
-    (dataout_width+1)*(dataout_height+1)*(dataout_channel+1)    >  64'h8000;
+    if (conv_mode == conv_mode_DIRECT && datain_format == datain_format_PIXEL) {
+        // dataout_channel = 0
+        (dataout_width+1)*(dataout_height+1)*(dataout_channel+1) > 64'h2000;
+    } else {
+        (dataout_width+1)*(dataout_height+1)*(dataout_channel+1) > 64'h8000;
+    }
     (dataout_width+1)*(dataout_height+1)*(dataout_channel+1)    <= 64'h2_0000;
 }
 
