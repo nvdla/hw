@@ -845,8 +845,7 @@ assign data_planar1_p1_flag_w = (is_first_running | rd_planar1_line_end) ? 3'b0 
 //: if($atmm_num == 1) {
 //:     print qq(
 //:         wire    [1:0]   data_planar0_p0_flag_nex;
-//:         //assign data_planar0_p0_flag_nex[0] = (data_planar0_p0_cnt_w - ${atmm}) > data_width_mark_0;
-//:         //assign data_planar0_p0_flag_nex[1] = (data_planar0_p0_cnt_w - ${atmm}) > data_width_mark_1;
+//:         wire    [1:0]   data_planar1_p0_flag_nex;
 //:         assign data_planar0_p0_flag_nex[0] = (data_planar0_p0_cnt_w - data_planar0_add) > data_width_mark_0;
 //:         assign data_planar0_p0_flag_nex[1] = (data_planar0_p0_cnt_w - data_planar0_add) > data_width_mark_1;
 //:         assign data_planar0_p0_lp_mask = ~data_planar0_p0_cur_flag[0] ? {${atmm}{1'b1}} : 
@@ -856,8 +855,13 @@ assign data_planar1_p1_flag_w = (is_first_running | rd_planar1_line_end) ? 3'b0 
 //:         assign data_planar0_p0_zero_mask = ~data_planar0_p0_cur_flag[2] ? {${atmm}{1'b0}} : ({${atmm}{1'b1}} << zero_planar0_mask_sft);
 //:         assign data_planar0_p0_pad_mask = (data_planar0_p0_lp_mask | data_planar0_p0_rp_mask) & ~data_planar0_p0_zero_mask;
 //:         
-//:         assign data_planar1_p0_lp_mask = ~data_planar1_p0_cur_flag[0] ? {${atmm}{1'b1}} : ~({${atmm}{1'b1}} << lp_planar1_mask_sft);
-//:         assign data_planar1_p0_rp_mask = ~data_planar1_p0_cur_flag[1] ? {${atmm}{1'b0}} : ({${atmm}{1'b1}} << rp_planar1_mask_sft);
+//:         assign data_planar1_p0_flag_nex[0] = (data_planar1_p0_cnt_w - data_planar1_add) > data_width_mark_0;
+//:         assign data_planar1_p0_flag_nex[1] = (data_planar1_p0_cnt_w - data_planar1_add) > data_width_mark_1;
+//:
+//:         assign data_planar1_p0_lp_mask = ~data_planar1_p0_cur_flag[0] ? {${atmm}{1'b1}} : 
+//:                                          ~data_planar1_p0_flag_nex[0] ? ~({${atmm}{1'b1}} << lp_planar1_mask_sft) : {${atmm}{1'b0}};
+//:         assign data_planar1_p0_rp_mask = ~data_planar1_p0_cur_flag[1] ? {${atmm}{1'b0}} : 
+//:                                          ~data_planar1_p0_flag_nex[1] ? ({${atmm}{1'b1}} << rp_planar1_mask_sft) : {${atmm}{1'b1}};
 //:         assign data_planar1_p0_zero_mask = ~data_planar1_p0_cur_flag[2] ? {${atmm}{1'b0}} : ({${atmm}{1'b1}} << zero_planar1_mask_sft);
 //:         assign data_planar1_p0_pad_mask = (data_planar1_p0_lp_mask | data_planar1_p0_rp_mask) & ~data_planar1_p0_zero_mask;
 //:     );
@@ -879,9 +883,9 @@ assign data_planar1_p1_flag_w = (is_first_running | rd_planar1_line_end) ? 3'b0 
 //:         assign data_planar0_p1_pad_mask = (data_planar0_p1_lp_mask | data_planar0_p1_rp_mask) & ~data_planar0_p1_zero_mask;
 //:         
 //:         assign data_planar1_p0_lp_mask = ~data_planar1_p0_cur_flag[0] ? {${atmm}{1'b1}} :
-//:                                          (~data_planar1_p1_flag[0] & data_planar1_p0_cur_flag[0]) ? ~({${atmm}{1'b1}} << lp_planar1_mask_sft) : {${atmm}{1'b0}};
+//:                                          (~data_planar1_p1_flag[0] ) ? ~({${atmm}{1'b1}} << lp_planar1_mask_sft) : {${atmm}{1'b0}};
 //:         assign data_planar1_p0_rp_mask = ~data_planar1_p0_cur_flag[1] ? {${atmm}{1'b0}} :
-//:                                          (~data_planar1_p1_flag[1] & data_planar1_p0_cur_flag[1]) ? ({${atmm}{1'b1}} << rp_planar1_mask_sft) : {${atmm}{1'b1}};
+//:                                          (~data_planar1_p1_flag[1] ) ? ({${atmm}{1'b1}} << rp_planar1_mask_sft) : {${atmm}{1'b1}};
 //:         assign data_planar1_p0_zero_mask = ~data_planar1_p0_cur_flag[2] ? {${atmm}{1'b0}} : ({${atmm}{1'b1}} << zero_planar1_mask_sft);
 //:         assign data_planar1_p0_pad_mask = (data_planar1_p0_lp_mask | data_planar1_p0_rp_mask) & ~data_planar1_p0_zero_mask;
 //:         
