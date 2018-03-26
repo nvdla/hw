@@ -22,8 +22,10 @@
 
 import os
 import sys
+import re
 import argparse
 import subprocess
+import json
 
 __DESCRIPTION__ = '''
   This tool is used to generate coverage report.
@@ -71,6 +73,7 @@ class RunCoverageReport(object):
         if not self.gen_report_only:
             self.__merge_vdb()
         self.__gen_coverage_report()
+        self.__update_coverage_metrics()
 
     def __merge_vdb(self):
         self.__run_cmd('rm -rf %s' % self.merged_cm_dir)
@@ -93,7 +96,7 @@ class RunCoverageReport(object):
         self.__run_cmd(cmd)
 
     def __gen_coverage_report(self):
-        cmd = 'urg -group ratio -show ratios -group merge_across_scopes -dir %s -report %s ' % (self.merged_cm_dir, self.report_dir)
+        cmd = 'urg -group ratio -show ratios -format both -group merge_across_scopes -dir %s -report %s ' % (self.merged_cm_dir, self.report_dir)
         if len(self.elfile) > 0:
             cmd += ' '.join(list(map(lambda x: ' -elfile '+x, self.elfile)))
         self.__run_cmd(cmd)
@@ -103,6 +106,39 @@ class RunCoverageReport(object):
             print('[INFO] You can open it like this: %s' % cmd)
         if self.view_report:
             self.__run_cmd(cmd)
+
+    def __update_coverage_metrics(self):
+        ''' Used to get coverage data from urg report file and annotate back to regression json file.
+            Only used in single regression coverage report generation process
+        '''
+        #TBD: add regression status database merge function for support handling multiple regressions
+        cov_dict = {}
+        cov_file = os.path.join(self.report_dir,'dashboard.txt')
+        regr_sts_file = ''.join(glob.glob('{}/regression_status_*.json'.format(sorted(self.regress_dir)[-1])))
+        with open(regr_sts_file, 'r') as fh:
+            regr_db = json.load(fh)
+        with open(cov_file, 'r') as fh:
+            cov_data = fh.readlines()
+            for idx in range(len(cov_data)):
+                if re.match('Total Coverage Summary', cov_data[idx], re.I):
+                    cov_item  = re.split('\s{2,}',cov_data[idx+1].strip())
+                    cov_score = re.split('\s{2,}',cov_data[idx+2].strip())
+                    for i in range(len(cov_item)):
+                        cov_dict[cov_item[i]] = re.split('\s|\/', cov_score[i])
+                    cov_dict['FUNC'] = '{:.2f}'.format(100*(int(cov_dict['ASSERT'][1])+int(cov_dict['GROUP'][1]))/(int(cov_dict['ASSERT'][2])+int(cov_dict['GROUP'][2])))
+                    cov_dict['CODE'] = '{:.2f}'.format(100*(int(cov_dict['LINE'][1])+int(cov_dict['COND'][1])+int(cov_dict['TOGGLE'][1])+int(cov_dict['FSM'][1])+int(cov_dict['BRANCH'][1]))/(int(cov_dict['LINE'][2])+int(cov_dict['COND'][2])+int(cov_dict['TOGGLE'][2])+int(cov_dict['FSM'][2])+int(cov_dict['BRANCH'][2])))
+                    regr_db['metrics_result']['line_coverage']       = cov_dict['LINE'][0]
+                    regr_db['metrics_result']['cond_coverage']       = cov_dict['COND'][0]
+                    regr_db['metrics_result']['toggle_coverage']     = cov_dict['TOGGLE'][0]
+                    regr_db['metrics_result']['fsm_coverage']        = cov_dict['FSM'][0]
+                    regr_db['metrics_result']['branch_coverage']     = cov_dict['BRANCH'][0]
+                    regr_db['metrics_result']['assert_coverage']     = cov_dict['ASSERT'][0]
+                    regr_db['metrics_result']['group_coverage']      = cov_dict['GROUP'][0]
+                    regr_db['metrics_result']['code_coverage']       = cov_dict['CODE']
+                    regr_db['metrics_result']['functional_coverage'] = cov_dict['FUNC']
+                    with open(regr_sts_file, 'r') as fh:
+                        json.dump(regr_db, fh, sort_keys=True, indent=4)
+                    break
 
     def __run_cmd(self, cmd, verbose=True):
         if self.dry_run:
