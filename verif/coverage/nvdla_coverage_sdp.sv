@@ -303,13 +303,15 @@ class sdp_cov_pool extends nvdla_coverage_base;
            bins pdp = {1};
         }
         cp_dst_ram_type:             coverpoint ral.nvdla.NVDLA_SDP.D_DST_DMA_CFG.DST_RAM_TYPE.value[0] {
+`ifdef NVDLA_SECONDARY_MEMIF_ENABLE
             bins cv = {0};
+`endif
             bins mc = {1};
         }
         cr_dst_ram_type_output_dst:  cross cp_dst_ram_type, cp_output_dst {
             ignore_bins pdp = binsof(cp_output_dst.pdp);
         }
-        cp_dst_base_addr_low:        coverpoint ral.nvdla.NVDLA_SDP.D_DST_BASE_ADDR_LOW.DST_BASE_ADDR_LOW.value[26:0] {
+        cp_dst_base_addr_low:        coverpoint ral.nvdla.NVDLA_SDP.D_DST_BASE_ADDR_LOW.DST_BASE_ADDR_LOW.value[31:5] {
             wildcard bins align_64  = {27'b??????????????????????????0};
             wildcard bins align_128 = {27'b?????????????????????????00};
             wildcard bins align_256 = {27'b????????????????????????000};
@@ -332,7 +334,7 @@ class sdp_cov_pool extends nvdla_coverage_base;
         cr_dst_line_stride_output_dst:                 cross cp_dst_line_stride, cp_output_dst {
             ignore_bins pdp = binsof(cp_output_dst.pdp);
         }
-        cp_dst_surface_stride:       coverpoint (ral.nvdla.NVDLA_SDP.D_DST_SURFACE_STRIDE.DST_SURFACE_STRIDE.value - (ral.nvdla.NVDLA_SDP.D_DST_LINE_STRIDE.DST_LINE_STRIDE.value*(ral.nvdla.NVDLA_SDP.D_DATA_CUBE_HEIGHT.HEIGHT.value+1))) {
+        cp_dst_surface_stride:       coverpoint (ral.nvdla.NVDLA_SDP.D_DST_SURFACE_STRIDE.DST_SURFACE_STRIDE.value/`NVDLA_MEMORY_ATOMIC_SIZE - (ral.nvdla.NVDLA_SDP.D_DST_LINE_STRIDE.DST_LINE_STRIDE.value/`NVDLA_MEMORY_ATOMIC_SIZE*(ral.nvdla.NVDLA_SDP.D_DATA_CUBE_HEIGHT.HEIGHT.value+1))) {
             bins eql     = {0};
             bins mid[7]  = {[1:7]};
             bins high[2] = {[8:16]};
@@ -739,14 +741,16 @@ class sdp_cov_pool extends nvdla_coverage_base;
 
         // input addr
         cp_src_ram_type:             coverpoint ral.nvdla.NVDLA_SDP_RDMA.D_SRC_DMA_CFG.SRC_RAM_TYPE.value[0] {
+`ifdef NVDLA_SECONDARY_MEMIF_ENABLE
             bins cv = {0};
+`endif
             bins mc = {1};
         }
         cr_src_ram_rype_flying_mode: cross cp_src_ram_type, cp_flying_mode {
             ignore_bins on_fly = binsof(cp_flying_mode.on_fly);
         }
 
-        cp_src_base_addr_low:        coverpoint ral.nvdla.NVDLA_SDP_RDMA.D_SRC_BASE_ADDR_LOW.SRC_BASE_ADDR_LOW.value[26:0] {
+        cp_src_base_addr_low:        coverpoint ral.nvdla.NVDLA_SDP_RDMA.D_SRC_BASE_ADDR_LOW.SRC_BASE_ADDR_LOW.value[31:5] {
             wildcard bins align_64  = {27'b??????????????????????????0};
             wildcard bins align_128 = {27'b?????????????????????????00};
             wildcard bins align_256 = {27'b????????????????????????000};
@@ -761,7 +765,7 @@ class sdp_cov_pool extends nvdla_coverage_base;
         cr_src_base_addr_high_src_ram_type_flying_mode: cross cp_src_base_addr_high, cp_src_ram_type, cp_flying_mode {
             ignore_bins on_fly = binsof(cp_flying_mode.on_fly);
         }
-        cp_src_line_stride:          coverpoint (ral.nvdla.NVDLA_SDP_RDMA.D_SRC_LINE_STRIDE.SRC_LINE_STRIDE.value-ral.nvdla.NVDLA_SDP_RDMA.D_DATA_CUBE_WIDTH.WIDTH.value-1) {
+        cp_src_line_stride:          coverpoint (ral.nvdla.NVDLA_SDP_RDMA.D_SRC_LINE_STRIDE.SRC_LINE_STRIDE.value/`NVDLA_MEMORY_ATOMIC_SIZE - ral.nvdla.NVDLA_SDP_RDMA.D_DATA_CUBE_WIDTH.WIDTH.value-1) {
             bins eql     = {0};
             bins mid[7]  = {[1:7]};
             bins high[2] = {[8:16]};
@@ -769,7 +773,7 @@ class sdp_cov_pool extends nvdla_coverage_base;
         cr_src_line_stride_flying_mode:                 cross cp_src_line_stride, cp_flying_mode {
             ignore_bins on_fly = binsof(cp_flying_mode.on_fly);
         }
-        cp_src_surface_stride:       coverpoint (ral.nvdla.NVDLA_SDP_RDMA.D_SRC_SURFACE_STRIDE.SRC_SURFACE_STRIDE.value - (ral.nvdla.NVDLA_SDP_RDMA.D_SRC_LINE_STRIDE.SRC_LINE_STRIDE.value*(ral.nvdla.NVDLA_SDP_RDMA.D_DATA_CUBE_HEIGHT.HEIGHT.value+1))) {
+        cp_src_surface_stride:       coverpoint (ral.nvdla.NVDLA_SDP_RDMA.D_SRC_SURFACE_STRIDE.SRC_SURFACE_STRIDE.value/`NVDLA_MEMORY_ATOMIC_SIZE - (ral.nvdla.NVDLA_SDP_RDMA.D_SRC_LINE_STRIDE.SRC_LINE_STRIDE.value/`NVDLA_MEMORY_ATOMIC_SIZE*(ral.nvdla.NVDLA_SDP_RDMA.D_DATA_CUBE_HEIGHT.HEIGHT.value+1))) {
             bins eql     = {0};
             bins mid[7]  = {[1:7]};
             bins high[2] = {[8:16]};
@@ -813,7 +817,9 @@ class sdp_cov_pool extends nvdla_coverage_base;
             ignore_bins brdma_off = binsof(cp_brdma_disable.yes);
         }
         cp_brdma_ram_type:        coverpoint ral.nvdla.NVDLA_SDP_RDMA.D_BRDMA_CFG.BRDMA_RAM_TYPE.value {
-            bins cv  = {0};
+`ifdef NVDLA_SECONDARY_MEMIF_ENABLE
+            bins cv = {0};
+`endif
             bins mc  = {1};
         }
         cr_brdma_ram_type_brdma_disable:    cross cp_brdma_ram_type, cp_brdma_disable {
@@ -834,7 +840,7 @@ class sdp_cov_pool extends nvdla_coverage_base;
             ignore_bins brdma_off = binsof(cp_brdma_disable.yes);
         }
         // addr
-        cp_bs_base_addr_low:        coverpoint ral.nvdla.NVDLA_SDP_RDMA.D_BS_BASE_ADDR_LOW.BS_BASE_ADDR_LOW.value[26:0] {
+        cp_bs_base_addr_low:        coverpoint ral.nvdla.NVDLA_SDP_RDMA.D_BS_BASE_ADDR_LOW.BS_BASE_ADDR_LOW.value[31:5] {
             wildcard bins align_64  = {27'b??????????????????????????0};
             wildcard bins align_128 = {27'b?????????????????????????00};
             wildcard bins align_256 = {27'b????????????????????????000};
@@ -849,7 +855,7 @@ class sdp_cov_pool extends nvdla_coverage_base;
         cr_bs_base_addr_high_brdma_ram_type_brdma_disable:   cross cp_bs_base_addr_high, cp_brdma_ram_type, cp_brdma_disable {
             ignore_bins brdma_off = binsof(cp_brdma_disable.yes);
         }
-        cp_bs_line_stride_1:          coverpoint (ral.nvdla.NVDLA_SDP_RDMA.D_BS_LINE_STRIDE.BS_LINE_STRIDE.value-ral.nvdla.NVDLA_SDP_RDMA.D_DATA_CUBE_WIDTH.WIDTH.value-1) {
+        cp_bs_line_stride_1:          coverpoint (ral.nvdla.NVDLA_SDP_RDMA.D_BS_LINE_STRIDE.BS_LINE_STRIDE.value/`NVDLA_MEMORY_ATOMIC_SIZE-ral.nvdla.NVDLA_SDP_RDMA.D_DATA_CUBE_WIDTH.WIDTH.value-1) {
             bins eql     = {0};
             bins mid[7]  = {[1:7]};
             bins high[2] = {[8:16]};
@@ -858,7 +864,7 @@ class sdp_cov_pool extends nvdla_coverage_base;
             ignore_bins brdma_off  = binsof(cp_brdma_disable.yes);
             ignore_bins per_kernel = binsof(cp_brdma_data_mode.per_kernel);
         }
-        cp_bs_line_stride_2:          coverpoint (ral.nvdla.NVDLA_SDP_RDMA.D_BS_LINE_STRIDE.BS_LINE_STRIDE.value-2*(ral.nvdla.NVDLA_SDP_RDMA.D_DATA_CUBE_WIDTH.WIDTH.value+1)) {
+        cp_bs_line_stride_2:          coverpoint (ral.nvdla.NVDLA_SDP_RDMA.D_BS_LINE_STRIDE.BS_LINE_STRIDE.value/`NVDLA_MEMORY_ATOMIC_SIZE-2*(ral.nvdla.NVDLA_SDP_RDMA.D_DATA_CUBE_WIDTH.WIDTH.value+1)) {
             bins eql     = {0};
             bins mid[7]  = {[1:7]};
             bins high[2] = {[8:16]};
@@ -867,7 +873,7 @@ class sdp_cov_pool extends nvdla_coverage_base;
             ignore_bins brdma_off  = binsof(cp_brdma_disable.yes);
             ignore_bins per_kernel = binsof(cp_brdma_data_mode.per_kernel);
         }
-        cp_bs_line_stride_4:          coverpoint (ral.nvdla.NVDLA_SDP_RDMA.D_BS_LINE_STRIDE.BS_LINE_STRIDE.value-4*(ral.nvdla.NVDLA_SDP_RDMA.D_DATA_CUBE_WIDTH.WIDTH.value+1)) {
+        cp_bs_line_stride_4:          coverpoint (ral.nvdla.NVDLA_SDP_RDMA.D_BS_LINE_STRIDE.BS_LINE_STRIDE.value/`NVDLA_MEMORY_ATOMIC_SIZE-4*(ral.nvdla.NVDLA_SDP_RDMA.D_DATA_CUBE_WIDTH.WIDTH.value+1)) {
             bins eql     = {0};
             bins mid[7]  = {[1:7]};
             bins high[2] = {[8:16]};
@@ -876,7 +882,7 @@ class sdp_cov_pool extends nvdla_coverage_base;
             ignore_bins brdma_off  = binsof(cp_brdma_disable.yes);
             ignore_bins per_kernel = binsof(cp_brdma_data_mode.per_kernel);
         }
-        cp_bs_surface_stride:       coverpoint (ral.nvdla.NVDLA_SDP_RDMA.D_BS_SURFACE_STRIDE.BS_SURFACE_STRIDE.value - (ral.nvdla.NVDLA_SDP_RDMA.D_BS_LINE_STRIDE.BS_LINE_STRIDE.value*(ral.nvdla.NVDLA_SDP_RDMA.D_DATA_CUBE_HEIGHT.HEIGHT.value+1))) {
+        cp_bs_surface_stride:       coverpoint (ral.nvdla.NVDLA_SDP_RDMA.D_BS_SURFACE_STRIDE.BS_SURFACE_STRIDE.value/`NVDLA_MEMORY_ATOMIC_SIZE - (ral.nvdla.NVDLA_SDP_RDMA.D_BS_LINE_STRIDE.BS_LINE_STRIDE.value/`NVDLA_MEMORY_ATOMIC_SIZE*(ral.nvdla.NVDLA_SDP_RDMA.D_DATA_CUBE_HEIGHT.HEIGHT.value+1))) {
             bins eql     = {0};
             bins mid[7]  = {[1:7]};
             bins high[2] = {[8:16]};
@@ -899,7 +905,9 @@ class sdp_cov_pool extends nvdla_coverage_base;
             ignore_bins nrdma_off = binsof(cp_nrdma_disable.yes);
         }
         cp_nrdma_ram_type:        coverpoint ral.nvdla.NVDLA_SDP_RDMA.D_NRDMA_CFG.NRDMA_RAM_TYPE.value {
-            bins cv  = {0};
+`ifdef NVDLA_SECONDARY_MEMIF_ENABLE
+            bins cv = {0};
+`endif
             bins mc  = {1};
         }
         cr_nrdma_ram_type_nrdma_disable:    cross cp_nrdma_ram_type, cp_nrdma_disable {
@@ -920,7 +928,7 @@ class sdp_cov_pool extends nvdla_coverage_base;
             ignore_bins nrdma_off = binsof(cp_nrdma_disable.yes);
         }
         // addr
-        cp_bn_base_addr_low:        coverpoint ral.nvdla.NVDLA_SDP_RDMA.D_BN_BASE_ADDR_LOW.BN_BASE_ADDR_LOW.value[26:0] {
+        cp_bn_base_addr_low:        coverpoint ral.nvdla.NVDLA_SDP_RDMA.D_BN_BASE_ADDR_LOW.BN_BASE_ADDR_LOW.value[31:5] {
             wildcard bins align_64  = {27'b??????????????????????????0};
             wildcard bins align_128 = {27'b?????????????????????????00};
             wildcard bins align_256 = {27'b????????????????????????000};
@@ -935,7 +943,7 @@ class sdp_cov_pool extends nvdla_coverage_base;
         cr_bn_base_addr_high_brdma_ram_type_brdma_disable:   cross cp_bn_base_addr_high, cp_brdma_ram_type, cp_brdma_disable {
             ignore_bins brdma_off = binsof(cp_brdma_disable.yes);
         }
-        cp_bn_line_stride_1:          coverpoint (ral.nvdla.NVDLA_SDP_RDMA.D_BN_LINE_STRIDE.BN_LINE_STRIDE.value-ral.nvdla.NVDLA_SDP_RDMA.D_DATA_CUBE_WIDTH.WIDTH.value-1) {
+        cp_bn_line_stride_1:          coverpoint (ral.nvdla.NVDLA_SDP_RDMA.D_BN_LINE_STRIDE.BN_LINE_STRIDE.value/`NVDLA_MEMORY_ATOMIC_SIZE-ral.nvdla.NVDLA_SDP_RDMA.D_DATA_CUBE_WIDTH.WIDTH.value-1) {
             bins eql     = {0};
             bins mid[7]  = {[1:7]};
             bins high[2] = {[8:16]};
@@ -944,7 +952,7 @@ class sdp_cov_pool extends nvdla_coverage_base;
             ignore_bins brdma_off  = binsof(cp_brdma_disable.yes);
             ignore_bins per_kernel = binsof(cp_brdma_data_mode.per_kernel);
         }
-        cp_bn_line_stride_2:          coverpoint (ral.nvdla.NVDLA_SDP_RDMA.D_BN_LINE_STRIDE.BN_LINE_STRIDE.value-2*(ral.nvdla.NVDLA_SDP_RDMA.D_DATA_CUBE_WIDTH.WIDTH.value+1)) {
+        cp_bn_line_stride_2:          coverpoint (ral.nvdla.NVDLA_SDP_RDMA.D_BN_LINE_STRIDE.BN_LINE_STRIDE.value/`NVDLA_MEMORY_ATOMIC_SIZE-2*(ral.nvdla.NVDLA_SDP_RDMA.D_DATA_CUBE_WIDTH.WIDTH.value+1)) {
             bins eql     = {0};
             bins mid[7]  = {[1:7]};
             bins high[2] = {[8:16]};
@@ -953,7 +961,7 @@ class sdp_cov_pool extends nvdla_coverage_base;
             ignore_bins brdma_off  = binsof(cp_brdma_disable.yes);
             ignore_bins per_kernel = binsof(cp_brdma_data_mode.per_kernel);
         }
-        cp_bn_line_stride_4:          coverpoint (ral.nvdla.NVDLA_SDP_RDMA.D_BN_LINE_STRIDE.BN_LINE_STRIDE.value-4*(ral.nvdla.NVDLA_SDP_RDMA.D_DATA_CUBE_WIDTH.WIDTH.value+1)) {
+        cp_bn_line_stride_4:          coverpoint (ral.nvdla.NVDLA_SDP_RDMA.D_BN_LINE_STRIDE.BN_LINE_STRIDE.value/`NVDLA_MEMORY_ATOMIC_SIZE-4*(ral.nvdla.NVDLA_SDP_RDMA.D_DATA_CUBE_WIDTH.WIDTH.value+1)) {
             bins eql     = {0};
             bins mid[7]  = {[1:7]};
             bins high[2] = {[8:16]};
@@ -962,7 +970,7 @@ class sdp_cov_pool extends nvdla_coverage_base;
             ignore_bins brdma_off  = binsof(cp_brdma_disable.yes);
             ignore_bins per_kernel = binsof(cp_brdma_data_mode.per_kernel);
         }
-        cp_bn_surface_stride:       coverpoint (ral.nvdla.NVDLA_SDP_RDMA.D_BN_SURFACE_STRIDE.BN_SURFACE_STRIDE.value - (ral.nvdla.NVDLA_SDP_RDMA.D_BN_LINE_STRIDE.BN_LINE_STRIDE.value*(ral.nvdla.NVDLA_SDP_RDMA.D_DATA_CUBE_HEIGHT.HEIGHT.value+1))) {
+        cp_bn_surface_stride:       coverpoint (ral.nvdla.NVDLA_SDP_RDMA.D_BN_SURFACE_STRIDE.BN_SURFACE_STRIDE.value/`NVDLA_MEMORY_ATOMIC_SIZE - (ral.nvdla.NVDLA_SDP_RDMA.D_BN_LINE_STRIDE.BN_LINE_STRIDE.value/`NVDLA_MEMORY_ATOMIC_SIZE*(ral.nvdla.NVDLA_SDP_RDMA.D_DATA_CUBE_HEIGHT.HEIGHT.value+1))) {
             bins eql     = {0};
             bins mid[7]  = {[1:7]};
             bins high[2] = {[8:16]};
@@ -985,7 +993,9 @@ class sdp_cov_pool extends nvdla_coverage_base;
             ignore_bins erdma_off = binsof(cp_erdma_disable.yes);
         }
         cp_erdma_ram_type:        coverpoint ral.nvdla.NVDLA_SDP_RDMA.D_ERDMA_CFG.ERDMA_RAM_TYPE.value {
-            bins cv  = {0};
+`ifdef NVDLA_SECONDARY_MEMIF_ENABLE
+            bins cv = {0};
+`endif
             bins mc  = {1};
         }
         cr_erdma_ram_type_erdma_disable:    cross cp_erdma_ram_type, cp_erdma_disable {
@@ -1006,7 +1016,7 @@ class sdp_cov_pool extends nvdla_coverage_base;
             ignore_bins erdma_off = binsof(cp_erdma_disable.yes);
         }
         // addr
-        cp_ew_base_addr_low:        coverpoint ral.nvdla.NVDLA_SDP_RDMA.D_EW_BASE_ADDR_LOW.EW_BASE_ADDR_LOW.value[26:0] {
+        cp_ew_base_addr_low:        coverpoint ral.nvdla.NVDLA_SDP_RDMA.D_EW_BASE_ADDR_LOW.EW_BASE_ADDR_LOW.value[31:5] {
             wildcard bins align_64  = {27'b??????????????????????????0};
             wildcard bins align_128 = {27'b?????????????????????????00};
             wildcard bins align_256 = {27'b????????????????????????000};
@@ -1021,7 +1031,7 @@ class sdp_cov_pool extends nvdla_coverage_base;
         cr_ew_base_addr_high_erdma_ram_type_erdma_disable:   cross cp_ew_base_addr_high, cp_erdma_ram_type, cp_erdma_disable {
             ignore_bins erdma_off = binsof(cp_erdma_disable.yes);
         }
-        cp_ew_line_stride_1:          coverpoint (ral.nvdla.NVDLA_SDP_RDMA.D_EW_LINE_STRIDE.EW_LINE_STRIDE.value-ral.nvdla.NVDLA_SDP_RDMA.D_DATA_CUBE_WIDTH.WIDTH.value-1) {
+        cp_ew_line_stride_1:          coverpoint (ral.nvdla.NVDLA_SDP_RDMA.D_EW_LINE_STRIDE.EW_LINE_STRIDE.value/`NVDLA_MEMORY_ATOMIC_SIZE-ral.nvdla.NVDLA_SDP_RDMA.D_DATA_CUBE_WIDTH.WIDTH.value-1) {
             bins eql     = {0};
             bins mid[7]  = {[1:7]};
             bins high[2] = {[8:16]};
@@ -1030,7 +1040,7 @@ class sdp_cov_pool extends nvdla_coverage_base;
             ignore_bins erdma_off  = binsof(cp_erdma_disable.yes);
             ignore_bins per_kernel = binsof(cp_erdma_data_mode.per_kernel);
         }
-        cp_ew_line_stride_2:          coverpoint (ral.nvdla.NVDLA_SDP_RDMA.D_EW_LINE_STRIDE.EW_LINE_STRIDE.value-2*(ral.nvdla.NVDLA_SDP_RDMA.D_DATA_CUBE_WIDTH.WIDTH.value+1)) {
+        cp_ew_line_stride_2:          coverpoint (ral.nvdla.NVDLA_SDP_RDMA.D_EW_LINE_STRIDE.EW_LINE_STRIDE.value/`NVDLA_MEMORY_ATOMIC_SIZE-2*(ral.nvdla.NVDLA_SDP_RDMA.D_DATA_CUBE_WIDTH.WIDTH.value+1)) {
             bins eql     = {0};
             bins mid[7]  = {[1:7]};
             bins high[2] = {[8:16]};
@@ -1039,7 +1049,7 @@ class sdp_cov_pool extends nvdla_coverage_base;
             ignore_bins erdma_off  = binsof(cp_erdma_disable.yes);
             ignore_bins per_kernel = binsof(cp_erdma_data_mode.per_kernel);
         }
-        cp_ew_line_stride_4:          coverpoint (ral.nvdla.NVDLA_SDP_RDMA.D_EW_LINE_STRIDE.EW_LINE_STRIDE.value-4*(ral.nvdla.NVDLA_SDP_RDMA.D_DATA_CUBE_WIDTH.WIDTH.value+1)) {
+        cp_ew_line_stride_4:          coverpoint (ral.nvdla.NVDLA_SDP_RDMA.D_EW_LINE_STRIDE.EW_LINE_STRIDE.value/`NVDLA_MEMORY_ATOMIC_SIZE-4*(ral.nvdla.NVDLA_SDP_RDMA.D_DATA_CUBE_WIDTH.WIDTH.value+1)) {
             bins eql     = {0};
             bins mid[7]  = {[1:7]};
             bins high[2] = {[8:16]};
@@ -1048,7 +1058,7 @@ class sdp_cov_pool extends nvdla_coverage_base;
             ignore_bins erdma_off  = binsof(cp_erdma_disable.yes);
             ignore_bins per_kernel = binsof(cp_erdma_data_mode.per_kernel);
         }
-        cp_ew_surface_stride:       coverpoint (ral.nvdla.NVDLA_SDP_RDMA.D_EW_SURFACE_STRIDE.EW_SURFACE_STRIDE.value - (ral.nvdla.NVDLA_SDP_RDMA.D_EW_LINE_STRIDE.EW_LINE_STRIDE.value*(ral.nvdla.NVDLA_SDP_RDMA.D_DATA_CUBE_HEIGHT.HEIGHT.value+1))) {
+        cp_ew_surface_stride:       coverpoint (ral.nvdla.NVDLA_SDP_RDMA.D_EW_SURFACE_STRIDE.EW_SURFACE_STRIDE.value/`NVDLA_MEMORY_ATOMIC_SIZE - (ral.nvdla.NVDLA_SDP_RDMA.D_EW_LINE_STRIDE.EW_LINE_STRIDE.value/`NVDLA_MEMORY_ATOMIC_SIZE*(ral.nvdla.NVDLA_SDP_RDMA.D_DATA_CUBE_HEIGHT.HEIGHT.value+1))) {
             bins eql     = {0};
             bins mid[7]  = {[1:7]};
             bins high[2] = {[8:16]};

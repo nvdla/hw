@@ -113,25 +113,26 @@ class pdp_cov_pool extends nvdla_coverage_base;
             bins full[`PDP_COV_BIN_NUM_DEFAULT]   = {['h0   :'h1FFF]};
         }
         cp_src_ram_type:        coverpoint ral.nvdla.NVDLA_PDP_RDMA.D_SRC_RAM_CFG.SRC_RAM_TYPE.value iff (1 == ral.nvdla.NVDLA_PDP_RDMA.D_OP_ENABLE.OP_EN.value) {
+`ifdef NVDLA_SECONDARY_MEMIF_ENABLE
             bins CV = {src_ram_type_CV};
+`endif
             bins MC = {src_ram_type_MC};
         }
 
         // Source/Input memory settings
-        cp_src_base_addr_low:   coverpoint ral.nvdla.NVDLA_PDP_RDMA.D_SRC_BASE_ADDR_LOW.SRC_BASE_ADDR_LOW.value iff (1 == ral.nvdla.NVDLA_PDP_RDMA.D_OP_ENABLE.OP_EN.value) {
-            //bins alignment[`PDP_COV_BIN_NUM_DEFAULT]= {32'b?????????????????????????????000,32'b?????????????????????????????001,32'b?????????????????????????????010,32'b?????????????????????????????011,32'b?????????????????????????????100,32'b?????????????????????????????101,32'b?????????????????????????????110,32'b?????????????????????????????111};
+        cp_src_base_addr_low:   coverpoint ral.nvdla.NVDLA_PDP_RDMA.D_SRC_BASE_ADDR_LOW.SRC_BASE_ADDR_LOW.value[31:5] iff (1 == ral.nvdla.NVDLA_PDP_RDMA.D_OP_ENABLE.OP_EN.value) {
             wildcard bins align_64  = {27'b??????????????????????????0};
             wildcard bins align_128 = {27'b?????????????????????????00};
             wildcard bins align_256 = {27'b????????????????????????000};
             bins full[`PDP_COV_BIN_NUM_DEFAULT]      = {['h0: `MAX_VALUE_27BITS]};
         }
-        cp_src_base_addr_high:  coverpoint ral.nvdla.NVDLA_PDP_RDMA.D_SRC_BASE_ADDR_HIGH.SRC_BASE_ADDR_HIGH.value iff (1 == ral.nvdla.NVDLA_PDP_RDMA.D_OP_ENABLE.OP_EN.value) {
+        cp_src_base_addr_high:  coverpoint ral.nvdla.NVDLA_PDP_RDMA.D_SRC_BASE_ADDR_HIGH.SRC_BASE_ADDR_HIGH.value[7:0] iff (1 == ral.nvdla.NVDLA_PDP_RDMA.D_OP_ENABLE.OP_EN.value) {
             bins full[`PDP_COV_BIN_NUM_DEFAULT]      = {['h0: `MAX_VALUE_8BITS]};
         }
-        cp_src_line_stride:     coverpoint ral.nvdla.NVDLA_PDP_RDMA.D_SRC_LINE_STRIDE.SRC_LINE_STRIDE.value iff (1 == ral.nvdla.NVDLA_PDP_RDMA.D_OP_ENABLE.OP_EN.value) {
+        cp_src_line_stride:     coverpoint ral.nvdla.NVDLA_PDP_RDMA.D_SRC_LINE_STRIDE.SRC_LINE_STRIDE.value[31:5] iff (1 == ral.nvdla.NVDLA_PDP_RDMA.D_OP_ENABLE.OP_EN.value) {
             bins full[`PDP_COV_BIN_NUM_DEFAULT]      = {['h0: `MAX_VALUE_27BITS]};
         }
-        cp_src_surface_stride:  coverpoint ral.nvdla.NVDLA_PDP_RDMA.D_SRC_SURFACE_STRIDE.SRC_SURFACE_STRIDE.value iff (1 == ral.nvdla.NVDLA_PDP_RDMA.D_OP_ENABLE.OP_EN.value) {
+        cp_src_surface_stride:  coverpoint ral.nvdla.NVDLA_PDP_RDMA.D_SRC_SURFACE_STRIDE.SRC_SURFACE_STRIDE.value[31:5] iff (1 == ral.nvdla.NVDLA_PDP_RDMA.D_OP_ENABLE.OP_EN.value) {
             bins full[`PDP_COV_BIN_NUM_DEFAULT]      = {['h0: `MAX_VALUE_27BITS]};
         }
         cp_src_line_stride_size_split_disable_diff: coverpoint ((ral.nvdla.NVDLA_PDP_RDMA.D_SRC_LINE_STRIDE.SRC_LINE_STRIDE.value - ral.nvdla.NVDLA_PDP_RDMA.D_DATA_CUBE_IN_WIDTH.CUBE_IN_WIDTH.value - 64'h1)%8) iff ((0 == ral.nvdla.NVDLA_PDP_RDMA.D_OPERATION_MODE_CFG.SPLIT_NUM.value) && (1 == ral.nvdla.NVDLA_PDP_RDMA.D_OP_ENABLE.OP_EN.value)) {
@@ -173,25 +174,26 @@ class pdp_cov_pool extends nvdla_coverage_base;
             bins full[`PDP_COV_BIN_NUM_DEFAULT]   = {['h0   :'h1FFF]};
         }
         cp_dst_ram_type:        coverpoint ral.nvdla.NVDLA_PDP.D_DST_RAM_CFG.DST_RAM_TYPE.value iff (1 == ral.nvdla.NVDLA_PDP.D_OP_ENABLE.OP_EN.value) {
+`ifdef NVDLA_SECONDARY_MEMIF_ENABLE
             bins CV = {dst_ram_type_CV};
+`endif
             bins MC = {dst_ram_type_MC};
         }
 
         // Source/Input memory settings
-        cp_dst_base_addr_low:   coverpoint ral.nvdla.NVDLA_PDP.D_DST_BASE_ADDR_LOW.DST_BASE_ADDR_LOW.value iff (1 == ral.nvdla.NVDLA_PDP.D_OP_ENABLE.OP_EN.value) {
-            //bins alignment[`PDP_COV_BIN_NUM_DEFAULT]= {[32'b?????????????????????????????000:32'b?????????????????????????????111]};
+        cp_dst_base_addr_low:   coverpoint ral.nvdla.NVDLA_PDP.D_DST_BASE_ADDR_LOW.DST_BASE_ADDR_LOW.value[31:5] iff (1 == ral.nvdla.NVDLA_PDP.D_OP_ENABLE.OP_EN.value) {
             wildcard bins align_64  = {27'b??????????????????????????0};
             wildcard bins align_128 = {27'b?????????????????????????00};
             wildcard bins align_256 = {27'b????????????????????????000};
             bins full[`PDP_COV_BIN_NUM_DEFAULT]       = {['h0: `MAX_VALUE_27BITS]};
         }
-        cp_dst_base_addr_high:  coverpoint ral.nvdla.NVDLA_PDP.D_DST_BASE_ADDR_HIGH.DST_BASE_ADDR_HIGH.value iff (1 == ral.nvdla.NVDLA_PDP.D_OP_ENABLE.OP_EN.value) {
+        cp_dst_base_addr_high:  coverpoint ral.nvdla.NVDLA_PDP.D_DST_BASE_ADDR_HIGH.DST_BASE_ADDR_HIGH.value[7:0] iff (1 == ral.nvdla.NVDLA_PDP.D_OP_ENABLE.OP_EN.value) {
             bins full[`PDP_COV_BIN_NUM_DEFAULT]       = {['h0: `MAX_VALUE_8BITS]};
         }
-        cp_dst_line_stride:     coverpoint ral.nvdla.NVDLA_PDP.D_DST_LINE_STRIDE.DST_LINE_STRIDE.value iff (1 == ral.nvdla.NVDLA_PDP.D_OP_ENABLE.OP_EN.value) {
+        cp_dst_line_stride:     coverpoint ral.nvdla.NVDLA_PDP.D_DST_LINE_STRIDE.DST_LINE_STRIDE.value[31:5] iff (1 == ral.nvdla.NVDLA_PDP.D_OP_ENABLE.OP_EN.value) {
             bins full[`PDP_COV_BIN_NUM_DEFAULT]       = {['h0: `MAX_VALUE_27BITS]};
         }
-        cp_dst_surface_stride:  coverpoint ral.nvdla.NVDLA_PDP.D_DST_SURFACE_STRIDE.DST_SURFACE_STRIDE.value iff (1 == ral.nvdla.NVDLA_PDP.D_OP_ENABLE.OP_EN.value) {
+        cp_dst_surface_stride:  coverpoint ral.nvdla.NVDLA_PDP.D_DST_SURFACE_STRIDE.DST_SURFACE_STRIDE.value[31:5] iff (1 == ral.nvdla.NVDLA_PDP.D_OP_ENABLE.OP_EN.value) {
             bins full[`PDP_COV_BIN_NUM_DEFAULT]       = {['h0: `MAX_VALUE_27BITS]};
         }
         cp_dst_line_stride_size_split_disable_diff: coverpoint ((ral.nvdla.NVDLA_PDP.D_DST_LINE_STRIDE.DST_LINE_STRIDE.value - ral.nvdla.NVDLA_PDP.D_DATA_CUBE_OUT_WIDTH.CUBE_OUT_WIDTH.value - 64'h1)%8) iff ((0 == ral.nvdla.NVDLA_PDP.D_OPERATION_MODE_CFG.SPLIT_NUM.value) && (1 == ral.nvdla.NVDLA_PDP.D_OP_ENABLE.OP_EN.value)) {

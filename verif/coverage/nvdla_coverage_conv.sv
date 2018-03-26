@@ -2,8 +2,6 @@
 
 class conv_cov_pool extends nvdla_coverage_base;
 
-    bit_toggle_cg    cc_gob_per_line_tog_cg;
-    bit_toggle_cg    cc_gob_per_uv_line_tog_cg;
     bit_toggle_cg    cc_datain_width_tog_cg;
     bit_toggle_cg    cc_datain_height_tog_cg;
     bit_toggle_cg    cc_datain_channel_tog_cg;
@@ -47,13 +45,6 @@ class conv_cov_pool extends nvdla_coverage_base;
 
         conv_cg  = new();
 
-`ifdef NVDLA_ENABLE_BLOCK_LINEAR
-        cc_gob_per_line_tog_cg       = new("cc_gob_per_line_tog_cg",       ral.nvdla.NVDLA_CDMA.D_BLOCK_X_CFG.GOB_PER_LINE.get_n_bits());
-        cc_gob_per_uv_line_tog_cg    = new("cc_gob_per_uv_line_tog_cg",    ral.nvdla.NVDLA_CDMA.D_BLOCK_X_CFG.GOB_PER_UV_LINE.get_n_bits());
-`else
-        cc_gob_per_line_tog_cg       = new("cc_gob_per_line_tog_cg",       ral.nvdla.NVDLA_CDMA.D_RESERVED_X_CFG.RSV_PER_LINE.get_n_bits());
-        cc_gob_per_uv_line_tog_cg    = new("cc_gob_per_uv_line_tog_cg",    ral.nvdla.NVDLA_CDMA.D_RESERVED_X_CFG.RSV_PER_UV_LINE.get_n_bits());
-`endif
         cc_datain_width_tog_cg       = new("cc_datain_width_tog_cg",       ral.nvdla.NVDLA_CDMA.D_DATAIN_SIZE_0.DATAIN_WIDTH.get_n_bits());
         cc_datain_height_tog_cg      = new("cc_datain_height_tog_cg",      ral.nvdla.NVDLA_CDMA.D_DATAIN_SIZE_0.DATAIN_HEIGHT.get_n_bits());
         cc_datain_channel_tog_cg     = new("cc_datain_channel_tog_cg",     ral.nvdla.NVDLA_CDMA.D_DATAIN_SIZE_1.DATAIN_CHANNEL.get_n_bits());
@@ -101,13 +92,6 @@ class conv_cov_pool extends nvdla_coverage_base;
     endtask : sample
 
     function void conv_toggle_sample();
-`ifdef NVDLA_ENABLE_BLOCK_LINEAR
-        cc_gob_per_line_tog_cg.sample(ral.nvdla.NVDLA_CDMA.D_BLOCK_X_CFG.GOB_PER_LINE.value);
-        cc_gob_per_uv_line_tog_cg.sample(ral.nvdla.NVDLA_CDMA.D_BLOCK_X_CFG.GOB_PER_UV_LINE.value);
-`else
-        cc_gob_per_line_tog_cg.sample(ral.nvdla.NVDLA_CDMA.D_RESERVED_X_CFG.RSV_PER_LINE.value);
-        cc_gob_per_uv_line_tog_cg.sample(ral.nvdla.NVDLA_CDMA.D_RESERVED_X_CFG.RSV_PER_UV_LINE.value);
-`endif
         cc_datain_width_tog_cg.sample(ral.nvdla.NVDLA_CDMA.D_DATAIN_SIZE_0.DATAIN_WIDTH.value);
         cc_datain_height_tog_cg.sample(ral.nvdla.NVDLA_CDMA.D_DATAIN_SIZE_0.DATAIN_HEIGHT.value);
         cc_datain_channel_tog_cg.sample(ral.nvdla.NVDLA_CDMA.D_DATAIN_SIZE_1.DATAIN_CHANNEL.value);
@@ -211,7 +195,7 @@ class conv_cov_pool extends nvdla_coverage_base;
 
         cp_pixel_mapping:      coverpoint ral.nvdla.NVDLA_CDMA.D_DATAIN_FORMAT.PIXEL_MAPPING.value {
             bins pitch_linear = {0};
-            bins block_linear = {1};
+            ignore_bins non_pitch_linear = {1};
         }
 
         cr_datain_format_pixel_format_pixel_mapping:     cross cp_datain_format, cp_pixel_format, cp_pixel_mapping {
@@ -228,63 +212,16 @@ class conv_cov_pool extends nvdla_coverage_base;
             ignore_bins feature      = binsof(cp_datain_format.feature);
             ignore_bins pitch_linear = binsof(cp_pixel_mapping.pitch_linear);
         }
-        // block_x_cfg
-`ifdef NVDLA_ENABLE_BLOCK_LINEAR
-        cp_gob_per_line:       coverpoint ral.nvdla.NVDLA_CDMA.D_BLOCK_X_CFG.GOB_PER_LINE.value[9:0] {
-`else
-        cp_gob_per_line:       coverpoint ral.nvdla.NVDLA_CDMA.D_RESERVED_X_CFG.RSV_PER_LINE.value[9:0] {
-`endif
-            bins ful[8] = {[0:$]};
-        }
-        cr_datain_format_pixel_mapping_gob_per_line:      cross cp_datain_format, cp_pixel_mapping, cp_gob_per_line {
-            ignore_bins feature      = binsof(cp_datain_format.feature);
-            ignore_bins pitch_linear = binsof(cp_pixel_mapping.pitch_linear);
-        }
-`ifdef NVDLA_ENABLE_BLOCK_LINEAR
-        cp_gob_per_uv_line:    coverpoint ral.nvdla.NVDLA_CDMA.D_BLOCK_X_CFG.GOB_PER_UV_LINE.value[9:0] {
-`else
-        cp_gob_per_uv_line:    coverpoint ral.nvdla.NVDLA_CDMA.D_RESERVED_X_CFG.RSV_PER_UV_LINE.value[9:0] {
-`endif
-            bins ful[8] = {[0:$]};
-        }
-        cr_datain_format_pixel_mapping_pixel_format_gob_per_uv_line:      cross cp_datain_format, cp_pixel_mapping, cp_pixel_format, cp_gob_per_uv_line {
-            ignore_bins feature       = binsof(cp_datain_format.feature);
-            ignore_bins pitch_linear  = binsof(cp_pixel_mapping.pitch_linear);
-            ignore_bins single_planar = binsof(cp_pixel_format)intersect{[0:27]};
-        }
-        // block_y_cfg
-`ifdef NVDLA_ENABLE_BLOCK_LINEAR
-        cp_gob_height:         coverpoint ral.nvdla.NVDLA_CDMA.D_BLOCK_Y_CFG.GOB_HEIGHT.value {
-`else
-        cp_gob_height:         coverpoint ral.nvdla.NVDLA_CDMA.D_RESERVED_Y_CFG.RSV_HEIGHT.value {
-`endif
-            bins ful[] = {[0:4]};
-        }
-        cr_datain_format_pixel_mapping_gob_height:        cross cp_datain_format, cp_pixel_mapping, cp_gob_height {
-            ignore_bins feature      = binsof(cp_datain_format.feature);
-            ignore_bins pitch_linear = binsof(cp_pixel_mapping.pitch_linear);
-        }
-`ifdef NVDLA_ENABLE_BLOCK_LINEAR
-        cp_gob_y_index:        coverpoint ral.nvdla.NVDLA_CDMA.D_BLOCK_Y_CFG.GOB_Y_INDEX.value[4:0];
-`else
-        cp_gob_y_index:        coverpoint ral.nvdla.NVDLA_CDMA.D_RESERVED_Y_CFG.RSV_Y_INDEX.value[4:0];
-`endif
-        cr_datain_format_pixel_mapping_gob_y_index:       cross cp_datain_format, cp_pixel_mapping, cp_gob_y_index {
-            ignore_bins feature      = binsof(cp_datain_format.feature);
-            ignore_bins pitch_linear = binsof(cp_pixel_mapping.pitch_linear);
-        }
         cp_pixel_sign_override:coverpoint ral.nvdla.NVDLA_CDMA.D_DATAIN_FORMAT.PIXEL_SIGN_OVERRIDE.value {
             bins unsign = {0};
             bins sign   = {1};
         }
-        cr_datain_format_pixel_format_gob_y_index:        cross cp_datain_format, cp_pixel_format, cp_pixel_sign_override {
-            ignore_bins feature  = binsof(cp_datain_format.feature);
-            ignore_bins sign     = binsof(cp_pixel_format.pixel_format_T_R16_I);
-        }
         // ** feature input **
         // cp_datain_format (define above)
         cp_datain_ram_type:    coverpoint ral.nvdla.NVDLA_CDMA.D_DAIN_RAM_TYPE.DATAIN_RAM_TYPE.value {
+`ifdef NVDLA_SECONDARY_MEMIF_ENABLE
             bins cv = {0};
+`endif
             bins mc = {1};
         }
         cp_data_reuse:         coverpoint ral.nvdla.NVDLA_CDMA.D_MISC_CFG.DATA_REUSE.value {
@@ -330,7 +267,7 @@ class conv_cov_pool extends nvdla_coverage_base;
             bins max = {'h1FFF};
         }
         // input address
-        cp_datain_addr_low_0:  coverpoint ral.nvdla.NVDLA_CDMA.D_DAIN_ADDR_LOW_0.DATAIN_ADDR_LOW_0.value[26:0] {
+        cp_datain_addr_low_0:  coverpoint ral.nvdla.NVDLA_CDMA.D_DAIN_ADDR_LOW_0.DATAIN_ADDR_LOW_0.value[31:5] {
             wildcard bins align_64  = {27'b??????????????????????????0};
             wildcard bins align_128 = {27'b?????????????????????????00};
             wildcard bins align_256 = {27'b????????????????????????000};
@@ -345,7 +282,7 @@ class conv_cov_pool extends nvdla_coverage_base;
         cr_data_reuse_datain_addr_high_0_datain_ram_type: cross cp_data_reuse, cp_datain_addr_high_0, cp_datain_ram_type {
             ignore_bins reuse = binsof(cp_data_reuse.on);
         }
-        cp_datain_addr_low_1:  coverpoint ral.nvdla.NVDLA_CDMA.D_DAIN_ADDR_LOW_1.DATAIN_ADDR_LOW_1.value[26:0] {
+        cp_datain_addr_low_1:  coverpoint ral.nvdla.NVDLA_CDMA.D_DAIN_ADDR_LOW_1.DATAIN_ADDR_LOW_1.value[31:5] {
             wildcard bins align_64  = {27'b??????????????????????????0};
             wildcard bins align_128 = {27'b?????????????????????????00};
             wildcard bins align_256 = {27'b????????????????????????000};
@@ -363,7 +300,7 @@ class conv_cov_pool extends nvdla_coverage_base;
             ignore_bins feature = binsof(cp_datain_format.feature);
         }
         // line_stride
-        cp_line_stride_feature:        coverpoint (ral.nvdla.NVDLA_CDMA.D_LINE_STRIDE.LINE_STRIDE.value-ral.nvdla.NVDLA_CDMA.D_DATAIN_SIZE_0.DATAIN_WIDTH.value-1) {
+        cp_line_stride_feature:        coverpoint (ral.nvdla.NVDLA_CDMA.D_LINE_STRIDE.LINE_STRIDE.value/`NVDLA_MEMORY_ATOMIC_SIZE-ral.nvdla.NVDLA_CDMA.D_DATAIN_SIZE_0.DATAIN_WIDTH.value-1) {
             bins eql     = {0};
             bins mid[7]  = {[1:7]};
             bins high[2] = {[8:16]};
@@ -373,7 +310,7 @@ class conv_cov_pool extends nvdla_coverage_base;
             ignore_bins pixel = binsof(cp_datain_format.pixel);
             ignore_bins reuse = binsof(cp_data_reuse.on);
         }
-        cp_line_stride_pitch_0:        coverpoint (ral.nvdla.NVDLA_CDMA.D_LINE_STRIDE.LINE_STRIDE.value*32-(ral.nvdla.NVDLA_CDMA.D_PIXEL_OFFSET.PIXEL_X_OFFSET.value + ral.nvdla.NVDLA_CDMA.D_DATAIN_SIZE_0.DATAIN_WIDTH.value+1)*(ral.nvdla.NVDLA_CDMA.D_DATAIN_SIZE_1.DATAIN_CHANNEL.value+1)) {
+        cp_line_stride_pitch_0:        coverpoint (ral.nvdla.NVDLA_CDMA.D_LINE_STRIDE.LINE_STRIDE.value-(ral.nvdla.NVDLA_CDMA.D_PIXEL_OFFSET.PIXEL_X_OFFSET.value + ral.nvdla.NVDLA_CDMA.D_DATAIN_SIZE_0.DATAIN_WIDTH.value+1)*(ral.nvdla.NVDLA_CDMA.D_DATAIN_SIZE_1.DATAIN_CHANNEL.value+1)) {
             bins eql     = {0};
             bins mid[7]  = {[1:255]};
             bins high[2] = {[256:512]};
@@ -381,11 +318,10 @@ class conv_cov_pool extends nvdla_coverage_base;
         }
         cr_data_reuse_datain_format_pixel_mapping_pixel_format_line_stride_pitch_0:        cross cp_data_reuse, cp_datain_format, cp_pixel_mapping, cp_pixel_format, cp_line_stride_pitch_0 {
             ignore_bins feature      = binsof(cp_datain_format.feature);
-            ignore_bins block_linear = binsof(cp_pixel_mapping.block_linear);
             ignore_bins format       = binsof(cp_pixel_format)intersect{[0:19], [26:35]};
             ignore_bins reuse        = binsof(cp_data_reuse.on);
         }
-        cp_line_stride_pitch_1:        coverpoint (ral.nvdla.NVDLA_CDMA.D_LINE_STRIDE.LINE_STRIDE.value*32-(ral.nvdla.NVDLA_CDMA.D_PIXEL_OFFSET.PIXEL_X_OFFSET.value + ral.nvdla.NVDLA_CDMA.D_DATAIN_SIZE_0.DATAIN_WIDTH.value+1)*((ral.nvdla.NVDLA_CDMA.D_MISC_CFG.IN_PRECISION.value==0)?1:2)) {
+        cp_line_stride_pitch_1:        coverpoint (ral.nvdla.NVDLA_CDMA.D_LINE_STRIDE.LINE_STRIDE.value-(ral.nvdla.NVDLA_CDMA.D_PIXEL_OFFSET.PIXEL_X_OFFSET.value + ral.nvdla.NVDLA_CDMA.D_DATAIN_SIZE_0.DATAIN_WIDTH.value+1)*((ral.nvdla.NVDLA_CDMA.D_MISC_CFG.IN_PRECISION.value==0)?1:2)) {
             bins eql     = {0};
             bins mid[7]  = {[1:255]};
             bins high[2] = {[256:512]};
@@ -393,11 +329,10 @@ class conv_cov_pool extends nvdla_coverage_base;
         }
         cr_data_reuse_datain_format_pixel_mapping_pixel_format_line_stride_pitch_1:        cross cp_data_reuse, cp_datain_format, cp_pixel_mapping, cp_pixel_format, cp_line_stride_pitch_1 {
             ignore_bins feature      = binsof(cp_datain_format.feature);
-            ignore_bins block_linear = binsof(cp_pixel_mapping.block_linear);
             ignore_bins format       = binsof(cp_pixel_format)intersect{[0:27]};
             ignore_bins reuse        = binsof(cp_data_reuse.on);
         }
-        cp_line_stride_pitch_2:        coverpoint (ral.nvdla.NVDLA_CDMA.D_LINE_STRIDE.LINE_STRIDE.value*32-(ral.nvdla.NVDLA_CDMA.D_PIXEL_OFFSET.PIXEL_X_OFFSET.value + ral.nvdla.NVDLA_CDMA.D_DATAIN_SIZE_0.DATAIN_WIDTH.value+1)*((ral.nvdla.NVDLA_CDMA.D_MISC_CFG.IN_PRECISION.value==0)?1:2)*(ral.nvdla.NVDLA_CDMA.D_DATAIN_SIZE_1.DATAIN_CHANNEL.value+1)) {
+        cp_line_stride_pitch_2:        coverpoint (ral.nvdla.NVDLA_CDMA.D_LINE_STRIDE.LINE_STRIDE.value-(ral.nvdla.NVDLA_CDMA.D_PIXEL_OFFSET.PIXEL_X_OFFSET.value + ral.nvdla.NVDLA_CDMA.D_DATAIN_SIZE_0.DATAIN_WIDTH.value+1)*((ral.nvdla.NVDLA_CDMA.D_MISC_CFG.IN_PRECISION.value==0)?1:2)*(ral.nvdla.NVDLA_CDMA.D_DATAIN_SIZE_1.DATAIN_CHANNEL.value+1)) {
             bins eql     = {0};
             bins mid[7]  = {[1:255]};
             bins high[2] = {[256:512]};
@@ -405,11 +340,10 @@ class conv_cov_pool extends nvdla_coverage_base;
         }
         cr_data_reuse_datain_format_pixel_mapping_pixel_format_line_stride_pitch_2:        cross cp_data_reuse, cp_datain_format, cp_pixel_mapping, cp_pixel_format, cp_line_stride_pitch_2 {
             ignore_bins feature      = binsof(cp_datain_format.feature);
-            ignore_bins block_linear = binsof(cp_pixel_mapping.block_linear);
             ignore_bins format       = binsof(cp_pixel_format)intersect{[20:25], [28:35]};
             ignore_bins reuse        = binsof(cp_data_reuse.on);
         }
-        cp_uv_line_stride:             coverpoint (ral.nvdla.NVDLA_CDMA.D_LINE_UV_STRIDE.UV_LINE_STRIDE.value*32-2*(ral.nvdla.NVDLA_CDMA.D_DATAIN_SIZE_0.DATAIN_WIDTH.value+1)*((ral.nvdla.NVDLA_CDMA.D_MISC_CFG.IN_PRECISION.value==0)?1:2)) {
+        cp_uv_line_stride:             coverpoint (ral.nvdla.NVDLA_CDMA.D_LINE_UV_STRIDE.UV_LINE_STRIDE.value-2*(ral.nvdla.NVDLA_CDMA.D_DATAIN_SIZE_0.DATAIN_WIDTH.value+1)*((ral.nvdla.NVDLA_CDMA.D_MISC_CFG.IN_PRECISION.value==0)?1:2)) {
             bins eql     = {0};
             bins mid[7]  = {[1:255]};
             bins high[2] = {[256:512]};
@@ -417,11 +351,10 @@ class conv_cov_pool extends nvdla_coverage_base;
         }
         cr_data_reuse_datain_format_pixel_mapping_pixel_format_uv_line_stride:        cross cp_data_reuse, cp_datain_format, cp_pixel_mapping, cp_pixel_format, cp_uv_line_stride {
             ignore_bins feature      = binsof(cp_datain_format.feature);
-            ignore_bins block_linear = binsof(cp_pixel_mapping.block_linear);
             ignore_bins format       = binsof(cp_pixel_format)intersect{[0:27]};
             ignore_bins reuse        = binsof(cp_data_reuse.on);
         }
-        cp_surf_stride:       coverpoint (ral.nvdla.NVDLA_CDMA.D_SURF_STRIDE.SURF_STRIDE.value - (ral.nvdla.NVDLA_CDMA.D_LINE_STRIDE.LINE_STRIDE.value*(ral.nvdla.NVDLA_CDMA.D_DATAIN_SIZE_0.DATAIN_HEIGHT.value+1))) {
+        cp_surf_stride:       coverpoint (ral.nvdla.NVDLA_CDMA.D_SURF_STRIDE.SURF_STRIDE.value - (ral.nvdla.NVDLA_CDMA.D_LINE_STRIDE.LINE_STRIDE.value/`NVDLA_MEMORY_ATOMIC_SIZE*(ral.nvdla.NVDLA_CDMA.D_DATAIN_SIZE_0.DATAIN_HEIGHT.value+1))) {
             bins eql     = {0};
             bins mid[7]  = {[1:7]};
             bins high[2] = {[8:16]};
@@ -502,13 +435,15 @@ class conv_cov_pool extends nvdla_coverage_base;
             bins compress   = {1};
         }
         cp_weight_ram_type:   coverpoint ral.nvdla.NVDLA_CDMA.D_WEIGHT_RAM_TYPE.WEIGHT_RAM_TYPE.value {
+`ifdef NVDLA_SECONDARY_MEMIF_ENABLE
             bins cv = {0};
+`endif
             bins mc = {1};
         }
         cr_weight_reuse_weight_ram_type:     cross cp_weight_reuse, cp_weight_ram_type {
             ignore_bins reuse = binsof(cp_weight_reuse.on);
         }
-        cp_weight_addr_low:  coverpoint ral.nvdla.NVDLA_CDMA.D_WEIGHT_ADDR_LOW.WEIGHT_ADDR_LOW.value[26:0] {
+        cp_weight_addr_low:  coverpoint ral.nvdla.NVDLA_CDMA.D_WEIGHT_ADDR_LOW.WEIGHT_ADDR_LOW.value[31:5] {
             wildcard bins align_64  = {27'b??????????????????????????0};
             wildcard bins align_128 = {27'b?????????????????????????00};
             wildcard bins align_256 = {27'b????????????????????????000};
@@ -523,7 +458,7 @@ class conv_cov_pool extends nvdla_coverage_base;
         cr_weight_reuse_weight_addr_high_weight_ram_type:  cross cp_weight_reuse, cp_weight_addr_high, cp_weight_ram_type {
             ignore_bins reuse = binsof(cp_weight_reuse.on);
         }
-        cp_wgs_addr_low:  coverpoint ral.nvdla.NVDLA_CDMA.D_WGS_ADDR_LOW.WGS_ADDR_LOW.value[26:0] {
+        cp_wgs_addr_low:  coverpoint ral.nvdla.NVDLA_CDMA.D_WGS_ADDR_LOW.WGS_ADDR_LOW.value[31:5] {
             wildcard bins align_64  = {27'b??????????????????????????0};
             wildcard bins align_128 = {27'b?????????????????????????00};
             wildcard bins align_256 = {27'b????????????????????????000};
@@ -540,7 +475,7 @@ class conv_cov_pool extends nvdla_coverage_base;
             ignore_bins reuse      = binsof(cp_weight_reuse.on);
             ignore_bins uncompress = binsof(cp_weight_format.uncompress);
         }
-        cp_wmb_addr_low:  coverpoint ral.nvdla.NVDLA_CDMA.D_WMB_ADDR_LOW.WMB_ADDR_LOW.value[26:0] {
+        cp_wmb_addr_low:  coverpoint ral.nvdla.NVDLA_CDMA.D_WMB_ADDR_LOW.WMB_ADDR_LOW.value[31:5] {
             wildcard bins align_64  = {27'b??????????????????????????0};
             wildcard bins align_128 = {27'b?????????????????????????00};
             wildcard bins align_256 = {27'b????????????????????????000};
