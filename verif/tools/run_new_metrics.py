@@ -299,7 +299,7 @@ class DivPlot():
                 divs[proj][regr] = div
         return divs
     
-    def regr_table_div(self, regr_sts_db={}):
+    def regr_table_div(self, regr_sts_db={}, db_dir=''):
         divs = {}
         for proj in self._proj_regr_dict:
             divs[proj] = {}
@@ -307,14 +307,21 @@ class DivPlot():
                 ROW = []
                 db = regr_sts_db[proj][regr]
                 for idx in range(len(db)):
-                    item              = {}
-                    item['Name']      = '_'.join((proj,regr))
-                    item['Date']      = db[idx]['start_time']
-                    item['Seed']      = db[idx]['plan_seed']
-                    item['CommitID']  = db[idx]['unique_id'][0:10]
-                    item['Status']    = db[idx]['status']
-                    item['Cov']       = 'Func:{:.2%} Code:{:.2%}'.format(db[idx]['metrics_result']['functional_coverage'],db[idx]['metrics_result']['code_coverage'])
-                    item['PassingRate']       = dcc.Link('{:.2%}'.format(db[idx]['metrics_result']['passing_rate']), href=db[idx]['start_time'])
+                    item                = {}
+                    item['Name']        = '_'.join((proj,regr))
+                    item['Date']        = db[idx]['start_time']
+                    item['Seed']        = db[idx]['plan_seed']
+                    item['CommitID']    = db[idx]['unique_id'][0:10]
+                    item['Status']      = db[idx]['status']
+                    cov_file = os.path.join(db_dir,proj,regr,'coverage','urgReport_'+db[idx]['start_time'],'dashboard.html')
+                    if os.path.exists(cov_file):
+                        item['Cov']         = html.A('Func:{:.2%} Code:{:.2%}'.format(db[idx]['metrics_result']['functional_coverage'],db[idx]['metrics_result']['code_coverage']),
+                                                     href  = 'https://nvtegra/'+cov_file)
+                    else:
+                        item['Cov']         = 'Func:{:.2%} Code:{:.2%}'.format(db[idx]['metrics_result']['functional_coverage'],db[idx]['metrics_result']['code_coverage'])
+                    item['PassingRate'] = dcc.Link('{:.2%}'.format(db[idx]['metrics_result']['passing_rate']), 
+                                                   href  = db[idx]['start_time'],
+                                                   style = {'color':'green','textDecoration':'underline','cursor':'pointer'})
                     ROW.append(item)
                 ROW = sorted(ROW, key=lambda k:k['Date'])
                 ROW.reverse()
@@ -526,7 +533,7 @@ class DivPlot():
         passing_rate_divs   = self.passing_rate_div(x_axis,y_axis)
         test_num_divs       = self.test_num_div(x_axis,y_axis)
         coverage_divs       = self.coverage_div(x_axis,y_axis)
-        regr_table_divs     = self.regr_table_div(regr_sts_db)
+        regr_table_divs     = self.regr_table_div(regr_sts_db,db_dir)
         syndrome_table_divs = self.syndrome_table_div(test_db_files, synd_db)
         test_table_divs     = self.test_table_div(test_db_files)
         syndrome_div        = self.syndrome_div(synd_db)
@@ -671,7 +678,6 @@ class DivPlot():
             else:
                 return []
 
-
         # Add a static image route that serves images from desktop
         @self._app.server.route('{}<image_path>.png'.format('/static/'))
         def serve_image(image_path):
@@ -727,7 +733,8 @@ class DivPlot():
                         test_table_divs[self._proj][self._regr][table_name],
                         html.Div(
                             children = [
-                                html.A('BACK', href='/nvdla', style={'color':'green'}),
+                                #html.A('BACK', href='/nvdla', style={'color':'green'}),
+                                dcc.Link('BACK', href='/nvdla', style={'color':'green','textDecoration':'underline','cursor':'pointer'}),
                             ],
                             style = {
                                 'float'           : 'left',
