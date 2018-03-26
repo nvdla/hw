@@ -12,7 +12,7 @@
 # 3. Run regression (you can run multiple rounds of regression with different ~layer_num~):
 #|   TOT/verif/tools/run_plan.py -tp nv_small -P nv_small -monitor \
 #|       -layer_num 4 -run_num 2 \
-#|       -extra_args "-rtlarg '-cm line+tgl+cond+fsm+branch+assert -cm_dir test.cm.vdb +fcov_en' "
+#|       -extra_args "-rtlarg '-cm line+tgl+cond+fsm+branch+assert -cm_dir test.vdb +fcov_en' "
 #
 # 4. Generate coverage report
 #|   TOT/verif/tools/run_coverage_report.py -P nv_small \
@@ -36,13 +36,15 @@ class RunCoverageReport(object):
     test_cm_dir    = 'test.vdb'
     merged_cm_dir  = 'merged.vdb'
     regress_dir    = []
+    elfile         = []
     report_dir     = './urgReport'
-    view_report    = True
+    gen_report_only= False
+    view_report    = False
     dry_run        = False
     tree_root      = ''
 
     def __init__(self, project, tb, tb_cm_dir, test_cm_dir, merged_cm_dir,
-                 regress_dir, report_dir, view_report, dry_run):
+                 regress_dir, report_dir, elfile, gen_report_only, view_report, dry_run):
         self.project = project
         if tb is not None:
             self.tb = tb
@@ -55,14 +57,19 @@ class RunCoverageReport(object):
         self.regress_dir = regress_dir
         if report_dir is not None:
             self.report_dir = report_dir
+        if gen_report_only is not None:
+            self.gen_report_only = gen_report_only
         if view_report is not None:
             self.view_report = view_report
+        if len(elfile) > 0:
+            self.elfile = elfile
         if dry_run is not None:
             self.dry_run = dry_run
         self.tree_root = self.__get_abs_path_of_tree_root()
 
     def run(self):
-        self.__merge_vdb()
+        if not self.gen_report_only:
+            self.__merge_vdb()
         self.__gen_coverage_report()
 
     def __merge_vdb(self):
@@ -81,11 +88,14 @@ class RunCoverageReport(object):
         
         # merged vdb
         cmd  = 'urg -dir %s -f test_vdb.list -dbname %s' % (ip_vdb, self.merged_cm_dir)
-        cmd += ' -parallel -parallel_split 10 -maxjobs 100 -show tests -nocheck -noreport'
+        cmd += ' -group ratio -group merge_across_scopes -parallel -parallel_split 10 -maxjobs 100'
+        cmd += ' -show tests -nocheck -noreport'
         self.__run_cmd(cmd)
 
     def __gen_coverage_report(self):
-        cmd = 'urg -dir %s -report %s' % (self.merged_cm_dir, self.report_dir)
+        cmd = 'urg -group ratio -show ratios -group merge_across_scopes -dir %s -report %s ' % (self.merged_cm_dir, self.report_dir)
+        if len(self.elfile) > 0:
+            cmd += ' '.join(list(map(lambda x: ' -elfile '+x, self.elfile)))
         self.__run_cmd(cmd)
         cmd = 'firefox %s/dashboard.html &' % self.report_dir
         if self.dry_run == False:
@@ -147,11 +157,23 @@ def main():
                         required = True,
                         action   = 'append',
                         help     = 'Specify regression result directory, can be specified multiple times')
+    parser.add_argument('--elfile', '-elfile',
+                        dest     = 'elfile',
+                        required = False,
+                        default  = [],
+                        action   = 'append',
+                        help     = 'Specify exclusion file, can be specified multiple times')
     parser.add_argument('--report_dir', '-report_dir',
                         dest     = 'report_dir',
                         required = False,
                         default  = None,
                         help     = 'Specify coverage report directory')
+    parser.add_argument('--gen_report_only', '-gen_report_only',
+                        dest     = 'gen_report_only',
+                        required = False,
+                        action   = 'store_true',
+                        default  = False,
+                        help     = 'Generate coverage report only, do not merge vdb')
     parser.add_argument('--view_report', '-view_report',
                         dest     = 'view_report',
                         required = False,
@@ -173,7 +195,9 @@ def main():
                                             merged_cm_dir  = args['merged_cm_dir'],
                                             regress_dir    = args['regress_dir'],
                                             report_dir     = args['report_dir'],
+                                            elfile         = args['elfile'],
                                             view_report    = args['view_report'],
+                                            gen_report_only= args['gen_report_only'],
                                             dry_run        = args['dry_run'],
                                             )
     run_coverage_report.run() 
