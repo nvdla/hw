@@ -167,7 +167,7 @@ reg      [1:0] cur_state;
 reg     [17:0] dat_entries_d0;
 reg     [17:0] dat_entries_d1;
 reg     [17:0] dat_entries_d2;
-reg     [11:0] dat_entries_d3;
+reg     [14:0] dat_entries_d3;
 reg     [11:0] dat_slices_d0;
 reg     [11:0] dat_slices_d1;
 reg     [11:0] dat_slices_d2;
@@ -2833,7 +2833,7 @@ end
 //:       print qq(
 //:         always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 //:             if (!nvdla_core_rstn) begin
-//:                 dat_${name}_d${k} <= {12{1'b0}};
+//:                 dat_${name}_d${k} <= 0;
 //:             end else begin
 //:                 if ((dat_updt_d${i}) == 1'b1) begin
 //:                     dat_${name}_d${k} <= dat_${name}_d${i};
