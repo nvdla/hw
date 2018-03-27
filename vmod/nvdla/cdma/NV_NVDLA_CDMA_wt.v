@@ -1733,7 +1733,7 @@ assign wmb_fetched_cnt_w = layer_st ? 22'b0 : wmb_fetched_cnt_inc;
 //: my $dmaifbw=NVDLA_CDMA_DMAIF_BW;
 //: my $k = int(log($dmaif)/log(2));
 //: if($atmc > $dmaifbw) {
-//:     my $k = int( log( ${atmc}/${dmaifbw} )/log(2) );
+//:     ##my $k = int( log( ${atmc}/${dmaifbw} )/log(2) );
 //:     print qq(
 //:         assign wt_satisfied = is_running & ({wt_fetched_cnt, ${k}'b0} >= wt_required_bytes) & ~(|wt_fetched_cnt[${k}-1:0]); // wt_fetched_cnt[0] means a complete entry 
 //:         assign wmb_satisfied = is_running & ({{{1{1'b0}}, wmb_fetched_cnt}, ${k}'d0, ${m}'b0} >= wmb_required_bits) & ~(|wmb_fetched_cnt[${k}-1:0]);// wmb_fetched_cnt[0] 
@@ -1755,7 +1755,7 @@ assign status_update_wmb = (~required_valid) ? 1'b0 :
 //: my $atmc=NVDLA_MAC_ATOMIC_C_SIZE * NVDLA_CDMA_BPE;
 //: my $dmaifbw=NVDLA_CDMA_DMAIF_BW;
 //: if($atmc > $dmaifbw) {
-//:     my $k = int( log( ${atmc}/${dmaifbw} )/log(2) );
+//:     ##my $k = int( log( ${atmc}/${dmaifbw} )/log(2) );
 //:     print qq(
 //:         assign wt_satisfied = is_running & ({wt_fetched_cnt, ${k}'b0} >= wt_required_bytes) & ~(|wt_fetched_cnt[${k}-1:0]); // wt_fetched_cnt[0]
 //:     );
