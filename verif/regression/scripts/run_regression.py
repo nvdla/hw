@@ -197,7 +197,7 @@ if __name__ == '__main__':
                 ret=run_plan(config['project'], project_name, '-otag L10 L11 -l_num 4 -r_num 5 %s -run_dir %s' % (args, run_dir), lsf_cmd, dry_run)
                 ret=run_report(run_dir, publish_dir, '-monitor_timeout %d' % max_regression_time, 'passing_rate:L10 passing_rate:L11', dry_run)
             elif 'coverage' == config['kind']:
-                ret=run_plan(config['project'], project_name, '-otag L0 L1 L2 L10 L11 L20 -l_num 4 -r_num 4 %s -run_dir %s' % (args, run_dir), lsf_cmd, dry_run)
+                ret=run_plan(config['project'], project_name, '-otag L0 L1 L2 L10 L11 L20 -l_num 4 -r_num 4 %s -run_dir %s -en_cov' % (args, run_dir), lsf_cmd, dry_run)
                 ret=run_report(run_dir, publish_dir, '-monitor_timeout %d' % max_regression_time, 'passing_rate:L0 passing_rate:L1 passing_rate:L2 passing_rate:L10 passing_rate:L11 passing_rate:L20', dry_run)
                 cov_vdb_dir = os.path.join(run_dir, 'merged_'+time_str+'.vdb')
                 cov_report_dir = os.path.join(run_dir, 'report_'+time_str)
