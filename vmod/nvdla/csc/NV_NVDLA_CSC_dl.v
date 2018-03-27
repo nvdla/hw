@@ -925,19 +925,20 @@ assign {mon_dat_entry_avl_w,dat_entry_avl_w} = (cbuf_reset) ? {CSC_ENTRIES_NUM_W
 assign {mon_dat_entry_st_inc,dat_entry_st_inc} = dat_entry_st + dat_entry_avl_sub;
 assign {mon_dat_entry_st_inc_wrap, dat_entry_st_inc_wrap} = dat_entry_st_inc - {data_bank, {LOG2_CBUF_BANK_DEPTH{1'b0}} };  
 assign is_dat_entry_st_wrap = (dat_entry_st_inc >= {1'b0, data_bank, {LOG2_CBUF_BANK_DEPTH{1'b0}} });
-assign dat_entry_st_w = (cbuf_reset) ? 12'b0 : is_dat_entry_st_wrap ? dat_entry_st_inc_wrap : dat_entry_st_inc[12 -1:0];
+assign dat_entry_st_w = (cbuf_reset) ? {CSC_ENTRIES_NUM_WIDTH{1'b0}} : is_dat_entry_st_wrap ? dat_entry_st_inc_wrap : dat_entry_st_inc[CSC_ENTRIES_NUM_WIDTH-1:0];
 
 //////////////////////////////////// calculate avilable data entries end offset in cbuf banks////////////////////////////////////
 assign {mon_dat_entry_end_inc,dat_entry_end_inc} = dat_entry_end + dat_entry_avl_add;
 assign {mon_dat_entry_end_inc_wrap,dat_entry_end_inc_wrap} = dat_entry_end_inc - {data_bank, {LOG2_CBUF_BANK_DEPTH{1'b0}} };
 assign is_dat_entry_end_wrap = (dat_entry_end_inc >= {1'b0, data_bank, {LOG2_CBUF_BANK_DEPTH{1'b0}} });
-assign dat_entry_end_w = (cbuf_reset) ? 12'b0 : is_dat_entry_end_wrap ? dat_entry_end_inc_wrap : dat_entry_end_inc[12 -1:0];
+assign dat_entry_end_w = (cbuf_reset) ? {CSC_ENTRIES_NUM_WIDTH{1'b0}} : is_dat_entry_end_wrap ? dat_entry_end_inc_wrap : dat_entry_end_inc[CSC_ENTRIES_NUM_WIDTH-1:0];
 
 //////////////////////////////////// registers and assertions ////////////////////////////////////
+//: my $kk= CSC_ENTRIES_NUM_WIDTH;
 //: &eperl::flop("-nodeclare -clk nvdla_core_ng_clk  -rval \"{12{1'b0}}\"  -en \"cdma2sc_dat_updt | dat_rls | cbuf_reset\" -d \"dat_slice_avl_w\" -q dat_slice_avl");
-//: &eperl::flop("-nodeclare -clk nvdla_core_ng_clk  -rval \"{12{1'b0}}\"  -en \"cdma2sc_dat_updt | dat_rls | cbuf_reset\" -d \"dat_entry_avl_w\" -q dat_entry_avl");
-//: &eperl::flop("-nodeclare -clk nvdla_core_ng_clk  -rval \"{12{1'b0}}\"  -en \"cbuf_reset | dat_rls\" -d \"dat_entry_st_w\" -q dat_entry_st");
-//: &eperl::flop("-nodeclare -clk nvdla_core_ng_clk  -rval \"{12{1'b0}}\"  -en \"cbuf_reset | cdma2sc_dat_updt\" -d \"dat_entry_end_w\" -q dat_entry_end");
+//: &eperl::flop("-nodeclare -clk nvdla_core_ng_clk  -rval \"{${kk}{1'b0}}\"  -en \"cdma2sc_dat_updt | dat_rls | cbuf_reset\" -d \"dat_entry_avl_w\" -q dat_entry_avl");
+//: &eperl::flop("-nodeclare -clk nvdla_core_ng_clk  -rval \"{${kk}{1'b0}}\"  -en \"cbuf_reset | dat_rls\" -d \"dat_entry_st_w\" -q dat_entry_st");
+//: &eperl::flop("-nodeclare -clk nvdla_core_ng_clk  -rval \"{${kk}{1'b0}}\"  -en \"cbuf_reset | cdma2sc_dat_updt\" -d \"dat_entry_end_w\" -q dat_entry_end");
 
 
 //================  Non-SLCG clock domain end ================//
