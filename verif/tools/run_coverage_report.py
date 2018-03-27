@@ -26,6 +26,8 @@ import re
 import argparse
 import subprocess
 import json
+import glob
+from   shutil import copy2, copytree
 
 __DESCRIPTION__ = '''
   This tool is used to generate coverage report.
@@ -44,10 +46,14 @@ class RunCoverageReport(object):
     view_report    = False
     dry_run        = False
     tree_root      = ''
+    publish        = False
+    publish_dir    = ''
 
-    def __init__(self, project, tb, tb_cm_dir, test_cm_dir, merged_cm_dir,
-                 regress_dir, report_dir, elfile, gen_report_only, view_report, dry_run):
-        self.project = project
+    def __init__(self, project, tb, tb_cm_dir, test_cm_dir, merged_cm_dir, regress_dir, 
+                 report_dir, elfile, gen_report_only, view_report, dry_run, publish, publish_dir):
+        self.project     = project
+        self.publish     = publish
+        self.publish_dir = publish_dir
         if tb is not None:
             self.tb = tb
         if tb_cm_dir is not None:
@@ -136,8 +142,17 @@ class RunCoverageReport(object):
                     regr_db['metrics_result']['group_coverage']      = cov_dict['GROUP'][0]
                     regr_db['metrics_result']['code_coverage']       = cov_dict['CODE']
                     regr_db['metrics_result']['functional_coverage'] = cov_dict['FUNC']
-                    with open(regr_sts_file, 'r') as fh:
+                    with open(regr_sts_file, 'w') as fh:
                         json.dump(regr_db, fh, sort_keys=True, indent=4)
+                    print('[INFO] Coverage Data Anotation in regression data file : %s completed' % regr_sts_file)
+                    if self.publish:
+                        #TBD: publish test status file if multiple regression merge enabled
+                        copy2(regr_sts_file, os.path.join(self.publish_dir,'json_db'))
+                        print('[INFO] Published regression data file: %s' % regr_sts_file)
+                        copytree(self.report_dir, os.path.join(self.publish_dir,'coverage/report',os.path.basename(self.report_dir)))
+                        print('[INFO] Published coverage report : %s' % self.report_dir)
+                        copytree(self.merged_cm_dir, os.path.join(self.publish_dir,'coverage/data',os.path.basename(self.merged_cm_dir)))
+                        print('[INFO] Published coverage data : %s' % self.merged_cm_dir)
                     break
 
     def __run_cmd(self, cmd, verbose=True):
@@ -222,6 +237,17 @@ def main():
                         action   = 'store_true',
                         default  = False,
                         help     = 'Only show running cmd, cmd will not be executed')
+    parser.add_argument('--publish', '-publish',
+                        dest     = 'publish',
+                        required = False,
+                        action   = 'store_true',
+                        default  = False,
+                        help     = 'Pulish (merged) regression database and coverage database/report')
+    parser.add_argument('--publish_dir', '-publish_dir',
+                        dest = 'publish_dir',
+                        required = False,
+                        default='',
+                        help = 'Specify directory for storing published regression/coverage data&report')
     args = vars(parser.parse_args())
     
     run_coverage_report = RunCoverageReport(project        = args['project'],
@@ -235,6 +261,8 @@ def main():
                                             view_report    = args['view_report'],
                                             gen_report_only= args['gen_report_only'],
                                             dry_run        = args['dry_run'],
+                                            publish        = args['publish'],
+                                            publish_dir    = args['publish_dir'],
                                             )
     run_coverage_report.run() 
 
