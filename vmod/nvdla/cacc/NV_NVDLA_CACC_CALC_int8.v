@@ -168,6 +168,8 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   out_partial_valid <= i_partial_vld;
   end
 end
+
+// spyglass disable_block STARC05-3.3.1.4b
 always @(posedge nvdla_core_clk) begin
   if ((i_partial_vld) == 1'b1) begin
     out_partial_data <= i_partial_result;
@@ -178,6 +180,7 @@ always @(posedge nvdla_core_clk) begin
   // VCS coverage on
   end
 end
+// spyglass enable_block STARC05-3.3.1.4b
 
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
@@ -193,6 +196,8 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   out_final_sat <= i_final_vld & i_sft_need_sat;
   end
 end
+
+// spyglass disable_block STARC05-3.3.1.4b
 always @(posedge nvdla_core_clk) begin
   if ((i_final_vld) == 1'b1) begin
     out_final_data <= i_final_result;
@@ -203,7 +208,7 @@ always @(posedge nvdla_core_clk) begin
   // VCS coverage on
   end
 end
-
+// spyglass enable_block STARC05-3.3.1.4b
 
 //VCS coverage off
 `ifndef DISABLE_FUNCPOINT

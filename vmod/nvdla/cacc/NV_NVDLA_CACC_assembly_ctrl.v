@@ -57,6 +57,8 @@ output                      cfg_is_wg;
 output   [4:0]              cfg_truncate;
 output                      slcg_cell_en;
 output                      wait_for_op_en;
+// spyglass disable_block NoWidthInBasedNum-ML
+// spyglass disable_block STARC-2.10.1.6
 // cross partition,1T
 //: &eperl::flop("-q  accu_valid  -d \"mac_a2accu_pvld\" -clk nvdla_core_clk -rst nvdla_core_rstn -rval 0"); 
 //: &eperl::flop("-wid 9 -q  accu_pd  -en \"mac_a2accu_pvld\" -d  \"mac_a2accu_pd\" -clk nvdla_core_clk -rst nvdla_core_rstn -rval 0"); 
@@ -129,6 +131,10 @@ wire [CACC_ABUF_AWIDTH-1:0] abuf_rd_addr = accu_addr;
 //: &eperl::flop(" -q  accu_ctrl_dlv_elem_mask  -en \"accu_ctrl_valid_d0\" -d  \"accu_channel_end_d0\" -clk nvdla_core_clk -rst nvdla_core_rstn -rval 0"); 
 //: my $jj=6-$kk;
 //: print "assign       accu_ctrl_pd[5:0]  =     {{${jj}{1'b0}},accu_ctrl_addr}; \n";
+
+// spyglass enable_block NoWidthInBasedNum-ML
+// spyglass enable_block STARC-2.10.1.6
+
 assign       accu_ctrl_pd[8:6]  =     3'b1;   //reserve
 assign       accu_ctrl_pd[9]    =     accu_ctrl_stripe_end ;
 assign       accu_ctrl_pd[10]   =     accu_ctrl_channel_end ;

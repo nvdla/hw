@@ -74,6 +74,9 @@ output   [CACC_DBUF_WIDTH-1:0]              dbuf_wr_data;
 output                      dbuf_wr_en;
 output                      dp2reg_done;
 
+// spyglass disable_block NoWidthInBasedNum-ML
+// spyglass disable_block STARC-2.10.1.6
+
 
 //////////////////////////////////////////////////////////////
 ///// parse input status signal                          /////
@@ -192,5 +195,7 @@ wire    dbuf_rd_layer_end   = dlv_end_clr;
 //: &eperl::flop("-nodeclare -q  dlv_end_tag1_vld  -d \"dlv_end_tag1_vld_w\" -clk nvdla_core_clk -rst nvdla_core_rstn -rval 0"); 
 //: &eperl::flop("-nodeclare -q  dlv_end_tag0_addr  -en \"dlv_end_tag0_en\" -d  \"dlv_end_tag0_addr_w\" -clk nvdla_core_clk -rst nvdla_core_rstn -rval 0"); 
 //: &eperl::flop("-nodeclare -q  dlv_end_tag1_addr  -en \"dlv_end_tag1_en\" -d  \"dlv_end_tag1_addr_w\" -clk nvdla_core_clk -rst nvdla_core_rstn -rval 0"); 
+// spyglass enable_block NoWidthInBasedNum-ML
+// spyglass enable_block STARC-2.10.1.6
 
 endmodule

@@ -49,6 +49,7 @@ wire [CACC_DBUF_WIDTH-1:0] dbuf_rd_data;
 reg  [CACC_DWIDTH_DIV_SWIDTH-1:0] data_left_mask;
 wire dbuf_rd_en_new = ~(|data_left_mask) & dbuf_rd_en;
 
+// spyglass disable_block NoWidthInBasedNum-ML
 //: my $dep= CACC_DBUF_DEPTH;
 //: my $wid= CACC_DBUF_WIDTH;
 //: print qq(
@@ -125,6 +126,8 @@ assign cacc2glb_done_intr_pd = cacc_done_intr;
 assign accu2sc_credit_size = 3'h1;
 wire last_data = (data_left_mask=={1'b1,{CACC_DWIDTH_DIV_SWIDTH-1{1'b0}}});
 //: &eperl::flop(" -q  accu2sc_credit_vld  -d \"cacc2sdp_valid & cacc2sdp_ready & last_data\" -clk nvdla_core_clk -rst nvdla_core_rstn -rval 0"); 
+// spyglass enable_block NoWidthInBasedNum-ML
+
 endmodule // NV_NVDLA_CACC_delivery_buffer
 
 

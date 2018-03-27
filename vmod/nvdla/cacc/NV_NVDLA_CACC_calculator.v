@@ -80,6 +80,9 @@ output [1:0] dlv_pd;
 output dlv_valid;
 output [31:0] dp2reg_sat_count;
 
+// spyglass disable_block NoWidthInBasedNum-ML
+// spyglass disable_block STARC-2.10.1.6
+
 // unpack abuffer read data
 //: my $kk=CACC_PARSUM_WIDTH;
 //: for(my $i=0; $i<CACC_ATOMK ; $i++){
@@ -90,7 +93,9 @@ output [31:0] dp2reg_sat_count;
 //1T delay, the same T with data/mask
 //: &eperl::flop("-wid 13 -q accu_ctrl_pd_d1 -en accu_ctrl_valid -d accu_ctrl_pd");
 wire calc_valid_in  = (mac_b2accu_pvld | mac_a2accu_pvld);
+// spyglass disable_block STARC05-3.3.1.4b
 //: &eperl::retime("-stage 3 -o calc_valid -i calc_valid_in");  
+// spyglass enable_block STARC05-3.3.1.4b
 
 // unpack pd form abuffer control
 wire [5:0]      calc_addr           =     accu_ctrl_pd_d1[5:0];
@@ -204,7 +209,8 @@ wire calc_layer_end_d0 = calc_layer_end;
 
 
 // to abuffer, 1 pipe
-wire [CACC_ABUF_WIDTH-1:0] abuf_wr_data_w; 
+wire [CACC_ABUF_WIDTH-1:0] abuf_wr_data_w;
+// spyglass disable_block STARC05-3.3.1.4b
 //: my $kk=CACC_ABUF_WIDTH;
 //: my $jj=CACC_ABUF_AWIDTH;
 //: for(my $i = 0; $i < CACC_ATOMK; $i ++) {
@@ -214,10 +220,13 @@ wire [CACC_ABUF_WIDTH-1:0] abuf_wr_data_w;
 //: &eperl::flop(" -q  abuf_wr_en  -d \"calc_wr_en_out\" -clk nvdla_core_clk -rst nvdla_core_rstn -rval 0"); 
 //: &eperl::flop("-wid ${jj} -q  abuf_wr_addr  -en \"calc_wr_en_out\" -d  \"calc_addr_out[${jj}-1:0]\" -clk nvdla_core_clk -rst nvdla_core_rstn -rval 0"); 
 //: &eperl::flop("-wid ${kk} -q  abuf_wr_data  -en \"calc_wr_en_out\" -d  \"abuf_wr_data_w\" -clk nvdla_core_clk -norst"); 
+// spyglass enable_block STARC05-3.3.1.4b
 
 
 // to dbuffer, 1 pipe.
 wire [CACC_DBUF_WIDTH-1:0] dlv_data_w;
+// spyglass disable_block STARC05-3.3.1.4b
+
 //: my $kk=CACC_DBUF_WIDTH;
 //: for(my $i = 0; $i < CACC_ATOMK; $i ++) {
 //: print qq(
@@ -229,6 +238,7 @@ wire [CACC_DBUF_WIDTH-1:0] dlv_data_w;
 //: &eperl::flop(" -q  dlv_mask   -d  \"calc_dlv_valid_out\" -clk nvdla_core_clk -rst nvdla_core_rstn -rval 0"); 
 //: &eperl::flop(" -q  dlv_stripe_end  -en \"calc_dlv_valid_out\" -d  \"calc_stripe_end_out\" -clk nvdla_core_clk -rst nvdla_core_rstn -rval 0"); 
 //: &eperl::flop(" -q  dlv_layer_end  -en \"calc_dlv_valid_out\" -d  \"calc_layer_end_out\" -clk nvdla_core_clk -rst nvdla_core_rstn -rval 0"); 
+// spyglass enable_block STARC05-3.3.1.4b
 assign       dlv_pd[0] =     dlv_stripe_end ;
 assign       dlv_pd[1] =     dlv_layer_end ;
 
@@ -258,7 +268,10 @@ wire sat_reg_en;
 assign {sat_carry, sat_count_inc[31:0]} = sat_count + sat_sum;
 assign sat_count_w = (dlv_sat_clr_d1) ? {24'b0, sat_sum} : sat_carry ? {32{1'b1}} : sat_count_inc;
 assign sat_reg_en = dlv_sat_vld_d1 & ((|sat_sum) | dlv_sat_clr_d1);
-//: &eperl::flop("-nodeclare -q  sat_count  -en \"sat_reg_en\" -d  \"sat_count_w\" -clk nvdla_core_clk -rst nvdla_core_rstn -rval 0"); 
+//: &eperl::flop("-nodeclare -q  sat_count  -en \"sat_reg_en\" -d  \"sat_count_w\" -clk nvdla_core_clk -rst nvdla_core_rstn -rval 0");
+// spyglass enable_block NoWidthInBasedNum-ML
+// spyglass enable_block STARC-2.10.1.6
+
 assign dp2reg_sat_count = sat_count;
 
 endmodule

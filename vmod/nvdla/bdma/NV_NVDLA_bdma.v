@@ -9,15 +9,15 @@
 // File Name: NV_NVDLA_bdma.v
 
 module NV_NVDLA_bdma (
-   #ifdef NVDLA_SECONDARY_MEMIF_ENABLE
-   bdma2cvif_rd_req_ready        //|< i
-  ,bdma2cvif_wr_req_ready        //|< i
-  #endif
-  ,bdma2mcif_rd_req_ready        //|< i
+   bdma2mcif_rd_req_ready        //|< i
   ,bdma2mcif_wr_req_ready        //|< i
   ,csb2bdma_req_pd               //|< i
-  ,csb2bdma_req_pvld             //|< i
+  ,csb2bdma_req_pvld             //|< i  
    #ifdef NVDLA_SECONDARY_MEMIF_ENABLE
+  ,bdma2cvif_rd_req_ready        //|< i
+  ,bdma2cvif_wr_req_ready        //|< i
+  #endif
+  #ifdef NVDLA_SECONDARY_MEMIF_ENABLE
   ,cvif2bdma_rd_rsp_pd           //|< i
   ,cvif2bdma_rd_rsp_valid        //|< i
   ,cvif2bdma_wr_rsp_complete     //|< i
