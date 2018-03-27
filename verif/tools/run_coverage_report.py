@@ -147,6 +147,7 @@ class RunCoverageReport(object):
                     print('[INFO] Coverage Data Anotation in regression data file : %s completed' % regr_sts_file)
                     if self.publish:
                         #TBD: publish test status file if multiple regression merge enabled
+                        os.makedirs(os.path.join(self.publish_dir,'json_db'), exist_ok=True)
                         copy2(regr_sts_file, os.path.join(self.publish_dir,'json_db'))
                         print('[INFO] Published regression data file: %s' % regr_sts_file)
                         copytree(self.report_dir, os.path.join(self.publish_dir,'coverage/report',os.path.basename(self.report_dir)))

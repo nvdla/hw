@@ -318,6 +318,7 @@ class  RunMetrics(object):
 
     def web_gen(self):
         origin_dir =  os.getcwd()
+        os.makedirs(self._cfg['web_dir'], exist_ok=True)
         os.chdir(self._cfg['web_dir'])
         self.passing_rate_plot()
         self.test_num_plot()

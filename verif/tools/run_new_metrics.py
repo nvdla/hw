@@ -313,7 +313,7 @@ class DivPlot():
                     item['Seed']        = db[idx]['plan_seed']
                     item['CommitID']    = db[idx]['unique_id'][0:10]
                     item['Status']      = db[idx]['status']
-                    cov_file = os.path.join(db_dir,proj,regr,'coverage','urgReport_'+db[idx]['start_time'],'dashboard.html')
+                    cov_file = os.path.join(db_dir,proj,regr,'coverage/report','report_'+db[idx]['start_time'],'dashboard.html')
                     if os.path.exists(cov_file):
                         item['Cov']         = html.A('Func:{:.2%} Code:{:.2%}'.format(db[idx]['metrics_result']['functional_coverage'],db[idx]['metrics_result']['code_coverage']),
                                                      href  = 'https://nvtegra/'+cov_file)

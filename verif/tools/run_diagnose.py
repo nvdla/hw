@@ -129,7 +129,8 @@ class  RunDiagnose(object):
         with open(test_file, 'w') as new_fh:
             json.dump(test_data, new_fh, sort_keys=True, indent=4)
         if self._publish:
-            copy2(test_file, self._publish_dir)
+            os.makedirs(os.path.join(self._publish_dir, 'json_db'), exist_ok=True)
+            copy2(test_file, os.path.join(self._publish_dir, 'json_db'))
 
 
 

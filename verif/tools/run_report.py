@@ -113,7 +113,8 @@ class RunReport(object):
         with open(test_sts_file, 'w') as new_fh:
             json.dump(self.test_orgz_data, new_fh, sort_keys=True, indent=4)
         if self.publish:
-            copy2(test_sts_file, self.publish_dir)
+            os.makedirs(os.path.join(self.publish_dir,'json_db'), exist_ok=True)
+            copy2(test_sts_file, os.path.join(self.publish_dir,'json_db'))
 
     def report_gen(self):
         self.test_sts_report_gen()
@@ -138,7 +139,8 @@ class RunReport(object):
         with open(report_file, 'w') as new_fh:
             json.dump(self.regr_sts_data, new_fh, sort_keys=True, indent=4)
         if self.publish:
-            copy2(report_file, self.publish_dir)
+            os.makedirs(os.path.join(self.publish_dir,'json_db'), exist_ok=True)
+            copy2(report_file, os.path.join(self.publish_dir, 'json_db'))
 
     def is_regress_pass(self):
         passed_testlist  = {k:v for k,v in self.test_orgz_data.items() if v['status'] == 'PASS'}

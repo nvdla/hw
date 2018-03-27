@@ -6,6 +6,8 @@ import argparse
 import subprocess
 import time
 import shutil
+import glob
+import json
 from pprint import pprint
 from datetime import datetime
 
@@ -13,7 +15,7 @@ __DESCRIPTION__='''
 Use for running regression
 '''
 
-def build_tree(project_name, dry_run=False):
+def build_tree(project_name, dry_run=False, en_cov=False):
     tot_dir = _get_abs_path_to_tree_root()
     os.chdir(tot_dir)
     # Remove tree.make and outdir
@@ -27,6 +29,9 @@ def build_tree(project_name, dry_run=False):
     # Tree.make setup
     cmd_str = "make USE_NV_ENV=1"
     subprocess.run(cmd_str, shell=True)
+    if en_cov:
+        with open(treemake_abs_path, 'a') as fh:
+            fh.write('COVERAGE:=1')
     # Build tree
     cmd_str = "./tools/bin/tmake -build ready_for_test -project %s" % project_name
     print("Build command:%s" % cmd_str)
@@ -75,11 +80,12 @@ def run_report(run_dir, db_dir, arguments, sub_metrics='', dry_run=False):
     else:
         return 0
 
-def run_coverage_report(run_dir, db_dir, report_dir, waver_path='', dry_run=False):
+def run_coverage_report(project, run_dir, db_dir, report_dir, publish_dir, waver_path='', dry_run=False):
     python_interpreter = sys.executable
     cmd_exe = os.path.join(_get_abs_path_to_tree_root(), 'verif/tools/run_coverage_report.py')
     #cmd_args = "-regress_dir %(run_dir)s -merged_cm_dir %(db_dir)s -report_dir %(report_dir)s -waver_path %(waver_path)s" % {'regress_dir':regress_dir, 'db_dir':db_dir, 'report_dir':report_dir, 'waver_path':waver_path}
-    cmd_args = "-regress_dir %(run_dir)s -merged_cm_dir %(db_dir)s -report_dir %(report_dir)s" % {'regress_dir':regress_dir, 'db_dir':db_dir, 'report_dir':report_dir}
+    cmd_args = "-P %(project)s -regress_dir %(run_dir)s -merged_cm_dir %(db_dir)s -report_dir %(report_dir)s -publish -publish_dir %(publish_dir)s" \
+                % {'project':project, 'run_dir':run_dir, 'db_dir':db_dir, 'report_dir':report_dir, 'publish_dir':publish_dir}
     cmd_str = ' '.join([python_interpreter, cmd_exe, cmd_args])
     print ("Status monitor command:%s"%cmd_str)
     if not dry_run:
@@ -149,6 +155,8 @@ if __name__ == '__main__':
                         help='Python version which contains levenshtein lib')
     parser.add_argument('--dry_run', '-dry_run', dest='dry_run', required=False, default=False, action='store_true',
                         help='Python version which contains plotly lib')
+    parser.add_argument('--en_cov', '-en_cov', dest='en_cov', required=False, default=False, action='store_true',
+                        help='Enable coverage in project build process')
     config = vars( parser.parse_args() )
     config['and_tag_list'] = [] if config['and_tag_list'] is None else [item for sublist in config['and_tag_list'] for item in sublist]
     config['or_tag_list'] = [] if config['or_tag_list'] is None else [item for sublist in config['or_tag_list'] for item in sublist]
@@ -179,7 +187,7 @@ if __name__ == '__main__':
     #pprint (config)
     project_name = config['project']
     if not config['skip_build']:
-        ret = build_tree(project_name, dry_run)
+        ret = build_tree(project_name, dry_run, config['en_cov'])
         if 0 != ret:
             print("TREE_BUILD_FAIL")
             sys.exit(ret)
@@ -199,9 +207,14 @@ if __name__ == '__main__':
             elif 'coverage' == config['kind']:
                 ret=run_plan(config['project'], project_name, '-otag L0 L1 L2 L10 L11 L20 -l_num 4 -r_num 4 %s -run_dir %s -en_cov' % (args, run_dir), lsf_cmd, dry_run)
                 ret=run_report(run_dir, publish_dir, '-monitor_timeout %d' % max_regression_time, 'passing_rate:L0 passing_rate:L1 passing_rate:L2 passing_rate:L10 passing_rate:L11 passing_rate:L20', dry_run)
-                cov_vdb_dir = os.path.join(run_dir, 'merged_'+time_str+'.vdb')
-                cov_report_dir = os.path.join(run_dir, 'report_'+time_str)
-                ret=run_coverage_report(run_dir, cov_vdb_dir, cov_report_dir, dry_run)
+                regr_sts_file = ''.join(glob.glob('{}/regression_status_*.json'.format(run_dir)))
+                with open(regr_sts_file, 'r') as fh:
+                    regr_db = json.load(fh)
+                cov_vdb_dir = 'merged_'+regr_db['start_time']+'.vdb'
+                cov_report_dir = 'report_'+regr_db['start_time']
+                ret=run_coverage_report(config['project'], run_dir, cov_vdb_dir, cov_report_dir, publish_dir, dry_run)
+                shutil.move(cov_vdb_dir, run_dir)
+                shutil.move(cov_report_dir, run_dir)
             elif 'all' == config['kind']:
                 ret=run_plan(config['project'], project_name, '-l_num 5 -r_num 10 %s -run_dir %s' % (args, run_dir), lsf_cmd, dry_run)
                 ret=run_report(run_dir, publish_dir, '-monitor_timeout %d' % max_regression_time, 'passing_rate:L0 passing_rate:L1 passing_rate:L2 passing_rate:L10 passing_rate:L11', dry_run)
@@ -212,7 +225,7 @@ if __name__ == '__main__':
             ret=run_diagnose(run_dir, synd_dir, publish_dir, config['levenshtein_py_path'], dry_run)
             if 0 != ret:
                 raise Exception("REGRESSION_FAIL_CANNOT_RUN_DIAGNOSE")
-            ret=run_metrics(publish_dir, web_dir, project_name+'_'+config['kind'], config['plotly_py_path'], dry_run)
+            ret=run_metrics(os.path.join(publish_dir,'json_db'), web_dir, project_name+'_'+config['kind'], config['plotly_py_path'], dry_run)
             if 0 != ret:
                 raise Exception("REGRESSION_FAIL_CANNOT_GENERATE_METRICS")
         except:
