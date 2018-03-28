@@ -96,7 +96,7 @@ output        pixel_planar0_lp_vld;
 output  [3:0] pixel_planar0_rp_burst;
 output        pixel_planar0_rp_vld;
 output  [2:0] pixel_planar0_sft;
-output [11:0] pixel_planar0_width_burst;
+output [13:0] pixel_planar0_width_burst;
 output  [4:0] pixel_planar1_bundle_limit;
 output  [4:0] pixel_planar1_bundle_limit_1st;
 output  [2:0] pixel_planar1_lp_burst;
@@ -104,7 +104,7 @@ output        pixel_planar1_lp_vld;
 output  [2:0] pixel_planar1_rp_burst;
 output        pixel_planar1_rp_vld;
 output  [2:0] pixel_planar1_sft;
-output [10:0] pixel_planar1_width_burst;
+output [13:0] pixel_planar1_width_burst;
 output  [1:0] pixel_precision;
 output        pixel_uint;
 output        slcg_img_gate_dc;
@@ -155,7 +155,7 @@ reg     [3:0] pixel_planar0_rp_burst;
 reg           pixel_planar0_rp_vld;
 reg     [2:0] pixel_planar0_sft;
 reg     [2:0] pixel_planar0_sft_nxt;
-reg    [11:0] pixel_planar0_width_burst;
+reg    [13:0] pixel_planar0_width_burst;
 reg     [4:0] pixel_planar1_bundle_limit;
 reg     [4:0] pixel_planar1_bundle_limit_1st;
 reg     [2:0] pixel_planar1_lp_burst;
@@ -165,7 +165,7 @@ reg     [2:0] pixel_planar1_rp_burst;
 reg           pixel_planar1_rp_vld;
 reg     [2:0] pixel_planar1_sft;
 reg     [2:0] pixel_planar1_sft_nxt;
-reg    [10:0] pixel_planar1_width_burst;
+reg    [13:0] pixel_planar1_width_burst;
 reg           pixel_planar_nxt;
 reg     [1:0] pixel_precision;
 reg     [1:0] pixel_precision_nxt;
@@ -193,11 +193,11 @@ wire          layer_st;
 wire          mode_match;
 wire          mon_delay_cnt_w;
 wire          mon_pixel_element_sft_w;
-wire    [2:0] mon_pixel_planar0_burst_need_w;
+wire          mon_pixel_planar0_burst_need_w;
 wire    [4:0] mon_pixel_planar0_byte_sft_w;
 wire    [1:0] mon_pixel_planar0_lp_burst_w;
 wire    [8:0] mon_pixel_planar0_rp_burst_w;
-wire    [2:0] mon_pixel_planar0_width_burst_w;
+wire          mon_pixel_planar0_width_burst_w;
 wire    [3:0] mon_pixel_planar1_burst_need_w;
 wire    [4:0] mon_pixel_planar1_byte_sft_w;
 wire    [2:0] mon_pixel_planar1_lp_burst_w;
@@ -222,17 +222,17 @@ wire          pixel_early_end_w;
 //: );
 wire    [3:0] pixel_planar0_bundle_limit_1st_w;
 wire    [3:0] pixel_planar0_bundle_limit_w;
-wire   [11:0] pixel_planar0_burst_need_w;
+wire   [13:0] pixel_planar0_burst_need_w;
 wire   [13:0] pixel_planar0_fetch_width;
 wire    [3:0] pixel_planar0_lp_burst_w;
 wire    [4:0] pixel_planar0_lp_filled;
 wire          pixel_planar0_lp_vld_w;
 wire    [3:0] pixel_planar0_rp_burst_w;
 wire          pixel_planar0_rp_vld_w;
-wire   [11:0] pixel_planar0_width_burst_w;
+wire   [13:0] pixel_planar0_width_burst_w;
 wire    [4:0] pixel_planar1_bundle_limit_1st_w;
 wire    [4:0] pixel_planar1_bundle_limit_w;
-wire   [10:0] pixel_planar1_burst_need_w;
+wire   [13:0] pixel_planar1_burst_need_w;
 wire   [13:0] pixel_planar1_fetch_width;
 wire    [2:0] pixel_planar1_lp_burst_w;
 wire    [4:0] pixel_planar1_lp_filled;
@@ -242,7 +242,7 @@ wire          pixel_planar1_rp_vld_w;
 wire    [2:0] pixel_planar1_tail_width_w;
 wire    [1:0] pixel_planar1_total_burst_w;
 wire    [5:0] pixel_planar1_total_width_w;
-wire   [10:0] pixel_planar1_width_burst_w;
+wire   [13:0] pixel_planar1_width_burst_w;
 wire    [4:0] pixel_planar1_x_offset;
 wire   [13:0] pixel_store_width;
 wire          pixel_tail_1_w;
@@ -588,15 +588,19 @@ assign {mon_pixel_planar1_lp_burst_w[2:0],
                                    (reg2dp_pad_left >> pixel_planar1_sft_nxt) + 1'b1;
 assign pixel_planar0_fetch_width = reg2dp_datain_width + reg2dp_pixel_x_offset;
 assign pixel_planar1_fetch_width = reg2dp_datain_width + pixel_planar1_x_offset;
-assign {mon_pixel_planar0_width_burst_w[2:0],
-        pixel_planar0_width_burst_w} = (pixel_planar0_fetch_width >> pixel_planar0_sft_nxt) + 1'b1;
-assign {mon_pixel_planar1_width_burst_w[3:0],
-        pixel_planar1_width_burst_w} = (pixel_planar1_fetch_width >> pixel_planar1_sft_nxt) + 1'b1;
+assign pixel_planar0_width_burst_w = (pixel_planar0_fetch_width >> pixel_planar0_sft_nxt) + 14'b1;
+assign pixel_planar1_width_burst_w = (pixel_planar1_fetch_width >> pixel_planar1_sft_nxt) + 14'b1;
+//assign {mon_pixel_planar0_width_burst_w[0],
+//        pixel_planar0_width_burst_w} = (pixel_planar0_fetch_width >> pixel_planar0_sft_nxt) + 14'b1;
+//assign {mon_pixel_planar1_width_burst_w[3:0],
+//        pixel_planar1_width_burst_w} = (pixel_planar1_fetch_width >> pixel_planar1_sft_nxt) + 14'b1;
 assign pixel_store_width = reg2dp_pad_left + reg2dp_datain_width + reg2dp_pad_right;
-assign {mon_pixel_planar0_burst_need_w[2:0],
-        pixel_planar0_burst_need_w} = (pixel_store_width >> pixel_planar0_sft_nxt) + 2'h2;
-assign {mon_pixel_planar1_burst_need_w[3:0],
-        pixel_planar1_burst_need_w} = (pixel_store_width >> pixel_planar1_sft_nxt) + 2'h2;
+assign pixel_planar0_burst_need_w = (pixel_store_width >> pixel_planar0_sft_nxt) + 14'h2;
+assign pixel_planar1_burst_need_w = (pixel_store_width >> pixel_planar1_sft_nxt) + 14'h2;
+//assign {mon_pixel_planar0_burst_need_w[0],
+//        pixel_planar0_burst_need_w} = (pixel_store_width >> pixel_planar0_sft_nxt) + 14'h2;
+//assign {mon_pixel_planar1_burst_need_w[0],
+//        pixel_planar1_burst_need_w} = (pixel_store_width >> pixel_planar1_sft_nxt) + 14'h2;
 assign {mon_pixel_planar0_rp_burst_w[8:0],
         pixel_planar0_rp_burst_w} = pixel_planar0_burst_need_w - pixel_planar0_lp_burst_w - pixel_planar0_width_burst_w;
 assign {mon_pixel_planar1_rp_burst_w[9:0],
@@ -664,8 +668,8 @@ assign pixel_planar1_rp_vld_w = (|pixel_planar1_rp_burst_w);
 //: &eperl::flop("-nodeclare   -rval \"{3{1'b0}}\"  -en \"layer_st & planar1_vld_w\" -d \"pixel_planar1_lp_burst_w\" -q pixel_planar1_lp_burst");
 //: &eperl::flop("-nodeclare   -rval \"1'b0\"  -en \"layer_st\" -d \"pixel_planar0_lp_vld_w\" -q pixel_planar0_lp_vld");
 //: &eperl::flop("-nodeclare   -rval \"1'b0\"  -en \"layer_st & planar1_vld_w\" -d \"pixel_planar1_lp_vld_w\" -q pixel_planar1_lp_vld");
-//: &eperl::flop("-nodeclare   -rval \"{12{1'b0}}\"  -en \"layer_st\" -d \"pixel_planar0_width_burst_w\" -q pixel_planar0_width_burst");
-//: &eperl::flop("-nodeclare   -rval \"{11{1'b0}}\"  -en \"layer_st & planar1_vld_w\" -d \"pixel_planar1_width_burst_w\" -q pixel_planar1_width_burst");
+//: &eperl::flop("-nodeclare   -rval \"{14{1'b0}}\"  -en \"layer_st\" -d \"pixel_planar0_width_burst_w\" -q pixel_planar0_width_burst");
+//: &eperl::flop("-nodeclare   -rval \"{14{1'b0}}\"  -en \"layer_st & planar1_vld_w\" -d \"pixel_planar1_width_burst_w\" -q pixel_planar1_width_burst");
 //: &eperl::flop("-nodeclare   -rval \"{4{1'b0}}\"  -en \"layer_st\" -d \"pixel_planar0_rp_burst_w\" -q pixel_planar0_rp_burst");
 //: &eperl::flop("-nodeclare   -rval \"{3{1'b0}}\"  -en \"layer_st & planar1_vld_w\" -d \"pixel_planar1_rp_burst_w\" -q pixel_planar1_rp_burst");
 //: &eperl::flop("-nodeclare   -rval \"1'b0\"  -en \"layer_st\" -d \"pixel_planar0_rp_vld_w\" -q pixel_planar0_rp_vld");

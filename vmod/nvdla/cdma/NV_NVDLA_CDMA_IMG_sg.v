@@ -127,14 +127,14 @@ input    [3:0] pixel_planar0_lp_burst;
 input          pixel_planar0_lp_vld;
 input    [3:0] pixel_planar0_rp_burst;
 input          pixel_planar0_rp_vld;
-input   [11:0] pixel_planar0_width_burst;
+input   [13:0] pixel_planar0_width_burst;
 input    [4:0] pixel_planar1_bundle_limit;
 input    [4:0] pixel_planar1_bundle_limit_1st;
 input    [2:0] pixel_planar1_lp_burst;
 input          pixel_planar1_lp_vld;
 input    [2:0] pixel_planar1_rp_burst;
 input          pixel_planar1_rp_vld;
-input   [10:0] pixel_planar1_width_burst;
+input   [13:0] pixel_planar1_width_burst;
 input   [31:0] pwrbus_ram_pd;
 input          reg2dp_op_en;
 input          sg2pack_img_prdy;
@@ -223,13 +223,13 @@ reg            req_grant_end_d1;
 reg     [12:0] req_height_cnt;
 reg     [63:0] req_img_p0_addr_base;
 reg      [3:0] req_img_p0_bundle_cnt;
-reg     [11:0] req_img_p0_burst_cnt;
+reg     [13:0] req_img_p0_burst_cnt;
 reg     [26:0] req_img_p0_burst_offset;
 reg     [31:0] req_img_p0_line_offset;
 reg      [1:0] req_img_p0_sec_cnt;
 reg     [63:0] req_img_p1_addr_base;
 reg      [4:0] req_img_p1_bundle_cnt;
-reg     [10:0] req_img_p1_burst_cnt;
+reg     [13:0] req_img_p1_burst_cnt;
 reg     [26:0] req_img_p1_burst_offset;
 reg     [31:0] req_img_p1_line_offset;
 reg      [1:0] req_img_p1_sec_cnt;
@@ -391,8 +391,8 @@ wire     [4:0] req_img_burst_size;
 wire    [63:0] req_img_p0_addr;
 wire    [63:0] req_img_p0_addr_base_w;
 wire     [3:0] req_img_p0_bundle_cnt_w;
-wire    [12:0] req_img_p0_burst_cnt_dec;
-wire    [11:0] req_img_p0_burst_cnt_w;
+wire    [14:0] req_img_p0_burst_cnt_dec;
+wire    [13:0] req_img_p0_burst_cnt_w;
 wire           req_img_p0_burst_en;
 wire           req_img_p0_burst_offset_en;
 wire    [26:0] req_img_p0_burst_offset_w;
@@ -404,8 +404,8 @@ wire           req_img_p0_sec_en;
 wire    [63:0] req_img_p1_addr;
 wire    [63:0] req_img_p1_addr_base_w;
 wire     [4:0] req_img_p1_bundle_cnt_w;
-wire    [11:0] req_img_p1_burst_cnt_dec;
-wire    [10:0] req_img_p1_burst_cnt_w;
+wire    [14:0] req_img_p1_burst_cnt_dec;
+wire    [13:0] req_img_p1_burst_cnt_w;
 wire           req_img_p1_burst_en;
 wire           req_img_p1_burst_offset_en;
 wire    [26:0] req_img_p1_burst_offset_w;
@@ -580,17 +580,17 @@ assign {mon_req_img_p0_bundle_cnt_w,
 //: &eperl::flop("-nodeclare   -rval \"{4{1'b0}}\"  -en \"req_img_p0_burst_en\" -d \"req_img_p0_bundle_cnt_w\" -q req_img_p0_bundle_cnt");
 
 assign req_img_p0_burst_cnt_dec = req_img_p0_burst_cnt - req_img_p0_bundle_cnt;
-assign req_img_p0_cur_burst = req_img_p0_burst_cnt_dec[13  -1] ? req_img_p0_burst_cnt[3:0] : req_img_p0_bundle_cnt;
-assign req_img_p0_burst_cnt_w = ((is_first_running | is_p0_last_burst) & pixel_planar0_lp_vld) ? {{8{1'b0}}, pixel_planar0_lp_burst} :
+assign req_img_p0_cur_burst = req_img_p0_burst_cnt_dec[14] ? req_img_p0_burst_cnt[3:0] : req_img_p0_bundle_cnt;
+assign req_img_p0_burst_cnt_w = ((is_first_running | is_p0_last_burst) & pixel_planar0_lp_vld) ? {{10{1'b0}}, pixel_planar0_lp_burst} :
                                 ((is_first_running | is_p0_last_burst) & ~pixel_planar0_lp_vld) ? pixel_planar0_width_burst :
                                 ((req_img_p0_sec_cnt == 2'h0) & is_p0_cur_sec_end) ? pixel_planar0_width_burst :
-                                ((req_img_p0_sec_cnt == 2'h1) & is_p0_cur_sec_end) ? {{8{1'b0}}, pixel_planar0_rp_burst} :
-                                req_img_p0_burst_cnt_dec[11:0];
+                                ((req_img_p0_sec_cnt == 2'h1) & is_p0_cur_sec_end) ? {{10{1'b0}}, pixel_planar0_rp_burst} :
+                                req_img_p0_burst_cnt_dec[13:0];
 assign {mon_req_img_p0_sec_cnt_w,
         req_img_p0_sec_cnt_w} = ((is_first_running | is_p0_last_burst) & pixel_planar0_lp_vld) ? 3'h0 :
                                ((is_first_running | is_p0_last_burst) & ~pixel_planar0_lp_vld) ? 3'h1 : req_img_p0_sec_cnt + 1'b1;
-assign is_p0_cur_sec_end = (req_img_p0_burst_cnt <= {{8{1'b0}}, req_img_p0_bundle_cnt});
-assign is_p0_1st_burst = ((req_img_p0_burst_cnt == {{8{1'b0}}, pixel_planar0_lp_burst}) & (req_img_p0_sec_cnt == 2'h0)) |
+assign is_p0_cur_sec_end = (req_img_p0_burst_cnt <= {{10{1'b0}}, req_img_p0_bundle_cnt});
+assign is_p0_1st_burst = ((req_img_p0_burst_cnt == {{10{1'b0}}, pixel_planar0_lp_burst}) & (req_img_p0_sec_cnt == 2'h0)) |
                          ((req_img_p0_burst_cnt == pixel_planar0_width_burst) & (req_img_p0_sec_cnt == 2'h1) & ~pixel_planar0_lp_vld);
 assign is_p0_last_burst = (is_p0_cur_sec_end & (req_img_p0_sec_cnt == 2'h1) & ~pixel_planar0_rp_vld) |
                           (is_p0_cur_sec_end & (req_img_p0_sec_cnt == 2'h2));
@@ -598,7 +598,7 @@ assign is_p0_bundle_end = (req_img_p0_cur_burst == req_img_p0_bundle_cnt) | is_p
 assign req_img_p0_burst_size = req_img_p0_cur_burst;
 assign is_p0_req_real = (req_img_p0_sec_cnt == 2'b1);
 
-//: &eperl::flop("-nodeclare   -rval \"{12{1'b0}}\"  -en \"req_img_p0_burst_en\" -d \"req_img_p0_burst_cnt_w\" -q req_img_p0_burst_cnt");
+//: &eperl::flop("-nodeclare   -rval \"{14{1'b0}}\"  -en \"req_img_p0_burst_en\" -d \"req_img_p0_burst_cnt_w\" -q req_img_p0_burst_cnt");
 //: &eperl::flop("-nodeclare   -rval \"{2{1'b0}}\"  -en \"req_img_p0_sec_en\" -d \"req_img_p0_sec_cnt_w\" -q req_img_p0_sec_cnt");
 
 ///////////// image planar 1 bundle and burst count /////////////
@@ -608,19 +608,19 @@ assign {mon_req_img_p1_bundle_cnt_w,
                                   is_p1_bundle_end ? {1'b0, pixel_planar1_bundle_limit} :
                                   req_img_p1_bundle_cnt - req_img_p1_cur_burst;
 assign req_img_p1_burst_cnt_dec = req_img_p1_burst_cnt - req_img_p1_bundle_cnt;
-assign req_img_p1_cur_burst = req_img_p1_burst_cnt_dec[13  -2] ? req_img_p1_burst_cnt[4:0] : req_img_p1_bundle_cnt;
-assign req_img_p1_burst_cnt_w = ((is_first_running | is_p1_last_burst) & pixel_planar1_lp_vld) ? {{8{1'b0}}, pixel_planar1_lp_burst} :
+assign req_img_p1_cur_burst = req_img_p1_burst_cnt_dec[14] ? req_img_p1_burst_cnt[4:0] : req_img_p1_bundle_cnt;
+assign req_img_p1_burst_cnt_w = ((is_first_running | is_p1_last_burst) & pixel_planar1_lp_vld) ? {{11{1'b0}}, pixel_planar1_lp_burst} :
                                 ((is_first_running | is_p1_last_burst) & ~pixel_planar1_lp_vld) ? pixel_planar1_width_burst :
                                 ((req_img_p1_sec_cnt == 2'h0) & is_p1_cur_sec_end) ? pixel_planar1_width_burst :
-                                ((req_img_p1_sec_cnt == 2'h1) & is_p1_cur_sec_end) ? {{8{1'b0}}, pixel_planar1_rp_burst} :
-                                req_img_p1_burst_cnt_dec[10:0];
+                                ((req_img_p1_sec_cnt == 2'h1) & is_p1_cur_sec_end) ? {{11{1'b0}}, pixel_planar1_rp_burst} :
+                                req_img_p1_burst_cnt_dec[13:0];
 assign {mon_req_img_p1_sec_cnt_w,
         req_img_p1_sec_cnt_w} = ((is_first_running | is_p1_last_burst) & pixel_planar1_lp_vld) ? 3'h0 :
                                ((is_first_running | is_p1_last_burst) & ~pixel_planar1_lp_vld) ? 3'h1 :
                                req_img_p1_sec_cnt + 1'b1;
 assign req_img_p1_burst_size = req_img_p1_cur_burst;
-assign is_p1_cur_sec_end = req_img_p1_burst_cnt_dec[13  -2] | (req_img_p1_burst_cnt == {{6{1'b0}}, req_img_p1_bundle_cnt});
-assign is_p1_1st_burst = ((req_img_p1_burst_cnt == {{8{1'b0}}, pixel_planar1_lp_burst}) & (req_img_p1_sec_cnt == 2'h0)) |
+assign is_p1_cur_sec_end = req_img_p1_burst_cnt_dec[14] | (req_img_p1_burst_cnt == {{8{1'b0}}, req_img_p1_bundle_cnt});
+assign is_p1_1st_burst = ((req_img_p1_burst_cnt == {{11{1'b0}}, pixel_planar1_lp_burst}) & (req_img_p1_sec_cnt == 2'h0)) |
                          ((req_img_p1_burst_cnt == pixel_planar1_width_burst) & (req_img_p1_sec_cnt == 2'h1) & ~pixel_planar1_lp_vld);
 assign is_p1_last_burst = (is_p1_cur_sec_end & (req_img_p1_sec_cnt == 2'h1) & ~pixel_planar1_rp_vld) |
                           (is_p1_cur_sec_end & (req_img_p1_sec_cnt == 2'h2));
@@ -628,7 +628,7 @@ assign is_p1_bundle_end = (req_img_p1_cur_burst == req_img_p1_bundle_cnt) | is_p
 assign is_p1_req_real = (req_img_p1_sec_cnt == 2'b1);
 
 //: &eperl::flop("-nodeclare   -rval \"{5{1'b0}}\"  -en \"req_img_p1_burst_en\" -d \"req_img_p1_bundle_cnt_w\" -q req_img_p1_bundle_cnt");
-//: &eperl::flop("-nodeclare   -rval \"{11{1'b0}}\"  -en \"req_img_p1_burst_en\" -d \"req_img_p1_burst_cnt_w\" -q req_img_p1_burst_cnt");
+//: &eperl::flop("-nodeclare   -rval \"{14{1'b0}}\"  -en \"req_img_p1_burst_en\" -d \"req_img_p1_burst_cnt_w\" -q req_img_p1_burst_cnt");
 //: &eperl::flop("-nodeclare   -rval \"{2{1'b0}}\"  -en \"req_img_p1_sec_en\" -d \"req_img_p1_sec_cnt_w\" -q req_img_p1_sec_cnt");
 
 

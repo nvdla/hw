@@ -282,7 +282,7 @@ wire        pixel_planar0_lp_vld;
 wire  [3:0] pixel_planar0_rp_burst;
 wire        pixel_planar0_rp_vld;
 wire  [2:0] pixel_planar0_sft;
-wire [11:0] pixel_planar0_width_burst;
+wire [13:0] pixel_planar0_width_burst;
 wire  [4:0] pixel_planar1_bundle_limit;
 wire  [4:0] pixel_planar1_bundle_limit_1st;
 wire  [2:0] pixel_planar1_lp_burst;
@@ -290,7 +290,7 @@ wire        pixel_planar1_lp_vld;
 wire  [2:0] pixel_planar1_rp_burst;
 wire        pixel_planar1_rp_vld;
 wire  [2:0] pixel_planar1_sft;
-wire [10:0] pixel_planar1_width_burst;
+wire [13:0] pixel_planar1_width_burst;
 wire  [1:0] pixel_precision;
 wire        pixel_uint;
 wire [14:0] sg2pack_data_entries;
@@ -395,7 +395,7 @@ NV_NVDLA_CDMA_IMG_sg u_sg (
   ,.pixel_planar0_lp_vld           (pixel_planar0_lp_vld)               
   ,.pixel_planar0_rp_burst         (pixel_planar0_rp_burst[3:0])        
   ,.pixel_planar0_rp_vld           (pixel_planar0_rp_vld)               
-  ,.pixel_planar0_width_burst      (pixel_planar0_width_burst[11:0])    
+  ,.pixel_planar0_width_burst      (pixel_planar0_width_burst )   
   ,.pixel_planar1_bundle_limit     (pixel_planar1_bundle_limit[4:0])    
   ,.pixel_planar1_bundle_limit_1st (pixel_planar1_bundle_limit_1st[4:0])
   ,.pixel_planar1_byte_sft         (pixel_planar1_byte_sft)        
@@ -403,7 +403,7 @@ NV_NVDLA_CDMA_IMG_sg u_sg (
   ,.pixel_planar1_lp_vld           (pixel_planar1_lp_vld)               
   ,.pixel_planar1_rp_burst         (pixel_planar1_rp_burst[2:0])        
   ,.pixel_planar1_rp_vld           (pixel_planar1_rp_vld)               
-  ,.pixel_planar1_width_burst      (pixel_planar1_width_burst[10:0])    
+  ,.pixel_planar1_width_burst      (pixel_planar1_width_burst)    
   ,.pwrbus_ram_pd                  (pwrbus_ram_pd[31:0])                
   ,.reg2dp_op_en                   (reg2dp_op_en)                       
   ,.sg2pack_img_prdy               (sg2pack_img_prdy)                   
