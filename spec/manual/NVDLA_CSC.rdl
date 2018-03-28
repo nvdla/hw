@@ -420,7 +420,7 @@ regfile regs_NVDLA_CSC{
             reset_mask      = 0x1ffffff;
             spec_sw_default = 0x0;
             sw_default_mask = 0x0;
-        } WEIGHT_BYTES[31:7];
+        } WEIGHT_BYTES[31:0];
         WEIGHT_BYTES->desc="
 ////total bytes of entire weights
 ";
@@ -435,7 +435,7 @@ regfile regs_NVDLA_CSC{
             reset_mask      = 0x1fffff;
             spec_sw_default = 0x0;
             sw_default_mask = 0x0;
-        } WMB_BYTES[27:7];
+        } WMB_BYTES[27:0];
         WMB_BYTES->desc="
 ////total WMB bytes
 ";

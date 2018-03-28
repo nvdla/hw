@@ -276,6 +276,8 @@ class nvdla_cdma_resource extends nvdla_base_resource;
     rand byte                       atomic_m;   // atomic memory
     rand byte                       atomic_c;   // atomic channel
     rand byte                       atomic_e;   // atomic entry
+    rand byte                       atomic_e2m; // atomic_e//atomic_m
+    rand int unsigned               n_atomic_m; // (channel_in+atomic_m-1)//atomic_m
 
     `uvm_component_utils_begin(nvdla_cdma_resource)
         `uvm_field_string(cdma_feature_surface_pattern, UVM_ALL_ON)
@@ -575,6 +577,8 @@ constraint nvdla_cdma_resource::c_ias_atomic_setting {
         atomic_c == `NVDLA_MAC_ATOMIC_C_SIZE/2;
         atomic_e == NVDLA_CBUF_ENTRY_BYTE_WIDTH/2;
     }
+    atomic_e2m == atomic_e/atomic_m;
+    n_atomic_m == (datain_channel + atomic_m)/atomic_m;
 }
 
 constraint nvdla_cdma_resource::c_ias_work_mode {
@@ -737,13 +741,18 @@ constraint nvdla_cdma_resource::c_ias_entries {
     }
     else {  // feature
         if(conv_mode == conv_mode_DIRECT) {
-            // N_m:  how many atomic_m in channel dimension: (channel + ATOMIC_M - 1) // ATOMIC_M
-            // AE_m: how many atomic_m could be accomondated in one entry: ATOMIC_ENTRY // ATOMIC_M
-            // entry_per_slice : N_m // AE_m * width + AE_m // (N_m % AE_m) * width = (N_m // AE_m + AE_m // (N_m % AE_m)) * width
-            if(1 == (atomic_e/atomic_m)) {
-                (entries+1) == ((datain_channel + atomic_m)/atomic_m) * (datain_width+1);
+            // N_m:  how many atomic_m in channel dimension: (channel + ATOMIC_M - 1) // ATOMIC_M == ((datain_channel + atomic_m)/atomic_m)
+            // AE_m: how many atomic_m could be accomondated in one entry: ATOMIC_ENTRY // ATOMIC_M  == (atomic_e/atomic_m)
+            // sharing_factor: AE_m/(N_m%AE_m) == (atomic_e2m/(n_atomic_m%atomic_e2m)) == ((atomic_e/atomic_m)/(((datain_channel + atomic_m)/atomic_m)%(atomic_e/atomic_m)))
+            // entry_per_slice : quotient_part + remainder_part
+            //     quotient_part:    N_m // AE_m * width
+            //     remainder_part:
+            //                      1. if N_m % AE_m == 0: 0
+            //                      2. if N_m % AE_m != 0: ((width+sharing_factor-1) // sharing_factor) == (datain_width+((atomic_e/atomic_m)/(((datain_channel + atomic_m)/atomic_m)%(atomic_e/atomic_m)))/((atomic_e/atomic_m)/(((datain_channel + atomic_m)/atomic_m)%(atomic_e/atomic_m))))
+            if(0 == n_atomic_m%atomic_e2m ) {
+                (entries+1) == n_atomic_m/atomic_e2m * (datain_width+1);
             } else {
-                (entries+1) == ( ( ((datain_channel + atomic_m)/atomic_m)  /  (atomic_e/atomic_m) ) +  (atomic_e/atomic_m)  / ( ((datain_channel + atomic_m)/atomic_m)  %  (atomic_e/atomic_m) ) ) * (datain_width+1);
+                (entries+1) == n_atomic_m/atomic_e2m * (datain_width+1) + (datain_width+(atomic_e2m/(n_atomic_m%atomic_e2m)))/(atomic_e2m/(n_atomic_m%atomic_e2m)) ;
             }
         }
         else { // winograd
@@ -1358,13 +1367,13 @@ function void nvdla_cdma_resource::set_mem_addr();
 
     if(weight_reuse_DISABLE == weight_reuse) begin
         // Weight surface: uncompressed and comppressed
-        mem_size = weight_bytes*128;    // 128 is a HACK value, need to use a value from spec 
+        mem_size = weight_bytes;
         `uvm_info(inst_name, $sformatf("WEIGHT_SIZE:weight byte size is: 0x%h", mem_size), UVM_HIGH)
         region = mm.request_region_by_size("PRI", $sformatf("%s_%0d", "CDMA_WEIGHT", get_active_cnt()), mem_size, 'h7f);
         {weight_addr_high, weight_addr_low} = region.get_start_offset();
         if(weight_format_COMPRESSED == weight_format) begin
             // Weight mask surface
-            mem_size = wmb_bytes*128;    // 128 is a HACK value, need to use a value from spec
+            mem_size = wmb_bytes;
             `uvm_info(inst_name, $sformatf("WMB_SIZE:weight mask byte size is: 0x%h", mem_size), UVM_HIGH)
             region = mm.request_region_by_size("PRI", $sformatf("%s_%0d", "CDMA_WEIGHT", get_active_cnt()), mem_size, 'h7f);
             {wmb_addr_high, wmb_addr_low} = region.get_start_offset();

@@ -388,10 +388,10 @@ constraint nvdla_cc_dp_resource::c_ias_datain_ext {
 
 constraint nvdla_cc_dp_resource::c_ias_weight_data {
     if(weight_format == weight_format_UNCOMPRESSED) { // non-compression mode
-        weight_bytes == ((weight_width_ext+1)*(weight_height_ext+1)*(weight_channel_ext+1)*((proc_precision == proc_precision_INT8)?1:2)*(weight_kernel+1)+NVDLA_CBUF_ENTRY_BYTE_WIDTH-1)/NVDLA_CBUF_ENTRY_BYTE_WIDTH;
+        weight_bytes == ((weight_width_ext+1)*(weight_height_ext+1)*(weight_channel_ext+1)*((proc_precision == proc_precision_INT8)?1:2)*(weight_kernel+1)+NVDLA_CBUF_ENTRY_BYTE_WIDTH-1)/NVDLA_CBUF_ENTRY_BYTE_WIDTH*NVDLA_CBUF_ENTRY_BYTE_WIDTH;
     }
     else {
-        // depends on VDC generated memory, will be configured in sequence
+        // depends on surface generated memory, will be configured in sequence
     }
 
     // Only work when weight data in compression mode
@@ -399,7 +399,7 @@ constraint nvdla_cc_dp_resource::c_ias_weight_data {
     // wmb size <= one bank
     // bug 200312556, weiht bank must be able to hold one max kernel group + NVDLA_CBUF_ENTRY_BYTE_WIDTH bytes
     (weight_format == weight_format_COMPRESSED) -> {
-        wmb_bytes == (((weight_width_ext+1)*(weight_height_ext+1)*(weight_channel_ext+1)*(weight_kernel+1)+7)/8 +NVDLA_CBUF_ENTRY_BYTE_WIDTH-1)/NVDLA_CBUF_ENTRY_BYTE_WIDTH;
+        wmb_bytes == (((weight_width_ext+1)*(weight_height_ext+1)*(weight_channel_ext+1)*(weight_kernel+1)+7)/8 + NVDLA_CBUF_ENTRY_BYTE_WIDTH-1)/NVDLA_CBUF_ENTRY_BYTE_WIDTH*NVDLA_CBUF_ENTRY_BYTE_WIDTH;
         if(wmb_bytes > `NVDLA_CBUF_BANK_DEPTH) {  // can't work on full weight mode
             // wmb_bytes per group must <= one bank
             if(proc_precision == proc_precision_INT8) { // 32 kernel per group
