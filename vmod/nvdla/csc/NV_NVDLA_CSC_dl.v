@@ -1201,7 +1201,7 @@ assign c_bias_reg_en = layer_st | (dat_exec_valid & is_stripe_end & dl_block_end
 assign c_bias_d1_reg_en = (c_bias != c_bias_d1);
 
 //height bias, by element
-assign {mon_h_bias_0_w,h_bias_0_w} = {{CBUF_ADDR_WIDTH-12{datain_h_cnt[11]}},datain_h_cnt[12 -1:0]} * h_bias_0_stride;
+assign {mon_h_bias_0_w,h_bias_0_w} = datain_h_cnt[13:0] * h_bias_0_stride;
 assign {mon_h_bias_1_w,h_bias_1_w} = dl_h_offset * h_bias_1_stride;
 assign {mon_h_bias_2_w,h_bias_2_w} = batch_cnt * h_bias_2_stride;
 assign {mon_h_bias_3_w,h_bias_3_w} = layer_st ? 13'b0 :sub_h_cnt * h_bias_3_stride;
