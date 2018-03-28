@@ -128,20 +128,27 @@ wire   [7:0] noc2mcif_axi_b_bid_NC;
 //assign noc2mcif_axi_b_bresp_NC = noc2mcif_axi_b_bresp; //stepheng.
 //assign noc2mcif_axi_b_buser_NC = noc2mcif_axi_b_buser;
 assign noc2mcif_axi_b_bid_NC = noc2mcif_axi_b_bid;
-assign noc2mcif_axi_b_bready = 1'b1; // NO pushback is needed on AXI B channel;
+wire cq_vld = (!cq_rd0_pvld & cq_rd0_prdy) |
+(!cq_rd1_pvld & cq_rd1_prdy) |
+(!cq_rd2_pvld & cq_rd2_prdy) |
+(!cq_rd3_pvld & cq_rd3_prdy) |
+(!cq_rd4_pvld & cq_rd4_prdy); 
+
+assign noc2mcif_axi_b_bready =  !cq_vld;
 
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
     iflop_axi_vld <= 1'b0;
   end else begin
-  iflop_axi_vld <= noc2mcif_axi_b_bvalid;
+  if (noc2mcif_axi_b_bready)
+     iflop_axi_vld <= noc2mcif_axi_b_bvalid;
   end
 end
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
     iflop_axi_axid <= {3{1'b0}};
   end else begin
-  if ((noc2mcif_axi_b_bvalid) == 1'b1) begin
+  if ((noc2mcif_axi_b_bvalid & noc2mcif_axi_b_bready) == 1'b1) begin
     iflop_axi_axid <= noc2mcif_axi_b_bid[2:0];
   // VCS coverage off
   end else if ((noc2mcif_axi_b_bvalid) == 1'b0) begin
