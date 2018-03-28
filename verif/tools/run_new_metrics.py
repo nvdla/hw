@@ -315,10 +315,10 @@ class DivPlot():
                     item['Status']      = db[idx]['status']
                     cov_file = os.path.join(db_dir,proj,regr,'coverage/report','report_'+db[idx]['start_time'],'dashboard.html')
                     if os.path.exists(cov_file):
-                        item['Cov']         = html.A('Func:{:.2%} Code:{:.2%}'.format(db[idx]['metrics_result']['functional_coverage'],db[idx]['metrics_result']['code_coverage']),
+                        item['Cov']         = html.A('Func:{:.2%} Code:{:.2%}'.format(float(db[idx]['metrics_result']['functional_coverage']),float(db[idx]['metrics_result']['code_coverage'])),
                                                      href  = 'https://nvtegra/'+cov_file)
                     else:
-                        item['Cov']         = 'Func:{:.2%} Code:{:.2%}'.format(db[idx]['metrics_result']['functional_coverage'],db[idx]['metrics_result']['code_coverage'])
+                        item['Cov']         = 'Func:{:.2%} Code:{:.2%}'.format(float(db[idx]['metrics_result']['functional_coverage']),float(db[idx]['metrics_result']['code_coverage']))
                     item['PassingRate'] = dcc.Link('{:.2%}'.format(db[idx]['metrics_result']['passing_rate']), 
                                                    href  = db[idx]['start_time'],
                                                    style = {'color':'green','textDecoration':'underline','cursor':'pointer'})

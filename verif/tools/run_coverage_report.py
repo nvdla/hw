@@ -79,6 +79,7 @@ class RunCoverageReport(object):
         if not self.gen_report_only:
             self.__merge_vdb()
         self.__gen_coverage_report()
+        self.__merge_regr_status_db()
         self.__update_coverage_metrics()
 
     def __merge_vdb(self):
@@ -113,14 +114,55 @@ class RunCoverageReport(object):
         if self.view_report:
             self.__run_cmd(cmd)
 
+    def __merge_test_status_db(self):
+        file_list = [item for sublist in [[x for x in glob.glob(y+'/test_status_*.json')] for y in self.regress_dir] for item in sublist]
+        file_list = sorted(file_list)
+        merge_db = {}
+        for idx in range(len(file_list)):
+            with open(file_list[idx], 'r') as fh:
+                db = json.load(fh)
+            if idx == 0:
+                merge_db = db
+            else:
+                db_len = len(merge_db)
+                for i in db:
+                    merge_db[str(int(i)+db_len)] = db[i]
+        with open(file_list[0], 'w') as fh:
+            json.dump(merge_db, fh, sort_keys=True, indent=4)
+        return merge_db
+
+    def __merge_regr_status_db(self):
+        test_db = self.__merge_test_status_db()
+        file_list = [item for sublist in [[x for x in glob.glob(y+'/regression_status_*.json')] for y in self.regress_dir] for item in sublist]
+        file_list = sorted(file_list)
+        merge_db = {}
+        for idx in range(len(file_list)):
+            with open(file_list[idx], 'r') as fh:
+                db = json.load(fh)
+            if idx == 0:
+                merge_db = db
+            else:
+                if db['unique_id'] != merge_db['unique_id']:
+                    raise Exception('CommmitID mismatch between regression %s and %s' % (file_list[0], file_list[idx]))
+                merge_db['metrics_result']['planned_test_number']    += db['metrics_result']['planned_test_number']
+                merge_db['metrics_result']['running_test_number']    += db['metrics_result']['running_test_number']
+                merge_db['metrics_result']['unwrittern_test_number'] += db['metrics_result']['unwrittern_test_number']
+        # Calculate merged regression passing rate
+        pass_cnt  = 0
+        for tid,info in test_db.items():
+            if info['status'] == 'PASS':
+                pass_cnt += 1
+        if len(test_db) != 0:
+            merge_db['metrics_result']['passing_rate'] = float('%.4f' % (pass_cnt/len(test_db)))
+        with open(file_list[0], 'w') as fh:
+            json.dump(merge_db, fh, sort_keys=True, indent=4)
+
     def __update_coverage_metrics(self):
-        ''' Used to get coverage data from urg report file and annotate back to regression json file.
-            Only used in single regression coverage report generation process
-        '''
-        #TBD: add regression status database merge function for support handling multiple regressions
+        ''' Used to get coverage data from urg report file and annotate back to regression json file.'''
         cov_dict = {}
         cov_file = os.path.join(self.report_dir,'dashboard.txt')
-        regr_sts_file = ''.join(glob.glob('{}/regression_status_*.json'.format(sorted(self.regress_dir)[-1])))
+        regr_sts_file = ''.join(glob.glob('{}/regression_status_*.json'.format(sorted(self.regress_dir)[0])))
+        test_sts_file = ''.join(glob.glob('{}/test_status_*.json'.format(sorted(self.regress_dir)[0])))
         with open(regr_sts_file, 'r') as fh:
             regr_db = json.load(fh)
         with open(cov_file, 'r') as fh:
@@ -132,7 +174,8 @@ class RunCoverageReport(object):
                     for i in range(len(cov_item)):
                         cov_dict[cov_item[i]] = re.split('\s|\/', cov_score[i])
                     cov_dict['FUNC'] = '{:.2f}'.format(100*(int(cov_dict['ASSERT'][1])+int(cov_dict['GROUP'][1]))/(int(cov_dict['ASSERT'][2])+int(cov_dict['GROUP'][2])))
-                    cov_dict['CODE'] = '{:.2f}'.format(100*(int(cov_dict['LINE'][1])+int(cov_dict['COND'][1])+int(cov_dict['TOGGLE'][1])+int(cov_dict['FSM'][1])+int(cov_dict['BRANCH'][1]))/(int(cov_dict['LINE'][2])+int(cov_dict['COND'][2])+int(cov_dict['TOGGLE'][2])+int(cov_dict['FSM'][2])+int(cov_dict['BRANCH'][2])))
+                    cov_dict['CODE'] = '{:.2f}'.format(100*(int(cov_dict['LINE'][1])+int(cov_dict['COND'][1])+int(cov_dict['TOGGLE'][1])+int(cov_dict['FSM'][1])+int(cov_dict['BRANCH'][1])) \
+                                                       / (int(cov_dict['LINE'][2])+int(cov_dict['COND'][2])+int(cov_dict['TOGGLE'][2])+int(cov_dict['FSM'][2])+int(cov_dict['BRANCH'][2])))
                     regr_db['metrics_result']['line_coverage']       = cov_dict['LINE'][0]
                     regr_db['metrics_result']['cond_coverage']       = cov_dict['COND'][0]
                     regr_db['metrics_result']['toggle_coverage']     = cov_dict['TOGGLE'][0]
@@ -150,6 +193,8 @@ class RunCoverageReport(object):
                         os.makedirs(os.path.join(self.publish_dir,'json_db'), exist_ok=True)
                         copy2(regr_sts_file, os.path.join(self.publish_dir,'json_db'))
                         print('[INFO] Published regression data file: %s' % regr_sts_file)
+                        copy2(test_sts_file, os.path.join(self.publish_dir,'json_db'))
+                        print('[INFO] Published test status data file: %s' % test_sts_file)
                         copytree(self.report_dir, os.path.join(self.publish_dir,'coverage/report',os.path.basename(self.report_dir)))
                         print('[INFO] Published coverage report : %s' % self.report_dir)
                         copytree(self.merged_cm_dir, os.path.join(self.publish_dir,'coverage/data',os.path.basename(self.merged_cm_dir)))
