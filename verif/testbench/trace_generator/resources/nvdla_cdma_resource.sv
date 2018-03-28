@@ -1360,18 +1360,18 @@ function void nvdla_cdma_resource::set_mem_addr();
         // Weight surface: uncompressed and comppressed
         mem_size = weight_bytes*128;    // 128 is a HACK value, need to use a value from spec 
         `uvm_info(inst_name, $sformatf("WEIGHT_SIZE:weight byte size is: 0x%h", mem_size), UVM_HIGH)
-        region = mm.request_region_by_size("PRI", $sformatf("%s_%0d", "CDMA_WEIGHT", get_active_cnt()), mem_size, align_mask[2]);
+        region = mm.request_region_by_size("PRI", $sformatf("%s_%0d", "CDMA_WEIGHT", get_active_cnt()), mem_size, 'h7f);
         {weight_addr_high, weight_addr_low} = region.get_start_offset();
         if(weight_format_COMPRESSED == weight_format) begin
             // Weight mask surface
             mem_size = wmb_bytes*128;    // 128 is a HACK value, need to use a value from spec
             `uvm_info(inst_name, $sformatf("WMB_SIZE:weight mask byte size is: 0x%h", mem_size), UVM_HIGH)
-            region = mm.request_region_by_size("PRI", $sformatf("%s_%0d", "CDMA_WEIGHT", get_active_cnt()), mem_size, align_mask[3]);
+            region = mm.request_region_by_size("PRI", $sformatf("%s_%0d", "CDMA_WEIGHT", get_active_cnt()), mem_size, 'h7f);
             {wmb_addr_high, wmb_addr_low} = region.get_start_offset();
             // Weight group size surface
             mem_size = ((weight_kernel + `NVDLA_MAC_ATOMIC_K_SIZE)/`NVDLA_MAC_ATOMIC_K_SIZE + `NVDLA_MAC_ATOMIC_C_SIZE - 1)/`NVDLA_MAC_ATOMIC_C_SIZE * `NVDLA_MAC_ATOMIC_C_SIZE;
             `uvm_info(inst_name, $sformatf("WGS_SIZE:weight group byte size is: 0x%h", mem_size), UVM_HIGH)
-            region = mm.request_region_by_size("PRI", $sformatf("%s_%0d", "CDMA_WEIGHT", get_active_cnt()), mem_size, align_mask[4]);
+            region = mm.request_region_by_size("PRI", $sformatf("%s_%0d", "CDMA_WEIGHT", get_active_cnt()), mem_size, 'h7f);
             {wgs_addr_high, wgs_addr_low} = region.get_start_offset();
         end
     end
