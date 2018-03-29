@@ -136,17 +136,23 @@ class conv_cov_pool extends nvdla_coverage_base;
         // ** conv mode **
         cp_conv_mode:          coverpoint ral.nvdla.NVDLA_CDMA.D_MISC_CFG.CONV_MODE.value {
             bins dc       = {0};
+`ifdef NVDLA_WINOGRAD_ENABLE
             bins winograd = {1};
+`endif
         }
         cp_in_precision:       coverpoint ral.nvdla.NVDLA_CDMA.D_MISC_CFG.IN_PRECISION.value {
             bins int8  = {0};
+`ifdef NVDLA_FEATURE_DATA_TYPE_INT16_FP16
             bins int16 = {1};
             bins fp16  = {2};
+`endif
         }
         cp_proc_precision:       coverpoint ral.nvdla.NVDLA_CDMA.D_MISC_CFG.PROC_PRECISION.value {
             bins int8  = {0};
+`ifdef NVDLA_FEATURE_DATA_TYPE_INT16_FP16
             bins int16 = {1};
             bins fp16  = {2};
+`endif
         }
         // ** activation input **
         // image input
@@ -156,6 +162,7 @@ class conv_cov_pool extends nvdla_coverage_base;
         }
         cp_pixel_format:       coverpoint ral.nvdla.NVDLA_CDMA.D_DATAIN_FORMAT.PIXEL_FORMAT.value {
             bins pixel_format_T_R8                       = {0};
+`ifdef NVDLA_FEATURE_DATA_TYPE_INT16_FP16
             bins pixel_format_T_R10                      = {1};
             bins pixel_format_T_R12                      = {2};
             bins pixel_format_T_R16                      = {3};
@@ -167,6 +174,7 @@ class conv_cov_pool extends nvdla_coverage_base;
             bins pixel_format_T_A16Y16U16V16             = {9};
             bins pixel_format_T_V16U16Y16A16             = {10};
             bins pixel_format_T_A16Y16U16V16_F           = {11};
+`endif
             bins pixel_format_T_A8B8G8R8                 = {12};
             bins pixel_format_T_A8R8G8B8                 = {13};
             bins pixel_format_T_B8G8R8A8                 = {14};
@@ -175,22 +183,26 @@ class conv_cov_pool extends nvdla_coverage_base;
             bins pixel_format_T_X8R8G8B8                 = {17};
             bins pixel_format_T_B8G8R8X8                 = {18};
             bins pixel_format_T_R8G8B8X8                 = {19};
+`ifdef NVDLA_FEATURE_DATA_TYPE_INT16_FP16
             bins pixel_format_T_A2B10G10R10              = {20};
             bins pixel_format_T_A2R10G10B10              = {21};
             bins pixel_format_T_B10G10R10A2              = {22};
             bins pixel_format_T_R10G10B10A2              = {23};
             bins pixel_format_T_A2Y10U10V10              = {24};
             bins pixel_format_T_V10U10Y10A2              = {25};
+`endif
             bins pixel_format_T_A8Y8U8V8                 = {25};
             bins pixel_format_T_V8U8Y8A8                 = {27};
             bins pixel_format_T_Y8___U8V8_N444           = {28};
             bins pixel_format_T_Y8___V8U8_N444           = {29};
+`ifdef NVDLA_FEATURE_DATA_TYPE_INT16_FP16
             bins pixel_format_T_Y10___U10V10_N444        = {30};
             bins pixel_format_T_Y10___V10U10_N444        = {31};
             bins pixel_format_T_Y12___U12V12_N444        = {32};
             bins pixel_format_T_Y12___V12U12_N444        = {33};
             bins pixel_format_T_Y16___U16V16_N444        = {34};
             bins pixel_format_T_Y16___V16U16_N444        = {35};
+`endif
         }
 
         cp_pixel_mapping:      coverpoint ral.nvdla.NVDLA_CDMA.D_DATAIN_FORMAT.PIXEL_MAPPING.value {
@@ -354,7 +366,7 @@ class conv_cov_pool extends nvdla_coverage_base;
             ignore_bins format       = binsof(cp_pixel_format)intersect{[0:27]};
             ignore_bins reuse        = binsof(cp_data_reuse.on);
         }
-        cp_surf_stride:       coverpoint (ral.nvdla.NVDLA_CDMA.D_SURF_STRIDE.SURF_STRIDE.value - (ral.nvdla.NVDLA_CDMA.D_LINE_STRIDE.LINE_STRIDE.value/`NVDLA_MEMORY_ATOMIC_SIZE*(ral.nvdla.NVDLA_CDMA.D_DATAIN_SIZE_0.DATAIN_HEIGHT.value+1))) {
+        cp_surf_stride:       coverpoint (ral.nvdla.NVDLA_CDMA.D_SURF_STRIDE.SURF_STRIDE.value/`NVDLA_MEMORY_ATOMIC_SIZE - (ral.nvdla.NVDLA_CDMA.D_LINE_STRIDE.LINE_STRIDE.value/`NVDLA_MEMORY_ATOMIC_SIZE*(ral.nvdla.NVDLA_CDMA.D_DATAIN_SIZE_0.DATAIN_HEIGHT.value+1))) {
             bins eql     = {0};
             bins mid[7]  = {[1:7]};
             bins high[2] = {[8:16]};
@@ -422,7 +434,9 @@ class conv_cov_pool extends nvdla_coverage_base;
         // activation batch
         cp_batches:           coverpoint ral.nvdla.NVDLA_CDMA.D_BATCH_NUMBER.BATCHES.value {
             bins single      = {0};
+`ifdef NVDLA_BATCH_ENABLE
             bins multiple[8] = {[1:31]};
+`endif
         }
 
         // ** weight input **
@@ -432,7 +446,9 @@ class conv_cov_pool extends nvdla_coverage_base;
         }
         cp_weight_format:     coverpoint ral.nvdla.NVDLA_CDMA.D_WEIGHT_FORMAT.WEIGHT_FORMAT.value {
             bins uncompress = {0};
+`ifdef NVDLA_WEIGHT_COMPRESSION_ENABLE
             bins compress   = {1};
+`endif
         }
         cp_weight_ram_type:   coverpoint ral.nvdla.NVDLA_CDMA.D_WEIGHT_RAM_TYPE.WEIGHT_RAM_TYPE.value {
 `ifdef NVDLA_SECONDARY_MEMIF_ENABLE
@@ -511,7 +527,9 @@ class conv_cov_pool extends nvdla_coverage_base;
         }
         cr_conv_mode_datain_format_x_dilation_ext:      cross cp_conv_mode, cp_datain_format, cp_x_dilation_ext {
             //bins dc = binsof(cp_conv_mode.dc) && binsof(cp_datain_format.feature);
+`ifdef NVDLA_WINOGRAD_ENABLE
             ignore_bins winograd = binsof(cp_conv_mode.winograd);
+`endif
             ignore_bins pixel    = binsof(cp_datain_format.pixel);
         }
         cp_y_dilation_ext:         coverpoint ral.nvdla.NVDLA_CSC.D_DILATION_EXT.Y_DILATION_EXT.value {
@@ -519,7 +537,9 @@ class conv_cov_pool extends nvdla_coverage_base;
         }
         cr_conv_mode_datain_format_y_dilation_ext:      cross cp_conv_mode, cp_datain_format, cp_y_dilation_ext {
             //bins dc = binsof(cp_conv_mode.dc) && binsof(cp_datain_format.feature);
+`ifdef NVDLA_WINOGRAD_ENABLE
             ignore_bins winograd = binsof(cp_conv_mode.winograd);
+`endif
             ignore_bins pixel    = binsof(cp_datain_format.pixel);
         }
         // mean input
@@ -529,7 +549,9 @@ class conv_cov_pool extends nvdla_coverage_base;
         }
         // ** convolution mode **
         cr_conv_mode_datain_format:         cross cp_conv_mode, cp_datain_format {
+`ifdef NVDLA_WINOGRAD_ENABLE
             ignore_bins illegle_mode = binsof(cp_conv_mode.winograd) && binsof(cp_datain_format.pixel);
+`endif
         }
         cp_conv_x_stride_0:          coverpoint ral.nvdla.NVDLA_CDMA.D_CONV_STRIDE.CONV_X_STRIDE.value[2:0];
         cp_conv_y_stride_0:          coverpoint ral.nvdla.NVDLA_CDMA.D_CONV_STRIDE.CONV_Y_STRIDE.value[2:0];
@@ -586,20 +608,28 @@ class conv_cov_pool extends nvdla_coverage_base;
         }
         cr_conv_mode_in_precision_pra_truncate:  cross cp_conv_mode, cp_in_precision, cp_pra_truncate {
             ignore_bins dc = binsof(cp_conv_mode.dc);
+`ifdef NVDLA_FEATURE_DATA_TYPE_INT16_FP16
             ignore_bins fp = binsof(cp_in_precision.fp16);
+`endif
         }
         cr_in_precision_proc_precision_feature:          cross cp_in_precision, cp_proc_precision, cp_datain_format{
             ignore_bins pixel = binsof(cp_datain_format.pixel);
             bins        int8  = binsof(cp_in_precision.int8) && binsof(cp_proc_precision.int8);
+`ifdef NVDLA_FEATURE_DATA_TYPE_INT16_FP16
             bins        int16 = binsof(cp_in_precision.int16) && binsof(cp_proc_precision.int16);
             bins        fp16  = binsof(cp_in_precision.fp16) && binsof(cp_proc_precision.fp16);
+`endif
             ignore_bins ignore_int8 = binsof(cp_in_precision.int8) && !binsof(cp_proc_precision.int8);
+`ifdef NVDLA_FEATURE_DATA_TYPE_INT16_FP16
             ignore_bins ignore_int16 = binsof(cp_in_precision.int16) && !binsof(cp_proc_precision.int16);
             ignore_bins ignore_fp16  = binsof(cp_in_precision.fp16) && !binsof(cp_proc_precision.fp16);
+`endif
         }
         cr_in_precision_proc_precision_pixel:          cross cp_in_precision, cp_proc_precision, cp_datain_format{
             ignore_bins feature = binsof(cp_datain_format.feature);
+`ifdef NVDLA_FEATURE_DATA_TYPE_INT16_FP16
             ignore_bins fp2int  = binsof(cp_in_precision.fp16) && binsof(cp_proc_precision)intersect{0,1};
+`endif
         }
 
 

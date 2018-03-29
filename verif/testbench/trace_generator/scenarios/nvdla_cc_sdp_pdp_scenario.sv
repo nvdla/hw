@@ -89,9 +89,8 @@ function void nvdla_cc_sdp_pdp_scenario::trace_dump(int fh);
     if (fcov_en) begin
         `uvm_info(inst_name, "Start to sample coverage ...", UVM_HIGH)
         cov.conv_pool.sample();
-`ifdef NVDLA_SDP_EW_THROUGHPUT
-        if (`NVDLA_SDP_EW_THROUGHPUT == 1)
-            cov.sdp_pool.sdp_lut_sample();
+`ifdef NVDLA_SDP_EW_ENABLE
+        cov.sdp_pool.sdp_lut_sample();
 `endif
         cov.sdp_pool.sdp_sample();
         cov.pdp_pool.sample();

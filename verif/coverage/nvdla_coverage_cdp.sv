@@ -190,8 +190,10 @@ class cdp_cov_pool extends nvdla_coverage_base;
         // Processing precision
         cp_precision:           coverpoint ral.nvdla.NVDLA_CDP.D_DATA_FORMAT.INPUT_DATA_TYPE.value iff (1 == ral.nvdla.NVDLA_CDP.D_OP_ENABLE.OP_EN.value) {
             bins INT8   = {input_data_type_INT8};
+`ifdef NVDLA_FEATURE_DATA_TYPE_INT16_FP16
             bins INT16  = {input_data_type_INT16};
             bins FP16   = {input_data_type_FP16};
+`endif
         }
 
         // LRN algorithm setting
@@ -203,10 +205,12 @@ class cdp_cov_pool extends nvdla_coverage_base;
         }
 
         // Floating point settings
+`ifdef NVDLA_FEATURE_DATA_TYPE_INT16_FP16
         cp_nan_to_zero:         coverpoint ral.nvdla.NVDLA_CDP.D_NAN_FLUSH_TO_ZERO.NAN_TO_ZERO.value iff ((input_data_type_FP16 == ral.nvdla.NVDLA_CDP.D_DATA_FORMAT.INPUT_DATA_TYPE.value) && (1 == ral.nvdla.NVDLA_CDP.D_OP_ENABLE.OP_EN.value)) {
             bins DISABLE = {nan_to_zero_DISABLE};
             bins ENABLE  = {nan_to_zero_ENABLE};
         }
+`endif
 
         // Input data conversion, data convertor settings are ignored in FP16
         cp_datin_offset:        coverpoint ral.nvdla.NVDLA_CDP.D_DATIN_OFFSET.DATIN_OFFSET.value iff (input_data_type_FP16 != ral.nvdla.NVDLA_CDP.D_DATA_FORMAT.INPUT_DATA_TYPE.value) {
@@ -238,23 +242,35 @@ class cdp_cov_pool extends nvdla_coverage_base;
         cr_src_dst_ram_type:        cross cp_src_ram_type, cp_dst_ram_type;
         cr_precsion_datin_offset:   cross cp_precision, cp_datin_offset {
             ignore_bins int8_not_used_bits =binsof(cp_precision) intersect {input_data_type_INT8} && binsof (cp_datin_offset) intersect {[16'h100: 16'hFFFF]};
+`ifdef NVDLA_FEATURE_DATA_TYPE_INT16_FP16
             ignore_bins not_working_in_FP16=binsof(cp_precision) intersect {input_data_type_FP16};
+`endif
         }
         cr_precsion_datin_scale:    cross cp_precision, cp_datin_scale {
+`ifdef NVDLA_FEATURE_DATA_TYPE_INT16_FP16
             ignore_bins not_working_in_FP16=binsof(cp_precision) intersect {input_data_type_FP16};
+`endif
         }
         cr_precsion_datin_shifter:  cross cp_precision, cp_datin_shifter {
+`ifdef NVDLA_FEATURE_DATA_TYPE_INT16_FP16
             ignore_bins not_working_in_FP16=binsof(cp_precision) intersect {input_data_type_FP16};
+`endif
         }
         cr_precsion_datout_offset:  cross cp_precision, cp_datout_offset {
             ignore_bins int8_not_used_bits =binsof(cp_precision) intersect {input_data_type_INT8} && binsof (cp_datout_offset) intersect {['h200000: $]};
+`ifdef NVDLA_FEATURE_DATA_TYPE_INT16_FP16
             ignore_bins not_working_in_FP16=binsof(cp_precision) intersect {input_data_type_FP16};
+`endif
         }
         cr_precsion_datout_scale:   cross cp_precision, cp_datout_scale {
+`ifdef NVDLA_FEATURE_DATA_TYPE_INT16_FP16
             ignore_bins not_working_in_FP16=binsof(cp_precision) intersect {input_data_type_FP16};
+`endif
         }
         cr_precsion_datout_shifter: cross cp_precision, cp_datout_shifter {
+`ifdef NVDLA_FEATURE_DATA_TYPE_INT16_FP16
             ignore_bins not_working_in_FP16=binsof(cp_precision) intersect {input_data_type_FP16};
+`endif
         }
     endgroup : cdp_cg
 

@@ -49,11 +49,15 @@ class bdma_cov_pool extends nvdla_coverage_base;
         }
 
         cp_src_ram_type:          coverpoint ral.nvdla.NVDLA_BDMA.CFG_CMD.SRC_RAM_TYPE.value {
+`ifdef NVDLA_SECONDARY_MEMIF_ENABLE
             bins cv = {0};
+`endif
             bins mc = {1};
         }
         cp_dst_ram_type:          coverpoint ral.nvdla.NVDLA_BDMA.CFG_CMD.DST_RAM_TYPE.value {
+`ifdef NVDLA_SECONDARY_MEMIF_ENABLE
             bins cv = {0};
+`endif
             bins mc = {1};
         }
         cr_src_dst_ram_type:      cross cp_src_ram_type , cp_dst_ram_type;

@@ -215,8 +215,10 @@ class pdp_cov_pool extends nvdla_coverage_base;
         // Precision setting
         cp_precision:           coverpoint ral.nvdla.NVDLA_PDP.D_DATA_FORMAT.INPUT_DATA.value iff (1 == ral.nvdla.NVDLA_PDP.D_OP_ENABLE.OP_EN.value) {
             bins INT8       = {input_data_INT8};
+`ifdef NVDLA_FEATURE_DATA_TYPE_INT16_FP16
             bins INT16      = {input_data_INT16};
             bins FP16       = {input_data_FP16};
+`endif
         }
 
         // Split setting
