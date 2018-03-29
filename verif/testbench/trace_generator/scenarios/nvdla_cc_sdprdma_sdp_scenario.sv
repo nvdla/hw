@@ -231,9 +231,22 @@ constraint nvdla_cc_sdprdma_sdp_scenario::c_ias_cc {
     }
     else { cc_dp.y_extension == 0; }
 
-    (cc_dp.datain_channel_ext+1) == (cdma.datain_channel+1) * (cdma.conv_x_stride+1) * (cdma.conv_y_stride+1);
+    if (cc_dp.conv_mode == nvdla_cc_dp_resource::conv_mode_WINOGRAD) {
+        (cc_dp.datain_width_ext  +1) == (cdma.pad_left + cdma.pad_right  + cdma.datain_width +1) / (cdma.conv_x_stride+1);
+        (cc_dp.datain_height_ext +1) == (cdma.pad_top  + cdma.pad_bottom + cdma.datain_height+1) / (cdma.conv_y_stride+1);
+        (cc_dp.datain_channel_ext+1) == (cdma.datain_channel+1) * (cdma.conv_x_stride+1) * (cdma.conv_y_stride+1);
 
-    if(cdma.conv_mode == nvdla_cdma_resource::conv_mode_DIRECT && cdma.datain_format == nvdla_cdma_resource::datain_format_FEATURE){ 
+        (cdma.pad_left + cdma.pad_right  + cdma.datain_width +1) % (cdma.conv_x_stride+1) == 0;
+        (cdma.pad_top  + cdma.pad_bottom + cdma.datain_height+1) % (cdma.conv_y_stride+1) == 0;
+
+        (cc_dp.datain_width_ext +1) % 4 == 0;
+        (cc_dp.datain_height_ext+1) % 4 == 0;
+        (cc_dp.datain_width_ext +1) > 4;
+        (cc_dp.datain_height_ext+1) > 4;
+
+        ((cdma.datain_channel+1) * ((cdma.in_precision==nvdla_cdma_resource::in_precision_INT8)?1:2)) % 32 == 0;
+    }
+    else if (cdma.conv_mode == nvdla_cdma_resource::conv_mode_DIRECT && cdma.datain_format == nvdla_cdma_resource::datain_format_FEATURE) {
         // direct feature datain size
         (cdma.datain_width+1 +  cdma.pad_left + cdma.pad_right -  ((cc_dp.weight_width_ext+1-1) *(cc_dp.x_dilation_ext+1)+1))   >= 0;
         (cdma.datain_height+1 + cdma.pad_top +  cdma.pad_bottom - ((cc_dp.weight_height_ext+1-1)*(cc_dp.y_dilation_ext+1)+1)) >= 0;
