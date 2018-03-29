@@ -273,10 +273,10 @@ class nvdla_cdma_resource extends nvdla_base_resource;
     rand byte                       plane_number;
     rand byte                       element_byte_size_plane_0;
     rand byte                       element_byte_size_plane_1;
-    rand byte                       atomic_m;   // atomic memory
-    rand byte                       atomic_c;   // atomic channel
-    rand byte                       atomic_e;   // atomic entry
-    rand byte                       atomic_e2m; // atomic_e//atomic_m
+    rand int unsigned               atomic_m;   // atomic memory
+    rand int unsigned               atomic_c;   // atomic channel
+    rand int unsigned               atomic_e;   // atomic entry
+    rand int unsigned               atomic_e2m; // atomic_e//atomic_m
     rand int unsigned               n_atomic_m; // (channel_in+atomic_m-1)//atomic_m
 
     `uvm_component_utils_begin(nvdla_cdma_resource)
@@ -577,8 +577,8 @@ constraint nvdla_cdma_resource::c_ias_atomic_setting {
         atomic_c == `NVDLA_MAC_ATOMIC_C_SIZE/2;
         atomic_e == NVDLA_CBUF_ENTRY_BYTE_WIDTH/2;
     }
-    atomic_e2m == atomic_e/atomic_m;
-    n_atomic_m == (datain_channel + atomic_m)/atomic_m;
+    (atomic_e2m == atomic_e/atomic_m);
+    (n_atomic_m == (datain_channel + atomic_m)/atomic_m);
 }
 
 constraint nvdla_cdma_resource::c_ias_work_mode {
@@ -749,10 +749,7 @@ constraint nvdla_cdma_resource::c_ias_entries {
             //     remainder_part:
             //                      1. if N_m % AE_m == 0: 0
             //                      2. if N_m % AE_m != 0: ((width+sharing_factor-1) // sharing_factor) == (datain_width+((atomic_e/atomic_m)/(((datain_channel + atomic_m)/atomic_m)%(atomic_e/atomic_m)))/((atomic_e/atomic_m)/(((datain_channel + atomic_m)/atomic_m)%(atomic_e/atomic_m))))
-            if(0 == n_atomic_m%atomic_e2m ) {
-                (entries+1) == n_atomic_m/atomic_e2m * (datain_width+1);
-            } else if (0 == (atomic_e2m/(n_atomic_m%atomic_e2m))) {
-                // Sharing factor is 0
+            if( (0 == n_atomic_m%atomic_e2m) || (1 == atomic_e2m) ) {
                 (entries+1) == n_atomic_m/atomic_e2m * (datain_width+1);
             } else {
                 (entries+1) == n_atomic_m/atomic_e2m * (datain_width+1) + (datain_width+(atomic_e2m/(n_atomic_m%atomic_e2m)))/(atomic_e2m/(n_atomic_m%atomic_e2m)) ;
