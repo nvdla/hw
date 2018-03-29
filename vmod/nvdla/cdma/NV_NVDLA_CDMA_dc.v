@@ -469,7 +469,7 @@ wire     [1:0] mon_req_atm_size_out;
 wire           mon_req_ch_left_w;
 wire    [13:0] mon_req_cur_atomic;
 reg            mon_req_height_cnt_d1;
-wire     [2:0] mon_req_slice_left;
+wire           mon_req_slice_left;
 wire           mon_rsp_all_h_cnt_inc;
 wire           mon_rsp_all_h_left_w;
 wire           mon_rsp_ch_cnt_inc;
@@ -549,7 +549,7 @@ wire           req_pre_valid_1_w;
 wire           req_ready_d0;
 wire           req_ready_d1;
 wire           req_reg_en;
-wire    [11:0] req_slice_left;
+wire    [13:0] req_slice_left;
 wire           req_valid_d0;
 wire    [15:0] required_entries;
 wire    [13:0] rsp_all_h_cnt_inc;
@@ -887,8 +887,8 @@ end
 assign pre_ready = ~pre_valid_d1 | pre_ready_d1;
 assign pre_reg_en = is_running & (req_height_cnt_d1 != data_height) & pre_ready;
 assign {mon_req_slice_left, req_slice_left} = data_height - req_height_cnt_d1;
-assign is_req_grain_last = (req_slice_left <= fetch_grain);
-assign req_cur_grain_w = is_req_grain_last ? req_slice_left : fetch_grain;
+assign is_req_grain_last = (req_slice_left <= {2'd0,fetch_grain});
+assign req_cur_grain_w = is_req_grain_last ? req_slice_left[11:0] : fetch_grain;
 
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     if (!nvdla_core_rstn) begin
