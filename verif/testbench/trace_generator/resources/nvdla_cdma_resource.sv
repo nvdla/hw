@@ -751,6 +751,9 @@ constraint nvdla_cdma_resource::c_ias_entries {
             //                      2. if N_m % AE_m != 0: ((width+sharing_factor-1) // sharing_factor) == (datain_width+((atomic_e/atomic_m)/(((datain_channel + atomic_m)/atomic_m)%(atomic_e/atomic_m)))/((atomic_e/atomic_m)/(((datain_channel + atomic_m)/atomic_m)%(atomic_e/atomic_m))))
             if(0 == n_atomic_m%atomic_e2m ) {
                 (entries+1) == n_atomic_m/atomic_e2m * (datain_width+1);
+            } else if (0 == (atomic_e2m/(n_atomic_m%atomic_e2m))) {
+                // Sharing factor is 0
+                (entries+1) == n_atomic_m/atomic_e2m * (datain_width+1);
             } else {
                 (entries+1) == n_atomic_m/atomic_e2m * (datain_width+1) + (datain_width+(atomic_e2m/(n_atomic_m%atomic_e2m)))/(atomic_e2m/(n_atomic_m%atomic_e2m)) ;
             }
