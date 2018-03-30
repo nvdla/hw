@@ -293,8 +293,11 @@ class RunTest(object):
         try:
             subprocess.run(script, timeout=60*self._timeout, shell=False)
         except subprocess.TimeoutExpired:
+            msg = "\n** ERROR **: run_test.py: Job timeout after %0d minutes running. Please specify a bigger value through option '-timeout <N>'" % self._timeout
+            with open(self._output_log, 'a') as fh:
+                fh.write(msg)
+            print(msg)
             self._status = Status.FAILED
-            print("** Error: Job timeout after %0d minutes running. **\n" % 60*self._timeout)
 
         print ("Simulation finished.")
 
@@ -447,7 +450,7 @@ if __name__ == '__main__':
                         help='Specify test bench name')
     parser.add_argument('--nvdla_utb_work_mode','-uwm', dest='nvdla_utb_work_mode', required=False,
                         help='Specify uvm test bench work mode, only effective when testbench is nvdla_utb')
-    parser.add_argument('--timeout', '-timeout', dest='timeout', type=int, default=30, required=False,
+    parser.add_argument('--timeout', '-timeout', dest='timeout', type=int, default=120, required=False,
                         help='Specify job running timeout value in minutes')
     parser.add_argument('--waves','--wave','-waves','-wave', dest='dump_waveform', action='store_true', default=False, required=False,
                         help='Dump waveform')
