@@ -1238,7 +1238,11 @@ assign mn_mask_yuv = {
 //: );
 //: for(my $i = 0; $i < $Bnum; $i ++) {
 //:     print "assign mn_8b_mnorm[${i}*16+15:${i}*16] = mask_zero[${i}] ? 16'b0 : mn_ch1_4[${i}*16+15:${i}*16];\n";
-//:     print "assign mn_8b_myuv[${i}*48+47:${i}*48] = mn_mask_yuv[${i}] ? 48'b0 : mn_ch3[${i}*48+47:${i}*48];\n";
+//:    ## print "assign mn_8b_myuv[${i}*48+47:${i}*48] = mn_mask_yuv[${i}] ? 48'b0 : mn_ch3[${i}*48+47:${i}*48];\n";
+//: }
+//: my $Bnum_3 = int( $Bnum * 3 );
+//: for(my $i = 0; $i < $Bnum_3; $i ++) {
+//:     print "assign mn_8b_myuv[${i}*16+15:${i}*16] = mn_mask_yuv[${i}] ? 16'b0 : mn_ch3[${i}*16+15:${i}*16];\n";
 //: }
 //: print "\n\n\n";
 #ifndef NVDLA_FEATURE_DATA_TYPE_INT8

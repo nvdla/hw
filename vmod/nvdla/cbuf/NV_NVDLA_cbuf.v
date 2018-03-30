@@ -213,8 +213,8 @@ end
 //decode read data address to sram.
 wire sc2buf_dat_rd_en0 =  sc2buf_dat_rd_en;
 wire sc2buf_dat_rd_en1 =  sc2buf_dat_rd_en&(~sc2buf_dat_rd_next1_disable);
-wire[CBUF_ADDR_WIDTH-1:0] sc2buf_dat_rd_addr0 = sc2buf_dat_rd_addr;
-wire[CBUF_ADDR_WIDTH-1:0] sc2buf_dat_rd_addr1 = sc2buf_dat_rd_addr+1'b1;
+wire[CBUF_ADDR_WIDTH-1:0] sc2buf_dat_rd_addr0 = sc2buf_dat_rd_next1_disable ? sc2buf_dat_rd_addr : (sc2buf_dat_rd_addr-1'b1);
+wire[CBUF_ADDR_WIDTH-1:0] sc2buf_dat_rd_addr1 = sc2buf_dat_rd_addr;
 //: my $bank_slice= CBUF_BANK_SLICE;  #address part for select bank
 //: for(my $j=0; $j<CBUF_BANK_NUMBER ; $j++){
 //:     for(my $k=0; $k<CBUF_RAM_PER_BANK ; $k++){
@@ -245,7 +245,7 @@ wire[CBUF_ADDR_WIDTH-1:0] sc2buf_dat_rd_addr1 = sc2buf_dat_rd_addr+1'b1;
 //:         for(my $i=0; $i<2; $i++){
 //:             if((CBUF_BANK_RAM_CASE==2)||(CBUF_BANK_RAM_CASE==3)){
 //:         print qq(
-//:     wire [CBUF_RAM_DEPTH_BITS-1:0] bank${j}_ram${k}_data_rd${i}_addr = {CBUF_RAM_DEPTH_BITS{bank${j}_ram${k}_data_rd${i}_en}}&(sc2buf_dat_rd_addr[CBUF_RAM_DEPTH_BITS:1]); );
+//:     wire [CBUF_RAM_DEPTH_BITS-1:0] bank${j}_ram${k}_data_rd${i}_addr = {CBUF_RAM_DEPTH_BITS{bank${j}_ram${k}_data_rd${i}_en}}&(sc2buf_dat_rd_addr${i}[CBUF_RAM_DEPTH_BITS:1]); );
 //:             }
 //:         }
 //:     }
