@@ -528,6 +528,46 @@ class DivPlot():
         )
         return div
 
+    def main_div_gen(self, proj, regr, div_pr, div_tn, div_co, div_rt):
+        div  = html.Div([ 
+            html.Div(
+                id       = 'nav',
+                children = [
+                    html.A('PASSINGRATE', href='#passing_rate_div', style={'color':'green'}),
+                    html.Br(),html.Br(),
+                    html.A('TESTNUM',     href='#test_num_div',     style={'color':'green'}),
+                    html.Br(),html.Br(),
+                    html.A('COVERAGE',    href='#coverage_div',     style={'color':'green'}),
+                    html.Br(),html.Br(),
+                    html.A('REGRTABLE',   href='#regr_table_div',   style={'color':'green'}),
+                ],
+                style = {
+                    'float'           : 'left',
+                    'border'          : 'solid #F1F1F1',
+                    'backgroundColor' : 'rgba(240,240,240,0.85)',
+                    'marginTop'       : '10',
+                    'paddingLeft'     : '10',
+                    'paddingRight'    : '10',
+                    'paddingTop'      : '10',
+                    'paddingBottom'   : '10',
+                }
+            ),
+            html.Div(id='passing_rate_v', children = div_pr[proj][regr]),
+            html.Div(id='test_num_v',     children = div_tn[proj][regr]),
+            html.Div(id='coverage_v',     children = div_co[proj][regr]),
+            html.Div(id='regr_table_v',   children = div_rt[proj][regr]),
+            html.Div(
+                id = 'synd_div',
+                style = {
+                    'textAlign' : 'left',
+                    'float'     : 'right',
+                    'width'     : '90%',
+                    'display'   : 'inline-block',
+                    'marginTop' : '10',
+                }
+            )
+        ])
+        return div
 
     def dash_gen(self, project=[], x_axis={}, y_axis={}, regr_sts_db={}, test_db_files={}, synd_db={}, db_dir='', synd_dir=''):
         passing_rate_divs   = self.passing_rate_div(x_axis,y_axis)
@@ -609,45 +649,6 @@ class DivPlot():
             }
         )
 
-        main_div  = html.Div([ 
-            html.Div(
-                id       = 'nav',
-                children = [
-                    html.A('PASSINGRATE', href='#passing_rate_div', style={'color':'green'}),
-                    html.Br(),html.Br(),
-                    html.A('TESTNUM',     href='#test_num_div',     style={'color':'green'}),
-                    html.Br(),html.Br(),
-                    html.A('COVERAGE',    href='#coverage_div',     style={'color':'green'}),
-                    html.Br(),html.Br(),
-                    html.A('REGRTABLE',   href='#regr_table_div',   style={'color':'green'}),
-                ],
-                style = {
-                    'float'           : 'left',
-                    'border'          : 'solid #F1F1F1',
-                    'backgroundColor' : 'rgba(240,240,240,0.85)',
-                    'marginTop'       : '10',
-                    'paddingLeft'     : '10',
-                    'paddingRight'    : '10',
-                    'paddingTop'      : '10',
-                    'paddingBottom'   : '10',
-                }
-            ),
-            html.Div(id='passing_rate_v', children = passing_rate_divs[project[0]][self._proj_regr_dict[project[0]][0]]),
-            html.Div(id='test_num_v',children=test_num_divs[project[0]][self._proj_regr_dict[project[0]][0]]),
-            html.Div(id='coverage_v', children=coverage_divs[project[0]][self._proj_regr_dict[project[0]][0]]),
-            html.Div(id='regr_table_v', children=regr_table_divs[project[0]][self._proj_regr_dict[project[0]][0]]),
-
-            html.Div(
-                id = 'synd_div',
-                style = {
-                    'textAlign' : 'left',
-                    'float'     : 'right',
-                    'width'     : '90%',
-                    'display'   : 'inline-block',
-                    'marginTop' : '10',
-                }
-            )
-        ])
 
         self._app.layout = html.Div(
             id = 'full',
@@ -658,7 +659,8 @@ class DivPlot():
                 html.Div(
                     id       = 'main',
                     children = [
-                        main_div,
+                        #main_div,
+                        self.main_div_gen(project[0], self._proj_regr_dict[project[0]][0], passing_rate_divs, test_num_divs, coverage_divs, regr_table_divs),
                     ]
                 ),
             ],
@@ -669,12 +671,9 @@ class DivPlot():
 
         @self._app.callback(dash.dependencies.Output('regr_dp', 'options'), [dash.dependencies.Input('proj_dp', 'value')])
         def display_content(selected_proj):
-            if selected_proj == 'nv_small':
-                return [{'label':'sanity', 'value':'sanity'}, {'label':'random', 'value':'random'}]
-            elif selected_proj == 'nv_large':
-                return [{'label':'random', 'value':'random'}]
-            elif selected_proj == 'nv_small_256':
-                return [{'label':'sanity', 'value':'sanity'}, {'label':'random', 'value':'random'}]
+            if selected_proj in self._proj_regr_dict:
+                regr_list = self._proj_regr_dict[selected_proj]
+                return [{'label':i, 'value':i} for i in regr_list]
             else:
                 return []
 
@@ -751,9 +750,11 @@ class DivPlot():
                         syndrome_div,
                     ])
                 else: 
-                    return main_div
+                    #return main_div
+                    return self.main_div_gen(self._proj, self._regr, passing_rate_divs, test_num_divs, coverage_divs, regr_table_divs),
             else:
-                return main_div
+                #return main_div
+                return self.main_div_gen(project[0], self._proj_regr_dict[project[0]][0], passing_rate_divs, test_num_divs, coverage_divs, regr_table_divs),
 
         @self._app.callback(dash.dependencies.Output('syndrome', 'value'),
                       [dash.dependencies.Input('syn_dropdown', 'value')])

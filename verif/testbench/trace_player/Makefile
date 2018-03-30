@@ -228,6 +228,7 @@ VCS_ARGS    := ${COMMON_DIRS} \
                ${VCS_OK_WARNINGS} \
                ${VERDI_HOME}/share/PLI/VCS/LINUX64/pli.a \
                +vcsd \
+			   -parallel+sva+tgl \
                -P ${VERDI_HOME}/share/PLI/VCS/LINUX64/novas.tab 
 
 ifeq (${DESIGNWARE_NOEXIST},1)
