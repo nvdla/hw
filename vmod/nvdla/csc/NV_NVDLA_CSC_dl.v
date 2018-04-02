@@ -29,7 +29,7 @@ module NV_NVDLA_CSC_dl (
   ,sc2buf_dat_rd_valid       //|< i
   ,sc2buf_dat_rd_data        //|< i
   ,sc2buf_dat_rd_shift       //|> o
-  ,sc2buf_dat_rd_next1_disable //|> o
+  ,sc2buf_dat_rd_next1_en    //|> o
   ,sc2mac_dat_a_pvld         //|> o
   ,sc2mac_dat_a_mask         //|> o
   //: for(my $i=0; $i<CSC_ATOMC ; $i++){
@@ -91,7 +91,7 @@ output [CBUF_ADDR_WIDTH-1:0] sc2buf_dat_rd_addr;
 input          sc2buf_dat_rd_valid;  /* data valid */
 input [CBUF_ENTRY_BITS-1:0] sc2buf_dat_rd_data;
 output [CBUF_RD_DATA_SHIFT_WIDTH-1:0] sc2buf_dat_rd_shift;
-output sc2buf_dat_rd_next1_disable;
+output sc2buf_dat_rd_next1_en;
 output         sc2mac_dat_a_pvld;     /* data valid */
 output [CSC_ATOMC-1:0] sc2mac_dat_a_mask;
 //: for(my $i=0; $i<CSC_ATOMC ; $i++){
@@ -1264,21 +1264,17 @@ assign dat_req_sub_h_2_addr_en = layer_st | ((dat_req_valid_d1 | dat_req_dummy_d
 assign dat_req_sub_h_3_addr_en = layer_st | ((dat_req_valid_d1 | dat_req_dummy_d1) & (dat_req_sub_h_d1 == 2'h3));
 
 `ifdef CBUF_BANK_RAM_CASE0
-wire [CBUF_RD_DATA_SHIFT_WIDTH-1:0] sc2buf_dat_rd_shift = {CBUF_RD_DATA_SHIFT_WIDTH{1'd0}};
-wire sc2buf_dat_rd_next1_disable = 1'b1;
+wire sc2buf_dat_rd_next1_en = 1'b0;
 `endif
 `ifdef CBUF_BANK_RAM_CASE1
-wire [CBUF_RD_DATA_SHIFT_WIDTH-1:0] sc2buf_dat_rd_shift = {CBUF_RD_DATA_SHIFT_WIDTH{1'd0}};
-wire sc2buf_dat_rd_next1_disable = 1'b1;
+wire sc2buf_dat_rd_next1_en = 1'b0;
 `endif
 `ifdef CBUF_BANK_RAM_CASE4
-wire [CBUF_RD_DATA_SHIFT_WIDTH-1:0] sc2buf_dat_rd_shift = {CBUF_RD_DATA_SHIFT_WIDTH{1'd0}};
-wire sc2buf_dat_rd_next1_disable = 1'b1;
+wire sc2buf_dat_rd_next1_en = 1'b0;
 `endif
 `ifdef CBUF_BANK_RAM_CASE2
 wire [CBUF_RD_DATA_SHIFT_WIDTH-1:0] sc2buf_dat_rd_shift_w;
-wire sc2buf_dat_rd_next1_disable_w;
-wire sc2buf_dat_rd_next1_enable;
+wire sc2buf_dat_rd_next1_en_w;
 wire [CBUF_ADDR_WIDTH-1:0] dat_req_addr_last_plus1;
 wire [CBUF_ADDR_WIDTH-1:0] dat_req_addr_last_plus1_real;
 wire is_dat_req_addr_last_plus1_wrap;
@@ -1301,15 +1297,21 @@ assign {mon_dat_req_addr_last_plus1_wrap,dat_req_addr_last_plus1_wrap} = dat_req
 assign dat_req_addr_last_plus1_real  = is_dat_req_addr_last_plus1_wrap ? dat_req_addr_last_plus1_wrap : dat_req_addr_last_plus1;
 //iamge data may encounter read jump, which happens when image data_read_address - last_rd_address >= 2 entries, and read form the middle of an entry.
 //then csc need read 2 entries simultaneously, then shift out unneeded part.
-//this address jump should not happened because of execution of next stripe
-assign sc2buf_dat_rd_next1_enable = is_img_d1[10]&&sc2buf_dat_rd_en_w&&(dat_req_addr_w != dat_req_addr_last_plus1_real)
-                                    &&(pixel_w_cnt_plus1_d1[LOG2_ATOMC:0]!=CSC_ATOMC)&&(~stripe_begin_disable_jump);
-assign sc2buf_dat_rd_next1_disable_w = !sc2buf_dat_rd_next1_enable;
-assign pixel_w_cnt_plus1 = pixel_w_cnt[LOG2_ATOMC-1:0]+1'b1;   //element need shift
-assign sc2buf_dat_rd_shift_w = sc2buf_dat_rd_next1_enable ? {pixel_w_cnt_plus1_d1[LOG2_ATOMC-1:0], {NVDLA_BPE_LOG2{1'b0}}} : {CBUF_RD_DATA_SHIFT_WIDTH{1'd0}};
+//this address jump should not happened in the begining of a stripe OP.
+assign sc2buf_dat_rd_next1_en_w = is_img_d1[10]&&sc2buf_dat_rd_en_w&&(pixel_x_byte_stride >= CSC_ENTRY_HEX)&&(dat_req_addr_w != dat_req_addr_last_plus1_real)
+                                    &&(pixel_w_cnt_plus1_d1<dat_req_pipe_bytes)&&(~stripe_begin_disable_jump);
+assign pixel_w_cnt_plus1 = pixel_w_cnt[LOG2_ATOMC-1:0]+1'b1;
+
+//the entry read form cbuf must make sure low byte aligned. High Bytes may dropped, low bytes will always be used.
+assign sc2buf_dat_rd_shift_w = sc2buf_dat_rd_next1_en_w ? pixel_w_cnt_plus1_d1[LOG2_ATOMC-1:0]+ CSC_ATOMC_HEX - dat_req_pipe_bytes:   //image read jump
+                               is_img_d1[10]&&stripe_begin_disable_jump ?  {CBUF_RD_DATA_SHIFT_WIDTH{1'd0}}:      //image read no jump,stripe's start need no shift 
+                               is_img_d1[10]? pixel_w_cnt_plus1_d1[LOG2_ATOMC:0] - dat_req_pipe_bytes  : //image read no jump, not image's start, need shift
+                               {CBUF_RD_DATA_SHIFT_WIDTH{1'd0}};  //read data, no need to shift
+                               
+                                
 
 //: my $kk= CBUF_RD_DATA_SHIFT_WIDTH;
-//: &eperl::flop("-d sc2buf_dat_rd_next1_disable_w -q sc2buf_dat_rd_next1_disable");
+//: &eperl::flop("-d sc2buf_dat_rd_next1_en_w -q sc2buf_dat_rd_next1_en");
 //: &eperl::flop("-d sc2buf_dat_rd_shift_w -q sc2buf_dat_rd_shift -wid ${kk}");
 `endif
 
@@ -1546,23 +1548,18 @@ assign rsp_sft_cnt_l1_sub = dat_l1c0_en ? CSC_ENTRY_HEX : 8'h0;
 assign rsp_sft_cnt_l2_sub = dat_l2c0_en ? CSC_ENTRY_HEX : 8'h0;
 assign rsp_sft_cnt_l3_sub = dat_l3c0_en ? CSC_ENTRY_HEX : 8'h0;
 
-////: my $kk=CBUF_RD_DATA_SHIFT_WIDTH;
-////: &eperl::retime("-wid ${kk} -O sc2buf_dat_rd_shift_6T -i sc2buf_dat_rd_shift -stage 6 -clk nvdla_core_clk");
-//assign {mon_rsp_sft_cnt_l0_w,rsp_sft_cnt_l0_inc} = rsp_sft_cnt_l0 + pixel_x_byte_stride - rsp_sft_cnt_l0_sub - sc2buf_dat_rd_shift_6T[CBUF_RD_DATA_SHIFT_WIDTH-1:3];
-//assign {mon_rsp_sft_cnt_l1_w,rsp_sft_cnt_l1_inc} = rsp_sft_cnt_l1 + pixel_x_byte_stride - rsp_sft_cnt_l1_sub - sc2buf_dat_rd_shift_6T[CBUF_RD_DATA_SHIFT_WIDTH-1:3];
-//assign {mon_rsp_sft_cnt_l2_w,rsp_sft_cnt_l2_inc} = rsp_sft_cnt_l2 + pixel_x_byte_stride - rsp_sft_cnt_l2_sub - sc2buf_dat_rd_shift_6T[CBUF_RD_DATA_SHIFT_WIDTH-1:3];
-//assign {mon_rsp_sft_cnt_l3_w,rsp_sft_cnt_l3_inc} = rsp_sft_cnt_l3 + pixel_x_byte_stride - rsp_sft_cnt_l3_sub - sc2buf_dat_rd_shift_6T[CBUF_RD_DATA_SHIFT_WIDTH-1:3];
+////: &eperl::retime("-O stripe_begin_disable_jump_7T -i stripe_begin_disable_jump -stage 8 -clk nvdla_core_clk");
+////: &eperl::flop("-q stripe_begin_disable_jump_8T -d stripe_begin_disable_jump_7T -clk nvdla_core_clk");
+assign {mon_rsp_sft_cnt_l0_w,rsp_sft_cnt_l0_inc} = (pixel_x_byte_stride >= CSC_ENTRY_HEX) ? CSC_ENTRY_HEX :  
+                                                    (rsp_sft_cnt_l0 + pixel_x_byte_stride[NVDLA_BPE_LOG2-1:0] - rsp_sft_cnt_l0_sub);
+assign {mon_rsp_sft_cnt_l1_w,rsp_sft_cnt_l1_inc} = (pixel_x_byte_stride >= CSC_ENTRY_HEX) ? CSC_ENTRY_HEX :
+                                                    (rsp_sft_cnt_l1 + pixel_x_byte_stride[NVDLA_BPE_LOG2-1:0] - rsp_sft_cnt_l1_sub);
+assign {mon_rsp_sft_cnt_l2_w,rsp_sft_cnt_l2_inc} = (pixel_x_byte_stride >= CSC_ENTRY_HEX) ? CSC_ENTRY_HEX :
+                                                    (rsp_sft_cnt_l2 + pixel_x_byte_stride[NVDLA_BPE_LOG2-1:0] - rsp_sft_cnt_l2_sub);
+assign {mon_rsp_sft_cnt_l3_w,rsp_sft_cnt_l3_inc} = (pixel_x_byte_stride >= CSC_ENTRY_HEX) ? CSC_ENTRY_HEX :
+                                                    (rsp_sft_cnt_l3 + pixel_x_byte_stride[NVDLA_BPE_LOG2-1:0] - rsp_sft_cnt_l3_sub);
 
-// if x_stride >= 1 entry, cbuf control will make sure the fetched entry is exactly the needed entry.just need to shift out the unneeded low half.
-assign {mon_rsp_sft_cnt_l0_w,rsp_sft_cnt_l0_inc} =  (pixel_x_byte_stride >= CSC_ENTRY_HEX) ? CSC_ENTRY_HEX: 
-                                                    (rsp_sft_cnt_l0 + pixel_x_byte_stride - rsp_sft_cnt_l0_sub);
-assign {mon_rsp_sft_cnt_l1_w,rsp_sft_cnt_l1_inc} = (pixel_x_byte_stride >= CSC_ENTRY_HEX) ? CSC_ENTRY_HEX:
-                                                    (rsp_sft_cnt_l1 + pixel_x_byte_stride - rsp_sft_cnt_l1_sub);
-assign {mon_rsp_sft_cnt_l2_w,rsp_sft_cnt_l2_inc} = (pixel_x_byte_stride >= CSC_ENTRY_HEX) ? CSC_ENTRY_HEX:
-                                                    (rsp_sft_cnt_l2 + pixel_x_byte_stride - rsp_sft_cnt_l2_sub);
-assign {mon_rsp_sft_cnt_l3_w,rsp_sft_cnt_l3_inc} = (pixel_x_byte_stride >= CSC_ENTRY_HEX) ? CSC_ENTRY_HEX:
-                                                    (rsp_sft_cnt_l3 + pixel_x_byte_stride - rsp_sft_cnt_l3_sub);
-
+//the data frm cbuf's low Bytes is always needed. High Bytes maybe unneeded.
 assign dat_rsp_l0_block_end = dat_rsp_l0_sub_c;
 assign dat_rsp_l1_block_end = dat_rsp_l1_sub_c;
 assign dat_rsp_l2_block_end = dat_rsp_l2_sub_c;
@@ -1571,25 +1568,25 @@ assign dat_rsp_l3_block_end = dat_rsp_l3_sub_c;
 assign rsp_sft_cnt_l0_w = (layer_st) ? CSC_ENTRY_HEX :   //begin from C0
                           (dat_rsp_l0_stripe_end & ~dat_rsp_l0_block_end) ? rsp_sft_cnt_l0_ori :
                           (dat_rsp_l0_stripe_end & dat_rsp_l0_block_end) ? CSC_ENTRY_HEX :
-                          (dat_dummy_l0_en) ? (rsp_sft_cnt_l0_inc & CSC_ENTRY_MINUS1_HEX) :
+                          //(dat_dummy_l0_en) ? (rsp_sft_cnt_l0_inc & CSC_ENTRY_MINUS1_HEX) :
                           rsp_sft_cnt_l0_inc;
 
 assign rsp_sft_cnt_l1_w = (layer_st) ? CSC_ENTRY_HEX :
                           (dat_rsp_l1_stripe_end & ~dat_rsp_l1_block_end) ? rsp_sft_cnt_l1_ori :
                           (dat_rsp_l1_stripe_end & dat_rsp_l1_block_end) ? CSC_ENTRY_HEX :
-                          (dat_dummy_l1_en) ? (rsp_sft_cnt_l1_inc & CSC_ENTRY_MINUS1_HEX) :
+                          //(dat_dummy_l1_en) ? (rsp_sft_cnt_l1_inc & CSC_ENTRY_MINUS1_HEX) :
                           rsp_sft_cnt_l1_inc;
 
 assign rsp_sft_cnt_l2_w = (layer_st) ? CSC_ENTRY_HEX :
                           (dat_rsp_l2_stripe_end & ~dat_rsp_l2_block_end) ? rsp_sft_cnt_l2_ori :
                           (dat_rsp_l2_stripe_end & dat_rsp_l2_block_end) ? CSC_ENTRY_HEX :
-                          (dat_dummy_l2_en) ? (rsp_sft_cnt_l2_inc & CSC_ENTRY_MINUS1_HEX) :
+                          //(dat_dummy_l2_en) ? (rsp_sft_cnt_l2_inc & CSC_ENTRY_MINUS1_HEX) :
                           rsp_sft_cnt_l2_inc;
 
 assign rsp_sft_cnt_l3_w = (layer_st) ? CSC_ENTRY_HEX :
                           (dat_rsp_l3_stripe_end & ~dat_rsp_l3_block_end) ? rsp_sft_cnt_l3_ori :
                           (dat_rsp_l3_stripe_end & dat_rsp_l3_block_end) ? CSC_ENTRY_HEX :
-                          (dat_dummy_l3_en) ? (rsp_sft_cnt_l3_inc & CSC_ENTRY_MINUS1_HEX) :
+                          //(dat_dummy_l3_en) ? (rsp_sft_cnt_l3_inc & CSC_ENTRY_MINUS1_HEX) :
                           rsp_sft_cnt_l3_inc;
 
 assign rsp_sft_cnt_l0_en = layer_st | (is_img_d1[17] & dat_rsp_l0_pvld);
@@ -1765,6 +1762,12 @@ wire dat_rsp_sft_d3_en = dat_rsp_l2_pvld & (sub_h_total_g9 == 3'h4);
 //////////////// byte mask ////////////////
 //sub_h_total=2, each sub_h align to 1/2 entry;
 //sub_h_total=4, each sub_h align to 1/4 entry;
+
+//if x_stride >= 1 entry, then old entry anyway is useless.csc need to fetch a new entry. 
+//csc dl will make sure the fetched data after shift is exactly the needed data.
+//if x_stride < 1 entry, then always lsb bits be used for sure;
+//this is due to cbuffer fetching method difference. so when we count mask, we need two counting strategy.
+//the first atom of a strip OP also only use low bits.
 assign dat_rsp_ori_mask = ~({CSC_ATOMC{1'b1}} << dat_rsp_bytes);
 
 assign dat_rsp_cur_h_mask_p1 = (dat_rsp_cur_sub_h >= 2'h1) ? {CSC_ATOMC{1'b1}} : 'b0;

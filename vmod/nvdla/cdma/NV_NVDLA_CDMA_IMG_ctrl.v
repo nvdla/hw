@@ -202,8 +202,6 @@ wire    [3:0] mon_pixel_planar1_burst_need_w;
 wire    [4:0] mon_pixel_planar1_byte_sft_w;
 wire    [2:0] mon_pixel_planar1_lp_burst_w;
 wire    [9:0] mon_pixel_planar1_rp_burst_w;
-//: my $atmm_double = int( log(NVDLA_MEMORY_ATOMIC_SIZE*2) / log(2) );
-//: print " wire    [${atmm_double}-1:0] mon_pixel_planar1_tail_width_w;  \n";
 wire    [1:0] mon_pixel_planar1_total_burst_w;
 wire          mon_pixel_planar1_total_width_w;
 wire    [3:0] mon_pixel_planar1_width_burst_w;
@@ -241,7 +239,12 @@ wire    [2:0] pixel_planar1_rp_burst_w;
 wire          pixel_planar1_rp_vld_w;
 wire    [2:0] pixel_planar1_tail_width_w;
 wire    [1:0] pixel_planar1_total_burst_w;
-wire    [5:0] pixel_planar1_total_width_w;
+
+//: my $dmaif_bw = int( log(int(NVDLA_CDMA_DMAIF_BW/8)) / log(2) );
+//: print qq(
+//:     wire    [${dmaif_bw}-1:0] pixel_planar1_total_width_w;
+//:     wire    [${dmaif_bw}-1:0] mon_pixel_planar1_tail_width_w; 
+//: );
 wire   [13:0] pixel_planar1_width_burst_w;
 wire    [4:0] pixel_planar1_x_offset;
 wire   [13:0] pixel_store_width;
@@ -606,24 +609,39 @@ assign {mon_pixel_planar0_rp_burst_w[8:0],
 assign {mon_pixel_planar1_rp_burst_w[9:0],
         pixel_planar1_rp_burst_w} = pixel_planar1_burst_need_w - pixel_planar1_lp_burst_w - pixel_planar1_width_burst_w;
 assign byte_per_pixel = ~(|pixel_precision_nxt) ? 3'h3 : 3'h6;
-// 6bits means double atmmm
-// assign {mon_pixel_planar1_total_width_w,
-//        pixel_planar1_total_width_w} = reg2dp_pad_left + reg2dp_datain_width[5:0] + reg2dp_pad_right + 1;
-// assign {pixel_planar1_tail_width_w,
-//         mon_pixel_planar1_tail_width_w} = pixel_planar1_total_width_w * byte_per_pixel + 6'h3f;
 
-//: my $atmm_double = int( log(NVDLA_MEMORY_ATOMIC_SIZE*2) / log(2) );
+////////////////////////////////////////////////
+// early end control
+////////////////////////////////////////////////
+//: my $dmaif_bw = int( log(int(NVDLA_CDMA_DMAIF_BW/8)) / log(2) );
 //: print qq(
 //:     assign {mon_pixel_planar1_total_width_w,
-//:             pixel_planar1_total_width_w} = reg2dp_pad_left + reg2dp_datain_width[${atmm_double}-1:0] + reg2dp_pad_right + 1;
+//:             pixel_planar1_total_width_w} = reg2dp_pad_left + reg2dp_datain_width[${dmaif_bw}-1:0] + reg2dp_pad_right + 1;
 //:     assign {pixel_planar1_tail_width_w,
-//:             mon_pixel_planar1_tail_width_w} = pixel_planar1_total_width_w * byte_per_pixel + {${atmm_double}{1'b1}};
+//:             mon_pixel_planar1_tail_width_w} = pixel_planar1_total_width_w * byte_per_pixel + {${dmaif_bw}{1'b1}};
 //: );
-assign {mon_pixel_planar1_total_burst_w[1:0],
-        pixel_planar1_total_burst_w[1:0]} = pixel_planar1_lp_burst_w[1:0] + pixel_planar1_rp_burst_w[1:0] + pixel_planar1_width_burst_w[1:0];
-assign pixel_tail_1_w = (pixel_planar1_tail_width_w == 3'h1) | (pixel_planar1_tail_width_w == 3'h4);
-assign pixel_tail_2_w = (pixel_planar1_tail_width_w == 3'h2) | (pixel_planar1_tail_width_w == 3'h5);
-assign pixel_early_end_w = pixel_planar_nxt & (pixel_tail_1_w | (pixel_tail_2_w & ~pixel_planar1_total_burst_w[1]));
+
+/////////////////////////////
+//: my $dmaif = NVDLA_CDMA_DMAIF_BW/NVDLA_BPE;
+//: my $atmm = NVDLA_MEMORY_ATOMIC_SIZE;
+//: if($dmaif/$atmm == 1 ) {
+//:     print qq(
+//:         assign pixel_early_end_w = pixel_planar_nxt & ((pixel_planar1_tail_width_w==3'd1) | (pixel_planar1_tail_width_w==3'd4) | ((pixel_planar1_tail_width_w==3'd2) & {pixel_planar1_total_width_w,1'b0} > $dmaif) );
+//:     );
+//: } elsif($dmaif/$atmm == 2 ) {
+//:     print qq(
+//:         assign {mon_pixel_planar1_total_burst_w[1:0], pixel_planar1_total_burst_w[1:0]} 
+//:                                     = pixel_planar1_lp_burst_w[1:0] + pixel_planar1_rp_burst_w[1:0] + pixel_planar1_width_burst_w[1:0];
+//:         assign pixel_tail_1_w = (pixel_planar1_tail_width_w == 3'h1) | (pixel_planar1_tail_width_w == 3'h4);
+//:         assign pixel_tail_2_w = (pixel_planar1_tail_width_w == 3'h2) | (pixel_planar1_tail_width_w == 3'h5);
+//:         assign pixel_early_end_w = pixel_planar_nxt & (pixel_tail_1_w | (pixel_tail_2_w & ~pixel_planar1_total_burst_w[1]));
+//:     );
+//: } elsif($dmaif/$atmm == 4 ) {
+//: }
+
+
+////////////////////////////////////////////////
+////////////////////////////////////////////////
 
 // assign {mon_pixel_element_sft_w,
 //         pixel_element_sft_w} = (reg2dp_pixel_x_offset - reg2dp_pad_left);

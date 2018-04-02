@@ -15,6 +15,7 @@
 #define CSC_BPE                                             NVDLA_BPE
 #define CBUF_ENTRY_BITS                                     NVDLA_CBUF_ENTRY_WIDTH
 #define CSC_ATOMK_HF                                        CSC_ATOMK/2
+#define NVDLA_CC_CREDIT_SIZE                                CSC_ATOMK*2
 #define CSC_TWICE_ENTRY_BITS                                CBUF_ENTRY_BITS*2         //entry*2
 #define CSC_ENTRY_BITS                                      CBUF_ENTRY_BITS   //entry
 #define CSC_HALF_ENTRY_BITS                                 CBUF_ENTRY_BITS/2          //entry/2
@@ -63,6 +64,7 @@
     #define CSC_QUAT_ENTRY_HEX                                  8'h10
     //CSC_ENTRY_HEX-1
     #define CSC_ENTRY_MINUS1_HEX                                8'h3f
+    #define CSC_ENTRY_HEX_MUL2                                  8'h80
     
     #define CSC_ATOMC_HEX                                       7'h40
     #define CSC_ATOMC_HEX_STR                                   "\"7'h40\""
@@ -79,6 +81,7 @@
     #define CSC_QUAT_ENTRY_HEX                                  8'h8
     //CSC_ENTRY_HEX-1
     #define CSC_ENTRY_MINUS1_HEX                                8'h1f
+    #define CSC_ENTRY_HEX_MUL2                                  8'h40
 
     #define CSC_ATOMC_HEX                                       7'h20
     #define CSC_ATOMC_HEX_STR                                   "\"7'h20\""
@@ -95,6 +98,7 @@
     #define CSC_QUAT_ENTRY_HEX                                  8'h2
     //CSC_ENTRY_HEX-1
     #define CSC_ENTRY_MINUS1_HEX                                8'h07
+    #define CSC_ENTRY_HEX_MUL2                                  8'h10
 
     #define CSC_ATOMC_HEX                                       7'h08
     #define CSC_ATOMC_HEX_STR                                   "\"7'h08\""
@@ -109,7 +113,6 @@
     #define CSC_ATOMK_HEX_STR                                   "\"7'h20\""
     //atomK*2
     #define CSC_ATOMK_MUL2_HEX                                  7'h40
-    #define CSC_ATOMK_MUL4_HEX                                  8'h80 
     #define CSC_ATOMK_MUL2_HEX_STR                              "\"7'h40\""
 #elif (NVDLA_MAC_ATOMIC_K_SIZE==8) 
     //atomK
@@ -119,25 +122,20 @@
     #define CSC_ATOMK_HEX_STR                                   "\"7'h8\""
     //atomK*2
     #define CSC_ATOMK_MUL2_HEX                                  7'h10
-    #define CSC_ATOMK_MUL4_HEX                                  7'h20 
     #define CSC_ATOMK_MUL2_HEX_STR                              "\"7'h10\""
 #endif
 
 #if (NVDLA_CC_ATOMC_DIV_ATOMK==1)
     `define CC_ATOMC_DIV_ATOMK_EQUAL_1
-    #define CSC_IMG_STRIPE                                      CSC_ATOMK_MUL2_HEX
-    #define NVDLA_CC_CREDIT_SIZE                                CSC_ATOMK*2
 #elif (NVDLA_CC_ATOMC_DIV_ATOMK==2)
     `define CC_ATOMC_DIV_ATOMK_EQUAL_2
-    #define CSC_IMG_STRIPE                                      CSC_ATOMK_MUL2_HEX
-    #define NVDLA_CC_CREDIT_SIZE                                CSC_ATOMK*2
 #elif (NVDLA_CC_ATOMC_DIV_ATOMK==4)
     `define CC_ATOMC_DIV_ATOMK_EQUAL_4
-    #define CSC_IMG_STRIPE                                      CSC_ATOMK_MUL4_HEX
-    #define NVDLA_CC_CREDIT_SIZE                                CSC_ATOMK*4
 #endif
 
 
+//image stripe keep 2*atomK
+#define CSC_IMG_STRIPE                                      CSC_ATOMK_MUL2_HEX
 //batch keep 1
 #define CSC_BATCH_STRIPE                                    7'h1
 

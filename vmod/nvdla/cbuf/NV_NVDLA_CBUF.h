@@ -13,7 +13,7 @@
 #define CBUF_ENTRY_BYTE             CBUF_ENTRY_WIDTH/8
 #define CBUF_RAM_DEPTH              NVDLA_CBUF_BANK_DEPTH 
 #define CBUF_BANK_DEPTH_BITS        NVDLA_CBUF_BANK_DEPTH_LOG2  //log2(bank_depth), how many bits need to give an address in BANK
-#define CBUF_RD_DATA_SHIFT_WIDTH    NVDLA_CBUF_WIDTH_LOG2       //log2(ram_width),width of data shift
+#define CBUF_RD_DATA_SHIFT_WIDTH    NVDLA_CBUF_WIDTH_MUL2_LOG2  //log2(ram_width*2),width of data shift
 #define CBUF_ADDR_WIDTH             NVDLA_CBUF_DEPTH_LOG2       //log2(bank_depth*bank_num)for both read and write
 #define CBUF_RD_PORT_WIDTH          CBUF_ENTRY_WIDTH
 #define CBUF_WR_PORT_NUMBER         2   //how many write ports.

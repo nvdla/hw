@@ -26,7 +26,7 @@ module NV_NVDLA_cbuf (
   ,sc2buf_dat_rd_addr   //|< i
   ,sc2buf_dat_rd_en     //|< i
   ,sc2buf_dat_rd_shift  //|< i
-  ,sc2buf_dat_rd_next1_disable //< i
+  ,sc2buf_dat_rd_next1_en //< i
   ,sc2buf_dat_rd_data   //|> o
   ,sc2buf_dat_rd_valid  //|> o
   ,sc2buf_wt_rd_addr    //|< i
@@ -57,7 +57,7 @@ input [31:0] pwrbus_ram_pd;
 input                       sc2buf_dat_rd_en;    /* data valid */
 input [CBUF_ADDR_WIDTH-1:0] sc2buf_dat_rd_addr;
 input [CBUF_RD_DATA_SHIFT_WIDTH-1:0] sc2buf_dat_rd_shift;  //|< i
-input                       sc2buf_dat_rd_next1_disable; //< i
+input                       sc2buf_dat_rd_next1_en; //< i
 output                      sc2buf_dat_rd_valid;  /* data valid */
 output [CBUF_RD_PORT_WIDTH-1:0] sc2buf_dat_rd_data;
 
@@ -212,8 +212,8 @@ end
 //////////////////////step2: read data handle
 //decode read data address to sram.
 wire sc2buf_dat_rd_en0 =  sc2buf_dat_rd_en;
-wire sc2buf_dat_rd_en1 =  sc2buf_dat_rd_en&(~sc2buf_dat_rd_next1_disable);
-wire[CBUF_ADDR_WIDTH-1:0] sc2buf_dat_rd_addr0 = sc2buf_dat_rd_next1_disable ? sc2buf_dat_rd_addr : (sc2buf_dat_rd_addr-1'b1);
+wire sc2buf_dat_rd_en1 =  sc2buf_dat_rd_en & sc2buf_dat_rd_next1_en;
+wire[CBUF_ADDR_WIDTH-1:0] sc2buf_dat_rd_addr0 = sc2buf_dat_rd_next1_en ? sc2buf_dat_rd_addr-1'b1 : sc2buf_dat_rd_addr;
 wire[CBUF_ADDR_WIDTH-1:0] sc2buf_dat_rd_addr1 = sc2buf_dat_rd_addr;
 //: my $bank_slice= CBUF_BANK_SLICE;  #address part for select bank
 //: for(my $j=0; $j<CBUF_BANK_NUMBER ; $j++){
@@ -463,7 +463,7 @@ wire[CBUF_ADDR_WIDTH-1:0] sc2buf_dat_rd_addr1 = sc2buf_dat_rd_addr;
 //: );
 //: }
 //: print qq(
-//: wire [${kk}*2-1:0] l4group_data_rd_data_w = {l4group_data_rd1_data,l4group_data_rd0_data}>>sc2buf_dat_rd_shift_5T;
+//: wire [${kk}*2-1:0] l4group_data_rd_data_w = {l4group_data_rd1_data,l4group_data_rd0_data}>>{sc2buf_dat_rd_shift_5T,3'b0};
 //: );
 //: &eperl::flop("-wid ${kk} -norst -q l4group_data_rd_data   -d l4group_data_rd_data_w[${kk}-1:0]");
 //: print "wire[${kk}-1:0] sc2buf_dat_rd_data = l4group_data_rd_data[${kk}-1:0]; \n";
@@ -489,7 +489,7 @@ wire[CBUF_ADDR_WIDTH-1:0] sc2buf_dat_rd_addr1 = sc2buf_dat_rd_addr;
 ////: print "wire[${kk}-1:0] sc2buf_dat_rd_data1 =".${t2}."{${kk}{1'b0}}; \n";
 ////: }
 ////:
-//wire[CBUF_RD_PORT_WIDTH*2-1:0] sc2buf_dat_rd_data_temp = {sc2buf_dat_rd_data1,sc2buf_dat_rd_data0} >> sc2buf_dat_rd_shift_5T;
+//wire[CBUF_RD_PORT_WIDTH*2-1:0] sc2buf_dat_rd_data_temp = {sc2buf_dat_rd_data1,sc2buf_dat_rd_data0} >> {sc2buf_dat_rd_shift_5T,3'b0};
 //wire[CBUF_RD_PORT_WIDTH-1:0] sc2buf_dat_rd_data = sc2buf_dat_rd_data_temp[CBUF_RD_PORT_WIDTH-1:0];
 
 
