@@ -1305,7 +1305,9 @@ assign pixel_w_cnt_plus1 = pixel_w_cnt[LOG2_ATOMC-1:0]+1'b1;
 //the entry read form cbuf must make sure low byte aligned. High Bytes may dropped, low bytes will always be used.
 assign sc2buf_dat_rd_shift_w = sc2buf_dat_rd_next1_en_w ? pixel_w_cnt_plus1_d1[LOG2_ATOMC-1:0]+ CSC_ATOMC_HEX - dat_req_pipe_bytes:   //image read jump
                                is_img_d1[10]&&stripe_begin_disable_jump ?  {CBUF_RD_DATA_SHIFT_WIDTH{1'd0}}:      //image read no jump,stripe's start need no shift 
-                               is_img_d1[10]? pixel_w_cnt_plus1_d1[LOG2_ATOMC:0] - dat_req_pipe_bytes  : //image read no jump, not image's start, need shift
+                               //image read no jump, not image's start, not all bytes are used,need shift out low bytes
+                               is_img_d1[10]&&(pixel_w_cnt_plus1_d1[LOG2_ATOMC:0]> dat_req_pipe_bytes)?  pixel_w_cnt_plus1_d1[LOG2_ATOMC:0] - dat_req_pipe_bytes  : 
+                               is_img_d1[10]&&(pixel_w_cnt_plus1_d1[LOG2_ATOMC:0]<= dat_req_pipe_bytes)? {CBUF_RD_DATA_SHIFT_WIDTH{1'd0}} : 
                                {CBUF_RD_DATA_SHIFT_WIDTH{1'd0}};  //read data, no need to shift
                                
                                 
@@ -1568,25 +1570,25 @@ assign dat_rsp_l3_block_end = dat_rsp_l3_sub_c;
 assign rsp_sft_cnt_l0_w = (layer_st) ? CSC_ENTRY_HEX :   //begin from C0
                           (dat_rsp_l0_stripe_end & ~dat_rsp_l0_block_end) ? rsp_sft_cnt_l0_ori :
                           (dat_rsp_l0_stripe_end & dat_rsp_l0_block_end) ? CSC_ENTRY_HEX :
-                          //(dat_dummy_l0_en) ? (rsp_sft_cnt_l0_inc & CSC_ENTRY_MINUS1_HEX) :
+                          (dat_dummy_l0_en) ? (rsp_sft_cnt_l0_inc & CSC_ENTRY_MINUS1_HEX) :
                           rsp_sft_cnt_l0_inc;
 
 assign rsp_sft_cnt_l1_w = (layer_st) ? CSC_ENTRY_HEX :
                           (dat_rsp_l1_stripe_end & ~dat_rsp_l1_block_end) ? rsp_sft_cnt_l1_ori :
                           (dat_rsp_l1_stripe_end & dat_rsp_l1_block_end) ? CSC_ENTRY_HEX :
-                          //(dat_dummy_l1_en) ? (rsp_sft_cnt_l1_inc & CSC_ENTRY_MINUS1_HEX) :
+                          (dat_dummy_l1_en) ? (rsp_sft_cnt_l1_inc & CSC_ENTRY_MINUS1_HEX) :
                           rsp_sft_cnt_l1_inc;
 
 assign rsp_sft_cnt_l2_w = (layer_st) ? CSC_ENTRY_HEX :
                           (dat_rsp_l2_stripe_end & ~dat_rsp_l2_block_end) ? rsp_sft_cnt_l2_ori :
                           (dat_rsp_l2_stripe_end & dat_rsp_l2_block_end) ? CSC_ENTRY_HEX :
-                          //(dat_dummy_l2_en) ? (rsp_sft_cnt_l2_inc & CSC_ENTRY_MINUS1_HEX) :
+                          (dat_dummy_l2_en) ? (rsp_sft_cnt_l2_inc & CSC_ENTRY_MINUS1_HEX) :
                           rsp_sft_cnt_l2_inc;
 
 assign rsp_sft_cnt_l3_w = (layer_st) ? CSC_ENTRY_HEX :
                           (dat_rsp_l3_stripe_end & ~dat_rsp_l3_block_end) ? rsp_sft_cnt_l3_ori :
                           (dat_rsp_l3_stripe_end & dat_rsp_l3_block_end) ? CSC_ENTRY_HEX :
-                          //(dat_dummy_l3_en) ? (rsp_sft_cnt_l3_inc & CSC_ENTRY_MINUS1_HEX) :
+                          (dat_dummy_l3_en) ? (rsp_sft_cnt_l3_inc & CSC_ENTRY_MINUS1_HEX) :
                           rsp_sft_cnt_l3_inc;
 
 assign rsp_sft_cnt_l0_en = layer_st | (is_img_d1[17] & dat_rsp_l0_pvld);
