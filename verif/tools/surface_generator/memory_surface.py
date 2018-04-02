@@ -355,7 +355,6 @@ Required parameter for feature map surface are:
         plane_name_list = pixel_format_name.split('___')
         self.plane_number = len(plane_name_list)
         element_byte_size = np.dtype(self.data_type).itemsize
-        element_alignment = self.atomic_memory//element_byte_size
         for plane_name in plane_name_list:
             # a plane could be: R8G8B8A8, Y8, U8V8
             result = hdr_anchor.search(plane_name)
@@ -367,10 +366,14 @@ Required parameter for feature map surface are:
             channel_name_tuple, channel_bit_width_tuple = zip(*channel_list)
             self.channel_name_list.extend(channel_name_tuple)
             channel_per_plane = len(channel_list)
+            element_alignment = self.atomic_memory//(element_byte_size*channel_per_plane)
+            #print('MemorySurfaceImagePitch::element_alignment', element_alignment, sep='\n')
             self.channel_per_plane.append(channel_per_plane)
-            pad_num_line_start = self.offset_x * channel_per_plane % element_alignment
+            pad_num_line_start = self.offset_x % element_alignment
             self.pad_num_line_start.append(pad_num_line_start)
             self.pad_num_line_end.append( (pad_num_line_start + self.width + element_alignment -1 )//element_alignment * element_alignment - (pad_num_line_start + self.width) )
+        #print('MemorySurfaceImagePitch::pad_num_line_start', self.pad_num_line_start, sep='\n')
+        #print('MemorySurfaceImagePitch::pad_num_line_end', self.pad_num_line_end, sep='\n')
 
     def convert_memory_surface_to_tensor_nchw(self):
         # Remove pad zeros in line start and line end which is come from offset_x and atomic_m alignment
@@ -410,7 +413,7 @@ Required parameter for feature map surface are:
             self.memory_surface_data.append(TensorOperator.convert_tensor_from_nchw_to_nch_wxatom(tensor_list[plane_idx], self.channel_per_plane[plane_idx]))
         # apply offset_x and atomic_m alignment, pad zeros in line start and line end
         for plane_idx in range(self.plane_number):
-            self.memory_surface_data[plane_idx] = np.pad(self.memory_surface_data[plane_idx], ((0,0), (0,0), (0,0), (self.pad_num_line_start[plane_idx], self.pad_num_line_end[plane_idx])), 'constant')
+            self.memory_surface_data[plane_idx] = np.pad(self.memory_surface_data[plane_idx], ((0,0), (0,0), (0,0), (self.pad_num_line_start[plane_idx]*self.channel_per_plane[plane_idx], self.pad_num_line_end[plane_idx]*self.channel_per_plane[plane_idx])), 'constant')
 
 
     def generate_memory_surface(self, *config):
@@ -435,13 +438,13 @@ Required parameter for feature map surface are:
     def dump_memory_surface_to_file(self):
         print('MemorySurfaceImagePitch::dump_memory_surface_to_file')
         #print('self.memory_surface_data', self.memory_surface_data)
-        for index in range(self.plane_number):
-            with open (self.file_name[index], 'w') as f:
+        for plane_index in range(self.plane_number):
+            with open (self.file_name[plane_index], 'w') as f:
                 f.write('{\n')
                 offset = 0
                 for line_index in range(self.height):
-                    offset = line_index*self.line_stride[index]
-                    self.write_line_to_file(f, offset, self.memory_surface_data[index][0, 0, line_index])
+                    offset = line_index*self.line_stride[plane_index]
+                    self.write_line_to_file(f, offset, self.memory_surface_data[plane_index][0, 0, line_index])
                 f.write('}\n')
 
     def print_info(self):
