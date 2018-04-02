@@ -390,7 +390,7 @@ task nvdla_tb_intr_handler::evt_trigger(bit is_rm, interrupt_command item);
                 `uvm_fatal(tID, $sformatf("sync_id: %0s is already on", item.sync_id))
             end
             evt.trigger();
-            `uvm_info(tID, $sformatf("sync_id: %0s is on", item.sync_id), UVM_MEDIUM)
+            `uvm_info(tID, $sformatf("sync_id: %0s is triggered", item.sync_id), UVM_MEDIUM)
         end
     end
 endtask : evt_trigger

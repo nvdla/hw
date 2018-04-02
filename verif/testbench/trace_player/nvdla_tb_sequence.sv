@@ -319,8 +319,8 @@ task nvdla_tb_sequence::wait_i(sequence_command cmd);
     end
     evt.wait_on();
     `uvm_info(tID, $sformatf("sync_id: %0s is on", cmd.sync_id), UVM_MEDIUM)
-    evt.reset();
-    `uvm_info(tID, $sformatf("sync_id: %0s is reseted", cmd.sync_id), UVM_MEDIUM)
+    //evt.reset();
+    //`uvm_info(tID, $sformatf("sync_id: %0s is reseted", cmd.sync_id), UVM_MEDIUM)
 endtask : wait_i
 
 // Task: read_i
