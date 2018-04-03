@@ -460,6 +460,7 @@ wire     [3:0] rsp_img_p0_burst_cnt_w;
 wire           rsp_img_p0_burst_size_en;
 wire     [3:0] rsp_img_p0_burst_size_w;
 reg    [NVDLA_MEMORY_ATOMIC_SIZE*NVDLA_BPE-1:0] rsp_img_p0_cache_data;
+reg    [NVDLA_MEMORY_ATOMIC_SIZE*NVDLA_BPE-1:0] rsp_img_p1_cache_data;
 wire   [NVDLA_MEMORY_ATOMIC_SIZE*NVDLA_BPE-1:0] rsp_img_p0_data_d1_w;
 wire   [NVDLA_MEMORY_ATOMIC_SIZE*NVDLA_BPE-1:0] rsp_img_p0_data_atmm1;
 wire   [NVDLA_MEMORY_ATOMIC_SIZE*NVDLA_BPE-1:0] rsp_img_p0_data_atmm0;
@@ -1214,9 +1215,10 @@ assign rsp_img_c1l0_wr_en = (rsp_img_p0_vld &   rsp_img_planar);
 //: my $atmm_num = ($dmaif / $atmm);
 //: if($atmm_num == 1) {
 //:     print qq(
+//:         /////rsp_img_p0_cache_data  p0 means planar 0
 //:     );
-//:     ##&eperl::flop("-nodeclare   -rval \"{${atmm}{1'b0}}\"  -en \"rsp_img_c0l0_wr_en\" -d \"rsp_img_p0_data\" -q rsp_img_p0_cache_data");
-//:     &eperl::flop("-nodeclare   -rval \"{${atmm}{1'b0}}\"  -en \"rsp_img_c0l0_wr_en | rsp_img_c1l0_wr_en \" -d \"rsp_img_p0_data\" -q rsp_img_p0_cache_data");
+//:     &eperl::flop("-nodeclare   -rval \"{${atmm}{1'b0}}\"  -en \"rsp_img_c0l0_wr_en \" -d \"rsp_img_p0_data\" -q rsp_img_p0_cache_data");
+//:     &eperl::flop("-nodeclare   -rval \"{${atmm}{1'b0}}\"  -en \"rsp_img_c1l0_wr_en \" -d \"rsp_img_p0_data\" -q rsp_img_p1_cache_data");
 //: } elsif($atmm_num == 2) {
 //:     print qq(
 //:         assign rsp_img_l0_data = rsp_img_p1_vld ? rsp_img_p1_data : rsp_img_p0_data;
@@ -1246,10 +1248,9 @@ assign rsp_img_c1l0_wr_en = (rsp_img_p0_vld &   rsp_img_planar);
 //: if($atmm_num == 1) {
 //:     print qq(
 //:         assign rsp_img_p0_vld_d1_w = rsp_img_p0_vld & (~rsp_img_1st_burst);
-//:         //assign rsp_img_p0_vld_d1_w = rsp_img_p0_vld;
 //:
 //:         assign rsp_img_p0_data_atmm0 = rsp_img_p0_data;
-//:         assign {mon_rsp_img_p0_data_d1_w, rsp_img_p0_data_d1_w} = ({rsp_img_p0_data_atmm0,rsp_img_p0_cache_data} >> {rsp_img_sft, 3'b0});
+//:         assign {mon_rsp_img_p0_data_d1_w, rsp_img_p0_data_d1_w} = ({rsp_img_p0_data_atmm0,(rsp_img_c0l0_wr_en ? rsp_img_p0_cache_data : rsp_img_p1_cache_data)} >> {rsp_img_sft, 3'b0});
 //:
 //:         assign rsp_img_planar_idx_add =  3'h1;
 //:     );

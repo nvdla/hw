@@ -531,7 +531,7 @@ wire           dp2reg_wt_rd_stall_dec;
 wire           fetch_done;
 wire     [10:0] group_op;
 wire     [11:0] group_w;
-wire    [12:0] incr_wt_cnt;
+wire    [25:0] incr_wt_cnt;
 wire    [14:0] incr_wt_entries_d0;
 wire    [14:0] incr_wt_entries_w;
 wire     [5:0] incr_wt_kernels_d0;
@@ -1788,14 +1788,14 @@ assign status_update = (~required_valid) ? 1'b0 : wt_satisfied;
 //  CDMA WT communicate to CSC                                        //
 ////////////////////////////////////////////////////////////////////////
 assign pre_wt_fetched_cnt_w = status_last_group ? 26'b0 : wt_fetched_cnt;
-assign {mon_incr_wt_cnt, incr_wt_cnt} = wt_fetched_cnt[12 :0] - pre_wt_fetched_cnt[12 :0];
+assign {mon_incr_wt_cnt, incr_wt_cnt} = wt_fetched_cnt - pre_wt_fetched_cnt;
 
 // dmaif vs atom_c
 //: my $dmaif=NVDLA_CDMA_DMAIF_BW/NVDLA_CDMA_BPE;
 //: my $atmc=NVDLA_MAC_ATOMIC_C_SIZE;
 //: if($dmaif == $atmc){
 //:     print qq(
-//:         assign incr_wt_entries_w = {2'd0,incr_wt_cnt[12:0]};
+//:         assign incr_wt_entries_w = incr_wt_cnt[14:0];
 //:     );
 //: } elsif($dmaif > $atmc) {
 //:     my $k = int(log($dmaif/$atmc)/log(2));
