@@ -12,7 +12,9 @@ class pdp_cov_pool extends nvdla_coverage_base;
     bit_toggle_cg tg_pdp_cube_in_height;
     bit_toggle_cg tg_pdp_cube_in_channel;
     bit_toggle_cg tg_pdp_src_base_addr_low;
+`ifdef MEM_ADDR_WIDTH_GT_32
     bit_toggle_cg tg_pdp_src_base_addr_high;
+`endif
     bit_toggle_cg tg_pdp_src_line_stride;
     bit_toggle_cg tg_pdp_src_surface_stride;
     bit_toggle_cg tg_pdp_partial_width_in_first;
@@ -22,7 +24,9 @@ class pdp_cov_pool extends nvdla_coverage_base;
     bit_toggle_cg tg_pdp_cube_out_height;
     bit_toggle_cg tg_pdp_cube_out_channel;
     bit_toggle_cg tg_pdp_dst_base_addr_low;
+`ifdef MEM_ADDR_WIDTH_GT_32
     bit_toggle_cg tg_pdp_dst_base_addr_high;
+`endif
     bit_toggle_cg tg_pdp_dst_line_stride;
     bit_toggle_cg tg_pdp_dst_surface_stride;
     bit_toggle_cg tg_pdp_partial_width_out_first;
@@ -47,7 +51,9 @@ class pdp_cov_pool extends nvdla_coverage_base;
         tg_pdp_cube_in_height = new("tg_pdp_cube_in_height", ral.nvdla.NVDLA_PDP.D_DATA_CUBE_IN_HEIGHT.CUBE_IN_HEIGHT.get_n_bits());
         tg_pdp_cube_in_channel = new("tg_pdp_cube_in_channel", ral.nvdla.NVDLA_PDP.D_DATA_CUBE_IN_CHANNEL.CUBE_IN_CHANNEL.get_n_bits());
         tg_pdp_src_base_addr_low = new("tg_pdp_src_base_addr_low", ral.nvdla.NVDLA_PDP.D_SRC_BASE_ADDR_LOW.SRC_BASE_ADDR_LOW.get_n_bits());
+`ifdef MEM_ADDR_WIDTH_GT_32
         tg_pdp_src_base_addr_high = new("tg_pdp_src_base_addr_high", ral.nvdla.NVDLA_PDP.D_SRC_BASE_ADDR_HIGH.SRC_BASE_ADDR_HIGH.get_n_bits());
+`endif
         tg_pdp_src_line_stride = new("tg_pdp_src_line_stride", ral.nvdla.NVDLA_PDP.D_SRC_LINE_STRIDE.SRC_LINE_STRIDE.get_n_bits());
         tg_pdp_src_surface_stride = new("tg_pdp_src_surface_stride", ral.nvdla.NVDLA_PDP.D_SRC_SURFACE_STRIDE.SRC_SURFACE_STRIDE.get_n_bits());
         tg_pdp_partial_width_in_first = new("tg_pdp_partial_width_in_first", ral.nvdla.NVDLA_PDP.D_PARTIAL_WIDTH_IN.PARTIAL_WIDTH_IN_FIRST.get_n_bits());
@@ -57,7 +63,9 @@ class pdp_cov_pool extends nvdla_coverage_base;
         tg_pdp_cube_out_height = new("tg_pdp_cube_out_height", ral.nvdla.NVDLA_PDP.D_DATA_CUBE_OUT_HEIGHT.CUBE_OUT_HEIGHT.get_n_bits());
         tg_pdp_cube_out_channel = new("tg_pdp_cube_out_channel", ral.nvdla.NVDLA_PDP.D_DATA_CUBE_OUT_CHANNEL.CUBE_OUT_CHANNEL.get_n_bits());
         tg_pdp_dst_base_addr_low = new("tg_pdp_dst_base_addr_low", ral.nvdla.NVDLA_PDP.D_DST_BASE_ADDR_LOW.DST_BASE_ADDR_LOW.get_n_bits());
+`ifdef MEM_ADDR_WIDTH_GT_32
         tg_pdp_dst_base_addr_high = new("tg_pdp_dst_base_addr_high", ral.nvdla.NVDLA_PDP.D_DST_BASE_ADDR_HIGH.DST_BASE_ADDR_HIGH.get_n_bits());
+`endif
         tg_pdp_dst_line_stride = new("tg_pdp_dst_line_stride", ral.nvdla.NVDLA_PDP.D_DST_LINE_STRIDE.DST_LINE_STRIDE.get_n_bits());
         tg_pdp_dst_surface_stride = new("tg_pdp_dst_surface_stride", ral.nvdla.NVDLA_PDP.D_DST_SURFACE_STRIDE.DST_SURFACE_STRIDE.get_n_bits());
         tg_pdp_partial_width_out_first = new("tg_pdp_partial_width_out_first", ral.nvdla.NVDLA_PDP.D_PARTIAL_WIDTH_OUT.PARTIAL_WIDTH_OUT_FIRST.get_n_bits());
@@ -126,9 +134,11 @@ class pdp_cov_pool extends nvdla_coverage_base;
             wildcard bins align_256 = {27'b????????????????????????000};
             bins full[`PDP_COV_BIN_NUM_DEFAULT]      = {['h0: `MAX_VALUE_27BITS]};
         }
-        cp_src_base_addr_high:  coverpoint ral.nvdla.NVDLA_PDP_RDMA.D_SRC_BASE_ADDR_HIGH.SRC_BASE_ADDR_HIGH.value[7:0] iff (1 == ral.nvdla.NVDLA_PDP_RDMA.D_OP_ENABLE.OP_EN.value) {
+`ifdef MEM_ADDR_WIDTH_GT_32
+        cp_src_base_addr_high:  coverpoint ral.nvdla.NVDLA_PDP_RDMA.D_SRC_BASE_ADDR_HIGH.SRC_BASE_ADDR_HIGH.value[`NVDLA_MEM_ADDRESS_WIDTH-32-1:0] iff (1 == ral.nvdla.NVDLA_PDP_RDMA.D_OP_ENABLE.OP_EN.value) {
             bins full[`PDP_COV_BIN_NUM_DEFAULT]      = {['h0: `MAX_VALUE_8BITS]};
         }
+`endif
         cp_src_line_stride:     coverpoint ral.nvdla.NVDLA_PDP_RDMA.D_SRC_LINE_STRIDE.SRC_LINE_STRIDE.value[31:5] iff (1 == ral.nvdla.NVDLA_PDP_RDMA.D_OP_ENABLE.OP_EN.value) {
             bins full[`PDP_COV_BIN_NUM_DEFAULT]      = {['h0: `MAX_VALUE_27BITS]};
         }
@@ -143,7 +153,9 @@ class pdp_cov_pool extends nvdla_coverage_base;
         }
         // Cross points
         cr_src_addr_low_ram_type:   cross cp_src_base_addr_low,cp_src_ram_type;
+`ifdef MEM_ADDR_WIDTH_GT_32
         cr_src_addr_high_ram_type:  cross cp_src_base_addr_high,cp_src_ram_type;
+`endif
 
         // Cube out size
         cp_cube_out_width:          coverpoint ral.nvdla.NVDLA_PDP.D_DATA_CUBE_OUT_WIDTH.CUBE_OUT_WIDTH.value iff (1 == ral.nvdla.NVDLA_PDP.D_OP_ENABLE.OP_EN.value) {
@@ -187,9 +199,11 @@ class pdp_cov_pool extends nvdla_coverage_base;
             wildcard bins align_256 = {27'b????????????????????????000};
             bins full[`PDP_COV_BIN_NUM_DEFAULT]       = {['h0: `MAX_VALUE_27BITS]};
         }
-        cp_dst_base_addr_high:  coverpoint ral.nvdla.NVDLA_PDP.D_DST_BASE_ADDR_HIGH.DST_BASE_ADDR_HIGH.value[7:0] iff (1 == ral.nvdla.NVDLA_PDP.D_OP_ENABLE.OP_EN.value) {
+`ifdef MEM_ADDR_WIDTH_GT_32
+        cp_dst_base_addr_high:  coverpoint ral.nvdla.NVDLA_PDP.D_DST_BASE_ADDR_HIGH.DST_BASE_ADDR_HIGH.value[`NVDLA_MEM_ADDRESS_WIDTH-32-1:0] iff (1 == ral.nvdla.NVDLA_PDP.D_OP_ENABLE.OP_EN.value) {
             bins full[`PDP_COV_BIN_NUM_DEFAULT]       = {['h0: `MAX_VALUE_8BITS]};
         }
+`endif
         cp_dst_line_stride:     coverpoint ral.nvdla.NVDLA_PDP.D_DST_LINE_STRIDE.DST_LINE_STRIDE.value[31:5] iff (1 == ral.nvdla.NVDLA_PDP.D_OP_ENABLE.OP_EN.value) {
             bins full[`PDP_COV_BIN_NUM_DEFAULT]       = {['h0: `MAX_VALUE_27BITS]};
         }
@@ -204,7 +218,9 @@ class pdp_cov_pool extends nvdla_coverage_base;
         }
         // Cross points
         cr_dst_addr_low_ram_type:   cross cp_dst_base_addr_low,cp_dst_ram_type;
+`ifdef MEM_ADDR_WIDTH_GT_32
         cr_dst_addr_high_ram_type:  cross cp_dst_base_addr_high,cp_dst_ram_type;
+`endif
 
         // Flying mode
         cp_flying_mode:         coverpoint (ral.nvdla.NVDLA_PDP.D_OPERATION_MODE_CFG.FLYING_MODE.value) iff (1 == ral.nvdla.NVDLA_PDP.D_OP_ENABLE.OP_EN.value) {
@@ -348,7 +364,9 @@ class pdp_cov_pool extends nvdla_coverage_base;
         tg_pdp_cube_in_height.sample(ral.nvdla.NVDLA_PDP.D_DATA_CUBE_IN_HEIGHT.CUBE_IN_HEIGHT.value);
         tg_pdp_cube_in_channel.sample(ral.nvdla.NVDLA_PDP.D_DATA_CUBE_IN_CHANNEL.CUBE_IN_CHANNEL.value);
         tg_pdp_src_base_addr_low.sample(ral.nvdla.NVDLA_PDP.D_SRC_BASE_ADDR_LOW.SRC_BASE_ADDR_LOW.value);
+`ifdef MEM_ADDR_WIDTH_GT_32
         tg_pdp_src_base_addr_high.sample(ral.nvdla.NVDLA_PDP.D_SRC_BASE_ADDR_HIGH.SRC_BASE_ADDR_HIGH.value);
+`endif
         tg_pdp_src_line_stride.sample(ral.nvdla.NVDLA_PDP.D_SRC_LINE_STRIDE.SRC_LINE_STRIDE.value);
         tg_pdp_src_surface_stride.sample(ral.nvdla.NVDLA_PDP.D_SRC_SURFACE_STRIDE.SRC_SURFACE_STRIDE.value);
         tg_pdp_partial_width_in_first.sample(ral.nvdla.NVDLA_PDP.D_PARTIAL_WIDTH_IN.PARTIAL_WIDTH_IN_FIRST.value);
@@ -358,7 +376,9 @@ class pdp_cov_pool extends nvdla_coverage_base;
         tg_pdp_cube_out_height.sample(ral.nvdla.NVDLA_PDP.D_DATA_CUBE_OUT_HEIGHT.CUBE_OUT_HEIGHT.value);
         tg_pdp_cube_out_channel.sample(ral.nvdla.NVDLA_PDP.D_DATA_CUBE_OUT_CHANNEL.CUBE_OUT_CHANNEL.value);
         tg_pdp_dst_base_addr_low.sample(ral.nvdla.NVDLA_PDP.D_DST_BASE_ADDR_LOW.DST_BASE_ADDR_LOW.value);
+`ifdef MEM_ADDR_WIDTH_GT_32
         tg_pdp_dst_base_addr_high.sample(ral.nvdla.NVDLA_PDP.D_DST_BASE_ADDR_HIGH.DST_BASE_ADDR_HIGH.value);
+`endif
         tg_pdp_dst_line_stride.sample(ral.nvdla.NVDLA_PDP.D_DST_LINE_STRIDE.DST_LINE_STRIDE.value);
         tg_pdp_dst_surface_stride.sample(ral.nvdla.NVDLA_PDP.D_DST_SURFACE_STRIDE.DST_SURFACE_STRIDE.value);
         tg_pdp_partial_width_out_first.sample(ral.nvdla.NVDLA_PDP.D_PARTIAL_WIDTH_OUT.PARTIAL_WIDTH_OUT_FIRST.value);

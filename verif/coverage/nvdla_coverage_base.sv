@@ -12,6 +12,16 @@ class nvdla_coverage_base;
     function new(string name, ral_sys_top ral);
         tID = name.toupper();
         this.ral = ral;
+
+`ifdef NVDLA_MEM_ADDRESS_WIDTH
+        if (`NVDLA_MEM_ADDRESS_WIDTH > 32) begin
+            `define MEM_ADDR_WIDTH_GT_32
+            ;
+        end else begin
+            `undef MEM_ADDR_WIDTH_GT_32
+            ;
+        end
+`endif
     endfunction : new
 
     // ----------------------------------------------------

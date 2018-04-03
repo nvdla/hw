@@ -7,7 +7,9 @@ class sdp_cov_pool extends nvdla_coverage_base;
     bit_toggle_cg    sdp_height_tog_cg;
     bit_toggle_cg    sdp_channel_tog_cg;
     bit_toggle_cg    sdp_dst_base_addr_low_tog_cg;
+`ifdef MEM_ADDR_WIDTH_GT_32
     bit_toggle_cg    sdp_dst_base_addr_high_tog_cg;
+`endif
 `ifdef NVDLA_BATCH_ENABLE
     bit_toggle_cg    sdp_dst_batch_stride_tog_cg;
 `endif
@@ -43,14 +45,20 @@ class sdp_cov_pool extends nvdla_coverage_base;
     bit_toggle_cg    sdp_rdma_height_tog_cg;
     bit_toggle_cg    sdp_rdma_channel_tog_cg;
     bit_toggle_cg    sdp_rdma_src_base_addr_low_tog_cg;
+`ifdef MEM_ADDR_WIDTH_GT_32
     bit_toggle_cg    sdp_rdma_src_base_addr_high_tog_cg;
+`endif
 `ifdef NVDLA_SDP_BS_ENABLE
     bit_toggle_cg    sdp_rdma_bs_base_addr_low_tog_cg;
+  `ifdef MEM_ADDR_WIDTH_GT_32
     bit_toggle_cg    sdp_rdma_bs_base_addr_high_tog_cg;
+  `endif
 `endif
 `ifdef NVDLA_SDP_BN_ENABLE
     bit_toggle_cg    sdp_rdma_bn_base_addr_low_tog_cg;
+  `ifdef MEM_ADDR_WIDTH_GT_32
     bit_toggle_cg    sdp_rdma_bn_base_addr_high_tog_cg;
+  `endif
 `endif
 
     // lut
@@ -86,7 +94,9 @@ class sdp_cov_pool extends nvdla_coverage_base;
         sdp_height_tog_cg                   = new("sdp_height_tog_cg",                  ral.nvdla.NVDLA_SDP.D_DATA_CUBE_HEIGHT.HEIGHT.get_n_bits());
         sdp_channel_tog_cg                  = new("sdp_channel_tog_cg",                 ral.nvdla.NVDLA_SDP.D_DATA_CUBE_CHANNEL.CHANNEL.get_n_bits());
         sdp_dst_base_addr_low_tog_cg        = new("sdp_dst_base_addr_low_tog_cg",       ral.nvdla.NVDLA_SDP.D_DST_BASE_ADDR_LOW.DST_BASE_ADDR_LOW.get_n_bits());
+`ifdef MEM_ADDR_WIDTH_GT_32
         sdp_dst_base_addr_high_tog_cg       = new("sdp_dst_base_addr_high_tog_cg",      ral.nvdla.NVDLA_SDP.D_DST_BASE_ADDR_HIGH.DST_BASE_ADDR_HIGH.get_n_bits());
+`endif
 `ifdef NVDLA_BATCH_ENABLE
         sdp_dst_batch_stride_tog_cg         = new("sdp_dst_batch_stride_tog_cg",        ral.nvdla.NVDLA_SDP.D_DST_BATCH_STRIDE.DST_BATCH_STRIDE.get_n_bits());
 `endif
@@ -122,14 +132,20 @@ class sdp_cov_pool extends nvdla_coverage_base;
         sdp_rdma_height_tog_cg              = new("sdp_rdma_height_tog_cg",             ral.nvdla.NVDLA_SDP_RDMA.D_DATA_CUBE_HEIGHT.HEIGHT.get_n_bits());
         sdp_rdma_channel_tog_cg             = new("sdp_rdma_channel_tog_cg",            ral.nvdla.NVDLA_SDP_RDMA.D_DATA_CUBE_CHANNEL.CHANNEL.get_n_bits());
         sdp_rdma_src_base_addr_low_tog_cg   = new("sdp_rdma_src_base_addr_low_tog_cg",  ral.nvdla.NVDLA_SDP_RDMA.D_SRC_BASE_ADDR_LOW.SRC_BASE_ADDR_LOW.get_n_bits());
+`ifdef MEM_ADDR_WIDTH_GT_32
         sdp_rdma_src_base_addr_high_tog_cg  = new("sdp_rdma_src_base_addr_high_tog_cg", ral.nvdla.NVDLA_SDP_RDMA.D_SRC_BASE_ADDR_HIGH.SRC_BASE_ADDR_HIGH.get_n_bits());
+`endif
 `ifdef NVDLA_SDP_BS_ENABLE
         sdp_rdma_bs_base_addr_low_tog_cg    = new("sdp_rdma_bs_base_addr_low_tog_cg",   ral.nvdla.NVDLA_SDP_RDMA.D_BS_BASE_ADDR_LOW.BS_BASE_ADDR_LOW.get_n_bits());
+    `ifdef MEM_ADDR_WIDTH_GT_32
         sdp_rdma_bs_base_addr_high_tog_cg   = new("sdp_rdma_bs_base_addr_high_tog_cg",  ral.nvdla.NVDLA_SDP_RDMA.D_BS_BASE_ADDR_HIGH.BS_BASE_ADDR_HIGH.get_n_bits());
+    `endif
 `endif
 `ifdef NVDLA_SDP_BN_ENABLE
         sdp_rdma_bn_base_addr_low_tog_cg    = new("sdp_rdma_bn_base_addr_low_tog_cg",   ral.nvdla.NVDLA_SDP_RDMA.D_BN_BASE_ADDR_LOW.BN_BASE_ADDR_LOW.get_n_bits());
+    `ifdef MEM_ADDR_WIDTH_GT_32
         sdp_rdma_bn_base_addr_high_tog_cg   = new("sdp_rdma_bn_base_addr_high_tog_cg",  ral.nvdla.NVDLA_SDP_RDMA.D_BN_BASE_ADDR_HIGH.BN_BASE_ADDR_HIGH.get_n_bits());
+    `endif
 `endif
 
         // sdp lut
@@ -179,7 +195,9 @@ class sdp_cov_pool extends nvdla_coverage_base;
         sdp_channel_tog_cg.sample(ral.nvdla.NVDLA_SDP.D_DATA_CUBE_CHANNEL.CHANNEL.value);
         if(ral.nvdla.NVDLA_SDP.D_FEATURE_MODE_CFG.OUTPUT_DST.value == 0) begin //  memory
             sdp_dst_base_addr_low_tog_cg.sample(ral.nvdla.NVDLA_SDP.D_DST_BASE_ADDR_LOW.DST_BASE_ADDR_LOW.value);
+`ifdef MEM_ADDR_WIDTH_GT_32
             sdp_dst_base_addr_high_tog_cg.sample(ral.nvdla.NVDLA_SDP.D_DST_BASE_ADDR_HIGH.DST_BASE_ADDR_HIGH.value);
+`endif
         end
 `ifdef NVDLA_BATCH_ENABLE
         if(ral.nvdla.NVDLA_SDP.D_FEATURE_MODE_CFG.FLYING_MODE.value == 0 && ral.nvdla.NVDLA_SDP.D_FEATURE_MODE_CFG.BATCH_NUMBER.value > 0) begin
@@ -281,22 +299,30 @@ class sdp_cov_pool extends nvdla_coverage_base;
         sdp_rdma_channel_tog_cg.sample(ral.nvdla.NVDLA_SDP_RDMA.D_DATA_CUBE_CHANNEL.CHANNEL.value);
         if(ral.nvdla.NVDLA_SDP_RDMA.D_FEATURE_MODE_CFG.FLYING_MODE.value == 0) begin // off-fly
             sdp_rdma_src_base_addr_low_tog_cg.sample(ral.nvdla.NVDLA_SDP_RDMA.D_SRC_BASE_ADDR_LOW.SRC_BASE_ADDR_LOW.value);
+`ifdef MEM_ADDR_WIDTH_GT_32
             sdp_rdma_src_base_addr_high_tog_cg.sample(ral.nvdla.NVDLA_SDP_RDMA.D_SRC_BASE_ADDR_HIGH.SRC_BASE_ADDR_HIGH.value);
+`endif
         end
         if(ral.nvdla.NVDLA_SDP_RDMA.D_FEATURE_MODE_CFG.FLYING_MODE.value == 0) begin // off-fly
             sdp_rdma_src_base_addr_low_tog_cg.sample(ral.nvdla.NVDLA_SDP_RDMA.D_SRC_BASE_ADDR_LOW.SRC_BASE_ADDR_LOW.value);
+`ifdef MEM_ADDR_WIDTH_GT_32
             sdp_rdma_src_base_addr_high_tog_cg.sample(ral.nvdla.NVDLA_SDP_RDMA.D_SRC_BASE_ADDR_HIGH.SRC_BASE_ADDR_HIGH.value);
+`endif
         end
 `ifdef NVDLA_SDP_BS_ENABLE
         if(ral.nvdla.NVDLA_SDP_RDMA.D_BRDMA_CFG.BRDMA_DISABLE.value == 0) begin
             sdp_rdma_bs_base_addr_low_tog_cg.sample(ral.nvdla.NVDLA_SDP_RDMA.D_BS_BASE_ADDR_LOW.BS_BASE_ADDR_LOW.value);
+    `ifdef MEM_ADDR_WIDTH_GT_32
             sdp_rdma_bs_base_addr_high_tog_cg.sample(ral.nvdla.NVDLA_SDP_RDMA.D_BS_BASE_ADDR_HIGH.BS_BASE_ADDR_HIGH.value);
+    `endif
         end
 `endif
 `ifdef NVDLA_SDP_BN_ENABLE
         if(ral.nvdla.NVDLA_SDP_RDMA.D_NRDMA_CFG.NRDMA_DISABLE.value == 0) begin
             sdp_rdma_bn_base_addr_low_tog_cg.sample(ral.nvdla.NVDLA_SDP_RDMA.D_BN_BASE_ADDR_LOW.BN_BASE_ADDR_LOW.value);
+    `ifdef MEM_ADDR_WIDTH_GT_32
             sdp_rdma_bn_base_addr_high_tog_cg.sample(ral.nvdla.NVDLA_SDP_RDMA.D_BN_BASE_ADDR_HIGH.BN_BASE_ADDR_HIGH.value);
+    `endif
         end
 `endif
     endfunction : sdp_rdma_toggle_sample
@@ -332,19 +358,19 @@ class sdp_cov_pool extends nvdla_coverage_base;
         // input size
         cp_width:                    coverpoint ral.nvdla.NVDLA_SDP.D_DATA_CUBE_WIDTH.WIDTH.value[12:0] {
             bins min = {0};
-            bins mid[8] = {['h1:'h1FFE]};
+            bins mid[4] = {['h1:'h1FFE]};
             bins max = {'h1FFF};
         }
         cr_width_flying_mode:        cross cp_width, cp_flying_mode;
         cp_height:                   coverpoint ral.nvdla.NVDLA_SDP.D_DATA_CUBE_HEIGHT.HEIGHT.value[12:0] {
             bins min = {0};
-            bins mid[8] = {['h1:'h1FFE]};
+            bins mid[4] = {['h1:'h1FFE]};
             bins max = {'h1FFF};
         }
         cr_height_flying_mode:        cross cp_height, cp_flying_mode;
         cp_channel:                   coverpoint ral.nvdla.NVDLA_SDP.D_DATA_CUBE_CHANNEL.CHANNEL.value[12:0] {
             bins min = {0};
-            bins mid[8] = {['h1:'h1FFE]};
+            bins mid[4] = {['h1:'h1FFE]};
             bins max = {'h1FFF};
         }
         cr_channel_flying_mode:        cross cp_channel, cp_flying_mode;
@@ -369,15 +395,19 @@ class sdp_cov_pool extends nvdla_coverage_base;
             wildcard bins align_256 = {27'b????????????????????????000};
             bins          ful[8]    = {[0:27'h7FF_FFFF]};
         }
-        cp_dst_base_addr_high:       coverpoint ral.nvdla.NVDLA_SDP.D_DST_BASE_ADDR_HIGH.DST_BASE_ADDR_HIGH.value[7:0] {
+`ifdef MEM_ADDR_WIDTH_GT_32
+        cp_dst_base_addr_high:       coverpoint ral.nvdla.NVDLA_SDP.D_DST_BASE_ADDR_HIGH.DST_BASE_ADDR_HIGH.value[`NVDLA_MEM_ADDRESS_WIDTH-32-1:0] {
             bins ful[8]    = {[0:8'hFF]};
         }
+`endif
         cr_dst_base_addr_low_dst_ram_type_output_dst:  cross cp_dst_base_addr_low, cp_dst_ram_type, cp_output_dst {
             ignore_bins pdp = binsof(cp_output_dst.pdp);
         }
+`ifdef MEM_ADDR_WIDTH_GT_32
         cr_dst_base_addr_high_dst_ram_type_output_dst:  cross cp_dst_base_addr_high, cp_dst_ram_type, cp_output_dst {
             ignore_bins pdp = binsof(cp_output_dst.pdp);
         }
+`endif
         cp_dst_line_stride:          coverpoint (ral.nvdla.NVDLA_SDP.D_DST_LINE_STRIDE.DST_LINE_STRIDE.value/`NVDLA_MEMORY_ATOMIC_SIZE-ral.nvdla.NVDLA_SDP.D_DATA_CUBE_WIDTH.WIDTH.value-1) {
             bins eql     = {0};
             bins mid[7]  = {[1:7]};
@@ -792,19 +822,19 @@ class sdp_cov_pool extends nvdla_coverage_base;
         // input size
         cp_width:                    coverpoint ral.nvdla.NVDLA_SDP_RDMA.D_DATA_CUBE_WIDTH.WIDTH.value[12:0] {
             bins min = {0};
-            bins mid[8] = {['h1:'h1FFE]};
+            bins mid[4] = {['h1:'h1FFE]};
             bins max = {'h1FFF};
         }
         cr_width_flying_mode:        cross cp_width, cp_flying_mode;
         cp_height:                   coverpoint ral.nvdla.NVDLA_SDP_RDMA.D_DATA_CUBE_HEIGHT.HEIGHT.value[12:0] {
             bins min = {0};
-            bins mid[8] = {['h1:'h1FFE]};
+            bins mid[4] = {['h1:'h1FFE]};
             bins max = {'h1FFF};
         }
         cr_height_flying_mode:       cross cp_height, cp_flying_mode;
         cp_channel:                  coverpoint ral.nvdla.NVDLA_SDP_RDMA.D_DATA_CUBE_CHANNEL.CHANNEL.value[12:0] {
             bins min = {0};
-            bins mid[8] = {['h1:'h1FFE]};
+            bins mid[4] = {['h1:'h1FFE]};
             bins max = {'h1FFF};
         }
         cr_channel_flying_mode:      cross cp_channel, cp_flying_mode;
@@ -826,15 +856,19 @@ class sdp_cov_pool extends nvdla_coverage_base;
             wildcard bins align_256 = {27'b????????????????????????000};
             bins          ful[8]    = {[0:27'h7FF_FFFF]};
         }
-        cp_src_base_addr_high:       coverpoint ral.nvdla.NVDLA_SDP_RDMA.D_SRC_BASE_ADDR_HIGH.SRC_BASE_ADDR_HIGH.value[7:0] {
+`ifdef MEM_ADDR_WIDTH_GT_32
+        cp_src_base_addr_high:       coverpoint ral.nvdla.NVDLA_SDP_RDMA.D_SRC_BASE_ADDR_HIGH.SRC_BASE_ADDR_HIGH.value[`NVDLA_MEM_ADDRESS_WIDTH-32-1:0] {
             bins ful[8]    = {[0:8'hFF]};
         }
+`endif
         cr_src_base_addr_low_src_ram_type_flying_mode:  cross cp_src_base_addr_low, cp_src_ram_type, cp_flying_mode {
             ignore_bins on_fly = binsof(cp_flying_mode.on_fly);
         }
+`ifdef MEM_ADDR_WIDTH_GT_32
         cr_src_base_addr_high_src_ram_type_flying_mode: cross cp_src_base_addr_high, cp_src_ram_type, cp_flying_mode {
             ignore_bins on_fly = binsof(cp_flying_mode.on_fly);
         }
+`endif
         cp_src_line_stride:          coverpoint (ral.nvdla.NVDLA_SDP_RDMA.D_SRC_LINE_STRIDE.SRC_LINE_STRIDE.value/`NVDLA_MEMORY_ATOMIC_SIZE - ral.nvdla.NVDLA_SDP_RDMA.D_DATA_CUBE_WIDTH.WIDTH.value-1) {
             bins eql     = {0};
             bins mid[7]  = {[1:7]};
@@ -925,15 +959,19 @@ class sdp_cov_pool extends nvdla_coverage_base;
             wildcard bins align_256 = {27'b????????????????????????000};
             bins          ful[8]    = {[0:27'h7FF_FFFF]};
         }
-        cp_bs_base_addr_high:       coverpoint ral.nvdla.NVDLA_SDP_RDMA.D_BS_BASE_ADDR_HIGH.BS_BASE_ADDR_HIGH.value[7:0] {
+`ifdef MEM_ADDR_WIDTH_GT_32
+        cp_bs_base_addr_high:       coverpoint ral.nvdla.NVDLA_SDP_RDMA.D_BS_BASE_ADDR_HIGH.BS_BASE_ADDR_HIGH.value[`NVDLA_MEM_ADDRESS_WIDTH-32-1:0] {
             bins ful[8]    = {[0:8'hFF]};
         }
+`endif
         cr_bs_base_addr_low_brdma_ram_type_brdma_disable:   cross cp_bs_base_addr_low, cp_brdma_ram_type, cp_brdma_disable {
             ignore_bins brdma_off = binsof(cp_brdma_disable.yes);
         }
+`ifdef MEM_ADDR_WIDTH_GT_32
         cr_bs_base_addr_high_brdma_ram_type_brdma_disable:   cross cp_bs_base_addr_high, cp_brdma_ram_type, cp_brdma_disable {
             ignore_bins brdma_off = binsof(cp_brdma_disable.yes);
         }
+`endif
         cp_bs_line_stride_1:          coverpoint (ral.nvdla.NVDLA_SDP_RDMA.D_BS_LINE_STRIDE.BS_LINE_STRIDE.value/`NVDLA_MEMORY_ATOMIC_SIZE-ral.nvdla.NVDLA_SDP_RDMA.D_DATA_CUBE_WIDTH.WIDTH.value-1) {
             bins eql     = {0};
             bins mid[7]  = {[1:7]};
@@ -1016,15 +1054,19 @@ class sdp_cov_pool extends nvdla_coverage_base;
             wildcard bins align_256 = {27'b????????????????????????000};
             bins          ful[8]    = {[0:27'h7FF_FFFF]};
         }
-        cp_bn_base_addr_high:       coverpoint ral.nvdla.NVDLA_SDP_RDMA.D_BN_BASE_ADDR_HIGH.BN_BASE_ADDR_HIGH.value[7:0] {
+`ifdef MEM_ADDR_WIDTH_GT_32
+        cp_bn_base_addr_high:       coverpoint ral.nvdla.NVDLA_SDP_RDMA.D_BN_BASE_ADDR_HIGH.BN_BASE_ADDR_HIGH.value[`NVDLA_MEM_ADDRESS_WIDTH-32-1:0] {
             bins ful[8]    = {[0:8'hFF]};
         }
+`endif
         cr_bn_base_addr_low_brdma_ram_type_brdma_disable:   cross cp_bn_base_addr_low, cp_brdma_ram_type, cp_brdma_disable {
             ignore_bins brdma_off = binsof(cp_brdma_disable.yes);
         }
+`ifdef MEM_ADDR_WIDTH_GT_32
         cr_bn_base_addr_high_brdma_ram_type_brdma_disable:   cross cp_bn_base_addr_high, cp_brdma_ram_type, cp_brdma_disable {
             ignore_bins brdma_off = binsof(cp_brdma_disable.yes);
         }
+`endif
         cp_bn_line_stride_1:          coverpoint (ral.nvdla.NVDLA_SDP_RDMA.D_BN_LINE_STRIDE.BN_LINE_STRIDE.value/`NVDLA_MEMORY_ATOMIC_SIZE-ral.nvdla.NVDLA_SDP_RDMA.D_DATA_CUBE_WIDTH.WIDTH.value-1) {
             bins eql     = {0};
             bins mid[7]  = {[1:7]};
@@ -1107,15 +1149,19 @@ class sdp_cov_pool extends nvdla_coverage_base;
             wildcard bins align_256 = {27'b????????????????????????000};
             bins          ful[8]    = {[0:27'h7FF_FFFF]};
         }
-        cp_ew_base_addr_high:       coverpoint ral.nvdla.NVDLA_SDP_RDMA.D_EW_BASE_ADDR_HIGH.EW_BASE_ADDR_HIGH.value[7:0] {
+`ifdef MEM_ADDR_WIDTH_GT_32
+        cp_ew_base_addr_high:       coverpoint ral.nvdla.NVDLA_SDP_RDMA.D_EW_BASE_ADDR_HIGH.EW_BASE_ADDR_HIGH.value[`NVDLA_MEM_ADDRESS_WIDTH-32-1:0] {
             bins ful[8]    = {[0:8'hF]};
         }
+`endif
         cr_ew_base_addr_low_erdma_ram_type_erdma_disable:   cross cp_ew_base_addr_low, cp_erdma_ram_type, cp_erdma_disable {
             ignore_bins erdma_off = binsof(cp_erdma_disable.yes);
         }
+`ifdef MEM_ADDR_WIDTH_GT_32
         cr_ew_base_addr_high_erdma_ram_type_erdma_disable:   cross cp_ew_base_addr_high, cp_erdma_ram_type, cp_erdma_disable {
             ignore_bins erdma_off = binsof(cp_erdma_disable.yes);
         }
+`endif
         cp_ew_line_stride_1:          coverpoint (ral.nvdla.NVDLA_SDP_RDMA.D_EW_LINE_STRIDE.EW_LINE_STRIDE.value/`NVDLA_MEMORY_ATOMIC_SIZE-ral.nvdla.NVDLA_SDP_RDMA.D_DATA_CUBE_WIDTH.WIDTH.value-1) {
             bins eql     = {0};
             bins mid[7]  = {[1:7]};

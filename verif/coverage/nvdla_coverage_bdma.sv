@@ -3,9 +3,11 @@
 class bdma_cov_pool extends nvdla_coverage_base;
 
     bit_toggle_cg           cfg_src_addr_low_tog_cg;
-    bit_toggle_cg           cfg_src_addr_high_tog_cg;
     bit_toggle_cg           cfg_dst_addr_low_tog_cg;
+`ifdef MEM_ADDR_WIDTH_GT_32
+    bit_toggle_cg           cfg_src_addr_high_tog_cg;
     bit_toggle_cg           cfg_dst_addr_high_tog_cg;
+`endif
     bit_toggle_cg           cfg_line_tog_cg;
     bit_toggle_cg           cfg_line_repeat_tog_cg;
     bit_toggle_cg           cfg_surf_repeat_tog_cg;
@@ -20,9 +22,11 @@ class bdma_cov_pool extends nvdla_coverage_base;
         bdma_cg = new();
 
         cfg_src_addr_low_tog_cg  = new("cfg_src_addr_low",  ral.nvdla.NVDLA_BDMA.CFG_SRC_ADDR_LOW.V32.get_n_bits());
-        cfg_src_addr_high_tog_cg = new("cfg_src_addr_high", ral.nvdla.NVDLA_BDMA.CFG_SRC_ADDR_HIGH.V8.get_n_bits());
         cfg_dst_addr_low_tog_cg  = new("cfg_dst_addr_low",  ral.nvdla.NVDLA_BDMA.CFG_DST_ADDR_LOW.V32.get_n_bits());
+`ifdef MEM_ADDR_WIDTH_GT_32
+        cfg_src_addr_high_tog_cg = new("cfg_src_addr_high", ral.nvdla.NVDLA_BDMA.CFG_SRC_ADDR_HIGH.V8.get_n_bits());
         cfg_dst_addr_high_tog_cg = new("cfg_dst_addr_high", ral.nvdla.NVDLA_BDMA.CFG_DST_ADDR_HIGH.V8.get_n_bits());
+`endif
         cfg_line_tog_cg          = new("cfg_line",          ral.nvdla.NVDLA_BDMA.CFG_LINE.SIZE.get_n_bits());
         cfg_line_repeat_tog_cg   = new("cfg_line_repeat",   ral.nvdla.NVDLA_BDMA.CFG_LINE_REPEAT.NUMBER.get_n_bits());
         cfg_surf_repeat_tog_cg   = new("cfg_surf_repeat",   ral.nvdla.NVDLA_BDMA.CFG_SURF_REPEAT.NUMBER.get_n_bits());
@@ -100,9 +104,11 @@ class bdma_cov_pool extends nvdla_coverage_base;
 
     function void bdma_toggle_sample();
         cfg_src_addr_low_tog_cg.sample(ral.nvdla.NVDLA_BDMA.CFG_SRC_ADDR_LOW.V32.value);
-        cfg_src_addr_high_tog_cg.sample(ral.nvdla.NVDLA_BDMA.CFG_SRC_ADDR_HIGH.V8.value);
         cfg_dst_addr_low_tog_cg.sample(ral.nvdla.NVDLA_BDMA.CFG_DST_ADDR_LOW.V32.value);
+`ifdef MEM_ADDR_WIDTH_GT_32
+        cfg_src_addr_high_tog_cg.sample(ral.nvdla.NVDLA_BDMA.CFG_SRC_ADDR_HIGH.V8.value);
         cfg_dst_addr_high_tog_cg.sample(ral.nvdla.NVDLA_BDMA.CFG_DST_ADDR_HIGH.V8.value);
+`endif
         cfg_line_tog_cg.sample(ral.nvdla.NVDLA_BDMA.CFG_LINE.SIZE.value);
         cfg_line_repeat_tog_cg.sample(ral.nvdla.NVDLA_BDMA.CFG_LINE_REPEAT.NUMBER.value);
         cfg_src_line_tog_cg.sample(ral.nvdla.NVDLA_BDMA.CFG_SRC_LINE.STRIDE.value);

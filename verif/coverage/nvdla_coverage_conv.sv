@@ -9,14 +9,16 @@ class conv_cov_pool extends nvdla_coverage_base;
     bit_toggle_cg    cc_datain_height_ext_tog_cg;
     bit_toggle_cg    cc_datain_channel_ext_tog_cg;
     bit_toggle_cg    cc_datain_addr_low_0_tog_cg;
-    bit_toggle_cg    cc_datain_addr_high_0_tog_cg;
-    bit_toggle_cg    cc_batch_stride_tog_cg;
     bit_toggle_cg    cc_weight_addr_low_tog_cg;
-    bit_toggle_cg    cc_weight_addr_high_tog_cg;
     bit_toggle_cg    cc_wgs_addr_low_tog_cg;
-    bit_toggle_cg    cc_wgs_addr_high_tog_cg;
     bit_toggle_cg    cc_wmb_addr_low_tog_cg;
+`ifdef MEM_ADDR_WIDTH_GT_32
+    bit_toggle_cg    cc_datain_addr_high_0_tog_cg;
+    bit_toggle_cg    cc_weight_addr_high_tog_cg;
+    bit_toggle_cg    cc_wgs_addr_high_tog_cg;
     bit_toggle_cg    cc_wmb_addr_high_tog_cg;
+`endif
+    bit_toggle_cg    cc_batch_stride_tog_cg;
     bit_toggle_cg    cc_wmb_bytes_tog_cg;
     bit_toggle_cg    cc_weight_width_ext_tog_cg;
     bit_toggle_cg    cc_weight_height_ext_tog_cg;
@@ -52,15 +54,16 @@ class conv_cov_pool extends nvdla_coverage_base;
         cc_datain_height_ext_tog_cg  = new("cc_datain_height_ext_tog_cg",  ral.nvdla.NVDLA_CSC.D_DATAIN_SIZE_EXT_0.DATAIN_HEIGHT_EXT.get_n_bits());
         cc_datain_channel_ext_tog_cg = new("cc_datain_channel_ext_tog_cg", ral.nvdla.NVDLA_CSC.D_DATAIN_SIZE_EXT_1.DATAIN_CHANNEL_EXT.get_n_bits());
         cc_datain_addr_low_0_tog_cg  = new("cc_datain_addr_low_0_tog_cg",  ral.nvdla.NVDLA_CDMA.D_DAIN_ADDR_LOW_0.DATAIN_ADDR_LOW_0.get_n_bits());
-        cc_datain_addr_high_0_tog_cg = new("cc_datain_addr_high_0_tog_cg", ral.nvdla.NVDLA_CDMA.D_DAIN_ADDR_HIGH_0.DATAIN_ADDR_HIGH_0.get_n_bits());
-        cc_batch_stride_tog_cg       = new("cc_batch_stride_tog_cg",       ral.nvdla.NVDLA_CDMA.D_BATCH_STRIDE.BATCH_STRIDE.get_n_bits());
         cc_weight_addr_low_tog_cg    = new("cc_weight_addr_low_tog_cg",    ral.nvdla.NVDLA_CDMA.D_WEIGHT_ADDR_LOW.WEIGHT_ADDR_LOW.get_n_bits());
-        cc_weight_addr_high_tog_cg   = new("cc_weight_addr_high_tog_cg",   ral.nvdla.NVDLA_CDMA.D_WEIGHT_ADDR_HIGH.WEIGHT_ADDR_HIGH.get_n_bits());
-
         cc_wgs_addr_low_tog_cg       = new("cc_wgs_addr_low_tog_cg",       ral.nvdla.NVDLA_CDMA.D_WGS_ADDR_LOW.WGS_ADDR_LOW.get_n_bits());
-        cc_wgs_addr_high_tog_cg      = new("cc_wgs_addr_high_tog_cg",      ral.nvdla.NVDLA_CDMA.D_WGS_ADDR_HIGH.WGS_ADDR_HIGH.get_n_bits());
         cc_wmb_addr_low_tog_cg       = new("cc_wmb_addr_low_tog_cg",       ral.nvdla.NVDLA_CDMA.D_WMB_ADDR_LOW.WMB_ADDR_LOW.get_n_bits());
+`ifdef MEM_ADDR_WIDTH_GT_32
+        cc_datain_addr_high_0_tog_cg = new("cc_datain_addr_high_0_tog_cg", ral.nvdla.NVDLA_CDMA.D_DAIN_ADDR_HIGH_0.DATAIN_ADDR_HIGH_0.get_n_bits());
+        cc_weight_addr_high_tog_cg   = new("cc_weight_addr_high_tog_cg",   ral.nvdla.NVDLA_CDMA.D_WEIGHT_ADDR_HIGH.WEIGHT_ADDR_HIGH.get_n_bits());
+        cc_wgs_addr_high_tog_cg      = new("cc_wgs_addr_high_tog_cg",      ral.nvdla.NVDLA_CDMA.D_WGS_ADDR_HIGH.WGS_ADDR_HIGH.get_n_bits());
         cc_wmb_addr_high_tog_cg      = new("cc_wmb_addr_high_tog_cg",      ral.nvdla.NVDLA_CDMA.D_WMB_ADDR_HIGH.WMB_ADDR_HIGH.get_n_bits());
+`endif
+        cc_batch_stride_tog_cg       = new("cc_batch_stride_tog_cg",       ral.nvdla.NVDLA_CDMA.D_BATCH_STRIDE.BATCH_STRIDE.get_n_bits());
         cc_wmb_bytes_tog_cg          = new("cc_wmb_bytes_tog_cg",          ral.nvdla.NVDLA_CDMA.D_WMB_BYTES.WMB_BYTES.get_n_bits());
         cc_weight_width_ext_tog_cg   = new("cc_weight_width_ext_tog_cg",   ral.nvdla.NVDLA_CSC.D_WEIGHT_SIZE_EXT_0.WEIGHT_WIDTH_EXT.get_n_bits());
         cc_weight_height_ext_tog_cg  = new("cc_weight_height_ext_tog_cg",  ral.nvdla.NVDLA_CSC.D_WEIGHT_SIZE_EXT_0.WEIGHT_HEIGHT_EXT.get_n_bits());
@@ -99,14 +102,16 @@ class conv_cov_pool extends nvdla_coverage_base;
         cc_datain_height_ext_tog_cg.sample(ral.nvdla.NVDLA_CSC.D_DATAIN_SIZE_EXT_0.DATAIN_HEIGHT_EXT.value);
         cc_datain_channel_ext_tog_cg.sample(ral.nvdla.NVDLA_CSC.D_DATAIN_SIZE_EXT_1.DATAIN_CHANNEL_EXT.value);
         cc_datain_addr_low_0_tog_cg.sample(ral.nvdla.NVDLA_CDMA.D_DAIN_ADDR_LOW_0.DATAIN_ADDR_LOW_0.value);
-        cc_datain_addr_high_0_tog_cg.sample(ral.nvdla.NVDLA_CDMA.D_DAIN_ADDR_HIGH_0.DATAIN_ADDR_HIGH_0.value);
-        cc_batch_stride_tog_cg.sample(ral.nvdla.NVDLA_CDMA.D_BATCH_STRIDE.BATCH_STRIDE.value);
         cc_weight_addr_low_tog_cg.sample(ral.nvdla.NVDLA_CDMA.D_WEIGHT_ADDR_LOW.WEIGHT_ADDR_LOW.value);
-        cc_weight_addr_high_tog_cg.sample(ral.nvdla.NVDLA_CDMA.D_WEIGHT_ADDR_HIGH.WEIGHT_ADDR_HIGH.value);
         cc_wgs_addr_low_tog_cg.sample(ral.nvdla.NVDLA_CDMA.D_WGS_ADDR_LOW.WGS_ADDR_LOW.value);
-        cc_wgs_addr_high_tog_cg.sample(ral.nvdla.NVDLA_CDMA.D_WGS_ADDR_HIGH.WGS_ADDR_HIGH.value);
         cc_wmb_addr_low_tog_cg.sample(ral.nvdla.NVDLA_CDMA.D_WMB_ADDR_LOW.WMB_ADDR_LOW.value);
+`ifdef MEM_ADDR_WIDTH_GT_32
+        cc_datain_addr_high_0_tog_cg.sample(ral.nvdla.NVDLA_CDMA.D_DAIN_ADDR_HIGH_0.DATAIN_ADDR_HIGH_0.value);
+        cc_weight_addr_high_tog_cg.sample(ral.nvdla.NVDLA_CDMA.D_WEIGHT_ADDR_HIGH.WEIGHT_ADDR_HIGH.value);
+        cc_wgs_addr_high_tog_cg.sample(ral.nvdla.NVDLA_CDMA.D_WGS_ADDR_HIGH.WGS_ADDR_HIGH.value);
         cc_wmb_addr_high_tog_cg.sample(ral.nvdla.NVDLA_CDMA.D_WMB_ADDR_HIGH.WMB_ADDR_HIGH.value);
+`endif
+        cc_batch_stride_tog_cg.sample(ral.nvdla.NVDLA_CDMA.D_BATCH_STRIDE.BATCH_STRIDE.value);
         cc_wmb_bytes_tog_cg.sample(ral.nvdla.NVDLA_CDMA.D_WMB_BYTES.WMB_BYTES.value);
         cc_weight_width_ext_tog_cg.sample(ral.nvdla.NVDLA_CSC.D_WEIGHT_SIZE_EXT_0.WEIGHT_WIDTH_EXT.value);
         cc_weight_height_ext_tog_cg.sample(ral.nvdla.NVDLA_CSC.D_WEIGHT_SIZE_EXT_0.WEIGHT_HEIGHT_EXT.value);
@@ -288,12 +293,14 @@ class conv_cov_pool extends nvdla_coverage_base;
         cr_data_reuse_datain_addr_low_0_datain_ram_type:  cross cp_data_reuse, cp_datain_addr_low_0, cp_datain_ram_type {
             ignore_bins reuse = binsof(cp_data_reuse.on);
         }
+`ifdef MEM_ADDR_WIDTH_GT_32
         cp_datain_addr_high_0:   coverpoint ral.nvdla.NVDLA_CDMA.D_DAIN_ADDR_HIGH_0.DATAIN_ADDR_HIGH_0.value[7:0] {
             bins ful[8]    = {[0:$]};
         }
         cr_data_reuse_datain_addr_high_0_datain_ram_type: cross cp_data_reuse, cp_datain_addr_high_0, cp_datain_ram_type {
             ignore_bins reuse = binsof(cp_data_reuse.on);
         }
+`endif
         cp_datain_addr_low_1:  coverpoint ral.nvdla.NVDLA_CDMA.D_DAIN_ADDR_LOW_1.DATAIN_ADDR_LOW_1.value[31:5] {
             wildcard bins align_64  = {27'b??????????????????????????0};
             wildcard bins align_128 = {27'b?????????????????????????00};
@@ -304,6 +311,7 @@ class conv_cov_pool extends nvdla_coverage_base;
             ignore_bins reuse   = binsof(cp_data_reuse.on);
             ignore_bins feature = binsof(cp_datain_format.feature);
         }
+`ifdef MEM_ADDR_WIDTH_GT_32
         cp_datain_addr_high_1:   coverpoint ral.nvdla.NVDLA_CDMA.D_DAIN_ADDR_HIGH_1.DATAIN_ADDR_HIGH_1.value[7:0] {
             bins ful[8]    = {[0:$]};
         }
@@ -311,6 +319,7 @@ class conv_cov_pool extends nvdla_coverage_base;
             ignore_bins reuse   = binsof(cp_data_reuse.on);
             ignore_bins feature = binsof(cp_datain_format.feature);
         }
+`endif
         // line_stride
         cp_line_stride_feature:        coverpoint (ral.nvdla.NVDLA_CDMA.D_LINE_STRIDE.LINE_STRIDE.value/`NVDLA_MEMORY_ATOMIC_SIZE-ral.nvdla.NVDLA_CDMA.D_DATAIN_SIZE_0.DATAIN_WIDTH.value-1) {
             bins eql     = {0};
@@ -468,12 +477,14 @@ class conv_cov_pool extends nvdla_coverage_base;
         cr_weight_reuse_weight_addr_low_weight_ram_type:  cross cp_weight_reuse, cp_weight_addr_low, cp_weight_ram_type {
             ignore_bins reuse = binsof(cp_weight_reuse.on);
         }
-        cp_weight_addr_high:  coverpoint ral.nvdla.NVDLA_CDMA.D_WEIGHT_ADDR_HIGH.WEIGHT_ADDR_HIGH.value[7:0] {
+`ifdef MEM_ADDR_WIDTH_GT_32
+        cp_weight_addr_high:  coverpoint ral.nvdla.NVDLA_CDMA.D_WEIGHT_ADDR_HIGH.WEIGHT_ADDR_HIGH.value[`NVDLA_MEM_ADDRESS_WIDTH-32-1:0] {
             bins ful[8]    = {[0:$]};
         }
         cr_weight_reuse_weight_addr_high_weight_ram_type:  cross cp_weight_reuse, cp_weight_addr_high, cp_weight_ram_type {
             ignore_bins reuse = binsof(cp_weight_reuse.on);
         }
+`endif
         cp_wgs_addr_low:  coverpoint ral.nvdla.NVDLA_CDMA.D_WGS_ADDR_LOW.WGS_ADDR_LOW.value[31:5] {
             wildcard bins align_64  = {27'b??????????????????????????0};
             wildcard bins align_128 = {27'b?????????????????????????00};
@@ -484,13 +495,15 @@ class conv_cov_pool extends nvdla_coverage_base;
             ignore_bins reuse = binsof(cp_weight_reuse.on);
             ignore_bins uncompress = binsof(cp_weight_format.uncompress);
         }
-        cp_wgs_addr_high:  coverpoint ral.nvdla.NVDLA_CDMA.D_WGS_ADDR_HIGH.WGS_ADDR_HIGH.value[7:0] {
+`ifdef MEM_ADDR_WIDTH_GT_32
+        cp_wgs_addr_high:  coverpoint ral.nvdla.NVDLA_CDMA.D_WGS_ADDR_HIGH.WGS_ADDR_HIGH.value[`NVDLA_MEM_ADDRESS_WIDTH-32-1:0] {
             bins ful[8]    = {[0:$]};
         }
         cr_weight_reuse_weight_format_wgs_addr_high_weight_ram_type:  cross cp_weight_reuse, cp_weight_format, cp_wgs_addr_high, cp_weight_ram_type {
             ignore_bins reuse      = binsof(cp_weight_reuse.on);
             ignore_bins uncompress = binsof(cp_weight_format.uncompress);
         }
+`endif
         cp_wmb_addr_low:  coverpoint ral.nvdla.NVDLA_CDMA.D_WMB_ADDR_LOW.WMB_ADDR_LOW.value[31:5] {
             wildcard bins align_64  = {27'b??????????????????????????0};
             wildcard bins align_128 = {27'b?????????????????????????00};
@@ -501,13 +514,15 @@ class conv_cov_pool extends nvdla_coverage_base;
             ignore_bins reuse = binsof(cp_weight_reuse.on);
             ignore_bins uncompress = binsof(cp_weight_format.uncompress);
         }
-        cp_wmb_addr_high:  coverpoint ral.nvdla.NVDLA_CDMA.D_WMB_ADDR_HIGH.WMB_ADDR_HIGH.value[7:0] {
+`ifdef MEM_ADDR_WIDTH_GT_32
+        cp_wmb_addr_high:  coverpoint ral.nvdla.NVDLA_CDMA.D_WMB_ADDR_HIGH.WMB_ADDR_HIGH.value[`NVDLA_MEM_ADDRESS_WIDTH-32-1:0] {
             bins ful[8]    = {[0:$]};
         }
         cr_weight_reuse_weight_format_wmb_addr_high_weight_ram_type:  cross cp_weight_reuse, cp_weight_format, cp_wmb_addr_high, cp_weight_ram_type {
             ignore_bins reuse      = binsof(cp_weight_reuse.on);
             ignore_bins uncompress = binsof(cp_weight_format.uncompress);
         }
+`endif
         // ** weight size **
         cp_weight_width_ext:       coverpoint ral.nvdla.NVDLA_CSC.D_WEIGHT_SIZE_EXT_0.WEIGHT_WIDTH_EXT.value[4:0] {
             bins ful[8] = {[0:$]};

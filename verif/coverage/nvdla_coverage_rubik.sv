@@ -87,10 +87,12 @@ class rubik_cov_pool extends nvdla_coverage_base;
             bins mem_id[] = {0,1};
         }
 
+`ifdef MEM_ADDR_WIDTH_GT_32
         cp_dain_addr_high: coverpoint ral.nvdla.NVDLA_RBK.D_DAIN_ADDR_HIGH.DAIN_ADDR_HIGH.value {
            bins full[8] = {['h0:'hFF]};
         }
         cr_dain_addr_high_x_dain_ram_type: cross cp_dain_ram_type, cp_dain_addr_high;
+`endif
 
         cp_dain_addr_low: coverpoint ral.nvdla.NVDLA_RBK.D_DAIN_ADDR_LOW.DAIN_ADDR_LOW.value {
            bins full[8] = {['h0:'h7FF_FFFF]};
@@ -113,11 +115,12 @@ class rubik_cov_pool extends nvdla_coverage_base;
             bins mem_id[] = {0,1};
         }
 
+`ifdef MEM_ADDR_WIDTH_GT_32
         cp_daout_addr_high: coverpoint ral.nvdla.NVDLA_RBK.D_DAOUT_ADDR_HIGH.DAOUT_ADDR_HIGH.value {
            bins full[8] = {['h0:'hFF]};
         }
         cr_daout_addr_high_x_daout_ram_type: cross cp_daout_ram_type, cp_daout_addr_high;
-
+`endif
         cp_daout_addr_low: coverpoint ral.nvdla.NVDLA_RBK.D_DAOUT_ADDR_LOW.DAOUT_ADDR_LOW.value {
            bins full[8] = {['h0:'h7FF_FFFF]};
         }
