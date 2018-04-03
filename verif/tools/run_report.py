@@ -68,6 +68,7 @@ class RunReport(object):
     def __load_json_file(self):
         with open('test_organization.json', 'r') as test_orgz_fh:
             self.test_orgz_data = json.load(test_orgz_fh)
+            self.test_orgz_data = dict(sorted(self.test_orgz_data.items(), key=lambda x:x[1]['name'])) # sort by testname
         with open('regression_status.json', 'r') as regr_sts_fh:
             self.regr_sts_data = json.load(regr_sts_fh)
 
@@ -110,6 +111,7 @@ class RunReport(object):
 
     def test_sts_report_gen(self):
         test_sts_file = self.regress_dir+'/test_status_'+self.regr_sts_data['start_time']+'.json'
+        self.test_orgz_data = dict(sorted(self.test_orgz_data.items(), key=lambda x:x[0])) # resort by test_id
         with open(test_sts_file, 'w') as new_fh:
             json.dump(self.test_orgz_data, new_fh, sort_keys=True, indent=4)
         if self.publish:
@@ -143,7 +145,7 @@ class RunReport(object):
             copy2(report_file, os.path.join(self.publish_dir, 'json_db'))
 
     def is_regress_pass(self):
-        passed_testlist  = {k:v for k,v in self.test_orgz_data.items() if v['status'] == 'PASS'}
+        passed_testlist  = [v for v in self.test_orgz_data.values() if v['status'] == 'PASS']
         return len(passed_testlist) == self.regr_sts_data['metrics_result']['running_test_number']
 
     ## ------------------------------------------------------------------------
@@ -186,20 +188,20 @@ class RunReport(object):
             self.test_orgz_data[tid]['syndrome'] = ''
 
     def __print_regress_report(self):
-        passed_testlist  = {k:v for k,v in self.test_orgz_data.items() if v['status'] == 'PASS'}
-        failed_testlist  = {k:v for k,v in self.test_orgz_data.items() if v['status'] == 'FAIL'}
-        running_testlist = {k:v for k,v in self.test_orgz_data.items() if v['status'] == 'RUNNING'}
-        pending_testlist = {k:v for k,v in self.test_orgz_data.items() if v['status'] == 'PENDING'}
+        passed_testlist  = [v for v in self.test_orgz_data.values() if v['status'] == 'PASS']
+        failed_testlist  = [v for v in self.test_orgz_data.values() if v['status'] == 'FAIL']
+        running_testlist = [v for v in self.test_orgz_data.values() if v['status'] == 'RUNNING']
+        pending_testlist = [v for v in self.test_orgz_data.values() if v['status'] == 'PENDING']
 
         print('[INFO] Dir = ' + self.regress_dir)
         print(100 * '-')
         print('%-40s %-20s %-10s %-s' % ('Test', 'TB', 'Status', 'Errinfo'))
         print(100 * '-')
 
-        self.__print_testlist_status('GREEN', passed_testlist.values())
-        self.__print_testlist_status('RED', failed_testlist.values())
-        self.__print_testlist_status('BLUE', running_testlist.values())
-        self.__print_testlist_status('YELLOW', pending_testlist.values())
+        self.__print_testlist_status('GREEN', passed_testlist)
+        self.__print_testlist_status('RED', failed_testlist)
+        self.__print_testlist_status('BLUE', running_testlist)
+        self.__print_testlist_status('YELLOW', pending_testlist)
 
         print(100 * '-')
         print('TOTAL    PASS      FAILED    RUNNING   PENDING   Passing Rate')
@@ -221,8 +223,8 @@ class RunReport(object):
             print(getattr(colorama.Fore, color) + msg)
 
     def __is_regress_done(self):
-        passed_testlist  = {k:v for k,v in self.test_orgz_data.items() if v['status'] == 'PASS'}
-        failed_testlist  = {k:v for k,v in self.test_orgz_data.items() if v['status'] == 'FAIL'}
+        passed_testlist  = [v for v in self.test_orgz_data.values() if v['status'] == 'PASS']
+        failed_testlist  = [v for v in self.test_orgz_data.values() if v['status'] == 'FAIL']
         return (len(passed_testlist)+len(failed_testlist)) == self.regr_sts_data['metrics_result']['running_test_number']
 
     def __get_lastline(self, filename):
