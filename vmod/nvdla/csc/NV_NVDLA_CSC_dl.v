@@ -1106,11 +1106,12 @@ assign pixel_x_cnt_add = (is_sub_h_end) ? pixel_x_add : 6'b0;
 //                        (is_stripe_end & ~dl_block_end) ? {1'b0, pixel_w_ori} :
 //                        (pixel_w_cnt + pixel_x_cnt_add);
 
+
 //notice, after pre-extention, image weight w_total <=128
 assign {mon_pixel_w_cnt_w,pixel_w_cnt_w} = (layer_st_d1) ? {{11{1'b0}}, pixel_x_init} :
                         (is_stripe_end & dl_block_end & dl_channel_end & is_w_end) ? {{11{1'b0}}, pixel_x_init} :
                         (is_stripe_end & dl_block_end & dl_channel_end & ~is_w_end) ? (pixel_w_ch_ori + pixel_ch_stride) :
-                        (is_stripe_end & dl_block_end & ~dl_channel_end) ? (pixel_w_ori + CSC_ATOMC_HEX) :   
+                        (is_stripe_end & dl_block_end & ~dl_channel_end) ? (pixel_w_ori + dl_pd_d3[16:10]) :   
                         (is_stripe_end & ~dl_block_end) ? {1'b0, pixel_w_ori} :
                         (pixel_w_cnt + pixel_x_cnt_add);
 
@@ -1302,15 +1303,22 @@ assign sc2buf_dat_rd_next1_en_w = is_img_d1[10]&&sc2buf_dat_rd_en_w&&(pixel_x_by
                                     &&(pixel_w_cnt_plus1_d1<dat_req_pipe_bytes)&&(~stripe_begin_disable_jump);
 assign pixel_w_cnt_plus1 = pixel_w_cnt[LOG2_ATOMC-1:0]+1'b1;
 
-//the entry read form cbuf must make sure low byte aligned. High Bytes may dropped, low bytes will always be used.
-assign sc2buf_dat_rd_shift_w = sc2buf_dat_rd_next1_en_w ? pixel_w_cnt_plus1_d1[LOG2_ATOMC-1:0]+ CSC_ATOMC_HEX - dat_req_pipe_bytes:   //image read jump
-                               is_img_d1[10]&&stripe_begin_disable_jump ?  {CBUF_RD_DATA_SHIFT_WIDTH{1'd0}}:      //image read no jump,stripe's start need no shift 
-                               //image read no jump, not image's start, not all bytes are used,need shift out low bytes
-                               is_img_d1[10]&&(pixel_w_cnt_plus1_d1[LOG2_ATOMC:0]> dat_req_pipe_bytes)?  pixel_w_cnt_plus1_d1[LOG2_ATOMC:0] - dat_req_pipe_bytes  : 
-                               is_img_d1[10]&&(pixel_w_cnt_plus1_d1[LOG2_ATOMC:0]<= dat_req_pipe_bytes)? {CBUF_RD_DATA_SHIFT_WIDTH{1'd0}} : 
-                               {CBUF_RD_DATA_SHIFT_WIDTH{1'd0}};  //read data, no need to shift
+//for no y_ext cases,the entry read form cbuf must make sure low byte aligned. High Bytes may dropped, low bytes will always be used.
+//for y_ext cases, cbuf do no shift, csc will take this job.
+//assign sc2buf_dat_rd_shift_w = sc2buf_dat_rd_next1_en_w ? pixel_w_cnt_plus1_d1[LOG2_ATOMC-1:0]+ CSC_ATOMC_HEX - dat_req_pipe_bytes:   //image read jump
+//                               is_img_d1[10]&&stripe_begin_disable_jump ?  {CBUF_RD_DATA_SHIFT_WIDTH{1'd0}}:      //image read no jump,stripe's start need no shift 
+//                               is_img_d1[10]&&(reg2dp_y_extension!=2'b0)? {CBUF_RD_DATA_SHIFT_WIDTH{1'd0}}: //y_ext,no need to shift,csc will shift
+//                               //image read no jump, not image's start, not y_ext,then not all bytes are used,need shift out low bytes
+//                               is_img_d1[10]&&(pixel_w_cnt_plus1_d1[LOG2_ATOMC:0]> dat_req_pipe_bytes)&&(pixel_x_byte_stride >= CSC_ENTRY_HEX)? 
+//                                    pixel_w_cnt_plus1_d1[LOG2_ATOMC:0] - dat_req_pipe_bytes  : 
+//                               is_img_d1[10]&&(pixel_w_cnt_plus1_d1[LOG2_ATOMC:0]<= dat_req_pipe_bytes)? {CBUF_RD_DATA_SHIFT_WIDTH{1'd0}} : 
+//                                    {CBUF_RD_DATA_SHIFT_WIDTH{1'd0}};  //read data, no need to shift
                                
-                                
+//only when pixel_stride>=entry and fetched more data than needed, then need shift
+assign sc2buf_dat_rd_shift_w = sc2buf_dat_rd_next1_en_w ? pixel_w_cnt_plus1_d1[LOG2_ATOMC-1:0]+ CSC_ATOMC_HEX - dat_req_pipe_bytes:   //image read jump
+                //image read no jump, not image's start,fetch more than needed,not y_ext,then not all bytes are used,need shift out low bytes
+                is_img_d1[10]&&(pixel_w_cnt_plus1_d1[LOG2_ATOMC:0]> dat_req_pipe_bytes)&&(~stripe_begin_disable_jump)&&(pixel_x_byte_stride >= CSC_ENTRY_HEX)? 
+                pixel_w_cnt_plus1_d1[LOG2_ATOMC:0] - dat_req_pipe_bytes  :  {CBUF_RD_DATA_SHIFT_WIDTH{1'd0}};  
 
 //: my $kk= CBUF_RD_DATA_SHIFT_WIDTH;
 //: &eperl::flop("-d sc2buf_dat_rd_next1_en_w -q sc2buf_dat_rd_next1_en");
