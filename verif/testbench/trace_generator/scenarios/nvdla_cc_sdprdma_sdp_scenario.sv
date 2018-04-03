@@ -302,7 +302,7 @@ constraint nvdla_cc_sdprdma_sdp_scenario::c_ias_sdp {
     if (cc_dp.conv_mode == nvdla_cc_dp_resource::conv_mode_WINOGRAD) {
         sdp.winograd    == nvdla_sdp_resource::winograd_ON;
     }
-    sdp.flying_mode     == nvdla_sdp_resource::flying_mode_OFF;
+    sdp.flying_mode     == nvdla_sdp_resource::flying_mode_ON;
     sdp.batch_number    == cc_dp.batches;
     sdp.output_dst      == nvdla_sdp_resource::output_dst_MEM;
     if (sdp.batch_number > 0) {
