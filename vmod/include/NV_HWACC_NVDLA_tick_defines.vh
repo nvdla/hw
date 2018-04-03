@@ -8,7 +8,7 @@
 
 // File Name: NV_HWACC_NVDLA_tick_defines.vh
 
-`include "NV_HWACC_common_tick_defines.vh"
+//`include "NV_HWACC_common_tick_defines.vh"
 `ifndef NV_HWACC_NVDLA_tick_defines_vh
 `define NV_HWACC_NVDLA_tick_defines_vh
 

@@ -10,7 +10,7 @@
 
 #include "NV_NVDLA_define.h"
 
-`include "NV_HWACC_NVDLA_tick_defines.vh"
+`include "../../include/NV_HWACC_NVDLA_tick_defines.vh"
 
 #include "../cmac/NV_NVDLA_CMAC.h"
 #include "../csc/NV_NVDLA_CSC.h"
