@@ -109,6 +109,13 @@ for i in range(plan_arguments['RUN_NUM']):
              config=['nvdla_utb'],
              desc=''' None reuse PDP semi-random case, to cover max value of output cube channel''')
 
+    add_test(name='pdp_split_ctest',
+             tags=['L21', 'pdp', 'cover'],
+             args=[rtlarg, get_seed_args(), DISABLE_COMPARE_ALL_UNITS_SB_ARG],
+             module='nvdla_uvm_test',
+             config=['nvdla_utb'],
+             desc=''' None resue PDP semi-random case, to cover large split out size ''')
+
     ############################################# CDP #############################################
     add_test(name='cdp_max_cube_width_ctest',
              tags=['L21', 'cdp', 'cover'],

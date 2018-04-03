@@ -66,6 +66,8 @@
 `include "pdp_max_cube_out_height_ctest.sv"
 `include "pdp_max_cube_out_channel_ctest.sv"
 
+`include "pdp_split_ctest.sv"
+
 `include "cdp_max_cube_width_ctest.sv"
 `include "cdp_max_cube_height_ctest.sv"
 `include "cdp_max_cube_channel_ctest.sv"
