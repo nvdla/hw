@@ -162,6 +162,11 @@ module nvdla_tb_top;
           	$fsdbDumpvars(0);
 		end
     end
+
+    final begin
+        $fsdbDumpflush();
+    end
+
     // }@
 
     //----------------------------------------------------------------NVDLA DUT INSTANCE
