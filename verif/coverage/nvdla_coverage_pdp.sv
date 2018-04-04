@@ -249,54 +249,57 @@ class pdp_cov_pool extends nvdla_coverage_base;
         }
         cp_partial_width_in_first:  coverpoint (ral.nvdla.NVDLA_PDP_RDMA.D_PARTIAL_WIDTH_IN.PARTIAL_WIDTH_IN_FIRST.value) iff ((0 < ral.nvdla.NVDLA_PDP_RDMA.D_OPERATION_MODE_CFG.SPLIT_NUM.value) && (1 == ral.nvdla.NVDLA_PDP.D_OP_ENABLE.OP_EN.value)) {
             bins zero       = {'h0};
-            bins max        = {'h1FFF};
+            bins max        = {'h3FF};
             bins low        = {['h0   :'hF]};
             bins middle     = {['h10  :'h3F]};
-            bins high       = {['h40  :'hFFF]};
-            bins extreme    = {['h1000:'h1FFF]};
-            bins full[`PDP_COV_BIN_NUM_DEFAULT]   = {['h0   :'h1FFF]};
+            bins high       = {['h40  :'h1FF]};
+            bins extreme    = {['h200 :'h3FF]};
+            bins full[`PDP_COV_BIN_NUM_DEFAULT]   = {['h0  :'h3FF]};
         }
         cp_partial_width_in_mid:    coverpoint (ral.nvdla.NVDLA_PDP_RDMA.D_PARTIAL_WIDTH_IN.PARTIAL_WIDTH_IN_MID.value)   iff ((1 < ral.nvdla.NVDLA_PDP_RDMA.D_OPERATION_MODE_CFG.SPLIT_NUM.value) && (1 == ral.nvdla.NVDLA_PDP.D_OP_ENABLE.OP_EN.value)) {
             bins zero       = {'h0};
-            bins max        = {'h1FFF};
+            bins max        = {'h3FF};
             bins low        = {['h0   :'hF]};
             bins middle     = {['h10  :'h3F]};
-            bins high       = {['h40  :'hFFF]};
-            bins extreme    = {['h1000:'h1FFF]};
-            bins full[`PDP_COV_BIN_NUM_DEFAULT]   = {['h0   :'h1FFF]};
+            bins high       = {['h40  :'h1FF]};
+            bins extreme    = {['h200:'h3FF]};
+            bins full[`PDP_COV_BIN_NUM_DEFAULT]   = {['h0   :'h3FF]};
         }
         cp_partial_width_in_last:   coverpoint (ral.nvdla.NVDLA_PDP_RDMA.D_PARTIAL_WIDTH_IN.PARTIAL_WIDTH_IN_LAST.value)  iff ((0 < ral.nvdla.NVDLA_PDP_RDMA.D_OPERATION_MODE_CFG.SPLIT_NUM.value) && (1 == ral.nvdla.NVDLA_PDP.D_OP_ENABLE.OP_EN.value)) {
             bins zero       = {'h0};
-            bins max        = {'h1FFF};
+            bins max        = {'h3FF};
             bins low        = {['h0   :'hF]};
             bins middle     = {['h10  :'h3F]};
-            bins high       = {['h40  :'hFFF]};
-            bins extreme    = {['h1000:'h1FFF]};
-            bins full[`PDP_COV_BIN_NUM_DEFAULT]   = {['h0   :'h1FFF]};
+            bins high       = {['h40  :'h1FF]};
+            bins extreme    = {['h200 :'h3FF]};
+            bins full[`PDP_COV_BIN_NUM_DEFAULT]   = {['h0   :'h3FF]};
         }
         cp_partial_width_out_first:  coverpoint (ral.nvdla.NVDLA_PDP.D_PARTIAL_WIDTH_OUT.PARTIAL_WIDTH_OUT_FIRST.value) iff ((0 < ral.nvdla.NVDLA_PDP.D_OPERATION_MODE_CFG.SPLIT_NUM.value) && (1 == ral.nvdla.NVDLA_PDP.D_OP_ENABLE.OP_EN.value)) {
             bins zero       = {'h0};
-            bins max        = {'h7F};
+            bins max        = {'h3FF};
             bins low        = {['h0   :'hF]};
             bins middle     = {['h10  :'h3F]};
-            bins high       = {['h40  :'h7F]};
-            bins full[`PDP_COV_BIN_NUM_DEFAULT]   = {['h0   :'h7F]};
+            bins high       = {['h40  :'h1FF]};
+            bins extreme    = {['h200 :'h3FF]};
+            bins full[`PDP_COV_BIN_NUM_DEFAULT]   = {['h0   :'h3FF]};
         }
         cp_partial_width_out_mid:    coverpoint (ral.nvdla.NVDLA_PDP.D_PARTIAL_WIDTH_OUT.PARTIAL_WIDTH_OUT_MID.value)   iff ((1 < ral.nvdla.NVDLA_PDP.D_OPERATION_MODE_CFG.SPLIT_NUM.value) && (1 == ral.nvdla.NVDLA_PDP.D_OP_ENABLE.OP_EN.value)) {
             bins zero       = {'h0};
-            bins max        = {'h7F};
+            bins max        = {'h3FF};
             bins low        = {['h0   :'hF]};
             bins middle     = {['h10  :'h3F]};
-            bins high       = {['h40  :'h7F]};
-            bins full[`PDP_COV_BIN_NUM_DEFAULT]   = {['h0   :'h7F]};
+            bins high       = {['h40  :'h1FF]};
+            bins extreme    = {['h200 :'h3FF]};
+            bins full[`PDP_COV_BIN_NUM_DEFAULT]   = {['h0   :'h3FF]};
         }
         cp_partial_width_out_last:   coverpoint (ral.nvdla.NVDLA_PDP.D_PARTIAL_WIDTH_OUT.PARTIAL_WIDTH_OUT_LAST.value)  iff ((0 < ral.nvdla.NVDLA_PDP.D_OPERATION_MODE_CFG.SPLIT_NUM.value) && (1 == ral.nvdla.NVDLA_PDP.D_OP_ENABLE.OP_EN.value)) {
             bins zero       = {'h0};
-            bins max        = {'h7F};
+            bins max        = {'h3FF};
             bins low        = {['h0   :'hF]};
             bins middle     = {['h10  :'h3F]};
-            bins high       = {['h40  :'h7F]};
-            bins full[`PDP_COV_BIN_NUM_DEFAULT]   = {['h0   :'h7F]};
+            bins high       = {['h40  :'h1FF]};
+            bins extreme    = {['h200 :'h3FF]};
+            bins full[`PDP_COV_BIN_NUM_DEFAULT]   = {['h0   :'h3FF]};
         }
         cp_overlap_line:            coverpoint (((ral.nvdla.NVDLA_PDP.D_POOLING_KERNEL_CFG.KERNEL_HEIGHT.value + 1) + (ral.nvdla.NVDLA_PDP.D_POOLING_KERNEL_CFG.KERNEL_STRIDE_HEIGHT.value + 1) - 1)/(ral.nvdla.NVDLA_PDP.D_POOLING_KERNEL_CFG.KERNEL_STRIDE_HEIGHT.value)-64'h1) iff ((0 < ral.nvdla.NVDLA_PDP_RDMA.D_OPERATION_MODE_CFG.SPLIT_NUM.value) && (ral.nvdla.NVDLA_PDP.D_POOLING_KERNEL_CFG.KERNEL_HEIGHT.value >= ral.nvdla.NVDLA_PDP.D_POOLING_KERNEL_CFG.KERNEL_STRIDE_HEIGHT.value) && (1 == ral.nvdla.NVDLA_PDP.D_OP_ENABLE.OP_EN.value)) {
             bins range [`PDP_COV_BIN_NUM_DEFAULT] = {[0:7]};

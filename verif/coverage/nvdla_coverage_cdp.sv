@@ -225,8 +225,12 @@ class cdp_cov_pool extends nvdla_coverage_base;
 `endif
 
         // Input data conversion, data convertor settings are ignored in FP16
-        cp_datin_offset:        coverpoint ral.nvdla.NVDLA_CDP.D_DATIN_OFFSET.DATIN_OFFSET.value iff (input_data_type_FP16 != ral.nvdla.NVDLA_CDP.D_DATA_FORMAT.INPUT_DATA_TYPE.value) {
+        cp_datin_offset:        coverpoint ral.nvdla.NVDLA_CDP.D_DATIN_OFFSET.DATIN_OFFSET.value iff (input_data_type_INT16 == ral.nvdla.NVDLA_CDP.D_DATA_FORMAT.INPUT_DATA_TYPE.value) {
+            bins full_pos_int8[`CDP_COV_BIN_NUM_DEFAULT]   = {['h0: 7'h7F]};
+            bins full_neg_int8[`CDP_COV_BIN_NUM_DEFAULT]   = {[16'hFF80: 16'hFFFF]};
+`ifdef NVDLA_FEATURE_DATA_TYPE_INT16_FP16
             bins full[`CDP_COV_BIN_NUM_DEFAULT]   = {['h0: 16'hFFFF]};
+`endif
         }
         cp_datin_scale:         coverpoint ral.nvdla.NVDLA_CDP.D_DATIN_SCALE.DATIN_SCALE.value iff (1 == ral.nvdla.NVDLA_CDP.D_OP_ENABLE.OP_EN.value) {
             bins full[`CDP_COV_BIN_NUM_DEFAULT]   = {['h0: 16'hFFFF]};
@@ -237,7 +241,11 @@ class cdp_cov_pool extends nvdla_coverage_base;
 
         // Output data conversion, data convertor settings are ignored in FP16
         cp_datout_offset:       coverpoint ral.nvdla.NVDLA_CDP.D_DATOUT_OFFSET.DATOUT_OFFSET.value iff ((input_data_type_FP16 != ral.nvdla.NVDLA_CDP.D_DATA_FORMAT.INPUT_DATA_TYPE.value) && (1 == ral.nvdla.NVDLA_CDP.D_OP_ENABLE.OP_EN.value)) {
+            bins full_pos_int8[`CDP_COV_BIN_NUM_DEFAULT]   = {['h0: 24'hFF_FFFF]};
+            bins full_neg_int8[`CDP_COV_BIN_NUM_DEFAULT]   = {[32'hFF00_0000: 32'hFFFF_FFFF]};
+`ifdef NVDLA_FEATURE_DATA_TYPE_INT16_FP16
             bins full[`CDP_COV_BIN_NUM_DEFAULT]   = {['h0: 32'hFFFF_FFFF]};
+`endif
         }
         cp_datout_scale:        coverpoint ral.nvdla.NVDLA_CDP.D_DATOUT_SCALE.DATOUT_SCALE.value iff (1 == ral.nvdla.NVDLA_CDP.D_OP_ENABLE.OP_EN.value) {
             bins full[`CDP_COV_BIN_NUM_DEFAULT]   = {['h0: 16'hFFFF]};

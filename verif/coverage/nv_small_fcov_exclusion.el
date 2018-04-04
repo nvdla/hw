@@ -25,3 +25,4 @@ covergroup unified_prog::pdp_cov_pool::pdp_cg
 		bins "full[1000000:1ffffff]", "full[2000000:2ffffff]", "full[3000000:3ffffff]", "full[4000000:4ffffff]", "full[5000000:5ffffff]", "full[6000000:6ffffff]", "full[7000000:7ffffff]"
 	coveritem "cp_dst_surface_stride"
 		bins "full[1000000:1ffffff]", "full[2000000:2ffffff]", "full[3000000:3ffffff]", "full[4000000:4ffffff]", "full[5000000:5ffffff]", "full[6000000:6ffffff]", "full[7000000:7ffffff]"
+    coveritem "cp_recip_kernel_width", "cp_recip_kernel_height"
