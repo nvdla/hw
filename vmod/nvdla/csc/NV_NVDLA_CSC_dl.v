@@ -1111,7 +1111,7 @@ assign pixel_x_cnt_add = (is_sub_h_end) ? pixel_x_add : 6'b0;
 assign {mon_pixel_w_cnt_w,pixel_w_cnt_w} = (layer_st_d1) ? {{11{1'b0}}, pixel_x_init} :
                         (is_stripe_end & dl_block_end & dl_channel_end & is_w_end) ? {{11{1'b0}}, pixel_x_init} :
                         (is_stripe_end & dl_block_end & dl_channel_end & ~is_w_end) ? (pixel_w_ch_ori + pixel_ch_stride) :
-                        (is_stripe_end & dl_block_end & ~dl_channel_end) ? (pixel_w_ori + dl_pd_d3[16:10]) :   
+                        (is_stripe_end & dl_block_end & ~dl_channel_end) ? (pixel_w_ori + dl_in_pd_d0[16:10]) :   
                         (is_stripe_end & ~dl_block_end) ? {1'b0, pixel_w_ori} :
                         (pixel_w_cnt + pixel_x_cnt_add);
 
