@@ -1219,7 +1219,7 @@ wire            img2sbuf_p1_rd_en;
 wire    [7:0]   img2sbuf_p1_rd_addr;
   assign img2sbuf_p1_wr_en    = 1'b0;   
   assign img2sbuf_p1_wr_addr  = 8'b0;   
-  assign img2sbuf_p1_wr_data  = 256'b0; 
+  assign img2sbuf_p1_wr_data  = 64'b0; 
   assign img2sbuf_p1_rd_en    = 1'b0;   
   assign img2sbuf_p1_rd_addr  = 8'b0;   
 #endif
@@ -1555,6 +1555,7 @@ NV_NVDLA_CDMA_shared_buffer u_shared_buffer (
   ,.img2sbuf_p0_rd_addr           (img2sbuf_p0_rd_addr)  
   ,.img2sbuf_p1_rd_en             (img2sbuf_p1_rd_en)
   ,.img2sbuf_p1_rd_addr           (img2sbuf_p1_rd_addr)
+  ,.img2sbuf_p1_rd_data           (                   )
 //: my $dmaif=NVDLA_CDMA_DMAIF_BW;
 //: my $atmm = NVDLA_MEMORY_ATOMIC_SIZE*NVDLA_CDMA_BPE; ##atomic_m BW
 //: my $M = $dmaif/$atmm;  ##atomic_m number per dma transaction

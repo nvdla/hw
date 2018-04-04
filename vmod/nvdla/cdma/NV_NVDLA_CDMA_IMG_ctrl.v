@@ -192,18 +192,18 @@ wire          is_running;
 wire          layer_st;
 wire          mode_match;
 wire          mon_delay_cnt_w;
-wire          mon_pixel_element_sft_w;
+wire    [2:0] mon_pixel_element_sft_w;
 wire          mon_pixel_planar0_burst_need_w;
-wire    [4:0] mon_pixel_planar0_byte_sft_w;
+wire    [2:0] mon_pixel_planar0_byte_sft_w;
 wire    [1:0] mon_pixel_planar0_lp_burst_w;
-wire    [8:0] mon_pixel_planar0_rp_burst_w;
+wire    [10:0] mon_pixel_planar0_rp_burst_w;
 wire          mon_pixel_planar0_width_burst_w;
 wire    [3:0] mon_pixel_planar1_burst_need_w;
-wire    [4:0] mon_pixel_planar1_byte_sft_w;
+wire    [2:0] mon_pixel_planar1_byte_sft_w;
 wire    [2:0] mon_pixel_planar1_lp_burst_w;
-wire    [9:0] mon_pixel_planar1_rp_burst_w;
+wire    [11:0] mon_pixel_planar1_rp_burst_w;
 wire    [1:0] mon_pixel_planar1_total_burst_w;
-wire          mon_pixel_planar1_total_width_w;
+wire    [2:0] mon_pixel_planar1_total_width_w;
 wire    [3:0] mon_pixel_planar1_width_burst_w;
 wire          need_pending;
 wire          pending_req_end;
@@ -604,10 +604,10 @@ assign pixel_planar1_burst_need_w = (pixel_store_width >> pixel_planar1_sft_nxt)
 //        pixel_planar0_burst_need_w} = (pixel_store_width >> pixel_planar0_sft_nxt) + 14'h2;
 //assign {mon_pixel_planar1_burst_need_w[0],
 //        pixel_planar1_burst_need_w} = (pixel_store_width >> pixel_planar1_sft_nxt) + 14'h2;
-assign {mon_pixel_planar0_rp_burst_w[8:0],
-        pixel_planar0_rp_burst_w} = pixel_planar0_burst_need_w - pixel_planar0_lp_burst_w - pixel_planar0_width_burst_w;
-assign {mon_pixel_planar1_rp_burst_w[9:0],
-        pixel_planar1_rp_burst_w} = pixel_planar1_burst_need_w - pixel_planar1_lp_burst_w - pixel_planar1_width_burst_w;
+assign {mon_pixel_planar0_rp_burst_w[10:0],
+        pixel_planar0_rp_burst_w} = (pixel_planar0_burst_need_w - {10'd0,pixel_planar0_lp_burst_w}) - pixel_planar0_width_burst_w;
+assign {mon_pixel_planar1_rp_burst_w[11:0],
+        pixel_planar1_rp_burst_w} = (pixel_planar1_burst_need_w - {11'd0,pixel_planar1_lp_burst_w}) - pixel_planar1_width_burst_w;
 assign byte_per_pixel = ~(|pixel_precision_nxt) ? 3'h3 : 3'h6;
 
 ////////////////////////////////////////////////
@@ -655,10 +655,10 @@ assign byte_per_pixel = ~(|pixel_precision_nxt) ? 3'h3 : 3'h6;
 //: my $atmmbw = int( log(NVDLA_MEMORY_ATOMIC_SIZE) / log(2) );
 //: print qq(
 //:     assign {mon_pixel_element_sft_w,
-//:             pixel_element_sft_w} = (reg2dp_pixel_x_offset - reg2dp_pad_left[${atmmbw}-1:0]);
-//:     assign {mon_pixel_planar0_byte_sft_w[4:0],
+//:             pixel_element_sft_w} = (reg2dp_pixel_x_offset - {2'd0,reg2dp_pad_left[${atmmbw}-1:0]});
+//:     assign {mon_pixel_planar0_byte_sft_w[2:0],
 //:             pixel_planar0_byte_sft_w} = {pixel_element_sft_w, ${atmmbw}'b0} >> pixel_planar0_sft_nxt;
-//:     assign {mon_pixel_planar1_byte_sft_w[4:0],
+//:     assign {mon_pixel_planar1_byte_sft_w[2:0],
 //:             pixel_planar1_byte_sft_w} = {pixel_element_sft_w, ${atmmbw}'b0} >> pixel_planar1_sft_nxt;
 //: );
 assign pixel_planar0_bundle_limit_w = 4'h8;

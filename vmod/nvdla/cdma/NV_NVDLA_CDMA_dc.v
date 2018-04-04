@@ -146,27 +146,45 @@ reg     [11:0] cbuf_wr_info_pd_d1;
 reg     [11:0] cbuf_wr_info_pd_d2;
 reg     [11:0] cbuf_wr_info_pd_d3;
 reg      [4:0] ch0_cnt;
+reg            mon_ch0_cnt;
 reg      [5:0] ch0_p0_rd_addr_cnt;
+reg            mon_ch0_p0_rd_addr_cnt;
 reg      [5:0] ch0_p0_wr_addr_cnt;
+reg            mon_ch0_p0_wr_addr_cnt;
 reg      [5:0] ch0_p1_rd_addr_cnt;
+reg            mon_ch0_p1_rd_addr_cnt;
 reg      [5:0] ch0_p1_wr_addr_cnt;
+reg            mon_ch0_p1_wr_addr_cnt;
 reg      [4:0] ch1_cnt;
+reg            mon_ch1_cnt;
 reg      [5:0] ch1_p0_wr_addr_cnt;
+reg            mon_ch1_p0_wr_addr_cnt;
 reg      [5:0] ch1_p0_rd_addr_cnt;
 reg      [5:0] ch1_p1_rd_addr_cnt;
+reg            mon_ch1_p0_rd_addr_cnt;
+reg            mon_ch1_p1_rd_addr_cnt;
 reg      [5:0] ch1_p1_wr_addr_cnt;
+reg            mon_ch1_p1_wr_addr_cnt;
 reg      [4:0] ch2_cnt;
+reg            mon_ch2_cnt;
 reg      [5:0] ch2_p0_rd_addr_cnt;
+reg            mon_ch2_p0_rd_addr_cnt;
 reg      [5:0] ch2_p0_wr_addr_cnt;
+reg            mon_ch2_p0_wr_addr_cnt;
 reg      [5:0] ch2_p1_wr_addr_cnt;
+reg            mon_ch2_p1_wr_addr_cnt;
 reg      [4:0] ch3_cnt;
+reg            mon_ch3_cnt;
 reg      [5:0] ch3_p0_wr_addr_cnt;
+reg            mon_ch3_p0_wr_addr_cnt;
 reg      [5:0] ch3_p0_rd_addr_cnt;
+reg            mon_ch3_p0_rd_addr_cnt;
 reg      [5:0] ch3_p1_wr_addr_cnt;
+reg            mon_ch3_p1_wr_addr_cnt;
 reg      [1:0] cur_state;
-reg     [17:0] dat_entries_d0;
-reg     [17:0] dat_entries_d1;
-reg     [17:0] dat_entries_d2;
+reg     [14:0] dat_entries_d0;
+reg     [14:0] dat_entries_d1;
+reg     [14:0] dat_entries_d2;
 reg     [14:0] dat_entries_d3;
 reg     [11:0] dat_slices_d0;
 reg     [11:0] dat_slices_d1;
@@ -210,9 +228,10 @@ reg      [3:0] dma_rsp_size_cnt;
 reg     [17:0] entry_per_batch_d2;
 reg     [11:0] fetch_grain;
 reg     [14:0] idx_base;
-reg     [16:0] idx_batch_offset;
-reg     [16:0] idx_ch_offset;
+reg     [17:0] idx_batch_offset;
+reg     [17:0] idx_ch_offset;
 reg     [17:0] idx_grain_offset;
+reg            mon_idx_grain_offset;
 reg     [17:0] idx_h_offset;
 reg            is_blocking;
 reg            is_req_grain_last_d1;
@@ -261,6 +280,7 @@ reg      [1:0] req_atm_sel;
 reg     [13:0] req_atomic_d2;
 reg      [4:0] req_batch_cnt;
 reg     [10:0] req_ch_cnt;
+reg            mon_req_ch_cnt;
 reg      [1:0] req_ch_idx_d1;
 reg      [2:0] req_cur_ch;
 reg     [11:0] req_cur_grain_d1;
@@ -274,6 +294,7 @@ reg      [4:0] rsp_batch_cnt;
 reg     [17:0] rsp_batch_entry_init;
 reg     [17:0] rsp_batch_entry_last;
 reg     [10:0] rsp_ch_cnt;
+reg            mon_rsp_ch_cnt;
 reg      [2:0] rsp_cur_ch;
 reg     [11:0] rsp_cur_grain;
 //reg     [17:0] req_entry_0_d3;
@@ -285,6 +306,7 @@ reg            rsp_rd_ch2ch3;
 reg     [11:0] rsp_slice_init;
 reg     [11:0] rsp_slice_last;
 reg     [15:0] rsp_w_cnt;
+reg            mon_rsp_w_cnt;
 reg      [1:0] slcg_dc_gate_d1;
 reg      [1:0] slcg_dc_gate_d2;
 reg      [1:0] slcg_dc_gate_d3;
@@ -318,7 +340,7 @@ wire    [11:0] cbuf_wr_info_pd;
 wire    [11:0] cbuf_wr_info_pd_d0;
 wire           ch0_aval;
 wire     [1:0] ch0_cnt_add;
-wire     [1:0] ch0_cnt_sub;
+wire     [2:0] ch0_cnt_sub;
 wire     [7:0] ch0_p0_rd_addr;
 wire     [7:0] ch0_p0_wr_addr;
 wire     [7:0] ch0_p1_rd_addr;
@@ -327,7 +349,7 @@ wire           ch0_rd_addr_cnt_reg_en;
 wire           ch0_wr_addr_cnt_reg_en;
 wire           ch1_aval;
 wire     [1:0] ch1_cnt_add;
-wire     [1:0] ch1_cnt_sub;
+wire     [2:0] ch1_cnt_sub;
 wire     [4:0] ch1_cnt_w;
 wire     [7:0] ch1_p0_wr_addr;
 wire     [7:0] ch1_p0_rd_addr;
@@ -337,7 +359,7 @@ wire           ch1_rd_addr_cnt_reg_en;
 wire           ch1_wr_addr_cnt_reg_en;
 wire           ch2_aval;
 wire     [1:0] ch2_cnt_add;
-wire     [1:0] ch2_cnt_sub;
+wire     [2:0] ch2_cnt_sub;
 wire     [4:0] ch2_cnt_w;
 wire     [7:0] ch2_p0_rd_addr;
 wire     [7:0] ch2_p0_wr_addr;
@@ -346,7 +368,7 @@ wire           ch2_rd_addr_cnt_reg_en;
 wire           ch2_wr_addr_cnt_reg_en;
 wire           ch3_aval;
 wire     [1:0] ch3_cnt_add;
-wire     [1:0] ch3_cnt_sub;
+wire     [2:0] ch3_cnt_sub;
 wire     [4:0] ch3_cnt_w;
 wire     [7:0] ch3_p0_wr_addr;
 wire     [7:0] ch3_p0_rd_addr;
@@ -443,7 +465,7 @@ wire           ltc_1_inc;
 wire           ltc_2_dec;
 wire           ltc_2_inc;
 wire           mode_match;
-wire           mon_cbuf_idx_inc;
+wire     [2:0] mon_cbuf_idx_inc;
 wire     [1:0] mon_cbuf_idx_w;
 wire           mon_ch1_cnt_w;
 wire           mon_ch2_cnt_w;
@@ -557,7 +579,7 @@ wire    [13:0] rsp_all_h_left_w;
 wire           rsp_all_h_reg_en;
 wire           rsp_batch_reg_en;
 wire           rsp_ch0_rd_one;
-wire     [1:0] rsp_ch0_rd_size;
+wire     [2:0] rsp_ch0_rd_size;
 wire    [10:0] rsp_ch_cnt_inc;
 wire    [10:0] rsp_ch_left_w;
 wire     [2:0] rsp_ch_mode;
@@ -1170,9 +1192,8 @@ assign req_ch_mode = is_packed_1x1 ? 3'h1 :
 //: print qq(
 //:    3'h${k}; 
 //: );
-assign {mon_req_ch_left_w,
-        req_ch_left_w} = (layer_st | is_req_ch_end) ? data_surface_w : data_surface - req_ch_cnt - req_cur_ch;
-// assign req_cur_ch_w = (req_ch_left_w > {{7{1'b0}}, req_ch_mode}) ? req_ch_mode : req_ch_left_w[2:0];
+assign {mon_req_ch_left_w,req_ch_left_w} = (layer_st | is_req_ch_end) ? {1'b0,data_surface_w} : (data_surface - req_ch_cnt) - {8'd0,req_cur_ch};
+// assign req_cur_ch_w = (req_ch_left_w > {{8{1'b0}}, req_ch_mode}) ? req_ch_mode : req_ch_left_w[2:0];
 // assign {mon_req_ch_cnt_inc,
 //         req_ch_cnt_inc} = req_ch_cnt + req_cur_ch;
 // assign is_req_ch_end = (req_ch_cnt_inc == data_surface); 
@@ -1181,26 +1202,30 @@ assign {mon_req_ch_left_w,
 
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     if (!nvdla_core_rstn) begin
-        req_ch_cnt <= {11{1'b0}};
+        {mon_req_ch_cnt,req_ch_cnt} <= {12{1'b0}};
     end else if(layer_st) begin
-        req_ch_cnt <= {11{1'b0}};
+        {mon_req_ch_cnt,req_ch_cnt} <= {12{1'b0}};
     end else begin
         if (req_ch_reg_en) begin
             if(is_req_ch_end)
-                req_ch_cnt <= {11{1'b0}};
+                {mon_req_ch_cnt,req_ch_cnt} <= {12{1'b0}};
             else
-            req_ch_cnt <= req_ch_cnt + req_cur_ch;
+            {mon_req_ch_cnt,req_ch_cnt} <= req_ch_cnt + {8'd0, req_cur_ch};
         end
     end
 end
-assign is_req_ch_end = (req_ch_cnt == (data_surface-req_cur_ch)); 
+//assign is_req_ch_end = (req_ch_cnt == (data_surface-req_cur_ch)); 
+wire    [10:0] data_surface_dec;
+wire           mon_data_surface_dec;
+assign {mon_data_surface_dec,data_surface_dec} = data_surface-{8'd0,req_cur_ch};
+assign is_req_ch_end = (req_ch_cnt == data_surface_dec); 
 
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     if (!nvdla_core_rstn) begin
         req_cur_ch <= {3{1'b0}};
     end else begin
         if (layer_st | req_ch_reg_en) begin
-            if(req_ch_left_w > {{7{1'b0}}, req_ch_mode})
+            if(req_ch_left_w > {{8{1'b0}}, req_ch_mode})
                 req_cur_ch <= req_ch_mode;
             else
                 req_cur_ch <= req_ch_left_w[2:0];
@@ -1256,7 +1281,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
         end
     end
 end
-assign is_req_atm_sel_end = (req_atm_sel == (req_cur_ch-1));
+assign is_req_atm_sel_end = ({2'd0,req_atm_sel} == (req_cur_ch-1));
 
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     if (!nvdla_core_rstn) begin
@@ -1584,50 +1609,50 @@ assign ch3_wr_addr_cnt_reg_en = dma_rd_rsp_vld & ~is_blocking & is_running & is_
 
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     if (!nvdla_core_rstn) begin
-        ch0_p0_wr_addr_cnt <= {6{1'b0}};
-        ch0_p1_wr_addr_cnt <= 6'b1;
+        {mon_ch0_p0_wr_addr_cnt,ch0_p0_wr_addr_cnt} <= {7{1'b0}};
+        {mon_ch0_p1_wr_addr_cnt,ch0_p1_wr_addr_cnt} <= 7'b1;
     end else if(layer_st) begin
-        ch0_p0_wr_addr_cnt <= {6{1'b0}};
-        ch0_p1_wr_addr_cnt <= 6'b1;
+        {mon_ch0_p0_wr_addr_cnt,ch0_p0_wr_addr_cnt} <= {7{1'b0}};
+        {mon_ch0_p1_wr_addr_cnt,ch0_p1_wr_addr_cnt} <= 7'b1;
     end else if(ch0_wr_addr_cnt_reg_en) begin
-        ch0_p0_wr_addr_cnt <= ch0_p0_wr_addr_cnt + active_atom_num;
-        ch0_p1_wr_addr_cnt <= ch0_p1_wr_addr_cnt + active_atom_num;
+        {mon_ch0_p0_wr_addr_cnt,ch0_p0_wr_addr_cnt} <= ch0_p0_wr_addr_cnt + {4'd0, active_atom_num};
+        {mon_ch0_p1_wr_addr_cnt,ch0_p1_wr_addr_cnt} <= ch0_p1_wr_addr_cnt + {4'd0, active_atom_num};
     end
 end
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     if (!nvdla_core_rstn) begin
-        ch1_p0_wr_addr_cnt <= {6{1'b0}};
-        ch1_p1_wr_addr_cnt <= 6'b1;
+        {mon_ch1_p0_wr_addr_cnt,ch1_p0_wr_addr_cnt} <= {7{1'b0}};
+        {mon_ch1_p1_wr_addr_cnt,ch1_p1_wr_addr_cnt} <= 7'b1;
     end else if(layer_st) begin
-        ch1_p0_wr_addr_cnt <= {6{1'b0}};
-        ch1_p1_wr_addr_cnt <= 6'b1;
+        {mon_ch1_p0_wr_addr_cnt,ch1_p0_wr_addr_cnt} <= {7{1'b0}};
+        {mon_ch1_p1_wr_addr_cnt,ch1_p1_wr_addr_cnt} <= 7'b1;
     end else if (ch1_wr_addr_cnt_reg_en)begin
-        ch1_p0_wr_addr_cnt <= ch1_p0_wr_addr_cnt + active_atom_num;
-        ch1_p1_wr_addr_cnt <= ch1_p1_wr_addr_cnt + active_atom_num;
+        {mon_ch1_p0_wr_addr_cnt,ch1_p0_wr_addr_cnt} <= ch1_p0_wr_addr_cnt + {4'd0,active_atom_num};
+        {mon_ch1_p1_wr_addr_cnt,ch1_p1_wr_addr_cnt} <= ch1_p1_wr_addr_cnt + {4'd0,active_atom_num};
     end
 end
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     if (!nvdla_core_rstn) begin
-        ch2_p0_wr_addr_cnt <= {6{1'b0}};
-        ch2_p1_wr_addr_cnt <= 6'b1;
+        {mon_ch2_p0_wr_addr_cnt,ch2_p0_wr_addr_cnt} <= {7{1'b0}};
+        {mon_ch2_p1_wr_addr_cnt,ch2_p1_wr_addr_cnt} <= 7'b1;
     end else if(layer_st) begin
-        ch2_p0_wr_addr_cnt <= {6{1'b0}};
-        ch2_p1_wr_addr_cnt <= 6'b1;
+        {mon_ch2_p0_wr_addr_cnt,ch2_p0_wr_addr_cnt} <= {7{1'b0}};
+        {mon_ch2_p1_wr_addr_cnt,ch2_p1_wr_addr_cnt} <= 7'b1;
     end else if (ch2_wr_addr_cnt_reg_en) begin
-        ch2_p0_wr_addr_cnt <= ch2_p0_wr_addr_cnt + active_atom_num;
-        ch2_p1_wr_addr_cnt <= ch2_p1_wr_addr_cnt + active_atom_num;
+        {mon_ch2_p0_wr_addr_cnt,ch2_p0_wr_addr_cnt} <= ch2_p0_wr_addr_cnt + {4'd0, active_atom_num};
+        {mon_ch2_p1_wr_addr_cnt,ch2_p1_wr_addr_cnt} <= ch2_p1_wr_addr_cnt + {4'd0, active_atom_num};
     end
 end
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     if (!nvdla_core_rstn) begin
-        ch3_p0_wr_addr_cnt <= {6{1'b0}};
-        ch3_p1_wr_addr_cnt <= 6'b1;
+        {mon_ch3_p0_wr_addr_cnt,ch3_p0_wr_addr_cnt} <= {7{1'b0}};
+        {mon_ch3_p1_wr_addr_cnt,ch3_p1_wr_addr_cnt} <= 7'b1;
     end else if(layer_st) begin
-        ch3_p0_wr_addr_cnt <= {6{1'b0}};
-        ch3_p1_wr_addr_cnt <= 6'b1;
+        {mon_ch3_p0_wr_addr_cnt,ch3_p0_wr_addr_cnt} <= {7{1'b0}};
+        {mon_ch3_p1_wr_addr_cnt,ch3_p1_wr_addr_cnt} <= 7'b1;
     end else if (ch3_wr_addr_cnt_reg_en) begin
-        ch3_p0_wr_addr_cnt <= ch3_p0_wr_addr_cnt + active_atom_num;
-        ch3_p1_wr_addr_cnt <= ch3_p1_wr_addr_cnt + active_atom_num;
+        {mon_ch3_p0_wr_addr_cnt,ch3_p0_wr_addr_cnt} <= ch3_p0_wr_addr_cnt + {4'd0, active_atom_num};
+        {mon_ch3_p1_wr_addr_cnt,ch3_p1_wr_addr_cnt} <= ch3_p1_wr_addr_cnt + {4'd0, active_atom_num};
     end
 end
 
@@ -1676,48 +1701,48 @@ assign ch0_cnt_add = (ch0_wr_addr_cnt_reg_en) ? active_atom_num : 2'h0;
 assign ch1_cnt_add = (ch1_wr_addr_cnt_reg_en) ? active_atom_num : 2'h0;
 assign ch2_cnt_add = (ch2_wr_addr_cnt_reg_en) ? active_atom_num : 2'h0;
 assign ch3_cnt_add = (ch3_wr_addr_cnt_reg_en) ? active_atom_num : 2'h0;
-assign ch0_cnt_sub = (ch0_rd_addr_cnt_reg_en) ? rsp_ch0_rd_size : 2'h0;
-assign ch1_cnt_sub = (ch1_rd_addr_cnt_reg_en) ? rsp_ch0_rd_size : 1'h0;
-assign ch2_cnt_sub = (ch2_rd_addr_cnt_reg_en) ? rsp_ch0_rd_size : 1'h0;
-assign ch3_cnt_sub = (ch3_rd_addr_cnt_reg_en) ? rsp_ch0_rd_size : 1'h0;
+assign ch0_cnt_sub = (ch0_rd_addr_cnt_reg_en) ? rsp_ch0_rd_size : 3'h0;
+assign ch1_cnt_sub = (ch1_rd_addr_cnt_reg_en) ? rsp_ch0_rd_size : 3'h0;
+assign ch2_cnt_sub = (ch2_rd_addr_cnt_reg_en) ? rsp_ch0_rd_size : 3'h0;
+assign ch3_cnt_sub = (ch3_rd_addr_cnt_reg_en) ? rsp_ch0_rd_size : 3'h0;
 // assign ch1_cnt_sub = (ch1_rd_addr_cnt_reg_en) ? 1'b1 : 1'h0;
 // assign ch2_cnt_sub = (ch2_rd_addr_cnt_reg_en) ? 1'b1 : 1'h0;
 // assign ch3_cnt_sub = (ch3_rd_addr_cnt_reg_en) ? 1'b1 : 1'h0;
 
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     if (!nvdla_core_rstn) begin
-        ch0_cnt <= {5{1'b0}};
+        {mon_ch0_cnt,ch0_cnt} <= {6{1'b0}};
     end else if(layer_st) begin
-        ch0_cnt <= {5{1'b0}};
+        {mon_ch0_cnt,ch0_cnt} <= {6{1'b0}};
     end else if (ch0_wr_addr_cnt_reg_en | ch0_rd_addr_cnt_reg_en) begin
-        ch0_cnt <= ch0_cnt + ch0_cnt_add - ch0_cnt_sub;
+        {mon_ch0_cnt,ch0_cnt} <= ch0_cnt + ch0_cnt_add - ch0_cnt_sub;
     end
 end
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     if (!nvdla_core_rstn) begin
-        ch1_cnt <= {5{1'b0}};
+        {mon_ch1_cnt,ch1_cnt} <= {6{1'b0}};
     end else if(layer_st) begin
-        ch1_cnt <= {5{1'b0}};
+        {mon_ch1_cnt,ch1_cnt} <= {6{1'b0}};
     end else if (ch1_wr_addr_cnt_reg_en | ch1_rd_addr_cnt_reg_en) begin
-        ch1_cnt <= ch1_cnt + ch1_cnt_add - ch1_cnt_sub;
+        {mon_ch1_cnt,ch1_cnt} <= ch1_cnt + ch1_cnt_add - ch1_cnt_sub;
     end
 end
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     if (!nvdla_core_rstn) begin
-        ch2_cnt <= {5{1'b0}};
+        {mon_ch2_cnt,ch2_cnt} <= {6{1'b0}};
     end else if(layer_st) begin
-        ch2_cnt <= {5{1'b0}};
+        {mon_ch2_cnt,ch2_cnt} <= {6{1'b0}};
     end else if (ch2_wr_addr_cnt_reg_en | ch2_rd_addr_cnt_reg_en) begin
-        ch2_cnt <= ch2_cnt + ch2_cnt_add - ch2_cnt_sub;
+        {mon_ch2_cnt,ch2_cnt} <= ch2_cnt + ch2_cnt_add - ch2_cnt_sub;
     end
 end
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     if (!nvdla_core_rstn) begin
-        ch3_cnt <= {5{1'b0}};
+        {mon_ch3_cnt,ch3_cnt} <= {6{1'b0}};
     end else if(layer_st) begin
-        ch3_cnt <= {5{1'b0}};
+        {mon_ch3_cnt,ch3_cnt} <= {6{1'b0}};
     end else if (ch3_wr_addr_cnt_reg_en | ch3_rd_addr_cnt_reg_en) begin
-        ch3_cnt <= ch3_cnt + ch3_cnt_add - ch3_cnt_sub;
+        {mon_ch3_cnt,ch3_cnt} <= ch3_cnt + ch3_cnt_add - ch3_cnt_sub;
     end
 end
 ////////////////////////////////////////////////////////////////////////
@@ -1773,24 +1798,27 @@ assign is_rsp_batch_end = (rsp_batch_cnt == reg2dp_batches);
 assign rsp_ch_mode = req_ch_mode;
 assign {mon_rsp_ch_cnt_inc,
         rsp_ch_cnt_inc} = rsp_ch_cnt + rsp_cur_ch;
-assign {mon_rsp_ch_left_w,
-        rsp_ch_left_w} = (layer_st | is_rsp_ch_end) ? data_surface_w : (data_surface - rsp_ch_cnt_inc);
+assign {mon_rsp_ch_left_w,rsp_ch_left_w} = (layer_st | is_rsp_ch_end) ? {1'b0,data_surface_w} : (data_surface - rsp_ch_cnt_inc);
 // assign is_rsp_ch_end = (rsp_ch_cnt_inc == data_surface); 
-assign rsp_cur_ch_w = (rsp_ch_left_w > {{7{1'b0}}, rsp_ch_mode}) ? rsp_ch_mode : rsp_ch_left_w[2:0];
-// assign rsp_ch_cnt_w = (layer_st | is_rsp_ch_end) ? 10'b0 :
-//                       rsp_ch_cnt_inc;
-assign is_rsp_ch_end = (rsp_ch_cnt == (data_surface - rsp_cur_ch)); 
+assign rsp_cur_ch_w = (rsp_ch_left_w > {{8{1'b0}}, rsp_ch_mode}) ? rsp_ch_mode : rsp_ch_left_w[2:0];
+
+
+//assign is_rsp_ch_end = (rsp_ch_cnt == (data_surface - rsp_cur_ch)); 
+wire    [10:0] data_surface_dec_1;
+wire           mon_data_surface_dec_1;
+assign {mon_data_surface_dec_1,data_surface_dec_1} = data_surface-{8'd0,rsp_cur_ch};
+assign is_rsp_ch_end = (rsp_ch_cnt == data_surface_dec_1); 
 
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     if (!nvdla_core_rstn) begin
-        rsp_ch_cnt <= {11{1'b0}};
+        {mon_rsp_ch_cnt,rsp_ch_cnt} <= {12{1'b0}};
     end else if (layer_st) begin
-        rsp_ch_cnt <= {11{1'b0}};
+        {mon_rsp_ch_cnt,rsp_ch_cnt} <= {12{1'b0}};
     end else if (rsp_ch_reg_en) begin
         if(is_rsp_ch_end)
-            rsp_ch_cnt <= {11{1'b0}};
+            {mon_rsp_ch_cnt,rsp_ch_cnt} <= {12{1'b0}};
         else
-            rsp_ch_cnt <= rsp_ch_cnt + rsp_cur_ch;
+            {mon_rsp_ch_cnt,rsp_ch_cnt} <= rsp_ch_cnt + rsp_cur_ch;
     end
 end
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
@@ -1822,23 +1850,39 @@ assign is_rsp_h_end = (rsp_h_cnt == rsp_cur_grain-1);
 
 ///////////// width counter /////////////
 assign rsp_w_left1 = (rsp_w_cnt == {1'b0, data_width_sub_one});
-assign rsp_w_left2 = (rsp_w_cnt == {1'b0, data_width-3'd2});
-assign rsp_w_left3 = (rsp_w_cnt == {1'b0, data_width-3'd3});
-assign rsp_w_left4 = (rsp_w_cnt == {1'b0, data_width-3'd4});
+//assign rsp_w_left2 = (rsp_w_cnt == {1'b0, data_width-3'd2});
+//assign rsp_w_left3 = (rsp_w_cnt == {1'b0, data_width-3'd3});
+//assign rsp_w_left4 = (rsp_w_cnt == {1'b0, data_width-3'd4});
+wire    mon_data_width_dec2;
+wire  [15:0]  data_width_dec2;
+wire    mon_data_width_dec3;
+wire  [15:0]  data_width_dec3;
+wire    mon_data_width_dec4;
+wire  [15:0]  data_width_dec4;
+assign {mon_data_width_dec2,data_width_dec2} = data_width-16'd2;
+assign {mon_data_width_dec3,data_width_dec3} = data_width-16'd3;
+assign {mon_data_width_dec4,data_width_dec4} = data_width-16'd4;
+assign rsp_w_left2 = (rsp_w_cnt == data_width_dec2);
+assign rsp_w_left3 = (rsp_w_cnt == data_width_dec3);
+assign rsp_w_left4 = (rsp_w_cnt == data_width_dec4);
 
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     if (!nvdla_core_rstn) begin
-        rsp_w_cnt <= {16{1'b0}};
+        {mon_rsp_w_cnt,rsp_w_cnt} <= {17{1'b0}};
     end else if (layer_st) begin
-        rsp_w_cnt <= {16{1'b0}};
+        {mon_rsp_w_cnt,rsp_w_cnt} <= {17{1'b0}};
     end else if (rsp_w_reg_en) begin
         if(is_rsp_w_end)
-            rsp_w_cnt <= {16{1'b0}};
+            {mon_rsp_w_cnt,rsp_w_cnt} <= {17{1'b0}};
         else
-            rsp_w_cnt <= rsp_w_cnt + rsp_w_cnt_add;
+            {mon_rsp_w_cnt,rsp_w_cnt} <= rsp_w_cnt + rsp_w_cnt_add;
     end
 end
-assign is_rsp_w_end = (rsp_w_cnt == (data_width-rsp_w_cnt_add));
+//assign is_rsp_w_end = (rsp_w_cnt == (data_width-rsp_w_cnt_add));
+wire    mon_width_dec;
+wire    [15:0]  width_dec;
+assign {mon_width_dec,width_dec} = data_width - {13'd0, rsp_w_cnt_add};
+assign is_rsp_w_end = (rsp_w_cnt == width_dec);
 
 ///////////// response control signal /////////////
 //
@@ -2088,11 +2132,13 @@ assign p0_rd_en_w = rsp_rd_en;
 //: my $dmaif=NVDLA_CDMA_DMAIF_BW;
 //: my $atmm = NVDLA_MEMORY_ATOMIC_SIZE*NVDLA_CDMA_BPE; ##atomic_m BW
 //: my $M = $dmaif/$atmm;  ##atomic_m number per dma transaction
-//: foreach my $k (0..$M-1) {
-//:     my $i = $k +1;
-//:     print qq(
-//:         assign p${i}_rd_en_w = rsp_rd_en & rsp_rd_more_atmm[$k];
-//:     );
+//: if($M > 1) {
+//:     foreach my $k (0..$M-2) {
+//:         my $i = $k +1;
+//:         print qq(
+//:             assign p${i}_rd_en_w = rsp_rd_en & rsp_rd_more_atmm[$k];
+//:         );
+//:     }
 //: }
 ///////////// channel address counter /////////////
 assign ch0_rd_addr_cnt_reg_en = rsp_rd_en & ~rsp_rd_ch2ch3;
@@ -2102,48 +2148,44 @@ assign ch3_rd_addr_cnt_reg_en = rsp_rd_en & (rsp_cur_ch == 3'h4) & rsp_rd_ch2ch3
 
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     if (!nvdla_core_rstn) begin
-        ch0_p0_rd_addr_cnt <= 6'b0;
-        ch0_p1_rd_addr_cnt <= 6'b1;
+        {mon_ch0_p0_rd_addr_cnt,ch0_p0_rd_addr_cnt} <= 7'b0;
+        {mon_ch0_p1_rd_addr_cnt,ch0_p1_rd_addr_cnt} <= 7'b1;
     end else if(layer_st) begin
-        ch0_p0_rd_addr_cnt <= 6'b0;
-        ch0_p1_rd_addr_cnt <= 6'b1;
+        {mon_ch0_p0_rd_addr_cnt,ch0_p0_rd_addr_cnt} <= 7'b0;
+        {mon_ch0_p1_rd_addr_cnt,ch0_p1_rd_addr_cnt} <= 7'b1;
     end else if(ch0_rd_addr_cnt_reg_en) begin
-        ch0_p0_rd_addr_cnt <= ch0_p0_rd_addr_cnt + rsp_ch0_rd_size;
-        ch0_p1_rd_addr_cnt <= ch0_p1_rd_addr_cnt + rsp_ch0_rd_size;
+        {mon_ch0_p0_rd_addr_cnt,ch0_p0_rd_addr_cnt} <= ch0_p0_rd_addr_cnt + {3'd0,rsp_ch0_rd_size};
+        {mon_ch0_p1_rd_addr_cnt,ch0_p1_rd_addr_cnt} <= ch0_p1_rd_addr_cnt + {3'd0,rsp_ch0_rd_size};
     end
 end
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     if (!nvdla_core_rstn) begin
-        ch1_p0_rd_addr_cnt <= 6'b0;
-        ch1_p1_rd_addr_cnt <= 6'b1;
+        {mon_ch1_p0_rd_addr_cnt,ch1_p0_rd_addr_cnt} <= 7'b0;
+        {mon_ch1_p1_rd_addr_cnt,ch1_p1_rd_addr_cnt} <= 7'b1;
     end else if(layer_st) begin
-        ch1_p0_rd_addr_cnt <= 6'b0;
-        ch1_p1_rd_addr_cnt <= 6'b1;
+        {mon_ch1_p0_rd_addr_cnt,ch1_p0_rd_addr_cnt} <= 7'b0;
+        {mon_ch1_p1_rd_addr_cnt,ch1_p1_rd_addr_cnt} <= 7'b1;
     end else if(ch1_rd_addr_cnt_reg_en) begin
-        //ch1_p0_rd_addr_cnt <= ch1_p0_rd_addr_cnt + 1'b1;
-        //ch1_p1_rd_addr_cnt <= ch1_p1_rd_addr_cnt + 1'b1;
-        ch1_p0_rd_addr_cnt <= ch1_p0_rd_addr_cnt + rsp_ch0_rd_size;
-        ch1_p1_rd_addr_cnt <= ch1_p1_rd_addr_cnt + rsp_ch0_rd_size;
+        {mon_ch1_p0_rd_addr_cnt,ch1_p0_rd_addr_cnt} <= ch1_p0_rd_addr_cnt + {3'd0,rsp_ch0_rd_size};
+        {mon_ch1_p1_rd_addr_cnt,ch1_p1_rd_addr_cnt} <= ch1_p1_rd_addr_cnt + {3'd0,rsp_ch0_rd_size};
     end
 end
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     if (!nvdla_core_rstn) begin
-        ch2_p0_rd_addr_cnt <= 6'b0;
+        {mon_ch2_p0_rd_addr_cnt,ch2_p0_rd_addr_cnt} <= 7'b0;
     end else if(layer_st) begin
-        ch2_p0_rd_addr_cnt <= 6'b0;
+        {mon_ch2_p0_rd_addr_cnt,ch2_p0_rd_addr_cnt} <= 7'b0;
     end else if(ch2_rd_addr_cnt_reg_en) begin
-        //ch2_p0_rd_addr_cnt <= ch2_p0_rd_addr_cnt + 1'b1;
-        ch2_p0_rd_addr_cnt <= ch2_p0_rd_addr_cnt + rsp_ch0_rd_size;
+        {mon_ch2_p0_rd_addr_cnt,ch2_p0_rd_addr_cnt} <= ch2_p0_rd_addr_cnt + {3'd0,rsp_ch0_rd_size};
     end
 end
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     if (!nvdla_core_rstn) begin
-        ch3_p0_rd_addr_cnt <= 6'b0;
+        {mon_ch3_p0_rd_addr_cnt,ch3_p0_rd_addr_cnt} <= 7'b0;
     end else if(layer_st) begin
-        ch3_p0_rd_addr_cnt <= 6'b0;
+        {mon_ch3_p0_rd_addr_cnt,ch3_p0_rd_addr_cnt} <= 7'b0;
     end else if(ch3_rd_addr_cnt_reg_en) begin
-        //ch3_p0_rd_addr_cnt <= ch3_p0_rd_addr_cnt + 1'b1;
-        ch3_p0_rd_addr_cnt <= ch3_p0_rd_addr_cnt + rsp_ch0_rd_size;
+        {mon_ch3_p0_rd_addr_cnt,ch3_p0_rd_addr_cnt} <= ch3_p0_rd_addr_cnt + {3'd0,rsp_ch0_rd_size};
     end
 end
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
@@ -2454,9 +2496,9 @@ assign {mon_idx_h_offset_w,
 
 //assign idx_w_offset_add = is_w_cnt_div4 ? {rsp_w_cnt[12 +2:2]} : ( is_w_cnt_div2 ? rsp_w_cnt[12+1 :1] : rsp_w_cnt[12:0] );
 assign idx_w_offset_add = is_w_cnt_div4 ? {1'b0,rsp_w_cnt[15:2]} : ( is_w_cnt_div2 ? rsp_w_cnt[14+1 :1] : rsp_w_cnt[14:0] );
-assign {mon_cbuf_idx_inc, cbuf_idx_inc} = idx_base + idx_grain_offset + idx_h_offset + idx_w_offset_add;
-assign is_cbuf_idx_wrap = cbuf_idx_inc >= {data_bank, 9'b0};
-assign {mon_cbuf_idx_w[1:0], cbuf_idx_w} = ~is_cbuf_idx_wrap ? {1'b0, cbuf_idx_inc[14:0]} : cbuf_idx_inc[14 :0] - {data_bank, 9'b0};
+assign {mon_cbuf_idx_inc[2:0], cbuf_idx_inc} = idx_base + (idx_grain_offset + idx_h_offset) + idx_w_offset_add;
+assign is_cbuf_idx_wrap = cbuf_idx_inc >= {1'b0, data_bank, 9'b0};
+assign cbuf_idx_w = ~is_cbuf_idx_wrap ? {2'b0, cbuf_idx_inc[14:0]} : {2'd0,cbuf_idx_inc[14 :0]} - {2'b0, data_bank, 9'b0};
 
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     if (!nvdla_core_rstn) begin
@@ -2496,11 +2538,11 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 end
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     if (!nvdla_core_rstn) begin
-        idx_grain_offset <= {18{1'b0}};
+        {mon_idx_grain_offset,idx_grain_offset} <= {19{1'b0}};
     end else if(layer_st) begin
-        idx_grain_offset <= {18{1'b0}};
+        {mon_idx_grain_offset,idx_grain_offset} <= {19{1'b0}};
     end else if(rsp_all_h_reg_en) begin
-        idx_grain_offset <= idx_grain_offset + rsp_entry;
+        {mon_idx_grain_offset,idx_grain_offset} <= idx_grain_offset + rsp_entry;
     end
 end
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
@@ -2758,7 +2800,7 @@ assign cbuf_wr_info_pd_d0 = cbuf_wr_info_pd;
 //  convolution buffer slices & entries management                    //
 ////////////////////////////////////////////////////////////////////////
 ///////////// calculate onfly slices and entries /////////////
-assign req_entry = req_csm_sel ? req_entry_1_d3 : req_entry_0_d3;
+assign req_entry = req_csm_sel ? req_entry_1_d3[14:0] : req_entry_0_d3[14:0];
 assign rsp_entry = is_rsp_all_h_end ? rsp_entry_last : rsp_entry_init;
 assign dc_entry_onfly_add = ~req_grain_reg_en ? 15'b0 : req_entry;
 assign dc_entry_onfly_sub = ~dc2status_dat_updt ? 15'b0 : dc2status_dat_entries;
@@ -2798,10 +2840,10 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 end
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     if (!nvdla_core_rstn) begin
-        dat_entries_d0 <= {18{1'b0}};
+        dat_entries_d0 <= {15{1'b0}};
     end else begin
         if ((rsp_all_h_reg_en) == 1'b1) begin
-            dat_entries_d0 <= rsp_entry;
+            dat_entries_d0 <= rsp_entry[14:0];//15bit is enough
         end
     end
 end

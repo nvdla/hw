@@ -406,19 +406,19 @@ wire            mon_data_planar0_p0_cnt_w;
 wire            mon_data_planar0_p1_cnt_w;
 wire            mon_data_planar1_p0_cnt_w;
 wire            mon_data_planar1_p1_cnt_w;
-wire      [4:0] mon_lp_planar0_mask_sft_w;
-wire      [4:0] mon_lp_planar1_mask_sft_w;
-wire      [1:0] mon_pk_rsp_wr_addr_wrap;
+wire      [2:0] mon_lp_planar0_mask_sft_w;
+wire      [2:0] mon_lp_planar1_mask_sft_w;
+wire      [2:0] mon_pk_rsp_wr_addr_wrap;
 wire      [1:0] mon_pk_rsp_wr_base_wrap;
 wire            mon_pk_rsp_wr_cnt_w;
 wire            mon_pk_rsp_wr_h_offset_w;
 wire            mon_pk_rsp_wr_w_offset_w;
 wire            mon_rd_loop_cnt_inc;
 wire            mon_rd_loop_cnt_limit;
-wire      [4:0] mon_rp_planar0_mask_sft_w;
-wire      [4:0] mon_rp_planar1_mask_sft_w;
-wire      [4:0] mon_zero_planar0_mask_sft_w;
-wire      [4:0] mon_zero_planar1_mask_sft_w;
+wire      [2:0] mon_rp_planar0_mask_sft_w;
+wire      [2:0] mon_rp_planar1_mask_sft_w;
+wire      [2:0] mon_zero_planar0_mask_sft_w;
+wire      [2:0] mon_zero_planar1_mask_sft_w;
 wire            pack_is_done_w;
 wire    [(NVDLA_CDMA_DMAIF_BW/NVDLA_BPE)*3-1:0] pad_mask_8b_yuv;
 wire    [NVDLA_CDMA_DMAIF_BW/NVDLA_BPE-1:0] pad_mask_l0;
@@ -831,12 +831,18 @@ assign rd_planar1_ori_en = is_first_running;
 //: &eperl::flop("-nodeclare   -rval \"{14{1'b0}}\"  -en \"data_planar1_en\"    -d \"data_planar1_cur_cnt_w\" -q data_planar1_cur_cnt");
 ///// assign data_planar0_cur_cnt_w = (is_first_running | rd_planar0_line_end) ? 14'b0 : (rd_p1_vld) ? data_planar0_p1_cnt_w : data_planar0_p0_cnt_w;
 ///// assign data_planar1_cur_cnt_w = (is_first_running | rd_planar1_line_end) ? 14'b0 : (rd_p1_vld) ? data_planar1_p1_cnt_w : data_planar1_p0_cnt_w;
-assign data_planar0_p1_flag_w = (is_first_running | rd_planar0_line_end) ? 3'b0 : data_planar0_p1_cur_flag; 
-assign data_planar1_p1_flag_w = (is_first_running | rd_planar1_line_end) ? 3'b0 : data_planar1_p1_cur_flag; 
 
-//: &eperl::flop("-nodeclare   -rval \"{3{1'b0}}\"  -en \"data_planar0_en\"  -d \"data_planar0_p1_flag_w\" -q data_planar0_p1_flag");
-//: &eperl::flop("-nodeclare   -rval \"{3{1'b0}}\"  -en \"data_planar1_en\"  -d \"data_planar1_p1_flag_w\" -q data_planar1_p1_flag");
-
+//: my $dmaif = NVDLA_CDMA_DMAIF_BW/NVDLA_BPE;
+//: my $atmm = NVDLA_MEMORY_ATOMIC_SIZE;
+//: my $atmm_num = ($dmaif / $atmm);
+//: if($atmm_num == 2) {
+//:     print qq(
+//:         assign data_planar0_p1_flag_w = (is_first_running | rd_planar0_line_end) ? 3'b0 : data_planar0_p1_cur_flag; 
+//:         assign data_planar1_p1_flag_w = (is_first_running | rd_planar1_line_end) ? 3'b0 : data_planar1_p1_cur_flag; 
+//:     );
+//:     &eperl::flop("-nodeclare   -rval \"{3{1'b0}}\"  -en \"data_planar0_en\"  -d \"data_planar0_p1_flag_w\" -q data_planar0_p1_flag");
+//:     &eperl::flop("-nodeclare   -rval \"{3{1'b0}}\"  -en \"data_planar1_en\"  -d \"data_planar1_p1_flag_w\" -q data_planar1_p1_flag");
+//: }
 ///////////////////////////////
 
 //: my $dmaif = NVDLA_CDMA_DMAIF_BW/NVDLA_BPE;
@@ -846,8 +852,13 @@ assign data_planar1_p1_flag_w = (is_first_running | rd_planar1_line_end) ? 3'b0 
 //:     print qq(
 //:         wire    [1:0]   data_planar0_p0_flag_nex;
 //:         wire    [1:0]   data_planar1_p0_flag_nex;
-//:         assign data_planar0_p0_flag_nex[0] = (data_planar0_p0_cnt_w - data_planar0_add) > data_width_mark_0;
-//:         assign data_planar0_p0_flag_nex[1] = (data_planar0_p0_cnt_w - data_planar0_add) > data_width_mark_1;
+//:         wire    [13:0]  data_planar0_cnt_sub;
+//:         wire            mon_data_planar0_cnt_sub;
+//:         assign {mon_data_planar0_cnt_sub,data_planar0_cnt_sub[13:0]} = (data_planar0_p0_cnt_w - {8'd0,data_planar0_add});
+//:         assign data_planar0_p0_flag_nex[0] = data_planar0_cnt_sub > data_width_mark_0;
+//:         assign data_planar0_p0_flag_nex[1] = data_planar0_cnt_sub > data_width_mark_1;
+//:         //assign data_planar0_p0_flag_nex[0] = (data_planar0_p0_cnt_w - data_planar0_add) > data_width_mark_0;
+//:         //assign data_planar0_p0_flag_nex[1] = (data_planar0_p0_cnt_w - data_planar0_add) > data_width_mark_1;
 //:         assign data_planar0_p0_lp_mask = ~data_planar0_p0_cur_flag[0] ? {${atmm}{1'b1}} : 
 //:                                          ~data_planar0_p0_flag_nex[0] ? ~({${atmm}{1'b1}} << lp_planar0_mask_sft) : {${atmm}{1'b0}};
 //:         assign data_planar0_p0_rp_mask = ~data_planar0_p0_cur_flag[1] ? {${atmm}{1'b0}} : 
@@ -855,8 +866,13 @@ assign data_planar1_p1_flag_w = (is_first_running | rd_planar1_line_end) ? 3'b0 
 //:         assign data_planar0_p0_zero_mask = ~data_planar0_p0_cur_flag[2] ? {${atmm}{1'b0}} : ({${atmm}{1'b1}} << zero_planar0_mask_sft);
 //:         assign data_planar0_p0_pad_mask = (data_planar0_p0_lp_mask | data_planar0_p0_rp_mask) & ~data_planar0_p0_zero_mask;
 //:         
-//:         assign data_planar1_p0_flag_nex[0] = (data_planar1_p0_cnt_w - data_planar1_add) > data_width_mark_0;
-//:         assign data_planar1_p0_flag_nex[1] = (data_planar1_p0_cnt_w - data_planar1_add) > data_width_mark_1;
+//:         wire    [13:0]  data_planar1_cnt_sub;
+//:         wire            mon_data_planar1_cnt_sub;
+//:         assign {mon_data_planar1_cnt_sub,data_planar1_cnt_sub[13:0]} = (data_planar1_p0_cnt_w - {8'd0,data_planar1_add});
+//:         assign data_planar1_p0_flag_nex[0] = data_planar1_cnt_sub > data_width_mark_0;
+//:         assign data_planar1_p0_flag_nex[1] = data_planar1_cnt_sub > data_width_mark_1;
+//:         //assign data_planar1_p0_flag_nex[0] = (data_planar1_p0_cnt_w - data_planar1_add) > data_width_mark_0;
+//:         //assign data_planar1_p0_flag_nex[1] = (data_planar1_p0_cnt_w - data_planar1_add) > data_width_mark_1;
 //:
 //:         assign data_planar1_p0_lp_mask = ~data_planar1_p0_cur_flag[0] ? {${atmm}{1'b1}} : 
 //:                                          ~data_planar1_p0_flag_nex[0] ? ~({${atmm}{1'b1}} << lp_planar1_mask_sft) : {${atmm}{1'b0}};
@@ -1387,8 +1403,8 @@ assign pk_rsp_wr_w_offset_ori_en = is_first_running;
 //:         }
 //:     }
 //: }
-assign is_addr_wrap = (pk_rsp_wr_addr_inc[15 +1: 9 ] >= pixel_bank);
-assign {mon_pk_rsp_wr_addr_wrap[1:0], pk_rsp_wr_addr_wrap} = (pk_rsp_wr_addr_inc[16 : 9 ] - {1'b0,pixel_bank});
+assign is_addr_wrap = (pk_rsp_wr_addr_inc[15 +1: 9 ] >= {2'd0, pixel_bank});
+assign {mon_pk_rsp_wr_addr_wrap[2:0], pk_rsp_wr_addr_wrap} = (pk_rsp_wr_addr_inc[16 : 9 ] - {2'b0,pixel_bank});
 assign pk_rsp_wr_addr = is_addr_wrap ? {pk_rsp_wr_addr_wrap, pk_rsp_wr_addr_inc[8 :0]} : pk_rsp_wr_addr_inc[14:0];
 //: &eperl::flop("-nodeclare   -rval \"{15{1'b0}}\"  -en \"pk_rsp_wr_vld\" -d \"pk_rsp_wr_addr\" -q pk_out_addr");
 
@@ -1442,7 +1458,7 @@ assign img2cvt_dat_wr_info_pd = pk_out_info_pd;
 //:     }
 //: } else {
 //:     print qq(
-//:      assign img2cvt_dat_wr_addr     = pk_out_addr;
+//:      assign img2cvt_dat_wr_addr     = {2'd0,pk_out_addr};
 //:      assign img2cvt_dat_wr_data     = pk_out_data;
 //:      assign img2cvt_mn_wr_data      = pk_mn_out_data;
 //:      assign img2cvt_dat_wr_pad_mask = pk_out_pad_mask;

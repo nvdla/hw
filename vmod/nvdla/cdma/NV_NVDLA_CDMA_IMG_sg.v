@@ -224,13 +224,13 @@ reg     [12:0] req_height_cnt;
 reg     [63:0] req_img_p0_addr_base;
 reg      [3:0] req_img_p0_bundle_cnt;
 reg     [13:0] req_img_p0_burst_cnt;
-reg     [26:0] req_img_p0_burst_offset;
+reg     [28:0] req_img_p0_burst_offset;
 reg     [31:0] req_img_p0_line_offset;
 reg      [1:0] req_img_p0_sec_cnt;
 reg     [63:0] req_img_p1_addr_base;
 reg      [4:0] req_img_p1_bundle_cnt;
 reg     [13:0] req_img_p1_burst_cnt;
-reg     [26:0] req_img_p1_burst_offset;
+reg     [28:0] req_img_p1_burst_offset;
 reg     [31:0] req_img_p1_line_offset;
 reg      [1:0] req_img_p1_sec_cnt;
 reg            req_img_planar_cnt;
@@ -395,7 +395,7 @@ wire    [14:0] req_img_p0_burst_cnt_dec;
 wire    [13:0] req_img_p0_burst_cnt_w;
 wire           req_img_p0_burst_en;
 wire           req_img_p0_burst_offset_en;
-wire    [26:0] req_img_p0_burst_offset_w;
+wire    [28:0] req_img_p0_burst_offset_w;
 wire     [3:0] req_img_p0_burst_size;
 wire     [3:0] req_img_p0_cur_burst;
 wire    [31:0] req_img_p0_line_offset_w;
@@ -408,7 +408,7 @@ wire    [14:0] req_img_p1_burst_cnt_dec;
 wire    [13:0] req_img_p1_burst_cnt_w;
 wire           req_img_p1_burst_en;
 wire           req_img_p1_burst_offset_en;
-wire    [26:0] req_img_p1_burst_offset_w;
+wire    [28:0] req_img_p1_burst_offset_w;
 wire     [4:0] req_img_p1_burst_size;
 wire     [4:0] req_img_p1_cur_burst;
 wire    [31:0] req_img_p1_line_offset_w;
@@ -620,7 +620,7 @@ assign {mon_req_img_p1_sec_cnt_w,
                                ((is_first_running | is_p1_last_burst) & ~pixel_planar1_lp_vld) ? 3'h1 :
                                req_img_p1_sec_cnt + 1'b1;
 assign req_img_p1_burst_size = req_img_p1_cur_burst;
-assign is_p1_cur_sec_end = req_img_p1_burst_cnt_dec[14] | (req_img_p1_burst_cnt == {{8{1'b0}}, req_img_p1_bundle_cnt});
+assign is_p1_cur_sec_end = req_img_p1_burst_cnt_dec[14] | (req_img_p1_burst_cnt == {{9{1'b0}}, req_img_p1_bundle_cnt});
 assign is_p1_1st_burst = ((req_img_p1_burst_cnt == {{11{1'b0}}, pixel_planar1_lp_burst}) & (req_img_p1_sec_cnt == 2'h0)) |
                          ((req_img_p1_burst_cnt == pixel_planar1_width_burst) & (req_img_p1_sec_cnt == 2'h1) & ~pixel_planar1_lp_vld);
 assign is_p1_last_burst = (is_p1_cur_sec_end & (req_img_p1_sec_cnt == 2'h1) & ~pixel_planar1_rp_vld) |
@@ -1355,12 +1355,23 @@ assign rsp_img_is_done_w = is_first_running ? 1'b0 :
 ////////////////////////////////////////////////////////////////////////
 //  Shared buffer write signals                                       //
 ////////////////////////////////////////////////////////////////////////
-assign img2sbuf_p0_wr_en = rsp_img_p0_vld_d1;
-assign img2sbuf_p1_wr_en = rsp_img_p1_vld_d1;
-assign img2sbuf_p0_wr_addr = rsp_img_p0_addr_d1;
-assign img2sbuf_p1_wr_addr = rsp_img_p1_addr_d1;
-assign img2sbuf_p0_wr_data = rsp_img_p0_data_d1;
-assign img2sbuf_p1_wr_data = rsp_img_p1_data_d1;
+//: my $dmaif = NVDLA_CDMA_DMAIF_BW;
+//: my $atmm = NVDLA_MEMORY_ATOMIC_SIZE*NVDLA_BPE;
+//: my $atmm_num = ($dmaif / $atmm);
+//: foreach my $i (0..$atmm_num -1) {
+//:     print qq(
+//:       assign img2sbuf_p${i}_wr_addr = rsp_img_p${i}_addr_d1;
+//:       assign img2sbuf_p${i}_wr_data = rsp_img_p${i}_data_d1;
+//:       assign img2sbuf_p${i}_wr_en = rsp_img_p${i}_vld_d1;
+//:     );
+//: }
+
+//assign img2sbuf_p0_wr_en = rsp_img_p0_vld_d1;
+//assign img2sbuf_p1_wr_en = rsp_img_p1_vld_d1;
+//assign img2sbuf_p0_wr_addr = rsp_img_p0_addr_d1;
+//assign img2sbuf_p1_wr_addr = rsp_img_p1_addr_d1;
+//assign img2sbuf_p0_wr_data = rsp_img_p0_data_d1;
+//assign img2sbuf_p1_wr_data = rsp_img_p1_data_d1;
 
 ////////////////////////////////////////////////////////////////////////
 //  Signal from SG to PACK                                            //

@@ -762,6 +762,7 @@ assign cvt_out_vld = cvt_wr_en;
 //:          ,.cfg_truncate        (cfg_truncate[5:0])      
 //:          ,.chn_data_out_rsc_z  (cellout_${i}[15:0])     
 //:          ,.chn_data_out_rsc_vz (1'b1)                   
+//:          ,.chn_data_out_rsc_lz (    )                   
 //:          );\n);
 //: }
 //: print "\n";
@@ -796,7 +797,7 @@ assign cvt_data_cell = {
 //:         &eperl::flop("-wid $k   -rval \"1'b0\"   -en \"cvt_out_vld_d${i} | cvt_out_vld_d2\" -d \"cvt_out_reg_en_d${i}\"   -q cvt_out_reg_en_d${j}");
 //:     }
 //:     &eperl::flop("-wid 17  -rval \"{17{1'b0}}\"  -en \"cvt_out_vld_d${i}\"                  -d \"cvt_out_addr_d${i}\"     -q cvt_out_addr_d${j}");
-//:     &eperl::flop("-wid 8   -rval \"{4{1'b0}}\"   -en \"cvt_out_vld_d${i}\"                  -d \"cvt_out_nz_mask_d${i}\"  -q cvt_out_nz_mask_d${j}");
+//:     &eperl::flop("-wid 4   -rval \"{4{1'b0}}\"   -en \"cvt_out_vld_d${i}\"                  -d \"cvt_out_nz_mask_d${i}\"  -q cvt_out_nz_mask_d${j}");
 //:     &eperl::flop("-wid $Bnum -rval \"{${Bnum}{1'b0}}\" -en \"cvt_out_pad_vld_d${i}\"        -d \"cvt_out_pad_mask_d${i}\" -q cvt_out_pad_mask_d${j}");
 //:     print "\n\n";
 //: }
@@ -844,7 +845,7 @@ assign cvt_out_vld_reg_w = cvt_out_vld_bp | dat_cbuf_flush_vld_w;
 //:     my $k = int( log( int($atmc/$dmaif) ) / log(2) );
 //:     print "assign cvt_out_addr_reg_w = dat_cbuf_flush_vld_w ? dat_cbuf_flush_idx[17:${k}] : cvt_out_addr_bp; \n";
 //: } else {
-//:     print "assign cvt_out_addr_reg_w = dat_cbuf_flush_vld_w ? dat_cbuf_flush_idx[17:0] : cvt_out_addr_bp; \n";
+//:     print "assign cvt_out_addr_reg_w = dat_cbuf_flush_vld_w ? dat_cbuf_flush_idx[16:0] : cvt_out_addr_bp; \n";
 //: }
 
 //: my $dmaif=NVDLA_CDMA_DMAIF_BW;

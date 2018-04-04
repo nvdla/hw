@@ -283,7 +283,7 @@ wire   [NVDLA_CDMA_DMAIF_BW-1:0] wmb_cbuf_wr_data_w;
 wire   [NVDLA_CDMA_DMAIF_BW-1:0] cdma2buf_wt_wr_data_w;
 reg      [3:0] dma_rsp_size;
 reg      [3:0] dma_rsp_size_cnt;
-reg     [31:0] dp2reg_wt_rd_latency;
+wire     [31:0] dp2reg_wt_rd_latency=32'd0;
 reg     [31:0] dp2reg_wt_rd_stall;
 reg      [11:0] group;
 reg     [14:0] incr_wt_entries;
@@ -336,7 +336,7 @@ reg     [33:0] stl_cnt_mod;
 reg     [33:0] stl_cnt_new;
 reg     [33:0] stl_cnt_nxt;
 reg      [5:0] weight_bank;
-reg      [5:0] weight_bank_end;
+reg      [6:0] weight_bank_end;
 reg      [1:0] wt2status_state;
 ////: my $bank_entry = NVDLA_CBUF_BANK_NUMBER * NVDLA_CBUF_BANK_DEPTH;
 ////: my $bank_entry_bw = int( log( $bank_entry)/log(2) );
@@ -370,7 +370,6 @@ reg            wt_rd_latency_inc;
 reg            wt_rd_stall_cen;
 reg            wt_rd_stall_clr;
 reg            wt_rd_stall_inc;
-reg     [26:0] wt_req_burst_cnt_d1;
 reg            wt_req_done_d2;
 reg            wt_req_done_d3;
 reg            wt_req_last_d2;
@@ -573,7 +572,7 @@ wire     [11:0] status_group_cnt_inc;
 wire     [11:0] status_group_cnt_w;
 wire           status_last_group;
 wire           status_update;
-wire     [5:0] weight_bank_end_w;
+wire     [6:0] weight_bank_end_w;
 wire     [5:0] weight_bank_w;
 wire     [1:0] wt2status_state_w;
 wire    [17:0] wt_cbuf_flush_idx_w;
@@ -601,7 +600,17 @@ wire    [31:0] wt_fp16_manti_flag_w;
 wire    [31:0] wt_fp16_nan_flag_w;
 wire     [5:0] wt_fp16_nan_sum;
 wire           wt_fp16_nan_vld_w;
-wire     [2:0] wt_local_data_cnt;
+//: my $mask = NVDLA_CDMA_MEM_MASK_BIT;
+//: if($mask == 4) {
+//:  print qq(
+//:     wire     [2:0] wt_local_data_cnt;
+//:  );
+//: } else {
+//:  print qq(
+//:     wire     [1:0] wt_local_data_cnt;
+//:  );
+//: }
+//wire     [2:0] wt_local_data_cnt;
 wire           wt_local_data_reg_en;
 wire           wt_local_data_vld_w;
 //wire   [511:0] wt_nan_mask;
@@ -644,6 +653,7 @@ wire           wt_local_data_vld_w;
 //: my $k = int( log(${atmm}) / log(2) );
 //: print qq(
 //:     wire    [32-${k}-1:0] wt_req_burst_cnt_w;
+//:     reg     [32-${k}-1:0] wt_req_burst_cnt_d1;
 //:     wire    [32-${k}-1:0] wt_req_burst_cnt_dec;
 //:     wire    [28-${k}-1:0] wmb_req_burst_cnt_w;
 //:     wire    [28-${k}-1:0] wmb_req_burst_cnt_dec;
@@ -804,7 +814,7 @@ assign is_compressed = 1'b0;
 
 //: &eperl::flop("-nodeclare   -rval \"{12{1'b1}}\"  -en \"layer_st\" -d \"group_w\" -q group");
 //: &eperl::flop("-nodeclare   -rval \"{6{1'b1}}\"  -en \"layer_st\" -d \"weight_bank_w\" -q weight_bank");
-//: &eperl::flop("-nodeclare   -rval \"{6{1'b1}}\"  -en \"layer_st\" -d \"weight_bank_end_w\" -q weight_bank_end");
+//: &eperl::flop("-nodeclare   -rval \"{7{1'b1}}\"  -en \"layer_st\" -d \"weight_bank_end_w\" -q weight_bank_end");
 //: &eperl::flop("-nodeclare   -rval \"1'b1\"  -en \"layer_st\" -d \"nan_pass_w\" -q nan_pass");
 ////////////////////////////////////////////////////////////////////////
 //  generate address for weight data                                  //
@@ -815,22 +825,22 @@ localparam SRC_ID_WGS = 2'b10;
 
 /////////////////// stage 1 ///////////////////
 assign wt_req_reg_en_d0 = wt_req_reg_en;
-assign {mon_wt_req_burst_cnt_dec, wt_req_burst_cnt_dec} = wt_req_burst_cnt_d1 - {{23{1'b0}}, wt_req_size_d1};
+assign {mon_wt_req_burst_cnt_dec, wt_req_burst_cnt_dec} = wt_req_burst_cnt_d1 - {{25{1'b0}}, wt_req_size_d1};
 //assign wt_req_burst_cnt_w = layer_st ? {reg2dp_weight_bytes, 2'b0} : wt_req_burst_cnt_dec;
 //: my $atmm = NVDLA_MEMORY_ATOMIC_SIZE;
 //: my $k = int( log(${atmm}) / log(2) );
 //: print qq( assign wt_req_burst_cnt_w = layer_st ? reg2dp_weight_bytes[31:${k}] : wt_req_burst_cnt_dec;  );
 assign wt_req_size_addr_limit = layer_st ? (4'h8 - reg2dp_weight_addr_low[2:0]) : 4'h8;
-assign wt_req_size_w = ( {{23{1'b0}}, wt_req_size_addr_limit} > wt_req_burst_cnt_w) ? wt_req_burst_cnt_w[3:0] : wt_req_size_addr_limit;
+assign wt_req_size_w = ( {{25{1'b0}}, wt_req_size_addr_limit} > wt_req_burst_cnt_w) ? wt_req_burst_cnt_w[3:0] : wt_req_size_addr_limit;
 
 //: &eperl::flop("-nodeclare   -rval \"{4{1'b0}}\"  -en \"wt_req_reg_en_d0\" -d \"wt_req_size_w\" -q wt_req_size_d1");
-//: &eperl::flop("-nodeclare   -rval \"{27{1'b0}}\"  -en \"wt_req_reg_en_d0\" -d \"wt_req_burst_cnt_w\" -q wt_req_burst_cnt_d1");
+//: &eperl::flop("-nodeclare   -rval \"{29{1'b0}}\"  -en \"wt_req_reg_en_d0\" -d \"wt_req_burst_cnt_w\" -q wt_req_burst_cnt_d1");
 //: &eperl::flop("-nodeclare   -rval \"1'b0\"   -d \"is_nxt_running\" -q wt_req_stage_vld_d1");
 
 
 /////////////////// stage 2 ///////////////////
 assign wt_req_reg_en_d1 = wt_req_reg_en;
-assign wt_req_last_w = wt_req_stage_vld_d1 && (wt_req_burst_cnt_d1 == {{23{1'b0}}, wt_req_size_d1});
+assign wt_req_last_w = wt_req_stage_vld_d1 && (wt_req_burst_cnt_d1 == {{25{1'b0}}, wt_req_size_d1});
 //: my $atmm = NVDLA_MEMORY_ATOMIC_SIZE;
 //: my $atmbw = int(log(${atmm})/log(2));
 //: print qq(
@@ -865,7 +875,7 @@ assign {mon_wt_req_sum, wt_req_sum} = wt_data_onfly + wt_data_stored + wt_data_a
 //: my $cdma_addr_align = NVDLA_MEMORY_ATOMIC_SIZE;
 //: my $Cbuf_bank_fetch_bits = int( log($Cbuf_bank_size/$cdma_addr_align)/log(2) );
 //: print qq(
-//:     assign wt_req_overflow = is_running && (wt_req_sum > {weight_bank, ${Cbuf_bank_fetch_bits}'b0});
+//:     assign wt_req_overflow = is_running && (wt_req_sum > {2'd0, weight_bank, ${Cbuf_bank_fetch_bits}'b0});
 //: );
 assign wt_req_overflow_d3 = wt_req_overflow;
 
@@ -1278,8 +1288,8 @@ assign wt_cbuf_wr_idx_set = (layer_st & ~(|wt_cbuf_wr_idx));
 //:
 //: my $bank_depth_bits = int( log(NVDLA_CBUF_BANK_DEPTH)/log(2) + ${k});
 //: print qq(
-//: assign wt_cbuf_wr_idx_wrap = (wt_cbuf_wr_idx_inc == {weight_bank_end, ${bank_depth_bits}'b0});
-//: assign wt_cbuf_wr_idx_w = (clear_all | wt_cbuf_wr_idx_set | wt_cbuf_wr_idx_wrap) ? {data_bank_w, ${bank_depth_bits}'b0} : wt_cbuf_wr_idx_inc[(1  + 16 ) -1:0];
+//: assign wt_cbuf_wr_idx_wrap = (wt_cbuf_wr_idx_inc == {2'd0, weight_bank_end, ${bank_depth_bits}'b0});
+//: assign wt_cbuf_wr_idx_w = (clear_all | wt_cbuf_wr_idx_set | wt_cbuf_wr_idx_wrap) ? {2'd0, data_bank_w, ${bank_depth_bits}'b0} : wt_cbuf_wr_idx_inc[(1  + 16 ) -1:0];
 //: );
 //assign wt_cbuf_wr_data_w = nan_pass ? wt_cbuf_wr_data_ori_w : (wt_cbuf_wr_data_ori_w & wt_nan_mask);
 assign wt_cbuf_wr_data_w = wt_cbuf_wr_data_ori_w;
@@ -1462,7 +1472,7 @@ assign cdma2buf_wt_wr_en_w = wt_cbuf_wr_vld_w | wt_cbuf_flush_vld_w;
 //: } elsif($dmaif > $atmc) {
 //: } else {
 //:     print qq(
-//:     assign cdma2buf_wt_wr_addr_w = wt_cbuf_wr_vld_w ? wt_cbuf_wr_idx : ${half_bank_entry_num} + wt_cbuf_flush_idx;
+//:     assign cdma2buf_wt_wr_addr_w = wt_cbuf_wr_vld_w ? wt_cbuf_wr_idx : ${half_bank_entry_num} + wt_cbuf_flush_idx[16:0];
 //:     assign cdma2buf_wt_wr_data_w = wt_cbuf_wr_vld_w ? wt_cbuf_wr_data_w : 0;
 //:     );
 //: }
@@ -1677,7 +1687,7 @@ assign status_done_w = layer_st ? 1'b0 :
 //: my $atmk = NVDLA_MAC_ATOMIC_K_SIZE;
 //: my $atmkbw = int(log($atmk) / log(2));
 //: print qq(
-//:     assign normal_bpg = {byte_per_kernel, ${atmkbw}'b0};
+//:     assign normal_bpg = {2'd0, byte_per_kernel, ${atmkbw}'b0};
 //: );
 
 #ifdef NVDLA_WEIGHT_COMPRESSION_ENABLE
@@ -1735,12 +1745,12 @@ assign wmb_fetched_cnt_w = layer_st ? 22'b0 : wmb_fetched_cnt_inc;
 //: if($atmc > $dmaifbw) {
 //:     my $j = int( log( ${atmc}/${dmaifbw} )/log(2) );
 //:     print qq(
-//:         assign wt_satisfied = is_running & ({wt_fetched_cnt, ${k}'b0} >= wt_required_bytes) & ~(|wt_fetched_cnt[${j}-1:0]); // wt_fetched_cnt[0] means a complete entry 
+//:         assign wt_satisfied = is_running & ({3'd0, wt_fetched_cnt, ${k}'b0} >= wt_required_bytes) & ~(|wt_fetched_cnt[${j}-1:0]); // wt_fetched_cnt[0] means a complete entry 
 //:         assign wmb_satisfied = is_running & ({{{1{1'b0}}, wmb_fetched_cnt}, ${k}'d0, ${m}'b0} >= wmb_required_bits) & ~(|wmb_fetched_cnt[${j}-1:0]);// wmb_fetched_cnt[0] 
 //:     );
 //: } else {
 //:     print qq(
-//:         assign wt_satisfied = is_running & ({wt_fetched_cnt, ${k}'b0} >= wt_required_bytes);
+//:         assign wt_satisfied = is_running & ({3'd0,wt_fetched_cnt, ${k}'b0} >= wt_required_bytes);
 //:         assign wmb_satisfied = is_running & ({{{1{1'b0}}, wmb_fetched_cnt}, ${k}'d0, ${m}'b0} >= wmb_required_bits);
 //:     );
 //: }
@@ -1761,7 +1771,7 @@ assign status_update_wmb = (~required_valid) ? 1'b0 :
 //:     );
 //: } else {
 //:     print qq(
-//:         assign wt_satisfied = is_running & ({wt_fetched_cnt, ${k}'b0} >= wt_required_bytes); // wt_fetched_cnt[0]
+//:         assign wt_satisfied = is_running & ({3'd0, wt_fetched_cnt, ${k}'b0} >= wt_required_bytes); // wt_fetched_cnt[0]
 //:     );
 //: }
 
