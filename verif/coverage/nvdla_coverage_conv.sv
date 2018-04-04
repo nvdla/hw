@@ -613,6 +613,12 @@ class conv_cov_pool extends nvdla_coverage_base;
             bins off = {0};
             bins on  = {1};
         }
+        cp_rtl_padded_width_alignment:  coverpoint ((ral.nvdla.NVDLA_CDMA.D_ZERO_PADDING.PAD_LEFT.value[4:0] + ral.nvdla.NVDLA_CDMA.D_DATAIN_SIZE_0.DATAIN_WIDTH.value[12:0] + 64'h1 + ral.nvdla.NVDLA_CDMA.D_ZERO_PADDING.PAD_RIGHT.value[4:0]) % `NVDLA_MEMORY_ATOMIC_SIZE) {
+            bins ful[]  = {[0:`NVDLA_MEMORY_ATOMIC_SIZE-1]};
+        }
+        cr_pixel_format_rtl_yuv_padded_width_alignment: cross cp_pixel_format, cp_rtl_padded_width_alignment {
+            ignore_bins single_plane  = binsof(cp_pixel_format) intersect {[0:27]};
+        }
         cr_skip_data_rls_skip_weight_rls: cross cp_skip_data_rls, cp_skip_weight_rls;
         cr_data_reuse_weight_reuse:       cross cp_data_reuse, cp_weight_reuse;
         // ** precision conversion **
