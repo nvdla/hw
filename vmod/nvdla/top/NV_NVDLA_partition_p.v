@@ -10,7 +10,7 @@
 
 #include "NV_NVDLA_define.h"
 #include "../cmac/NV_NVDLA_CMAC.h"
-`include "../../include/NV_HWACC_NVDLA_tick_defines.vh"
+`include "NV_HWACC_NVDLA_tick_defines.vh"
 
 
 module NV_NVDLA_partition_p (
