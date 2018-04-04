@@ -112,6 +112,12 @@ class RunReport(object):
     def test_sts_report_gen(self):
         test_sts_file = self.regress_dir+'/test_status_'+self.regr_sts_data['start_time']+'.json'
         self.test_orgz_data = dict(sorted(self.test_orgz_data.items(), key=lambda x:x[0])) # resort by test_id
+        failed_test_db = {}
+        for idx,info in self.test_orgz_data.items():
+            if info['status'] != 'PASS':
+                failed_test_db[idx] = info
+        with open(self.regress_dir+'/failed_test_list.json', 'w') as fail_fh:
+            json.dump(failed_test_db, fail_fh, sort_keys=True, indent=4)
         with open(test_sts_file, 'w') as new_fh:
             json.dump(self.test_orgz_data, new_fh, sort_keys=True, indent=4)
         if self.publish:
