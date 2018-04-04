@@ -173,16 +173,56 @@ class RunCoverageReport(object):
                     cov_score = re.split('\s{2,}',cov_data[idx+2].strip())
                     for i in range(len(cov_item)):
                         cov_dict[cov_item[i]] = re.split('\s|\/', cov_score[i])
-                    cov_dict['FUNC'] = '{:.4f}'.format((int(cov_dict['ASSERT'][1])+int(cov_dict['GROUP'][1]))/(int(cov_dict['ASSERT'][2])+int(cov_dict['GROUP'][2])))
-                    cov_dict['CODE'] = '{:.4f}'.format((int(cov_dict['LINE'][1])+int(cov_dict['COND'][1])+int(cov_dict['TOGGLE'][1])+int(cov_dict['FSM'][1])+int(cov_dict['BRANCH'][1])) \
-                                                       / (int(cov_dict['LINE'][2])+int(cov_dict['COND'][2])+int(cov_dict['TOGGLE'][2])+int(cov_dict['FSM'][2])+int(cov_dict['BRANCH'][2])))
-                    regr_db['metrics_result']['line_coverage']       = float(cov_dict['LINE'][0])/100
-                    regr_db['metrics_result']['cond_coverage']       = float(cov_dict['COND'][0])/100
-                    regr_db['metrics_result']['toggle_coverage']     = float(cov_dict['TOGGLE'][0])/100
-                    regr_db['metrics_result']['fsm_coverage']        = float(cov_dict['FSM'][0])/100
-                    regr_db['metrics_result']['branch_coverage']     = float(cov_dict['BRANCH'][0])/100
-                    regr_db['metrics_result']['assert_coverage']     = float(cov_dict['ASSERT'][0])/100
-                    regr_db['metrics_result']['group_coverage']      = float(cov_dict['GROUP'][0])/100
+                    f_hit = 0
+                    f_all = 0
+                    c_hit = 0
+                    c_all = 0
+                    for key in cov_dict:
+                        if key in ['ASSERT', 'GROUP']:
+                            f_hit += int(cov_dict[key][1])
+                            f_all += int(cov_dict[key][2])
+                        elif key in ['LINE', 'COND', 'TOGGLE', 'FSM', 'BRANCH']:
+                            c_hit += int(cov_dict[key][1])
+                            c_all += int(cov_dict[key][2])
+                    #cov_dict['FUNC'] = '{:.4f}'.format((int(cov_dict['ASSERT'][1])+int(cov_dict['GROUP'][1]))/(int(cov_dict['ASSERT'][2])+int(cov_dict['GROUP'][2])))
+                    #cov_dict['CODE'] = '{:.4f}'.format((int(cov_dict['LINE'][1])+int(cov_dict['COND'][1])+int(cov_dict['TOGGLE'][1])+int(cov_dict['FSM'][1])+int(cov_dict['BRANCH'][1])) \
+                    #                                   / (int(cov_dict['LINE'][2])+int(cov_dict['COND'][2])+int(cov_dict['TOGGLE'][2])+int(cov_dict['FSM'][2])+int(cov_dict['BRANCH'][2])))
+                    if f_all != 0:
+                        cov_dict['FUNC'] =  '{:.4f}'.format(f_hit/f_all)
+                    else:
+                        cov_dict['FUNC'] =  0
+                    if c_all != 0:
+                        cov_dict['CODE'] =  '{:.4f}'.format(c_hit/c_all)
+                    else:
+                        cov_dict['CODE'] =  0
+                    if 'LINE' in cov_dict:
+                        regr_db['metrics_result']['line_coverage']       = float(cov_dict['LINE'][0])/100
+                    else:
+                        regr_db['metrics_result']['line_coverage']       = 0
+                    if 'COND' in cov_dict:
+                        regr_db['metrics_result']['cond_coverage']       = float(cov_dict['COND'][0])/100
+                    else:
+                        regr_db['metrics_result']['cond_coverage']       = 0
+                    if 'TOGGLE' in cov_dict:
+                        regr_db['metrics_result']['toggle_coverage']     = float(cov_dict['TOGGLE'][0])/100
+                    else:
+                        regr_db['metrics_result']['toggle_coverage']     = 0
+                    if 'FSM' in cov_dict:
+                        regr_db['metrics_result']['fsm_coverage']        = float(cov_dict['FSM'][0])/100
+                    else:
+                        regr_db['metrics_result']['fsm_coverage']        = 0
+                    if 'BRANCH' in cov_dict:
+                        regr_db['metrics_result']['branch_coverage']     = float(cov_dict['BRANCH'][0])/100
+                    else:
+                        regr_db['metrics_result']['branch_coverage']     = 0
+                    if 'ASSERT' in cov_dict:
+                        regr_db['metrics_result']['assert_coverage']     = float(cov_dict['ASSERT'][0])/100
+                    else:
+                        regr_db['metrics_result']['assert_coverage']     = 0
+                    if 'GROUP' in cov_dict:
+                        regr_db['metrics_result']['group_coverage']      = float(cov_dict['GROUP'][0])/100
+                    else:
+                        regr_db['metrics_result']['group_coverage']      = 0
                     regr_db['metrics_result']['code_coverage']       = float(cov_dict['CODE'])
                     regr_db['metrics_result']['functional_coverage'] = float(cov_dict['FUNC'])
                     with open(regr_sts_file, 'w') as fh:
