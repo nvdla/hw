@@ -67,27 +67,26 @@ wire dbuf_rd_en_new = ~(|data_left_mask) & dbuf_rd_en;
 
 
 //get signal for SDP
-wire cacc2sdp_valid_w;
 //: &eperl::flop("-q  dbuf_rd_valid  -d \"dbuf_rd_en_new\" -clk nvdla_core_clk -rst nvdla_core_rstn ");
 //: my $kk=CACC_DWIDTH_DIV_SWIDTH;
 //: print qq(
 //: reg [${kk}-1:0] rd_data_mask;   //which data to be fetched by sdp.
 //: wire [${kk}-1:0] rd_data_mask_pre; );
 //: if(${kk}>=2){
-//: print "assign rd_data_mask_pre = cacc2sdp_valid_w & cacc2sdp_ready ? {rd_data_mask[${kk}-2:0],rd_data_mask[${kk}-1]} : (cacc2sdp_valid & ~cacc2sdp_ready) ? {rd_data_mask[0], rd_data_mask[${kk}-1:1]} : rd_data_mask; \n";
+//: print "assign rd_data_mask_pre = cacc2sdp_valid & cacc2sdp_ready ? {rd_data_mask[${kk}-2:0],rd_data_mask[${kk}-1]} : rd_data_mask; \n";
 //: } else {
 //: print "assign rd_data_mask_pre = rd_data_mask; \n";
 //:}
 //: &eperl::flop("-nodeclare -q rd_data_mask -d rd_data_mask_pre -rval \" 'b1\" "); 
 //: print qq(
-//: wire [${kk}-1:0] data_left_mask_pre = dbuf_rd_en_new ? {${kk}{1'b1}} : (cacc2sdp_valid_w & cacc2sdp_ready) ? (data_left_mask<<1'b1) : (cacc2sdp_valid & ~cacc2sdp_ready) ? {1'b1,data_left_mask[${kk}-1:1]} : data_left_mask;
+//: wire [${kk}-1:0] data_left_mask_pre = dbuf_rd_en_new ? {${kk}{1'b1}} : (cacc2sdp_valid & cacc2sdp_ready) ? (data_left_mask<<1'b1) : data_left_mask;
 //: );
 //: &eperl::flop("-nodeclare -q data_left_mask   -d data_left_mask_pre "); 
-assign cacc2sdp_valid_w     = (|data_left_mask)&cacc2sdp_ready;
-assign dbuf_rd_ready        = ~(|data_left_mask);
+wire cacc2sdp_valid       = (|data_left_mask);
+wire dbuf_rd_ready        = ~(|data_left_mask);
 //: my $t1="";
 //: my $kk= CACC_SDP_DATA_WIDTH;
-//: print "wire [${kk}-1:0] cacc2sdp_pd_data_w= ";
+//: print "wire [${kk}-1:0] cacc2sdp_pd_data= ";
 //: for (my $i=0; $i<CACC_DWIDTH_DIV_SWIDTH; $i++){
 //: $t1 .= "dbuf_rd_data[($i+1)*${kk}-1:$i*${kk}]&{${kk}{rd_data_mask[${i}]}} |";
 //: }
@@ -100,12 +99,13 @@ wire dbuf_rd_layer_end_latch_w = dbuf_rd_layer_end? 1'b1 : ~(|data_left_mask) ? 
 //: &eperl::flop("-q dbuf_rd_layer_end_latch -d dbuf_rd_layer_end_latch_w -nodeclare");
 
 
-//regout to SDP
-//: my $kk=CACC_SDP_DATA_WIDTH;
-//: &eperl::flop("-q cacc2sdp_valid -d cacc2sdp_valid_w");
-//: &eperl::flop("-wid ${kk} -q cacc2sdp_pd_data -d cacc2sdp_pd_data_w");
+////regout to SDP
+////: my $kk=CACC_SDP_DATA_WIDTH;
+////: &eperl::flop("-q cacc2sdp_valid -d cacc2sdp_valid_w");
+////: &eperl::flop("-wid ${kk} -q cacc2sdp_pd_data -d cacc2sdp_pd_data_w");
+wire   last_data;
 wire   cacc2sdp_batch_end   = 1'b0;
-wire   cacc2sdp_layer_end   = dbuf_rd_layer_end_latch&&(~(|data_left_mask))&cacc2sdp_valid&cacc2sdp_ready; //data_left_mask=0;
+wire   cacc2sdp_layer_end   = dbuf_rd_layer_end_latch&last_data&cacc2sdp_valid&cacc2sdp_ready; //data_left_mask=0;
 assign cacc2sdp_pd[CACC_SDP_DATA_WIDTH-1:0] =   cacc2sdp_pd_data;
 assign cacc2sdp_pd[CACC_SDP_WIDTH-2]        =   cacc2sdp_batch_end;
 assign cacc2sdp_pd[CACC_SDP_WIDTH-1]        =   cacc2sdp_layer_end;
@@ -124,7 +124,7 @@ assign cacc2glb_done_intr_pd = cacc_done_intr;
 
 ///// generate credit signal
 assign accu2sc_credit_size = 3'h1;
-wire last_data = (data_left_mask=={1'b1,{CACC_DWIDTH_DIV_SWIDTH-1{1'b0}}});
+assign last_data = (data_left_mask=={1'b1,{CACC_DWIDTH_DIV_SWIDTH-1{1'b0}}});
 //: &eperl::flop(" -q  accu2sc_credit_vld  -d \"cacc2sdp_valid & cacc2sdp_ready & last_data\" -clk nvdla_core_clk -rst nvdla_core_rstn -rval 0"); 
 // spyglass enable_block NoWidthInBasedNum-ML
 
