@@ -66,7 +66,7 @@ if ($diff and -e $tree_make) {
     system ("cp $cleanme $cleaned");
     unlink $tree_make;
     print "="x40,"\n";
-    print "[TMAKE]: Force clean your tree.$tree_make and $outdir are deleted, please use make to re-generate $tree_make first\n";
+    print "[TMAKE]: Your tree was detected to be out of date.  Deleting tree.make and outdir.  Please use make to regenerate tree.make and then rerun tmake";
     print "="x40,"\n";
     exit 0;
 }
