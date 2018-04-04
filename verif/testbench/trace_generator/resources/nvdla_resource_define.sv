@@ -56,7 +56,7 @@ import "DPI-C" function void FpIntToFloat_ref(input bit [15:0] input_a, chandle 
     data dist { [12'h0:12'hF]:/w0, [12'h10:12'hFF]:/w1, [12'h100:12'hEFF]:/w2, [12'hF00:12'hFEF]:/w3, [12'hFF0:12'hFFF]:/w4};
 
 `define weight_dist_10bit(data, w0=5, w1=25, w2=40, w3=25, w4=5) \
-    data dist { [10'h0:10'h7]:/w0, [10'h8:10'hF]:/w1, [10'h10:10'h2F]:/w2, [10'h30:10'h37]:/w3, [10'h38:10'h3F]:/w4};
+    data dist { [10'h0:10'hF]:/w0, [10'h10:10'hFF]:/w1, [10'h100:10'h2FF]:/w2, [10'h300:10'h37F]:/w3, [10'h380:10'h3FF]:/w4};
 
 `define weight_dist_8bit(data, w0=5, w1=25, w2=40, w3=25, w4=5) \
     data dist { [8'h0:8'hF]:/w0, [8'h10:8'h3F]:/w1, [8'h40:8'hBF]:/w2, [8'hC0:8'hEF]:/w3, [8'hF0:8'hFF]:/w4};
