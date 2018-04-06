@@ -637,7 +637,7 @@ wire            mon_dat_entry_avl_w;
 wire            mon_dat_entry_end_inc_wrap;
 wire            mon_dat_entry_st_inc_wrap;
 wire      [3:0] mon_dat_out_pra_vld;
-wire            mon_dat_req_addr_wrap;
+wire      [1:0] mon_dat_req_addr_wrap;
 wire   [CBUF_ENTRY_BITS-1:0] mon_dat_rsp_l0_sft;
 wire   [CBUF_ENTRY_BITS-1:0] mon_dat_rsp_l1_sft;
 wire   [CBUF_ENTRY_BITS-1:0] mon_dat_rsp_l2_sft;
@@ -1276,6 +1276,7 @@ wire sc2buf_dat_rd_next1_en = 1'b0;
 `endif
 `ifdef CBUF_BANK_RAM_CASE2
 wire [CBUF_RD_DATA_SHIFT_WIDTH-1:0] sc2buf_dat_rd_shift_w;
+wire mon_sc2buf_dat_rd_shift_w;
 wire sc2buf_dat_rd_next1_en_w;
 wire [CBUF_ADDR_WIDTH-1:0] dat_req_addr_last_plus1;
 wire [CBUF_ADDR_WIDTH-1:0] dat_req_addr_last_plus1_real;
@@ -1301,7 +1302,7 @@ assign dat_req_addr_last_plus1_real  = is_dat_req_addr_last_plus1_wrap ? dat_req
 //then csc need read 2 entries simultaneously, then shift out unneeded part.
 //this address jump should not happened in the begining of a stripe OP.
 assign sc2buf_dat_rd_next1_en_w = is_img_d1[10]&&sc2buf_dat_rd_en_w&&(pixel_x_byte_stride > CSC_ENTRY_HEX)&&(dat_req_addr_w != dat_req_addr_last_plus1_real)
-                                    &&(pixel_w_cnt_plus1_d1<dat_req_pipe_bytes)&&(~stripe_begin_disable_jump);
+                                    &&(pixel_w_cnt_plus1_d1<dat_req_pipe_bytes[LOG2_ATOMC:0])&&(~stripe_begin_disable_jump);
 assign pixel_w_cnt_plus1 = pixel_w_cnt[LOG2_ATOMC-1:0]+1'b1;
 
 //for no y_ext cases,the entry read form cbuf must make sure low byte aligned. High Bytes may dropped, low bytes will always be used.
@@ -1316,10 +1317,11 @@ assign pixel_w_cnt_plus1 = pixel_w_cnt[LOG2_ATOMC-1:0]+1'b1;
 //                                    {CBUF_RD_DATA_SHIFT_WIDTH{1'd0}};  //read data, no need to shift
                                
 //only when pixel_stride>entry and fetched more data than needed, then need shift
-assign sc2buf_dat_rd_shift_w = sc2buf_dat_rd_next1_en_w ? pixel_w_cnt_plus1_d1[LOG2_ATOMC-1:0]+ CSC_ATOMC_HEX - dat_req_pipe_bytes:   //image read jump
-                //image read no jump, not image's start,fetch more than needed,not y_ext,then not all bytes are used,need shift out low bytes
-                is_img_d1[10]&&(pixel_w_cnt_plus1_d1[LOG2_ATOMC:0]> dat_req_pipe_bytes)&&(~stripe_begin_disable_jump)&&(pixel_x_byte_stride > CSC_ENTRY_HEX)? 
-                pixel_w_cnt_plus1_d1[LOG2_ATOMC:0] - dat_req_pipe_bytes  :  {CBUF_RD_DATA_SHIFT_WIDTH{1'd0}};  
+assign {mon_sc2buf_dat_rd_shift_w, sc2buf_dat_rd_shift_w} = 
+        sc2buf_dat_rd_next1_en_w ? pixel_w_cnt_plus1_d1[LOG2_ATOMC-1:0]+ CSC_ATOMC_HEX - dat_req_pipe_bytes:   //image read jump
+        //image read no jump, not image's start,fetch more than needed,not y_ext,then not all bytes are used,need shift out low bytes
+        is_img_d1[10]&&(pixel_w_cnt_plus1_d1[LOG2_ATOMC:0]> dat_req_pipe_bytes[LOG2_ATOMC:0])&&(~stripe_begin_disable_jump)&&(pixel_x_byte_stride > CSC_ENTRY_HEX)? 
+        pixel_w_cnt_plus1_d1[LOG2_ATOMC:0] - dat_req_pipe_bytes[LOG2_ATOMC:0]  :  {CBUF_RD_DATA_SHIFT_WIDTH{1'd0}};  
 
 //: my $kk= CBUF_RD_DATA_SHIFT_WIDTH;
 //: &eperl::flop("-d sc2buf_dat_rd_next1_en_w -q sc2buf_dat_rd_next1_en");
