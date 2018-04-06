@@ -46,36 +46,48 @@ GetOptions (
 ## Option 
 #=============================
 push @build, "all" unless @build;
-my $tree_make = "tree.make";
-@projects = get_projects($tree_make) unless @projects;
 
 #=============================
 ## Global Variables
 #=============================
 my $cfg = "tools/etc/build.config";
-
+my $tree_make = "tree.make";
 my $cleanme = ".cleanme";
 my $cleaned = ".cleaned";
 
 #=============================
 ## Clean Build
 #=============================
-my $diff = `diff $cleanme $cleaned 2>&1`;
-if ($diff and -e $tree_make) {
-    system ("rm outdir -rf");
-    system ("cp $cleanme $cleaned");
-    unlink $tree_make;
-    print "="x40,"\n";
-    print "[TMAKE]: Your tree was detected to be out of date.  Deleting tree.make and outdir.  Please use make to regenerate tree.make and then rerun tmake";
-    print "="x40,"\n";
+if (-e $tree_make) {
+    # an old tree
+    if (-e $cleaned) {
+        my $diff = `diff $cleanme $cleaned 2>&1`;
+        if ($diff) {
+            system ("rm outdir -rf");
+            system ("cp $cleanme $cleaned");
+            unlink $tree_make;
+            print "="x40,"\n";
+            print "[TMAKE]: Your tree was detected to be out of date.  Deleting tree.make and outdir.  Please use make to regenerate tree.make and then rerun tmake";
+            print "="x40,"\n";
+            exit 0;
+        }
+    } else {
+        system ("cp $cleanme $cleaned");
+    }
+} else {
+    print "[TMAKE]: $tree_make does not exist, please run make to generate a $tree_make first\n";
     exit 0;
 }
  
 #=============================
+## Get Projects
+#=============================
+@projects = get_projects($tree_make) unless @projects;
+
+#=============================
 ## MAIN
 #=============================
 my $tree = LoadFile($cfg);
-croak "$tree_make does not exist, please run make first" unless -e $tree_make;
 
 if ($list) {
     print "Use -build <task> to specify the task you want to build\n";
