@@ -35,6 +35,7 @@ __DESCRIPTION__ = '''
 
 class RunCoverageReport(object):
     project        = ''
+    urg_exe        = ''
     tb             = 'trace_player'
     tb_cm_dir      = 'simv.vdb'
     test_cm_dir    = 'test.vdb'
@@ -74,6 +75,11 @@ class RunCoverageReport(object):
         if dry_run is not None:
             self.dry_run = dry_run
         self.tree_root = self.__get_abs_path_of_tree_root()
+        env = self.__get_env_from_file(os.path.join(self.tree_root, 'tree.make'), ':=')
+        if 'VCS_HOME' in env:
+            self.urg_exe = os.path.join(env['VCS_HOME'], 'bin/urg') # from tree.make
+        else:
+            self.urg_exe = 'urg' # from shell ~PATH~
 
     def run(self):
         if not self.gen_report_only:
@@ -97,13 +103,13 @@ class RunCoverageReport(object):
             self.__run_cmd(cmd)
         
         # merged vdb
-        cmd  = 'urg -dir %s -f test_vdb.list -dbname %s' % (ip_vdb, self.merged_cm_dir)
+        cmd  = '%s -dir %s -f test_vdb.list -dbname %s' % (self.urg_exe, ip_vdb, self.merged_cm_dir)
         cmd += ' -group ratio -group merge_across_scopes -parallel -parallel_split 10 -maxjobs 100'
         cmd += ' -show tests -nocheck -noreport'
         self.__run_cmd(cmd)
 
     def __gen_coverage_report(self):
-        cmd = 'urg -group ratio -show ratios -format both -group merge_across_scopes -dir %s -report %s ' % (self.merged_cm_dir, self.report_dir)
+        cmd = '%s -group ratio -show ratios -format both -group merge_across_scopes -dir %s -report %s ' % (self.urg_exe, self.merged_cm_dir, self.report_dir)
         if len(self.elfile) > 0:
             cmd += ' '.join(list(map(lambda x: ' -elfile '+x, self.elfile)))
         self.__run_cmd(cmd)
@@ -261,6 +267,15 @@ class RunCoverageReport(object):
     
     def __get_abs_path_of_tree_root(self):
         return os.path.abspath(self.__get_ref_path_to_tree_root())
+
+    def __get_env_from_file(self, fname, sep):
+        env = {}
+        pat = re.compile(r'^\s*(?P<left>\S+)\s+' + sep + r'\s*(?P<right>\S+)\s*$')
+        with open(fname) as file:
+            for line in file:
+                m = pat.match(line)
+                if m: env[m.group('left')] = m.group('right')
+        return env
 
 def main():
     parser = argparse.ArgumentParser(description = __DESCRIPTION__)
