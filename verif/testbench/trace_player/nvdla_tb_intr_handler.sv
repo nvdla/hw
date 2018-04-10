@@ -318,7 +318,21 @@ task nvdla_tb_intr_handler::intr_process();
             end
             exp_id = item.interrupt_id.substr(item.interrupt_id.len-2, item.interrupt_id.len-1);
             if(exp_id != act_id) begin
-                `uvm_fatal(tID, $sformatf("Group of INTR mismatch, exp:%0d, act:%0d", exp_id, act_id))
+                interrupt_command item_pre;
+                `uvm_warning(tID, $sformatf("Group of INTR mismatch, exp:%0d, act:%0d, checking next exp INTR ID", exp_id, act_id))
+                $cast(item_pre, item.clone());
+                item = blk_cmd[blk_name].pop_front();
+                if(item == null) begin
+                    `uvm_fatal(tID, $sformatf("No expected INTR from %0s", fld_name))
+                end
+                exp_id = item.interrupt_id.substr(item.interrupt_id.len-2, item.interrupt_id.len-1);
+                if(exp_id != act_id) begin
+                    `uvm_fatal(tID, $sformatf("Group of INTR mismatch, exp:%0d, act:%0d", exp_id, act_id))
+                end
+                else begin
+                    // The sencond intr item matches, PUSH_FRONT the first mismatch item
+                    blk_cmd[blk_name].push_front(item_pre);
+                end
             end
             evt_trigger(is_rm, item);
             // write to interrupt scoreboard
