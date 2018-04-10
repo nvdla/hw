@@ -370,7 +370,7 @@ wire           cdma2buf_wt_wr_en;
 //wire           cdma2buf_wt_wr_hsel;
 wire    [CSC_ENTRIES_NUM_WIDTH-1:0] cdma2sc_dat_entries;
 wire           cdma2sc_dat_pending_ack;
-wire    [11:0] cdma2sc_dat_slices;
+wire    [13:0] cdma2sc_dat_slices;
 wire           cdma2sc_dat_updt;
 wire     [8:0] cdma2sc_wmb_entries;
 wire    [CSC_ENTRIES_NUM_WIDTH-1:0] cdma2sc_wt_entries;
@@ -400,7 +400,7 @@ wire           sc2buf_wt_rd_en;
 wire           sc2buf_wt_rd_valid;
 wire    [CSC_ENTRIES_NUM_WIDTH-1:0] sc2cdma_dat_entries;
 wire           sc2cdma_dat_pending_req;
-wire    [11:0] sc2cdma_dat_slices;
+wire    [13:0] sc2cdma_dat_slices;
 wire           sc2cdma_dat_updt;
 wire     [8:0] sc2cdma_wmb_entries;
 wire    [CSC_ENTRIES_NUM_WIDTH-1:0] sc2cdma_wt_entries;
@@ -735,10 +735,10 @@ NV_NVDLA_csc u_NV_NVDLA_csc (
   ,.csc2csb_resp_pd               (csc2csb_resp_pd[33:0])          //|> o
   ,.cdma2sc_dat_updt              (cdma2sc_dat_updt)               //|< w
   ,.cdma2sc_dat_entries           (cdma2sc_dat_entries[CSC_ENTRIES_NUM_WIDTH-1:0])      //|< w
-  ,.cdma2sc_dat_slices            (cdma2sc_dat_slices[11:0])       //|< w
+  ,.cdma2sc_dat_slices            (cdma2sc_dat_slices[13:0])       //|< w
   ,.sc2cdma_dat_updt              (sc2cdma_dat_updt)               //|> w
   ,.sc2cdma_dat_entries           (sc2cdma_dat_entries[CSC_ENTRIES_NUM_WIDTH-1:0])      //|> w
-  ,.sc2cdma_dat_slices            (sc2cdma_dat_slices[11:0])       //|> w
+  ,.sc2cdma_dat_slices            (sc2cdma_dat_slices[13:0])       //|> w
   ,.pwrbus_ram_pd                 (pwrbus_ram_pd[31:0])            //|< i
   ,.sc2buf_dat_rd_en              (sc2buf_dat_rd_en)               //|> w
   ,.sc2buf_dat_rd_addr            (sc2buf_dat_rd_addr[CBUF_ADDR_WIDTH-1:0])       //|> w

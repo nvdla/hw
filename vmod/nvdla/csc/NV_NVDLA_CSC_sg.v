@@ -67,7 +67,7 @@ output  dp2reg_done;
 
 input        cdma2sc_dat_updt;     /* data valid */
 input [CSC_ENTRIES_NUM_WIDTH-1:0] cdma2sc_dat_entries;
-input [11:0] cdma2sc_dat_slices;
+input [13:0] cdma2sc_dat_slices;
 
 input        cdma2sc_wt_updt;      /* data valid */
 input [13:0] cdma2sc_wt_kernels;
@@ -830,7 +830,7 @@ assign credit_ready = ~sg2dat_channel_end | (credit_cnt >= credit_req_size);
 //================  Non-SLCG clock domain ================//
 assign dat_release = pkg_adv & pkg_layer_end_w & ~reg2dp_skip_data_rls;
 assign dat_reuse_release = is_idle & reg2dp_op_en & (~reg2dp_data_reuse | is_mode_change) & (|last_slices);
-assign slices_avl_add = cdma2sc_dat_updt ? {2'b0,cdma2sc_dat_slices} : 14'b0;
+assign slices_avl_add = cdma2sc_dat_updt ? cdma2sc_dat_slices : 14'b0;
 assign slices_avl_sub = dat_release ? rls_slices : dat_reuse_release ? last_slices[13:0] : 14'b0;
 assign {mon_slices_avl_w, slices_avl_w} = (dat_pending_req) ? 14'b0 : (slices_avl + slices_avl_add - slices_avl_sub);
 assign wt_release = pkg_adv & ~reg2dp_skip_weight_rls & pkg_group_end_w;

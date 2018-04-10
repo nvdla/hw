@@ -151,7 +151,6 @@ reg             valid_d3;
 //:     $k = $bit_width_list[$i];
 //: 
 //:     print "always @ (*) begin\n";
-//:     print "    ${name} = ${width}'b0;\n";
 //:     print "    case(vec_sum_${series_no}_d1)\n";
 //: 
 //:     for($j = 1; $j <= $i + 1; $j ++) {
@@ -159,6 +158,7 @@ reg             valid_d3;
 //:         $end = ($j - 1) * $width;
 //:         print "        ${k}'d${j}: $name = data_d1[${st}:${end}];\n";
 //:     }
+//:     print "    default: $name= ${width}'b0;\n";
 //:     print "    endcase\n";
 //:     print "end;\n\n";
 //: }

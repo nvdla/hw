@@ -103,10 +103,10 @@ output        csc2csb_resp_valid;  /* data valid */
 output [33:0] csc2csb_resp_pd;     /* pkt_id_width=1 pkt_widths=33,33  */
 input        cdma2sc_dat_updt;     /* data valid */
 input [CSC_ENTRIES_NUM_WIDTH-1:0] cdma2sc_dat_entries;
-input [11:0] cdma2sc_dat_slices;
+input [13:0] cdma2sc_dat_slices;
 output        sc2cdma_dat_updt;     /* data valid */
 output [CSC_ENTRIES_NUM_WIDTH-1:0] sc2cdma_dat_entries;
-output [11:0] sc2cdma_dat_slices;
+output [13:0] sc2cdma_dat_slices;
 input [31:0] pwrbus_ram_pd;
 output        sc2buf_dat_rd_en;    /* data valid */
 output [CBUF_ADDR_WIDTH-1:0] sc2buf_dat_rd_addr;
@@ -281,7 +281,7 @@ NV_NVDLA_CSC_sg u_sg (
   ,.dp2reg_done                   (dp2reg_done)                     //|> w
   ,.cdma2sc_dat_updt              (cdma2sc_dat_updt)                //|< i
   ,.cdma2sc_dat_entries           (cdma2sc_dat_entries[CSC_ENTRIES_NUM_WIDTH-1:0])       //|< i
-  ,.cdma2sc_dat_slices            (cdma2sc_dat_slices[11:0])        //|< i
+  ,.cdma2sc_dat_slices            (cdma2sc_dat_slices[13:0])        //|< i
   ,.cdma2sc_wt_updt               (cdma2sc_wt_updt)                 //|< i
   ,.cdma2sc_wt_kernels            (cdma2sc_wt_kernels[13:0])        //|< i
   ,.cdma2sc_wt_entries            (cdma2sc_wt_entries[CSC_ENTRIES_NUM_WIDTH-1:0])        //|< i
@@ -395,10 +395,10 @@ NV_NVDLA_CSC_dl u_dl (
   ,.sc2cdma_dat_pending_req       (sc2cdma_dat_pending_req)         //|< o
   ,.cdma2sc_dat_updt              (cdma2sc_dat_updt)                //|< i
   ,.cdma2sc_dat_entries           (cdma2sc_dat_entries[CSC_ENTRIES_NUM_WIDTH-1:0])       //|< i
-  ,.cdma2sc_dat_slices            (cdma2sc_dat_slices[11:0])        //|< i
+  ,.cdma2sc_dat_slices            (cdma2sc_dat_slices[13:0])        //|< i
   ,.sc2cdma_dat_updt              (sc2cdma_dat_updt)                //|> o
   ,.sc2cdma_dat_entries           (sc2cdma_dat_entries[CSC_ENTRIES_NUM_WIDTH-1:0])       //|> o
-  ,.sc2cdma_dat_slices            (sc2cdma_dat_slices[11:0])        //|> o
+  ,.sc2cdma_dat_slices            (sc2cdma_dat_slices[13:0])        //|> o
   ,.sc2buf_dat_rd_en              (sc2buf_dat_rd_en)                //|> o
   ,.sc2buf_dat_rd_addr            (sc2buf_dat_rd_addr[CBUF_ADDR_WIDTH-1:0])        //|> o
   ,.sc2buf_dat_rd_shift           (sc2buf_dat_rd_shift)
