@@ -401,6 +401,7 @@ class nvdla_cdma_resource extends nvdla_base_resource;
     extern constraint c_ias_conv_stride;
     extern constraint c_ias_reuse_keep_previouse_setting;
     extern constraint c_ias_dut_por_requirement;
+    extern constraint c_ias_cbuf_size_limit_por_requirement;
     // sim constraint
     extern constraint c_sim_feature_none_zero_rate;
     extern constraint c_sim_datain_dist;
@@ -1048,6 +1049,10 @@ constraint nvdla_cdma_resource::c_ias_dut_por_requirement {
     weight_ram_type == weight_ram_type_MCIF;
     batches         == 0;
 }
+constraint nvdla_cdma_resource::c_ias_cbuf_size_limit_por_requirement {
+    // input cube size must be no greater than 31 cbuffer bank size 
+    (datain_width+1)*(datain_height+1)*(datain_channel+1) <= 64'h1f000;
+}
 
 // sim constraint
 constraint nvdla_cdma_resource::c_sim_feature_none_zero_rate {
@@ -1120,8 +1125,6 @@ constraint nvdla_cdma_resource::c_sim_input_cube_size_large {
     datain_width   inside {[0:'h1FFF]};
     datain_height  inside {[0:'h1FFF]};
     datain_channel inside {[0:'h1FFF]};
-    (datain_width+1)*(datain_height+1)*(datain_channel+1)    > 64'h2_0000;
-    (datain_width+1)*(datain_height+1)*(datain_channel+1)    <= 64'h20_0000;
 }
 
 constraint nvdla_cdma_resource::c_sim_input_cube_size_normal {
