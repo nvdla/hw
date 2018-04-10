@@ -2190,6 +2190,8 @@ if (1 == planar_num) {
         p1_line_st = 17 - p1_line_st_minus;         //for pitch linear, unit is burst 
         for (height_iter=0; height_iter<cube_height; height_iter++) {       // read data line by line
             planar0_bytes_fetched = planar1_bytes_fetched = 0;
+            data_entry_idx_planed_ += cbuf_entry_per_line;
+            WaitUntilCBufferHasEnoughFreeDataEntry();
             cslDebug((50, "pitch linear, planar0_to_fetch_bytes=0x%x planar1_to_fetch_bytes=0x%x height_iter=0x%x\n", planar0_to_fetch_bytes, planar1_to_fetch_bytes, height_iter));
             while ((planar0_bytes_fetched < planar0_to_fetch_bytes) || ((2 == planar_num) && (planar1_bytes_fetched < planar1_to_fetch_bytes))) {
                 // Send one read transaction for planar0
@@ -2226,7 +2228,7 @@ if (1 == planar_num) {
             }
         }
     }
-    data_entry_idx_planed_ += cbuf_entry_per_line * cube_height;
+    //data_entry_idx_planed_ += cbuf_entry_per_line * cube_height;
 }
 
 void NV_NVDLA_cdma::ImageConvDataResponseSequencerCommon() {
