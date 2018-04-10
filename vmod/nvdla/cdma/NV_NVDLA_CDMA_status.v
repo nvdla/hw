@@ -53,27 +53,27 @@ input  nvdla_core_rstn;
 
 input        dc2status_dat_updt;
 input [14:0] dc2status_dat_entries;
-input [11:0] dc2status_dat_slices;
+input [13:0] dc2status_dat_slices;
 
 #ifdef NVDLA_WINOGRAD_ENABLE
 input        wg2status_dat_updt; 
 input [14:0] wg2status_dat_entries;
-input [11:0] wg2status_dat_slices;
+input [13:0] wg2status_dat_slices;
 #endif
 
 input        img2status_dat_updt; 
 input [14:0] img2status_dat_entries;
-input [11:0] img2status_dat_slices;
+input [13:0] img2status_dat_slices;
 
 input        sc2cdma_dat_updt;
 input [14:0] sc2cdma_dat_entries;
-input [11:0] sc2cdma_dat_slices;
+input [13:0] sc2cdma_dat_slices;
 
 output        cdma2sc_dat_updt;
 output [14:0] cdma2sc_dat_entries;
-output [11:0] cdma2sc_dat_slices;
+output [13:0] cdma2sc_dat_slices;
 
-output [11:0] status2dma_valid_slices;
+output [13:0] status2dma_valid_slices;
 output [14:0] status2dma_free_entries;
 output [14:0] status2dma_wr_idx;
 
@@ -109,15 +109,15 @@ reg    [14:0] dat_entries_d6;
 reg    [14:0] dat_entries_d7;
 reg    [14:0] dat_entries_d8;
 reg    [14:0] dat_entries_d9;
-reg    [11:0] dat_slices_d1;
-reg    [11:0] dat_slices_d2;
-reg    [11:0] dat_slices_d3;
-reg    [11:0] dat_slices_d4;
-reg    [11:0] dat_slices_d5;
-reg    [11:0] dat_slices_d6;
-reg    [11:0] dat_slices_d7;
-reg    [11:0] dat_slices_d8;
-reg    [11:0] dat_slices_d9;
+reg    [13:0] dat_slices_d1;
+reg    [13:0] dat_slices_d2;
+reg    [13:0] dat_slices_d3;
+reg    [13:0] dat_slices_d4;
+reg    [13:0] dat_slices_d5;
+reg    [13:0] dat_slices_d6;
+reg    [13:0] dat_slices_d7;
+reg    [13:0] dat_slices_d8;
+reg    [13:0] dat_slices_d9;
 reg           dat_updt_d1;
 reg           dat_updt_d2;
 reg           dat_updt_d3;
@@ -134,14 +134,14 @@ reg     [5:0] real_bank;
 reg    [14:0] status2dma_free_entries;
 reg           status2dma_fsm_switch;
 reg    [14:0] status2dma_valid_entries;
-reg    [11:0] status2dma_valid_slices;
+reg    [13:0] status2dma_valid_slices;
 reg    [14:0] status2dma_wr_idx;
 reg           wt2status_done_d1;
 reg     [1:0] wt_done_intr;
 wire          dat2status_done;
 wire    [1:0] dat_done_intr_w;
 wire   [14:0] dat_entries_d0;
-wire   [11:0] dat_slices_d0;
+wire   [13:0] dat_slices_d0;
 wire          dat_updt_d0;
 wire          dc2status_done;
 wire          dc2status_pend;
@@ -158,12 +158,12 @@ wire          mon_status2dma_wr_idx_inc_wrap;
 wire          pending_ack_w;
 wire          real_bank_reg_en;
 wire    [5:0] real_bank_w;
-wire   [11:0] slices_add;
-wire   [11:0] slices_sub;
+wire   [13:0] slices_add;
+wire   [13:0] slices_sub;
 wire   [14:0] status2dma_free_entries_w;
 wire          status2dma_fsm_switch_w;
 wire   [14:0] status2dma_valid_entries_w;
-wire   [11:0] status2dma_valid_slices_w;
+wire   [13:0] status2dma_valid_slices_w;
 wire   [15:0] status2dma_wr_idx_inc;
 wire   [14:0] status2dma_wr_idx_inc_wrap;
 wire          status2dma_wr_idx_overflow;
@@ -243,15 +243,15 @@ assign {mon_status2dma_valid_entries_w,
         status2dma_valid_entries_w} = (pending_ack & pending_req) ? 15'b0 :
                                      status2dma_valid_entries + entries_add - entries_sub;
 
-assign slices_add = ({12{dc2status_dat_updt}} & dc2status_dat_slices) |
+assign slices_add = ({14{dc2status_dat_updt}} & dc2status_dat_slices) |
 #ifdef NVDLA_WINOGRAD_ENABLE
-                    ({12{wg2status_dat_updt}} & wg2status_dat_slices) |
+                    ({14{wg2status_dat_updt}} & wg2status_dat_slices) |
 #endif
-                    ({12{img2status_dat_updt}} & img2status_dat_slices);
+                    ({14{img2status_dat_updt}} & img2status_dat_slices);
 
-assign slices_sub = sc2cdma_dat_updt ? sc2cdma_dat_slices : 12'b0;
+assign slices_sub = sc2cdma_dat_updt ? sc2cdma_dat_slices : 14'b0;
 assign {mon_status2dma_valid_slices_w,
-        status2dma_valid_slices_w} = (pending_ack & pending_req) ?  13'b0 :
+        status2dma_valid_slices_w} = (pending_ack & pending_req) ?  15'b0 :
                                     status2dma_valid_slices + slices_add - slices_sub;
 //: my $bank_depth = NVDLA_CBUF_BANK_DEPTH ;
 //: my $bankdep_bw = int( log($bank_depth)/log(2) );
@@ -274,7 +274,7 @@ assign status2dma_wr_idx_w = (pending_ack & pending_req) ? 15'b0 :
 
 //: &eperl::flop("-nodeclare   -rval \"1'b1\"   -d \"layer_end_w\" -q layer_end");
 //: &eperl::flop("-nodeclare   -rval \"{15{1'b0}}\"  -en \"update_all\" -d \"status2dma_valid_entries_w\" -q status2dma_valid_entries");
-//: &eperl::flop("-nodeclare   -rval \"{12{1'b0}}\"  -en \"update_all\" -d \"status2dma_valid_slices_w\" -q status2dma_valid_slices");
+//: &eperl::flop("-nodeclare   -rval \"{14{1'b0}}\"  -en \"update_all\" -d \"status2dma_valid_slices_w\" -q status2dma_valid_slices");
 //: &eperl::flop("-nodeclare   -rval \"{15{1'b0}}\"  -en \"entries_reg_en\" -d \"status2dma_free_entries_w\" -q status2dma_free_entries");
 //: &eperl::flop("-nodeclare   -rval \"{15{1'b0}}\"  -en \"update_all\" -d \"status2dma_wr_idx_w\" -q status2dma_wr_idx");
 //: &eperl::flop("-nodeclare   -rval \"{6{1'b0}}\"  -en \"real_bank_reg_en\" -d \"real_bank_w\" -q real_bank");
@@ -291,7 +291,7 @@ assign cdma2sc_dat_pending_ack = pending_ack;
 //:     my $j = $i + 1;
 //:     &eperl::flop("-nodeclare   -rval \"1'b0\"   -d \"dat_updt_d${i}\" -q dat_updt_d${j}");
 //:     &eperl::flop("-nodeclare   -rval \"{15{1'b0}}\"  -en \"dat_updt_d${i}\" -d \"dat_entries_d${i}\" -q dat_entries_d${j}");
-//:     &eperl::flop("-nodeclare   -rval \"{12{1'b0}}\"  -en \"dat_updt_d${i}\" -d \"dat_slices_d${i}\" -q dat_slices_d${j}");
+//:     &eperl::flop("-nodeclare   -rval \"{14{1'b0}}\"  -en \"dat_updt_d${i}\" -d \"dat_slices_d${i}\" -q dat_slices_d${j}");
 //: }
 //: my $k = $latency;
 //: print "assign cdma2sc_dat_updt = dat_updt_d${k};\n";

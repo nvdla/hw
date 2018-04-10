@@ -63,10 +63,10 @@ module NV_NVDLA_CDMA_dc (
 ,output reg [1:0] dc2status_state
 ,output        dc2status_dat_updt
 ,output [14:0] dc2status_dat_entries
-,output [11:0] dc2status_dat_slices
+,output [13:0] dc2status_dat_slices
 
 ,input        status2dma_fsm_switch
-,input [11:0] status2dma_valid_slices
+,input [13:0] status2dma_valid_slices
 ,input [14:0] status2dma_free_entries
 ,input [14:0] status2dma_wr_idx
 
@@ -186,10 +186,10 @@ reg     [14:0] dat_entries_d0;
 reg     [14:0] dat_entries_d1;
 reg     [14:0] dat_entries_d2;
 reg     [14:0] dat_entries_d3;
-reg     [11:0] dat_slices_d0;
-reg     [11:0] dat_slices_d1;
-reg     [11:0] dat_slices_d2;
-reg     [11:0] dat_slices_d3;
+reg     [13:0] dat_slices_d0;
+reg     [13:0] dat_slices_d1;
+reg     [13:0] dat_slices_d2;
+reg     [13:0] dat_slices_d3;
 reg            dat_updt_d0;
 reg            dat_updt_d1;
 reg            dat_updt_d2;
@@ -283,8 +283,8 @@ reg     [10:0] req_ch_cnt;
 reg            mon_req_ch_cnt;
 reg      [1:0] req_ch_idx_d1;
 reg      [2:0] req_cur_ch;
-reg     [11:0] req_cur_grain_d1;
-reg     [11:0] req_cur_grain_d2;
+reg     [13:0] req_cur_grain_d1;
+reg     [13:0] req_cur_grain_d2;
 reg     [13:0] req_height_cnt_d1;
 reg      [3:0] req_size_d1;
 reg      [2:0] req_size_out_d1;
@@ -303,8 +303,8 @@ reg     [17:0] rsp_entry_init;
 reg     [17:0] rsp_entry_last;
 reg     [11:0] rsp_h_cnt;
 reg            rsp_rd_ch2ch3;
-reg     [11:0] rsp_slice_init;
-reg     [11:0] rsp_slice_last;
+reg     [13:0] rsp_slice_init;
+reg     [13:0] rsp_slice_last;
 reg     [15:0] rsp_w_cnt;
 reg            mon_rsp_w_cnt;
 reg      [1:0] slcg_dc_gate_d1;
@@ -474,7 +474,7 @@ wire           mon_data_entries_w;
 wire           mon_dc_entry_onfly_w;
 wire           mon_dma_rsp_size_cnt_inc;
 wire     [5:0] mon_entry_per_batch;
-wire    [11:0] mon_entry_required;
+wire    [13:0] mon_entry_required;
 wire           mon_fetch_grain_w;
 wire           mon_idx_batch_offset_w;
 wire           mon_idx_ch_offset_w;
@@ -489,7 +489,7 @@ wire           mon_req_atm_left;
 wire           mon_req_atm_size_addr_limit;
 wire     [1:0] mon_req_atm_size_out;
 wire           mon_req_ch_left_w;
-wire    [13:0] mon_req_cur_atomic;
+wire    [15:0] mon_req_cur_atomic;
 reg            mon_req_height_cnt_d1;
 wire           mon_req_slice_left;
 wire           mon_rsp_all_h_cnt_inc;
@@ -562,7 +562,7 @@ wire    [10:0] req_ch_left_w;
 wire     [2:0] req_ch_mode;
 wire           req_ch_reg_en;
 wire    [13:0] req_cur_atomic;
-wire    [11:0] req_cur_grain_w;
+wire    [13:0] req_cur_grain_w;
 wire    [14:0] req_entry;
 wire           req_grain_reg_en;
 wire           req_pre_valid;
@@ -589,7 +589,7 @@ wire    [11:0] rsp_cur_grain_w;
 wire    [17:0] rsp_entry;
 wire           rsp_h_reg_en;
 reg            rsp_rd_en;
-wire    [11:0] rsp_slice;
+wire    [13:0] rsp_slice;
 reg      [2:0] rsp_w_cnt_add;
 wire           rsp_w_left1;
 wire           rsp_w_left2;
@@ -910,7 +910,7 @@ assign pre_ready = ~pre_valid_d1 | pre_ready_d1;
 assign pre_reg_en = is_running & (req_height_cnt_d1 != data_height) & pre_ready;
 assign {mon_req_slice_left, req_slice_left} = data_height - req_height_cnt_d1;
 assign is_req_grain_last = (req_slice_left <= {2'd0,fetch_grain});
-assign req_cur_grain_w = is_req_grain_last ? req_slice_left[11:0] : fetch_grain;
+assign req_cur_grain_w = is_req_grain_last ? req_slice_left : {2'd0,fetch_grain};
 
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     if (!nvdla_core_rstn) begin
@@ -923,7 +923,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 end
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     if (!nvdla_core_rstn) begin
-        req_cur_grain_d1 <= {12{1'b0}};
+        req_cur_grain_d1 <= {14{1'b0}};
     end else begin
         if ((pre_reg_en) == 1'b1) begin
             req_cur_grain_d1 <= req_cur_grain_w;
@@ -978,7 +978,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 end
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     if (!nvdla_core_rstn) begin
-        req_cur_grain_d2 <= {12{1'b0}};
+        req_cur_grain_d2 <= {14{1'b0}};
     end else begin
         if ((pre_reg_en_d1) == 1'b1) begin
             req_cur_grain_d2 <= req_cur_grain_d1;
@@ -1091,7 +1091,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 end
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     if (!nvdla_core_rstn) begin
-        rsp_slice_init <= {12{1'b0}};
+        rsp_slice_init <= {14{1'b0}};
     end else begin
         if ((pre_reg_en_d2_init) == 1'b1) begin
             rsp_slice_init <= req_cur_grain_d2;
@@ -1100,7 +1100,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 end
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     if (!nvdla_core_rstn) begin
-        rsp_slice_last <= {12{1'b0}};
+        rsp_slice_last <= {14{1'b0}};
     end else begin
         if ((pre_reg_en_d2_last) == 1'b1) begin
             rsp_slice_last <= req_cur_grain_d2;
@@ -2849,7 +2849,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 end
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     if (!nvdla_core_rstn) begin
-        dat_slices_d0 <= {12{1'b0}};
+        dat_slices_d0 <= {14{1'b0}};
     end else begin
         if ((rsp_all_h_reg_en) == 1'b1) begin
             dat_slices_d0 <= rsp_slice;

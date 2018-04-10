@@ -192,8 +192,8 @@ output [11:0] img2cvt_dat_wr_info_pd;
 output [1:0]  img2status_state;
 output        img2status_dat_updt;
 output [14:0] img2status_dat_entries;
-output [11:0] img2status_dat_slices;
-input [11:0]  status2dma_valid_slices;
+output [13:0] img2status_dat_slices;
+input [13:0]  status2dma_valid_slices;
 input [14:0]  status2dma_free_entries;
 input [14:0]  status2dma_wr_idx;
 input         status2dma_fsm_switch;
@@ -524,7 +524,7 @@ NV_NVDLA_CDMA_IMG_pack u_pack (
   ,.img2cvt_dat_wr_info_pd         (img2cvt_dat_wr_info_pd[11:0])       
   //,.img2cvt_mn_wr_data             (img2cvt_mn_wr_data)         
   ,.img2status_dat_entries         (img2status_dat_entries)       
-  ,.img2status_dat_slices          (img2status_dat_slices[11:0])        
+  ,.img2status_dat_slices          (img2status_dat_slices)        
   ,.img2status_dat_updt            (img2status_dat_updt)                
   ,.pack_is_done                   (pack_is_done)                       
   ,.sg2pack_img_prdy               (sg2pack_img_prdy)                   

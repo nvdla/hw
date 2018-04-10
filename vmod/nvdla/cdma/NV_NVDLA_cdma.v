@@ -243,10 +243,10 @@ output  cdma2sc_wt_pending_ack;
 
 output        cdma2sc_dat_updt;
 output [14:0] cdma2sc_dat_entries;
-output [11:0] cdma2sc_dat_slices;
+output [13:0] cdma2sc_dat_slices;
 input        sc2cdma_dat_updt; 
 input [14:0] sc2cdma_dat_entries;
-input [11:0] sc2cdma_dat_slices;
+input [13:0] sc2cdma_dat_slices;
 
 output        cdma2sc_wt_updt;
 output [13:0] cdma2sc_wt_kernels;
@@ -337,7 +337,7 @@ wire   [11:0] dc2cvt_dat_wr_info_pd;
 //:     );
 //: }
 wire   [14:0] dc2status_dat_entries;
-wire   [11:0] dc2status_dat_slices;
+wire   [13:0] dc2status_dat_slices;
 wire          dc2status_dat_updt;
 wire    [1:0] dc2status_state;
 wire   [NVDLA_CDMA_MEM_RD_REQ-1:0] dc_dat2mcif_rd_req_pd;
@@ -430,7 +430,7 @@ wire   [11:0] img2cvt_dat_wr_info_pd;
 //wire  [255:0] img2sbuf_p1_wr_data;
 //wire          img2sbuf_p1_wr_en;
 wire   [14:0] img2status_dat_entries;
-wire   [11:0] img2status_dat_slices;
+wire   [13:0] img2status_dat_slices;
 wire          img2status_dat_updt;
 wire    [1:0] img2status_state;
 wire   [NVDLA_CDMA_MEM_RD_REQ-1:0] img_dat2mcif_rd_req_pd;
@@ -539,7 +539,7 @@ wire          slcg_wg_gate_dc;
 wire          slcg_wg_gate_img;
 wire   [14:0] status2dma_free_entries;
 wire          status2dma_fsm_switch;
-wire   [11:0] status2dma_valid_slices;
+wire   [13:0] status2dma_valid_slices;
 wire   [14:0] status2dma_wr_idx;
 #ifdef NVDLA_WINOGRAD_ENABLE
 wire          wg2cvt_dat_wr_en;
@@ -586,7 +586,7 @@ wire    [7:0] wg2sbuf_p1_wr_addr;
 wire  [255:0] wg2sbuf_p1_wr_data;
 wire          wg2sbuf_p1_wr_en;
 wire   [14:0] wg2status_dat_entries;
-wire   [11:0] wg2status_dat_slices;
+wire   [13:0] wg2status_dat_slices;
 wire          wg2status_dat_updt;
 wire    [1:0] wg2status_state;
 wire   [NVDLA_CDMA_MEM_RD_REQ-1:0] wg_dat2mcif_rd_req_pd;
@@ -1136,8 +1136,8 @@ NV_NVDLA_CDMA_img u_img (
   ,.img2status_state              (img2status_state[1:0])           //|> w
   ,.img2status_dat_updt           (img2status_dat_updt)             //|> w
   ,.img2status_dat_entries        (img2status_dat_entries[14:0])    //|> w
-  ,.img2status_dat_slices         (img2status_dat_slices[11:0])     //|> w
-  ,.status2dma_valid_slices       (status2dma_valid_slices[11:0])   //|< w
+  ,.img2status_dat_slices         (img2status_dat_slices)     //|> w
+  ,.status2dma_valid_slices       (status2dma_valid_slices)   //|< w
   ,.status2dma_free_entries       (status2dma_free_entries[14:0])   //|< w
   ,.status2dma_wr_idx             (status2dma_wr_idx)         //|< w
 //: my $dmaif=NVDLA_CDMA_DMAIF_BW;

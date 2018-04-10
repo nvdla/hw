@@ -132,9 +132,9 @@ output [1:0] wg2status_state;
 
 output        wg2status_dat_updt;     /* data valid */
 output [14:0] wg2status_dat_entries;
-output [11:0] wg2status_dat_slices;
+output [13:0] wg2status_dat_slices;
 
-input [11:0] status2dma_valid_slices;
+input [13:0] status2dma_valid_slices;
 input [14:0] status2dma_free_entries;
 input [11:0] status2dma_wr_idx;
 
@@ -1512,7 +1512,7 @@ assign is_rsp_done_w = layer_st ? 1'b0 :
 ////////////////////////////////////////////////////////////////////////
 assign wg2status_dat_updt = rsp_slice_done_d1;
 assign wg2status_dat_entries = data_entries;
-assign wg2status_dat_slices = 12'h4;
+assign wg2status_dat_slices = 14'h4;
 
 ////////////////////////////////////////////////////////////////////////
 //  performance counting register                                     //

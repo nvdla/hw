@@ -181,7 +181,7 @@ output   [11:0] img2cvt_dat_wr_info_pd;
 ////output [63:0] img2cvt_dat_wr_pad_mask;//element per dmaif
 
 output   [14:0] img2status_dat_entries;
-output   [11:0] img2status_dat_slices;
+output   [13:0] img2status_dat_slices;
 output          img2status_dat_updt;
 output          pack_is_done;
 output          sg2pack_img_prdy;
@@ -1420,7 +1420,7 @@ assign pk_rsp_data_updt = pk_rsp_wr_vld & pk_rsp_cur_one_line_end & pk_rsp_cur_s
 //  output connection                                                 //
 ////////////////////////////////////////////////////////////////////////
 assign img2status_dat_updt = pk_out_data_updt;
-assign img2status_dat_slices = {{8{1'b0}}, pk_out_data_slices};
+assign img2status_dat_slices = {{10{1'b0}}, pk_out_data_slices};
 assign img2status_dat_entries = pk_out_data_entries;
 
 assign img2cvt_dat_wr_en = pk_out_vld;
