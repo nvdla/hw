@@ -131,10 +131,10 @@ VERIF_DST_FILES := ${subst ${TOT},${DEPTH}/${OUTDIR}/${PROJECT},${VERIF_SRC_FILE
 UVMC_FILES  := ${UVMC_DIR}/uvmc_pkg.sv \
 
 VERIF_FILES := ${TRACE_PLAYER_DIR}/nvdla_tb_common.svh \
-			   ${CSB_VIP_DIR}/csb_pkg.sv \
 			   ${DBB_VIP_DIR}/dbb_pkg.sv \
 			   ${MEM_MODEL_DIR}/mem_pkg.sv \
 			   ${RAL_DIR}/nvdla_ral_pkg.sv \
+			   ${CSB_VIP_DIR}/csb_pkg.sv \
 			   ${RAL_DIR}/nvdla_reg_adapter.sv \
  			   ${SCSV_COMMON_DIR}/sv/nvdla_scsv_pkg.sv \
 			   ${TOP_SCSV_ADAPTER_DIR}/sv/nvdla_top_scsv_pkg.sv \

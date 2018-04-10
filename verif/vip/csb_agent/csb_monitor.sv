@@ -20,6 +20,7 @@ class csb_monitor extends uvm_monitor;
     uvm_tlm_gp                  read_queue[$];
     uvm_tlm_gp                  write_queue[$];
 
+    ral_sys_top                 ral;
     // used to transport csb gp to ref model
     uvm_tlm_b_initiator_socket#(uvm_tlm_gp) ini_socket;
 
@@ -110,6 +111,9 @@ function void csb_monitor::connect_phase(uvm_phase phase);
     super.connect_phase(phase);
     `uvm_info(tID, $sformatf("connect_phase begin ..."), UVM_HIGH)
 
+    if(!uvm_config_db#(ral_sys_top)::get(this, "", "ral", ral)) begin
+        `uvm_fatal(tID, "RAL handle is null")
+    end
     // Get virtual interface from uvm_config_db
     if(!uvm_config_db#(virtual csb_interface)::get(this, "", "vif", vif)) begin
         `uvm_fatal(tID, "No virtual interface specified fo csb_monitor")
@@ -204,7 +208,7 @@ task csb_monitor::txn_finish(uvm_tlm_gp gp);
     gp.set_extension(ctrl_ext);
     // NEEDN'T send read txn and interrupt write txn to CMOD
     if("RTL_ONLY" != work_mode) begin
-        if(gp.is_write() && (gp.get_address() != 'hc)) begin
+        if(gp.is_write() && (gp.get_address() != ral.nvdla.NVDLA_GLB.S_INTR_STATUS.get_address())) begin
             ini_socket.b_transport(gp, tlm_time);
         end
     end

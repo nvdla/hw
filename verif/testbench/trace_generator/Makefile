@@ -66,8 +66,8 @@ VERIF_DST_FILES := ${subst ${TOT},${DEPTH}/${OUTDIR}/${PROJECT},${VERIF_SRC_FILE
 
 VERIF_FILES := \
                ${MANUAL_DIR}/ordt_uvm_reg_pkg.sv \
-               ${VIP_CSB_DIR}/csb_pkg.sv \
                ${RAL_DIR}/nvdla_ral_pkg.sv \
+               ${VIP_CSB_DIR}/csb_pkg.sv \
                ${COVERAGE_DIR}/nvdla_coverage_pkg.sv \
                ${TRACE_GEN_RES_DIR}/nvdla_resource_pkg.sv \
                ${TRACE_GEN_SCE_DIR}/nvdla_scenario_pkg.sv \
