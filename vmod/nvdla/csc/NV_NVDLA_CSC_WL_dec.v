@@ -160,7 +160,7 @@ reg             valid_d3;
 //:     }
 //:     print "    default: $name= ${width}'b0;\n";
 //:     print "    endcase\n";
-//:     print "end;\n\n";
+//:     print "end\n\n";
 //: }
 //: print "\n\n";
 //: 
