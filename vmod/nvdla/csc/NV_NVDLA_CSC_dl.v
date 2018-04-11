@@ -1154,7 +1154,8 @@ assign dat_conv_req_dummy = (datain_w_cur[13  ]) | (datain_w_cur > {1'b0, datain
 assign dat_wg_req_dummy = 1'b0;
 assign dat_wg_req_skip = ((|datain_w_cur[13:2]) & datain_w_cur[1] & (|stripe_cnt[6:1]));
 assign dat_img_req_dummy = (datain_h_cur[13]) | (datain_h_cur > {1'b0, datain_height_cmp});
-assign dat_img_req_skip = (w_bias_w[13:2] > entries_cmp[11:0]);  //w address(in entry) is bigger than avilable entrys 
+//w address(in entry) is bigger than avilable entrys
+assign dat_img_req_skip = ({{CSC_ENTRIES_NUM_WIDTH-12{1'b0}},w_bias_w[13:2]} > entries_cmp[CSC_ENTRIES_NUM_WIDTH-1:0]);  
 assign dat_req_dummy = is_img_d1[5] ? dat_img_req_dummy : is_winograd_d1[4] ? dat_wg_req_dummy : dat_conv_req_dummy;
 assign dat_req_skip = (is_winograd_d1[5] & dat_wg_req_skip) | (is_img_d1[6] & dat_img_req_skip);
 assign dat_req_valid = (dat_exec_valid & ~dat_req_dummy & ~dat_req_skip);
