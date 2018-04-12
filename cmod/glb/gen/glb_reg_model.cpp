@@ -41,19 +41,22 @@ bool glb_reg_model::GlbAccessRegister(uint32_t reg_addr, uint32_t & data, bool i
     uint32_t rdata = 0;
     uint32_t new_value = 0;
 
-    offset                  = (reg_addr & 0xFFF);  // each sub-unit has only 4KBytes
+    cslDebug((50, "glb_reg_model::GlbAccessRegister addr=0x%x data=0x%x is_write=%d\n", reg_addr, data, is_write));
+
+    offset = (reg_addr & 0xFFF);  // each sub-unit has only 4KBytes
 
     if (is_write) { // Write Request
         if (offset == REG_off(NVDLA_GLB_S_INTR_STATUS)) {
             glb_register_group->Get(offset, &rdata);
             new_value = rdata & (~data);
             glb_register_group->SetWritable(offset, new_value);
-            GlbUpdateVariables(glb_register_group);
             if((new_value&0xf03ff)==0)
                 intr_status_w.notify();
         } else {
             glb_register_group->SetWritable(offset, data);
         }
+        GlbUpdateVariables(glb_register_group);
+        cslDebug((50, "glb_reg_model::GlbAccessRegister write to offset 0x%x with 0x%x\n", offset, data));
     } else { // Read Request
         glb_register_group->Get(offset, &rdata);
         data = rdata;
