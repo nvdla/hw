@@ -825,6 +825,8 @@ function void nvdla_cc_dp_resource::record_rand_variable();
     prev_conv_mode           = conv_mode; 
     prev_in_precision        = in_precision;        
     prev_proc_precision      = proc_precision;      
+    prev_skip_data_rls       = skip_data_rls;
+    prev_skip_weight_rls     = skip_weight_rls;
     // datain_format       = datain_format;      
     // pixel_format        = pixel_format;       
     // pixel_mapping       = pixel_mapping;       

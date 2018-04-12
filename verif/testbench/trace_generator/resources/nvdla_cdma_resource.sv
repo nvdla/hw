@@ -1154,6 +1154,8 @@ function void nvdla_cdma_resource::record_rand_variable();
     prev_conv_mode           = conv_mode; 
     prev_in_precision        = in_precision;        
     prev_proc_precision      = proc_precision;      
+    prev_skip_data_rls       = skip_data_rls;
+    prev_skip_weight_rls     = skip_weight_rls;
     prev_datain_format       = datain_format;      
     prev_pixel_format        = pixel_format;       
     prev_pixel_mapping       = pixel_mapping;       
