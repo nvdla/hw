@@ -278,6 +278,9 @@ class nvdla_cdma_resource extends nvdla_base_resource;
     rand int unsigned               atomic_e;   // atomic entry
     rand int unsigned               atomic_e2m; // atomic_e//atomic_m
     rand int unsigned               n_atomic_m; // (channel_in+atomic_m-1)//atomic_m
+    bit                             is_data_bank_changed;
+    bit                             is_weight_bank_changed;
+    bit                             is_weight_format_changed;
 
     `uvm_component_utils_begin(nvdla_cdma_resource)
         `uvm_field_string(cdma_feature_surface_pattern, UVM_ALL_ON)
@@ -445,9 +448,9 @@ function void nvdla_cdma_resource::trace_dump(int fh);
         // There are two interrupt events needs to be waited
         //   Data done interrupt
         //   Weight done interrupt
-        string sync_group_name = sync_evt_queue.pop_front();
-        sync_wait(fh,inst_name,{sync_group_name, "_DATA"});
-        sync_wait(fh,inst_name,{sync_group_name, "_WEIGHT"});
+        string sync_wait_event = sync_evt_queue.pop_front();
+        sync_wait(fh,inst_name,{sync_wait_event, "_cdma_data_",$sformatf("%0d",group_to_use)});
+        sync_wait(fh,inst_name,{sync_wait_event, "_cdma_weight_",$sformatf("%0d",group_to_use)});
     end
 
     reg_write(fh,"NVDLA_CDMA.S_POINTER",group_to_use);
@@ -471,12 +474,16 @@ function void nvdla_cdma_resource::trace_dump(int fh);
         end
     end
     ral.nvdla.NVDLA_CDMA.D_OP_ENABLE.set(1);
+    // if bank changed, CDMA OP_EN shall wait until CSC OP_EN has set
+    if (is_data_bank_changed || is_weight_bank_changed || is_weight_format_changed) begin
+        sync_wait(fh, "NVDLA_CDMA", {curr_sync_evt_name,"_csc_enable"});
+    end
     reg_write(fh,"NVDLA_CDMA.D_OP_ENABLE",1);
     // There are two interrupt events needs to be waited
     //   Data done interrupt
     //   Weight done interrupt
-    intr_notify(fh,{"CDMA_DAT","_",$sformatf("%0d",group_to_use)},{curr_sync_evt_name,"_DATA"});
-    intr_notify(fh,{"CDMA_WT","_",$sformatf("%0d",group_to_use)}, {curr_sync_evt_name,"_WEIGHT"});
+    intr_notify(fh,{"CDMA_DAT","_",$sformatf("%0d",group_to_use)},{curr_sync_evt_name,"_cdma_data_",$sformatf("%0d",group_to_use)});
+    intr_notify(fh,{"CDMA_WT","_",$sformatf("%0d",group_to_use)}, {curr_sync_evt_name,"_cdma_weight_",$sformatf("%0d",group_to_use)});
     `uvm_info(inst_name, "Finish trace dumping ...", UVM_HIGH)
 endfunction : trace_dump
 
@@ -857,6 +864,13 @@ constraint nvdla_cdma_resource::c_ias_reuse_mode {
     // min_weight_banks = ((((weight_width_ext+1)*(weight_height_ext+1)*(weight_channel_ext+1)*((proc_precision==proc_precision_INT8)?1:2)*kernel_per_group+127) / 128) + 255) / 256;
     // bug 200312556, weiht bank must be able to hold one max kernel group + 128 bytes
 
+    if (prev_skip_data_rls == skip_data_rls_DISABLE) {
+        data_reuse == data_reuse_DISABLE;
+    }
+
+    if (prev_skip_weight_rls == skip_weight_rls_DISABLE) {
+        weight_reuse == weight_reuse_DISABLE;
+    }
 
     if(skip_data_rls == skip_data_rls_DISABLE) {
         (datain_height+1 + pad_top + pad_bottom)*(entries+1) <= (data_bank+1) * 256;
@@ -1135,6 +1149,10 @@ constraint nvdla_cdma_resource::c_sim_input_cube_size_normal {
 }
 
 function void nvdla_cdma_resource::record_rand_variable();
+    is_data_bank_changed    = (data_bank != prev_data_bank);
+    is_weight_bank_changed  = (weight_bank != prev_weight_bank);
+    is_weight_format_changed= (weight_format != prev_weight_format);
+
     prev_conv_mode           = conv_mode; 
     prev_in_precision        = in_precision;        
     prev_proc_precision      = proc_precision;      

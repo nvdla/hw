@@ -310,7 +310,7 @@ task nvdla_tb_intr_handler::intr_process();
             string    blk_name = fld_name.substr(0, fld_name.len()-14);
             bit       act_id   = fld_name.substr(fld_name.len-2, fld_name.len-1);
             bit       exp_id;
-            `uvm_info(tID, $sformatf("field: %0s intr_val == 1", fld_name), UVM_MEDIUM)
+            `uvm_info(tID, $sformatf("field: %0s intr_val == 1", fld_name), UVM_NONE)
 
             item = blk_cmd[blk_name].pop_front();
             if(item == null) begin

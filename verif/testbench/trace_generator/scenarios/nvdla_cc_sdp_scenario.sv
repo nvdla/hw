@@ -152,8 +152,10 @@ function void nvdla_cc_sdp_scenario::set_sync_evt_name();
     string sdp_sync_evt_name;
 
     sync_evt_name       = {inst_name.tolower(),"_act",$sformatf("%0d",active_cnt)};
-    cdma_sync_evt_name  = {sync_evt_name, "_",cdma.get_resource_name(),"_act",$sformatf("%0d",cdma.get_active_cnt())};
-    cc_dp_sync_evt_name = {sync_evt_name, "_",cc_dp.get_resource_name(),"_act",$sformatf("%0d",cc_dp.get_active_cnt())};
+    // cdma_sync_evt_name  = {sync_evt_name, "_",cdma.get_resource_name(),"_act",$sformatf("%0d",cdma.get_active_cnt())};
+    // cc_dp_sync_evt_name = {sync_evt_name, "_",cc_dp.get_resource_name(),"_act",$sformatf("%0d",cc_dp.get_active_cnt())};
+    cdma_sync_evt_name  = sync_evt_name;
+    cc_dp_sync_evt_name = sync_evt_name;
     sdp_sync_evt_name   = {sync_evt_name, "_",sdp.get_resource_name(),"_act",$sformatf("%0d",sdp.get_active_cnt())};
     
     /*

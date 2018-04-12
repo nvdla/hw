@@ -156,6 +156,10 @@ class nvdla_cc_dp_resource extends nvdla_base_resource;
     bit [4:0]                       prev_clip_truncate;
     //:) epython: generated_end (DO NOT EDIT ABOVE)
 
+    bit                             is_data_bank_changed;
+    bit                             is_weight_bank_changed;
+    bit                             is_weight_format_changed;
+
     `uvm_component_utils_begin(nvdla_cc_dp_resource)
         `uvm_field_string(cc_weight_cube_size,          UVM_ALL_ON)
         `uvm_field_string(cc_output_cube_size,          UVM_ALL_ON)
@@ -272,10 +276,10 @@ function void nvdla_cc_dp_resource::trace_dump(int fh);
     // if both groups have been used, resource must wait for at least one group releases
     if(sync_evt_queue.size()==2) begin
         string sync_wait_event = sync_evt_queue.pop_front();
-        sync_wait(fh,"NVDLA_CACC",sync_wait_event);
-        sync_wait(fh,"NVDLA_CMAC_A",sync_wait_event);
-        sync_wait(fh,"NVDLA_CMAC_B",sync_wait_event);
-        sync_wait(fh,"NVDLA_CSC",sync_wait_event);
+        sync_wait(fh,"NVDLA_CACC",   {sync_wait_event, $sformatf("_cc_dp_%0d",get_active_cnt()-2)});
+        sync_wait(fh,"NVDLA_CMAC_A", {sync_wait_event, $sformatf("_cc_dp_%0d",get_active_cnt()-2)});
+        sync_wait(fh,"NVDLA_CMAC_B", {sync_wait_event, $sformatf("_cc_dp_%0d",get_active_cnt()-2)});
+        sync_wait(fh,"NVDLA_CSC",    {sync_wait_event, $sformatf("_cc_dp_%0d",get_active_cnt()-2)});
     end
 
     reg_write(fh,"NVDLA_CSC.S_POINTER",group_to_use);
@@ -304,6 +308,10 @@ function void nvdla_cc_dp_resource::trace_dump(int fh);
         sync_wait(fh,"NVDLA_CSC",{inst_name,"_cmac_b_",$sformatf("%0d",active_cnt)});
         ral.nvdla.NVDLA_CSC.D_OP_ENABLE.set(1);
         reg_write(fh,"NVDLA_CSC.D_OP_ENABLE",1);
+        // if bank changed, CDMA OP_EN shall wait until CSC OP_EN has set
+        if (is_data_bank_changed || is_weight_bank_changed || is_weight_format_changed) begin
+            sync_notify(fh, "NVDLA_CSC", {curr_sync_evt_name,"_csc_enable"});
+        end
     end
     begin
         uvm_reg        reg_q[$];
@@ -370,7 +378,7 @@ function void nvdla_cc_dp_resource::trace_dump(int fh);
         reg_write(fh,"NVDLA_CACC.D_OP_ENABLE",1);
         sync_notify(fh,"NVDLA_CACC",{inst_name,"_cacc_",$sformatf("%0d",active_cnt)});
     end
-    intr_notify(fh,{"CACC","_",$sformatf("%0d",group_to_use)},curr_sync_evt_name);
+    intr_notify(fh,{"CACC","_",$sformatf("%0d",group_to_use)},{curr_sync_evt_name, $sformatf("_cc_dp_%0d",get_active_cnt())});
     `uvm_info(inst_name, "Finish trace dumping ...", UVM_HIGH)
 endfunction : trace_dump
 
@@ -812,6 +820,10 @@ constraint nvdla_cc_dp_resource::c_sim_output_cube_size_normal {
 }
 
 function void nvdla_cc_dp_resource::record_rand_variable();
+    is_data_bank_changed    = (data_bank != prev_data_bank);
+    is_weight_bank_changed  = (weight_bank != prev_weight_bank);
+    is_weight_format_changed= (weight_format != prev_weight_format);
+
     prev_conv_mode           = conv_mode; 
     prev_in_precision        = in_precision;        
     prev_proc_precision      = proc_precision;      
