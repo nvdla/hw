@@ -474,10 +474,8 @@ function void nvdla_cdma_resource::trace_dump(int fh);
         end
     end
     ral.nvdla.NVDLA_CDMA.D_OP_ENABLE.set(1);
-    // if bank changed, CDMA OP_EN shall wait until CSC OP_EN has set
-    if (is_data_bank_changed || is_weight_bank_changed || is_weight_format_changed) begin
-        sync_wait(fh, "NVDLA_CDMA", {curr_sync_evt_name,"_csc_enable"});
-    end
+    // Make sure CSC enable is always before CDMA
+    sync_wait(fh, "NVDLA_CDMA", {curr_sync_evt_name,"_csc_enable"});
     reg_write(fh,"NVDLA_CDMA.D_OP_ENABLE",1);
     // There are two interrupt events needs to be waited
     //   Data done interrupt

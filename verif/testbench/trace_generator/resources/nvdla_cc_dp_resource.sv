@@ -308,10 +308,8 @@ function void nvdla_cc_dp_resource::trace_dump(int fh);
         sync_wait(fh,"NVDLA_CSC",{inst_name,"_cmac_b_",$sformatf("%0d",active_cnt)});
         ral.nvdla.NVDLA_CSC.D_OP_ENABLE.set(1);
         reg_write(fh,"NVDLA_CSC.D_OP_ENABLE",1);
-        // if bank changed, CDMA OP_EN shall wait until CSC OP_EN has set
-        if (is_data_bank_changed || is_weight_bank_changed || is_weight_format_changed) begin
-            sync_notify(fh, "NVDLA_CSC", {curr_sync_evt_name,"_csc_enable"});
-        end
+        // Make sure CSC enable is always before CDMA
+        sync_notify(fh, "NVDLA_CSC", {curr_sync_evt_name,"_csc_enable"});
     end
     begin
         uvm_reg        reg_q[$];
