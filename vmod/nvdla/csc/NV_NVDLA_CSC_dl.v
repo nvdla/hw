@@ -1303,7 +1303,9 @@ assign dat_req_addr_last_plus1_real  = is_dat_req_addr_last_plus1_wrap ? dat_req
 //iamge data may encounter read jump, which happens when image data_read_address - last_rd_address >= 2 entries, and read form the middle of an entry.
 //then csc need read 2 entries simultaneously, then shift out unneeded part.
 //this address jump should not happened in the begining of a stripe OP.
-assign sc2buf_dat_rd_next1_en_w = is_img_d1[10]&&sc2buf_dat_rd_en_w&&(pixel_x_byte_stride > CSC_ENTRY_HEX)&&(dat_req_addr_w != dat_req_addr_last_plus1_real)
+//assign sc2buf_dat_rd_next1_en_w = is_img_d1[10]&&sc2buf_dat_rd_en_w&&(pixel_x_byte_stride > CSC_ENTRY_HEX)&&(dat_req_addr_w != dat_req_addr_last_plus1_real)
+//                                    &&(pixel_w_cnt_plus1_d1<dat_req_pipe_bytes[LOG2_ATOMC:0])&&(~stripe_begin_disable_jump);
+assign sc2buf_dat_rd_next1_en_w = is_img_d1[10]&&sc2buf_dat_rd_en_w&&(pixel_x_byte_stride > CSC_ENTRY_HEX)
                                     &&(pixel_w_cnt_plus1_d1<dat_req_pipe_bytes[LOG2_ATOMC:0])&&(~stripe_begin_disable_jump);
 assign pixel_w_cnt_plus1 = pixel_w_cnt[LOG2_ATOMC-1:0]+1'b1;
 
