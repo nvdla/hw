@@ -72,9 +72,9 @@ class nvdla_base_resource extends uvm_component;
     extern function longint unsigned  calc_mem_size(int unsigned n_batch, int unsigned batch_stride,
                                                     int unsigned n_channel, int unsigned element_per_atom,
                                                     int unsigned surface_stride);
-    extern function longint unsigned  calc_mem_size_plane(int unsigned pixel_x_offset, int unsigned width,
+    extern function longint unsigned  calc_mem_size_plane(
                                                     int unsigned height, int unsigned line_stride,
-                                                    int unsigned element_byte_size, int unsigned size_alignment);
+                                                    int unsigned size_alignment);
     extern function void    lut_table_load(string file, ref bit [15:0] le_table[65], ref bit [15:0] lo_table[257]);
     /*
         Method for trace generation
@@ -173,19 +173,16 @@ function longint unsigned nvdla_base_resource::calc_mem_size(int unsigned n_batc
     return mem_size;
 endfunction : calc_mem_size
 
-function longint unsigned nvdla_base_resource::calc_mem_size_plane(int unsigned pixel_x_offset,
-                                                                   int unsigned width,
-                                                                   int unsigned height,
+function longint unsigned nvdla_base_resource::calc_mem_size_plane(int unsigned height,
                                                                    int unsigned line_stride,
-                                                                   int unsigned element_byte_size,
                                                                    int unsigned size_alignment);
     longint unsigned mem_size;
     int unsigned line_size;
-    line_size = (pixel_x_offset * element_byte_size % size_alignment + width * element_byte_size + size_alignment - 1)/size_alignment;
+    line_size = (line_stride + size_alignment - 1)/size_alignment;
     mem_size = line_size * height;
     `uvm_info(inst_name,
-        $sformatf("pixel_x_offset = %#0x, width = %#0x, height = %#0x, line_stride = %#0x, element_byte_size = %#0x, size_alignment = %#0x, mem_size = %#0x",
-        pixel_x_offset, width, height, line_stride, element_byte_size, size_alignment, mem_size), UVM_NONE)
+        $sformatf("height = %#0x, line_stride = %#0x, size_alignment = %#0x, mem_size = %#0x",
+        height, line_stride, size_alignment, mem_size), UVM_NONE)
     return mem_size;
 endfunction : calc_mem_size_plane
 

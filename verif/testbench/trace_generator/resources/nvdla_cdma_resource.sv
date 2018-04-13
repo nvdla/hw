@@ -1370,15 +1370,13 @@ function void nvdla_cdma_resource::set_mem_addr();
         end
         else begin
             // Image, plane 0
-            mem_size = calc_mem_size_plane(pixel_x_offset, datain_width+1, datain_height+1,
-                                            line_stride, element_byte_size_plane_0, `NVDLA_MEMORY_ATOMIC_SIZE);
+            mem_size = calc_mem_size_plane(datain_height+1, line_stride, `NVDLA_MEMORY_ATOMIC_SIZE);
             `uvm_info(inst_name, $sformatf("Image:plane 0 byte size is: 0x%h", mem_size), UVM_HIGH)
             region = mm.request_region_by_size("PRI", $sformatf("%s_%0d", "CDMA_DATA_PLANE_0", get_active_cnt()), mem_size, align_mask[0]);
             {datain_addr_high_0, datain_addr_low_0} = region.get_start_offset();
             // Image, plane 1
             if(plane_number > 1) begin
-                mem_size = calc_mem_size_plane(pixel_x_offset, datain_width+1, datain_height+1,
-                                                uv_line_stride, element_byte_size_plane_1, `NVDLA_MEMORY_ATOMIC_SIZE);
+                mem_size = calc_mem_size_plane(datain_height+1, uv_line_stride, `NVDLA_MEMORY_ATOMIC_SIZE);
                 `uvm_info(inst_name, $sformatf("Image:plane 1 byte size is: 0x%h", mem_size), UVM_HIGH)
                 region = mm.request_region_by_size("PRI", $sformatf("%s_%0d", "CDMA_DATA_PLANE_1", get_active_cnt()), mem_size, align_mask[0]);
                 {datain_addr_high_1, datain_addr_low_1} = region.get_start_offset();
