@@ -182,7 +182,7 @@ class RunTest(object):
             simv_args += ' ' + ' '.join(self._rtlarg)
         simv_cmd  = simv_exe + simv_args
         added_run_path = os.path.join(self._tree_root, 'verif/tools/surface_generator')
-        os.environ['PATH'] = ':'.join([added_run_path, original_osenv_run_path])
+        os.environ['PATH'] = os.pathsep.join([added_run_path, original_osenv_run_path])
         # generate trace dumper script
         script = './run_trace_generator.sh'
         cmd_fh = open(script, '+w')
@@ -250,8 +250,8 @@ class RunTest(object):
         added_ld_path1 = os.path.join(self._tree_root, 'outdir', self._project, __cmod_wrap_lib_path__)
         added_ld_path2 = self._vcs_lib_path
         added_run_path = os.path.join(self._tree_root, 'verif/tools')
-        os.environ['LD_LIBRARY_PATH'] = ':'.join([added_ld_path1, added_ld_path2, original_osenv_ld_path])
-        os.environ['PATH'] = ':'.join([added_run_path, original_osenv_run_path])
+        os.environ['LD_LIBRARY_PATH'] = os.pathsep.join([added_ld_path1, added_ld_path2, original_osenv_ld_path])
+        os.environ['PATH'] = os.pathsep.join([added_run_path, original_osenv_run_path])
 
         # set cmd
         simv_exe = os.path.join(self._tree_root, 'outdir', self._project, __uvm_tp_path__, 'simv')

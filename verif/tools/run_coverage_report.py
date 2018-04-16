@@ -80,7 +80,7 @@ class RunCoverageReport(object):
             os.environ['VCS_HOME'] = env['VCS_HOME']
         except KeyError as error:
             raise Exception('%s is not defined in tree.make' % error.args[0])
-        os.environ['PATH'] = os.path.join(os.environ['VCS_HOME'], 'bin') + ':' + os.environ['PATH']
+        os.environ['PATH'] = os.pathsep.join([os.path.join(os.environ['VCS_HOME'], 'bin'), os.environ['PATH']])
         print('[INFO] PATH = %s' % os.environ['PATH'])
 
     def run(self):
