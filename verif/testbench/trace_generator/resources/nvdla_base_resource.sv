@@ -178,7 +178,7 @@ function longint unsigned nvdla_base_resource::calc_mem_size_plane(int unsigned 
                                                                    int unsigned size_alignment);
     longint unsigned mem_size;
     int unsigned line_size;
-    line_size = (line_stride + size_alignment - 1)/size_alignment;
+    line_size = (line_stride + size_alignment - 1)/size_alignment*size_alignment;
     mem_size = line_size * height;
     `uvm_info(inst_name,
         $sformatf("height = %#0x, line_stride = %#0x, size_alignment = %#0x, mem_size = %#0x",
