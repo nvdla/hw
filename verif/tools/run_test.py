@@ -352,6 +352,8 @@ F     A     A  IIIII  LLLLL
         fail_syndrome = ''
 
         log_fh = open(log_fname, "r+")
+        log_fh.flush()
+        os.fsync(log_fh.fileno())
         for index, line in enumerate(log_fh):
             if re.search(fail_pattern, line, re.IGNORECASE):
                 if (re.search(ignore_pattern, line)):
@@ -450,7 +452,7 @@ if __name__ == '__main__':
                         help='Specify test bench name')
     parser.add_argument('--nvdla_utb_work_mode','-uwm', dest='nvdla_utb_work_mode', required=False,
                         help='Specify uvm test bench work mode, only effective when testbench is nvdla_utb')
-    parser.add_argument('--timeout', '-timeout', dest='timeout', type=int, default=120, required=False,
+    parser.add_argument('--timeout', '-timeout', dest='timeout', type=int, default=1440, required=False,
                         help='Specify job running timeout value in minutes')
     parser.add_argument('--waves','--wave','-waves','-wave', dest='dump_waveform', action='store_true', default=False, required=False,
                         help='Dump waveform')

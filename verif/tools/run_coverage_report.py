@@ -35,7 +35,7 @@ __DESCRIPTION__ = '''
 
 class RunCoverageReport(object):
     project        = ''
-    urg_exe        = ''
+    urg_exe        = 'urg'
     tb             = 'trace_player'
     tb_cm_dir      = 'simv.vdb'
     test_cm_dir    = 'test.vdb'
@@ -76,10 +76,12 @@ class RunCoverageReport(object):
             self.dry_run = dry_run
         self.tree_root = self.__get_abs_path_of_tree_root()
         env = self.__get_env_from_file(os.path.join(self.tree_root, 'tree.make'), ':=')
-        if 'VCS_HOME' in env:
-            self.urg_exe = os.path.join(env['VCS_HOME'], 'bin/urg') # from tree.make
-        else:
-            self.urg_exe = 'urg' # from shell ~PATH~
+        try:
+            os.environ['VCS_HOME'] = env['VCS_HOME']
+        except KeyError as error:
+            raise Exception('%s is not defined in tree.make' % error.args[0])
+        os.environ['PATH'] = os.path.join(os.environ['VCS_HOME'], 'bin') + ':' + os.environ['PATH']
+        print('[INFO] PATH = %s' % os.environ['PATH'])
 
     def run(self):
         if not self.gen_report_only:

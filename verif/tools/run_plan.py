@@ -328,7 +328,7 @@ def main():
                         help = 'Specify monitor interval value in seconds')
     parser.add_argument('--monitor_quiet', '-monitor_quiet', dest='monitor_quiet', required=False, default=False, action='store_true',
                         help='Do not print regression report when monitor (used to wait regression finish)')
-    parser.add_argument('--timeout', '-timeout', dest='timeout', type=int, default=120, required=False,
+    parser.add_argument('--timeout', '-timeout', dest='timeout', type=int, default=1440, required=False,
                         help='Specify job running timeout value in minutes')
     parser.add_argument('--no_lsf', '-no_lsf', dest='no_lsf', required=False, default=False, action='store_true',
                         help='Do not Use LSF to run tests')
