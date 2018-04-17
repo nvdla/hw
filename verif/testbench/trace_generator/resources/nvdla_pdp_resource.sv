@@ -249,6 +249,11 @@ function void nvdla_pdp_resource::trace_dump(int fh);
     `uvm_info(inst_name, "Finish trace dumping ...", UVM_HIGH)
 endfunction: trace_dump
 
+// Share Line Buffer Size:
+// DEPTH = 16*(`NVDLA_MEMORY_ATOMIC_SIZE/`NVDLA_PDP_THROUGHPUT) 
+// WIDTH = `NVDLA_PDP_THROUGHPUT*(`NVDLA_BPE+6)
+// SIZE  = DEPTH*WIDTH*8 = 128*`NVDLA_MEMORY_ATOMIC_SIZE*(`NVDLA_BPE+6)
+
 constraint nvdla_pdp_resource::c_ias_stride_alignment {
     // alignment according to atomic size
     src_line_stride    % `NVDLA_MEMORY_ATOMIC_SIZE == 0;
@@ -295,6 +300,7 @@ constraint nvdla_pdp_resource::c_ias_split_num {
     solve kernel_stride_width  before split_num;
 
     solve cube_out_width       before split_num;
+    // Require: atomic_m*(bpe+6)*width_o*ceil(kernel_h/stride_h) <= buffer_size
     if ( (cube_out_width+1) > (8/(((kernel_height + 1) + (kernel_stride_height + 1) - 1)/(kernel_stride_height + 1)))*16 ) {
         split_num > 0;
     }
