@@ -60,7 +60,7 @@ output  pdp2cvif_rd_cdt_lat_fifo_pop;
 
 output        pdp_rdma2dp_valid;
 input         pdp_rdma2dp_ready;
-output [NVDLA_PDP_BWPE*NVDLA_PDP_THROUGHPUT+11:0] pdp_rdma2dp_pd;
+output [NVDLA_PDP_BWPE*NVDLA_PDP_THROUGHPUT+13:0] pdp_rdma2dp_pd;
 
 input         cq2eg_pvld;
 output        cq2eg_prdy;
@@ -83,9 +83,9 @@ reg            is_split_end;
 reg            is_surf_end;
 reg            pdp2cvif_rd_cdt_lat_fifo_pop;
 reg            pdp2mcif_rd_cdt_lat_fifo_pop;
-reg     [NVDLA_PDP_BWPE*NVDLA_PDP_THROUGHPUT+11:0] pdp_rdma2dp_pd;
+wire    [NVDLA_PDP_BWPE*NVDLA_PDP_THROUGHPUT+13:0] pdp_rdma2dp_pd;
 reg            rdma2wdma_done_flag;
-reg      [3:0] tran_cnt;
+reg      [5:0] tran_cnt;
 reg     [13:0] width_cnt;
 wire [NVDLA_PDP_MEM_RD_RSP-1:0] cv_dma_rd_rsp_pd;
 wire [NVDLA_PDP_MEM_RD_RSP-1:0] cv_int_rd_rsp_pd;
@@ -111,8 +111,8 @@ wire           dp2reg_done_f;
 wire           dp_b_sync;
 wire           dp_cube_end;
 wire           dp_line_end;
-wire    [NVDLA_PDP_BWPE*NVDLA_PDP_THROUGHPUT+11:0] dp_pd;
-wire     [2:0] dp_pos_c;
+wire    [NVDLA_PDP_BWPE*NVDLA_PDP_THROUGHPUT+13:0] dp_pd;
+wire     [4:0] dp_pos_c;
 wire     [3:0] dp_pos_w;
 wire           dp_split_end;
 wire           dp_surf_end;
@@ -372,16 +372,16 @@ end
 
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
-    tran_cnt <= {4{1'b0}};
+    tran_cnt <= {6{1'b0}};
     beat_cnt <= {14{1'b0}};
   end else begin
     if(is_cube_end & is_b_sync) begin
-            tran_cnt    <= 4'd0;
+            tran_cnt    <= 6'd0;
             beat_cnt    <= 4'd0;
     end if (tran_rdy) begin
         if (tran_vld) begin
 //:  my $txnum = NVDLA_MEMORY_ATOMIC_SIZE/NVDLA_PDP_THROUGHPUT;
-//:  print " tran_cnt    <= 4'd${txnum}; \n";
+//:  print " tran_cnt    <= 6'd${txnum}; \n";
             beat_cnt    <= tran_num;
         end else begin
             tran_cnt    <= 0;
@@ -705,13 +705,11 @@ end
 assign is_b_sync = is_last_beat & is_last_tran & dp_rdy;
 
 assign {mon_dp_pos_w[10:0],dp_pos_w[3:0]}   = width_cnt - beat_cnt;
-//:  my $pdpbw = NVDLA_CDP_THROUGHPUT*NVDLA_PDP_BWPE;     ##throughput BW
-//:  my $atmbw = NVDLA_MEMORY_ATOMIC_SIZE*NVDLA_PDP_BWPE; ##atomic_m BW
-//:  my $k = NVDLA_PRIMARY_MEMIF_WIDTH/$pdpbw;       ##total fifo num
-//:  my $M = NVDLA_PRIMARY_MEMIF_WIDTH/$atmbw;       ##atomic_m number per dma trans
-//:  my $F = $k/$M;                       ##how many fifo contribute to one atomic_m
+//:  my $F = NVDLA_MEMORY_ATOMIC_SIZE/NVDLA_CDP_THROUGHPUT;
 //:  my $cmax = int( log($F)/log(2));
-//:     print " assign dp_pos_c[2:0] = fifo_sel[${cmax}-1:0];//need update to 5bits when configurable  \n";
+//:  print qq(
+//:     assign dp_pos_c[4:0] = fifo_sel[${cmax}-1:0];
+//:  );
 assign dp_b_sync  = is_b_sync;
 assign dp_line_end = is_line_end;
 assign dp_surf_end = is_surf_end;
@@ -730,16 +728,16 @@ assign rdma2wdma_done_f = is_cube_end & is_b_sync;
 // PKT_PACK_WIRE( pdp_rdma2dp , dp_ , dp_pd )
 assign      dp_pd[NVDLA_PDP_BWPE*NVDLA_PDP_THROUGHPUT-1:0] =    dp_data[NVDLA_PDP_BWPE*NVDLA_PDP_THROUGHPUT-1:0];
 assign      dp_pd[NVDLA_PDP_BWPE*NVDLA_PDP_THROUGHPUT+3:NVDLA_PDP_BWPE*NVDLA_PDP_THROUGHPUT] =    dp_pos_w[3:0];
-assign      dp_pd[NVDLA_PDP_BWPE*NVDLA_PDP_THROUGHPUT+6:NVDLA_PDP_BWPE*NVDLA_PDP_THROUGHPUT+4] =    dp_pos_c[2:0];
-assign      dp_pd[NVDLA_PDP_BWPE*NVDLA_PDP_THROUGHPUT+7] =    dp_b_sync ;
-assign      dp_pd[NVDLA_PDP_BWPE*NVDLA_PDP_THROUGHPUT+8] =    dp_line_end ;
-assign      dp_pd[NVDLA_PDP_BWPE*NVDLA_PDP_THROUGHPUT+9] =    dp_surf_end ;
-assign      dp_pd[NVDLA_PDP_BWPE*NVDLA_PDP_THROUGHPUT+10] =    dp_split_end ;
-assign      dp_pd[NVDLA_PDP_BWPE*NVDLA_PDP_THROUGHPUT+11] =    dp_cube_end ;
+assign      dp_pd[NVDLA_PDP_BWPE*NVDLA_PDP_THROUGHPUT+8:NVDLA_PDP_BWPE*NVDLA_PDP_THROUGHPUT+4] =    dp_pos_c[4:0];
+assign      dp_pd[NVDLA_PDP_BWPE*NVDLA_PDP_THROUGHPUT+9] =    dp_b_sync ;
+assign      dp_pd[NVDLA_PDP_BWPE*NVDLA_PDP_THROUGHPUT+10] =    dp_line_end ;
+assign      dp_pd[NVDLA_PDP_BWPE*NVDLA_PDP_THROUGHPUT+11] =    dp_surf_end ;
+assign      dp_pd[NVDLA_PDP_BWPE*NVDLA_PDP_THROUGHPUT+12] =    dp_split_end ;
+assign      dp_pd[NVDLA_PDP_BWPE*NVDLA_PDP_THROUGHPUT+13] =    dp_cube_end ;
 
-wire    [NVDLA_PDP_BWPE*NVDLA_PDP_THROUGHPUT+14:0]  eg_out_pipe0_di;
+wire    [NVDLA_PDP_BWPE*NVDLA_PDP_THROUGHPUT+16:0]  eg_out_pipe0_di;
 assign eg_out_pipe0_di = {dp_pd,rdma2wdma_done_f,eg2ig_done_f,dp2reg_done_f};
-//: my $k = NVDLA_PDP_BWPE*NVDLA_PDP_THROUGHPUT+15;
+//: my $k = NVDLA_PDP_BWPE*NVDLA_PDP_THROUGHPUT+17;
 //: &eperl::pipe("-is -wid $k -do eg_out_pipe0_do -vo pdp_rdma2dp_valid_f -ri pdp_rdma2dp_ready -di eg_out_pipe0_di -vi dp_vld -ro dp_rdy_ff ");
 assign dp_rdy = dp_rdy_ff;
 assign  {pdp_rdma2dp_pd,rdma2wdma_done_flag,eg2ig_done_flag,dp2reg_done_flag} = eg_out_pipe0_do;

@@ -77,7 +77,7 @@ module NV_NVDLA_PDP_rdma (
 
  output        pdp_rdma2dp_valid;  /* data valid */
  input         pdp_rdma2dp_ready;  /* data return handshake */
- output [NVDLA_PDP_BWPE*NVDLA_PDP_THROUGHPUT+11:0] pdp_rdma2dp_pd;
+ output [NVDLA_PDP_BWPE*NVDLA_PDP_THROUGHPUT+13:0] pdp_rdma2dp_pd;
 
  input [31:0] pwrbus_ram_pd;
 

@@ -30,16 +30,16 @@ module NV_NVDLA_CDP_DP_cvtin (
 ////////////////////////////////////////////////////////////////////////
 input         nvdla_core_clk;
 input         nvdla_core_rstn;
-input  [NVDLA_CDP_THROUGHPUT*NVDLA_CDP_BWPE+22:0] cdp_rdma2dp_pd;
+input  [NVDLA_CDP_THROUGHPUT*NVDLA_CDP_BWPE+24:0] cdp_rdma2dp_pd;
 input         cdp_rdma2dp_valid;
 output        cdp_rdma2dp_ready;
 input  [15:0] reg2dp_datin_offset;// need fix to bw, 8bits at int8 mode
 input  [15:0] reg2dp_datin_scale;
 input   [4:0] reg2dp_datin_shifter;
-output [NVDLA_CDP_THROUGHPUT*NVDLA_CDP_ICVTO_BWPE+14:0] cvt2buf_pd;
+output [NVDLA_CDP_THROUGHPUT*NVDLA_CDP_ICVTO_BWPE+16:0] cvt2buf_pd;
 output        cvt2buf_pvld;
 input         cvt2buf_prdy;
-output [NVDLA_CDP_THROUGHPUT*NVDLA_CDP_ICVTO_BWPE+14:0] cvt2sync_pd;
+output [NVDLA_CDP_THROUGHPUT*NVDLA_CDP_ICVTO_BWPE+16:0] cvt2sync_pd;
 output        cvt2sync_pvld;
 input         cvt2sync_prdy;
 ////////////////////////////////////////////////////////////////////////
@@ -66,22 +66,24 @@ wire          cdp_cvtin_output_vld_f;
 
 wire          cvtin_o_prdy;
 wire          cvtin_o_pvld;
-wire   [22:0] data_info_in_pd;
-wire   [22:0] data_info_in_pd_d0;
-wire   [22:0] data_info_in_pd_d1;
-wire   [22:0] data_info_in_pd_d2;
-wire   [22:0] data_info_in_pd_d3;
+wire   [24:0] data_info_in_pd;
+wire   [24:0] data_info_in_pd_d0;
+//wire   [24:0] data_info_in_pd_d1;
+//wire   [24:0] data_info_in_pd_d2;
+//wire   [24:0] data_info_in_pd_d3;
 wire          data_info_in_rdy;
-wire          data_info_in_rdy_d0;
-wire          data_info_in_rdy_d1;
-wire          data_info_in_rdy_d2;
+//wire          data_info_in_rdy_d0;
+//wire          data_info_in_rdy_d1;
+//wire          data_info_in_rdy_d2;
+wire          data_info_in_rdy_d1_f ;
+wire          data_info_in_rdy_d2_f ;
 wire          data_info_in_rdy_d3;
 wire          data_info_in_vld;
 wire          data_info_in_vld_d0;
-wire          data_info_in_vld_d1;
-wire          data_info_in_vld_d2;
-wire          data_info_in_vld_d3;
-wire   [22:0] data_info_out_pd;
+//wire          data_info_in_vld_d1;
+//wire          data_info_in_vld_d2;
+//wire          data_info_in_vld_d3;
+wire   [24:0] data_info_out_pd;
 wire          data_info_out_rdy;
 wire          data_info_out_vld;
 wire   [NVDLA_CDP_THROUGHPUT-1:0] invalid_flag;
@@ -92,45 +94,23 @@ assign cdp_rdma2dp_ready = cdp_cvtin_input_rdy_f & data_info_in_rdy;
 //-----------------------------------------------
 //data info valid in
 assign data_info_in_vld = cdp_rdma2dp_valid & cdp_cvtin_input_rdy_f;
-assign data_info_in_pd = cdp_rdma2dp_pd[NVDLA_CDP_THROUGHPUT*NVDLA_CDP_BWPE+22:NVDLA_CDP_THROUGHPUT*NVDLA_CDP_BWPE];
+assign data_info_in_pd = cdp_rdma2dp_pd[NVDLA_CDP_THROUGHPUT*NVDLA_CDP_BWPE+24:NVDLA_CDP_THROUGHPUT*NVDLA_CDP_BWPE];
 
 
 assign data_info_in_vld_d0 = data_info_in_vld;
+//assign data_info_in_rdy = data_info_in_rdy_d0;
+assign data_info_in_pd_d0[24:0] = data_info_in_pd[24:0];
+
+//: &eperl::pipe(" -wid 25 -is -do data_info_in_pd_d1 -vo data_info_in_vld_d1 -ri data_info_in_rdy_d1_f -di data_info_in_pd_d0  -vi data_info_in_vld_d0 -ro data_info_in_rdy_d0 ");
+//: &eperl::pipe(" -wid 25 -is -do data_info_in_pd_d2 -vo data_info_in_vld_d2 -ri data_info_in_rdy_d2_f -di data_info_in_pd_d1  -vi data_info_in_vld_d1 -ro data_info_in_rdy_d1 ");
+//: &eperl::pipe(" -wid 25 -is -do data_info_in_pd_d3 -vo data_info_in_vld_d3 -ri data_info_in_rdy_d3 -di data_info_in_pd_d2  -vi data_info_in_vld_d2 -ro data_info_in_rdy_d2 ");
 assign data_info_in_rdy = data_info_in_rdy_d0;
-assign data_info_in_pd_d0[22:0] = data_info_in_pd[22:0];
-NV_NVDLA_CDP_DP_CVTIN_pipe_p1 pipe_p1 (
-   .nvdla_core_clk      (nvdla_core_clk)                  //|< i
-  ,.nvdla_core_rstn     (nvdla_core_rstn)                 //|< i
-  ,.data_info_in_pd_d0  (data_info_in_pd_d0[22:0])        //|< w
-  ,.data_info_in_rdy_d1 (data_info_in_rdy_d1)             //|< w
-  ,.data_info_in_vld_d0 (data_info_in_vld_d0)             //|< w
-  ,.data_info_in_pd_d1  (data_info_in_pd_d1[22:0])        //|> w
-  ,.data_info_in_rdy_d0 (data_info_in_rdy_d0)             //|> w
-  ,.data_info_in_vld_d1 (data_info_in_vld_d1)             //|> w
-  );
-NV_NVDLA_CDP_DP_CVTIN_pipe_p2 pipe_p2 (
-   .nvdla_core_clk      (nvdla_core_clk)                  //|< i
-  ,.nvdla_core_rstn     (nvdla_core_rstn)                 //|< i
-  ,.data_info_in_pd_d1  (data_info_in_pd_d1[22:0])        //|< w
-  ,.data_info_in_rdy_d2 (data_info_in_rdy_d2)             //|< w
-  ,.data_info_in_vld_d1 (data_info_in_vld_d1)             //|< w
-  ,.data_info_in_pd_d2  (data_info_in_pd_d2[22:0])        //|> w
-  ,.data_info_in_rdy_d1 (data_info_in_rdy_d1)             //|> w
-  ,.data_info_in_vld_d2 (data_info_in_vld_d2)             //|> w
-  );
-NV_NVDLA_CDP_DP_CVTIN_pipe_p3 pipe_p3 (
-   .nvdla_core_clk      (nvdla_core_clk)                  //|< i
-  ,.nvdla_core_rstn     (nvdla_core_rstn)                 //|< i
-  ,.data_info_in_pd_d2  (data_info_in_pd_d2[22:0])        //|< w
-  ,.data_info_in_rdy_d3 (data_info_in_rdy_d3)             //|< w
-  ,.data_info_in_vld_d2 (data_info_in_vld_d2)             //|< w
-  ,.data_info_in_pd_d3  (data_info_in_pd_d3[22:0])        //|> w
-  ,.data_info_in_rdy_d2 (data_info_in_rdy_d2)             //|> w
-  ,.data_info_in_vld_d3 (data_info_in_vld_d3)             //|> w
-  );
+assign data_info_in_rdy_d1_f = data_info_in_rdy_d1;
+assign data_info_in_rdy_d2_f = data_info_in_rdy_d2;
+
 assign data_info_out_vld = data_info_in_vld_d3;
 assign data_info_in_rdy_d3 = data_info_out_rdy;
-assign data_info_out_pd[22:0] = data_info_in_pd_d3[22:0];
+assign data_info_out_pd[24:0] = data_info_in_pd_d3[24:0];
 
 //===============================================
 //convertor process
@@ -250,7 +230,7 @@ assign data_info_out_rdy = cvtin_o_prdy & cdp_cvtin_output_vld_f;
 assign cvtin_o_prdy = cvt2buf_prdy & cvt2sync_prdy;
 assign cvtin_o_pvld = cdp_cvtin_output_vld_f & data_info_out_vld;
 
-assign invalid_flag = data_info_out_pd[15+NVDLA_CDP_THROUGHPUT-1:15];
+assign invalid_flag = data_info_out_pd[17+NVDLA_CDP_THROUGHPUT-1:17];
 //: my $k=NVDLA_CDP_THROUGHPUT;
 //: my $cdpbw=NVDLA_CDP_ICVTO_BWPE;
 //: print "assign icvt_out_pd = {   ";
@@ -262,10 +242,10 @@ assign invalid_flag = data_info_out_pd[15+NVDLA_CDP_THROUGHPUT-1:15];
 //:     }
 //:     print " ({${cdpbw}{(~invalid_flag[0])}} & cdp_cvtin_output_pd[${cdpbw}-1:0])};  \n";
 
-assign cvt2buf_pd   = {data_info_out_pd[14:0],icvt_out_pd};
+assign cvt2buf_pd   = {data_info_out_pd[16:0],icvt_out_pd};
 assign cvt2buf_pvld = cvtin_o_pvld & cvt2sync_prdy;
 assign cvt2sync_pvld = cvtin_o_pvld & cvt2buf_prdy;
-assign cvt2sync_pd   = {data_info_out_pd[14:0],icvt_out_pd};
+assign cvt2sync_pd   = {data_info_out_pd[16:0],icvt_out_pd};
 
 //////////////////////////////////////////////////////////////////////
 endmodule // NV_NVDLA_CDP_DP_cvtin

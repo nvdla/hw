@@ -29,7 +29,7 @@ input          nvdla_core_clk;
 input          nvdla_core_rstn;
 //: my $tp=NVDLA_CDP_THROUGHPUT;
 //: my $icvto=NVDLA_CDP_ICVTO_BWPE;
-//: my $k = ${icvto}*(${tp}+8)+15;
+//: my $k = ${icvto}*(${tp}+8)+17;
 //:     print qq( 
 //:         input  [${k}-1:0] normalz_buf_data;
 //:         output [${tp}*(${icvto}*2+3)-1:0] sum2itp_pd;
@@ -122,11 +122,10 @@ wire           sum_out_pvld;
 ///////////////////////////////////////////
 //==========================================
 //----------------------------------------
-////////::pipe -bc cdp_buf2sum_pd (cdp_buf2sum_valid,cdp_buf2sum_ready) <= normalz_buf_data[230:0] (normalz_buf_data_pvld,normalz_buf_data_prdy);
 
 //: my $tp=NVDLA_CDP_THROUGHPUT;
 //: my $icvto=NVDLA_CDP_ICVTO_BWPE;
-//: my $k = ${icvto}*(${tp}+8)+15;
+//: my $k = ${icvto}*(${tp}+8)+17;
 //: &eperl::pipe(" -wid $k -do cdp_buf2sum_pd -vo cdp_buf2sum_valid -ri cdp_buf2sum_ready -di normalz_buf_data -vi normalz_buf_data_pvld -ro normalz_buf_data_prdy ");
 
 
