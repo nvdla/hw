@@ -10,6 +10,8 @@ TREE_MAKE := tree.make
 USE_NV_ENV ?= 0
 USE_VM_ENV ?= 0
 
+NV_DESIGNWARE_NOEXIST ?= 1
+NV_DESIGNWARE_DIR ?= /home/tools/synopsys/syn_2011.09/dw/sim_ver
 NV_CPP  ?= /home/utils/gcc-4.8.2/bin/cpp
 NV_GCC  ?= /home/utils/gcc-4.8.2/bin/gcc
 NV_CXX  ?= /home/utils/gcc-4.8.2/bin/g++
@@ -24,6 +26,8 @@ NV_VCS_HOME   ?= /home/tools/vcs/mx-2016.06-SP2-4
 NV_VERILATOR  ?= verilator
 NV_CLANG      ?= /home/utils/llvm-4.0.1/bin/clang
 
+VM_DESIGNWARE_NOEXIST ?= 1
+VM_DESIGNWARE_DIR ?= /home/tools/synopsys/syn_2011.09/dw/sim_ver
 VM_CPP  ?= /usr/local/bin/cpp
 VM_GCC  ?= /usr/local/bin/gcc
 VM_CXX  ?= /usr/local/bin/g++
@@ -68,6 +72,8 @@ endif
 	@echo "##======================= 										  " >> $@ 	
 	@echo "  																  " >> $@ 	
 ifeq (1,$(USE_NV_ENV))
+	@echo "DESIGNWARE_NOEXIST  := $(NV_DESIGNWARE_NOEXIST)" 	>> $@
+	@echo "DESIGNWARE_DIR      := $(NV_DESIGNWARE_DIR)" 		>> $@
 	@echo "CPP      := $(NV_CPP)" 		>> $@
 	@echo "GCC      := $(NV_GCC)" 		>> $@
 	@echo "CXX      := $(NV_CXX)" 		>> $@
@@ -82,6 +88,8 @@ ifeq (1,$(USE_NV_ENV))
 	@echo "VERILATOR  := $(NV_VERILATOR)"  >> $@
 else 
 ifeq (1,$(USE_VM_ENV))
+	@echo "DESIGNWARE_NOEXIST  := $(VM_DESIGNWARE_NOEXIST)" 	>> $@
+	@echo "DESIGNWARE_DIR      := $(VM_DESIGNWARE_DIR)" 		>> $@
 	@echo "CPP      := $(VM_CPP)" 		>> $@
 	@echo "GCC      := $(VM_GCC)" 		>> $@
 	@echo "CXX      := $(VM_CXX)" 		>> $@
@@ -95,6 +103,8 @@ ifeq (1,$(USE_VM_ENV))
 	@echo "CLANG      := $(VM_CLANG)"      >> $@
 	@echo "VERILATOR  := $(VM_VERILATOR)"  >> $@
 else
+	@read -p "Enter to determine designware_noexist (Press ENTER 0 to use design ware, 1 not to use design ware: $(NV_DESIGNWARE_NOEXIST)):" opt; if [ "_$$opt" = "_" ]; then echo "DESIGNWARE_NOEXIST  := $(NV_DESIGNWARE_NOEXIST)" >> $@;  else echo "DESIGNWARE_NOEXIST  := $$opt" >> $@; fi
+	@read -p "Enter design ware path (Press ENTER if use: $(NV_DESIGNWARE_DIR)):" opt; if [ "_$$opt" = "_" ]; then echo "DESIGNWARE_DIR  := $(NV_DESIGNWARE_DIR)" >> $@;  else echo "DESIGNWARE_DIR  := $$opt" >> $@; fi
 	@read -p "Enter c pre-processor path (Press ENTER if use: $(NV_CPP)):" opt; if [ "_$$opt" = "_" ]; then echo "CPP  := $(NV_CPP)" >> $@;  else echo "CPP  := $$opt" >> $@; fi
 	@read -p "Enter gcc path             (Press ENTER if use: $(NV_GCC)):" opt; if [ "_$$opt" = "_" ]; then echo "GCC  := $(NV_GCC)" >> $@;  else echo "GCC  := $$opt" >> $@; fi
 	@read -p "Enter g++ path             (Press ENTER if use: $(NV_CXX)):" opt; if [ "_$$opt" = "_" ]; then echo "CXX  := $(NV_CXX)" >> $@;  else echo "CXX  := $$opt" >> $@; fi

@@ -22,7 +22,7 @@ CP     = cp -f
 RM     = rm -rf
 MV     = mv -f 
 
-DESIGNWARE_NOEXIST ?= 1
+DESIGNWARE_NOEXIST ?= 0
 # Three work modes: RTL_ONLY/CMOD_ONLY/CROSS_CHECK
 WORK_MODE := CROSS_CHECK
 
@@ -76,16 +76,13 @@ VMOD_RAM_DIRS_ALL    := ${VMOD_RAM_DIRS:%=+incdir+%}
 VLIBS                := ${VMOD_DIR}/nvdla/nocif/NV_NVDLA_XXIF_libs.v
 VLIBS                += ${VMOD_LIB_DIR}/RANDFUNC.vlib
 VLIBS                += ${VMOD_LIB_DIR}/nv_assert_no_x.vlib
-ifeq (${DESIGNWARE_NOEXIST},1) 
+ifeq (${DESIGNWARE_NOEXIST},1)
 DWDIR                := ${TOT}/${OUTDIR}/${PROJECT}/vmod/vlibs
 DWFILES              := ${DWDIR}/NV_DW02_tree.v \
                         ${DWDIR}/NV_DW_lsd.v \
 						${DWDIR}/NV_DW_minmax.v
 else                           
-DWDIR                := ${TOT}/vmod/dw_components 
-DWFILES              := ${DWDIR}/DW02_tree.v \
-                        ${DWDIR}/DW_lsd.v \
-						${DWDIR}/DW_minmax.v
+DWDIR                =  ${DESIGNWARE_DIR}
 endif                          
 VLIBS                += ${DWFILES}
 VCS_LIBS_ALL         := ${VLIBS:%=-v %}
@@ -187,6 +184,10 @@ COMMON_DIRS  := +incdir+${VMOD_INC_DIR} \
 ## Setting VCS options
 ## =========================================================================================
 
+ifeq (${DESIGNWARE_NOEXIST},0)
+VCS_LIBS_ALL += ${DWDIR:%=-y %}
+endif
+
 VCS_LIBS_ALL += ${VMOD_SRC_DIRS:%=-y %}
 VCS_LIBS_ALL += ${VMOD_RAM_DIRS:%=-y %}
 VCS_LIBS_ALL += ${VMOD_LIB_DIR:%=-y %}
@@ -231,9 +232,9 @@ VCS_ARGS    := ${COMMON_DIRS} \
 			   -parallel+sva+tgl \
                -P ${VERDI_HOME}/share/PLI/VCS/LINUX64/novas.tab 
 
-ifeq (${DESIGNWARE_NOEXIST},1)
-VCS_ARGS += +define+DESIGNWARE_NOEXIST
-endif
+#ifeq (${DESIGNWARE_NOEXIST},1)
+#VCS_ARGS += +define+DESIGNWARE_NOEXIST
+#endif
 
 # add 'COVERAGE := 1' in tree.make
 ifeq (${COVERAGE},1)
@@ -260,9 +261,9 @@ ifeq (${NVDLA_SAIF_ENABLE},1)
 	VCS_ARGS  += +vcs+saif_libcell +define+NVDLA_SAIF_ENABLE
 endif
 
-ifeq (${DESIGNWARE_NOEXIST},1)
-VERDI_ARGS += +define+DESIGNWARE_NOEXIST
-endif
+#ifeq (${DESIGNWARE_NOEXIST},1)
+#VERDI_ARGS += +define+DESIGNWARE_NOEXIST
+#endif
 
 ## =========================================================================================
 ## VCS syscan setup                                                                                   
