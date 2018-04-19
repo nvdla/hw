@@ -403,7 +403,7 @@ ifeq ($(DUMP),1)
     DUMP_ARGS  := +dump_fsdb +dump_name=${SIMTESTDIR}/${SILOTI_DUMP_NAME} +fsdb+esdb=${ESA_ESDB_NAME} +fsdb+dump_log=off
   else
     ifeq ($(DUMPER),VERDI)
-      DUMP_ARGS  := +dump_fsdb +fsdb+dump_log=off +fsdbfile+${SIMTESTDIR}/${VERDI_DUMP_NAME}
+      DUMP_ARGS  := +dump_fsdb +fsdb+dump_log=off +fsdbfile+${SIMTESTDIR}/${VERDI_DUMP_NAME} +dump_name=${SIMTESTDIR}/${VERDI_DUMP_NAME}
     else
       DUMP_ARGS  := +dump_vpd +vpd_dump_name=${SIMTESTDIR}/${VPD_DUMP_NAME} 
     endif
@@ -632,7 +632,7 @@ esa  : ${VERICOM_LOG}
 
 # Run the Verdi waveform viewer
 verdi :
-	${LSF_COMMAND} $(VERDI_HOME)/bin/verdi -ssy -ssv -nologo -lib ${VERICOM_LIB} ${VERDI_BDB_OPTIONS} -top 'top' -DE '-full_time'  ${VERICOM_DUT_DEFINES} -tkName siloti_tkName_nvdla -ssf ${SIMTESTDIR}/${VERDI_DUMP_NAME} &
+	${LSF_COMMAND} $(VERDI_HOME)/bin/verdi -ssy -ssv -nologo -lib ${VERICOM_LIB} ${VERDI_BDB_OPTIONS} -top 'top' -DE '-full_time'  ${VERICOM_DUT_DEFINES} -tkName siloti_tkName_nvdla -ssf ${SIMTESTDIR}/$(subst fsdb,vf,${VERDI_DUMP_NAME}) &
 
 # Run the Verdi waveform viewer with smaller esa fsdb
 siloti :
