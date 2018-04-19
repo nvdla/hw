@@ -1270,13 +1270,13 @@ assign dat_req_sub_h_3_addr_en = layer_st | ((dat_req_valid_d1 | dat_req_dummy_d
 `ifdef CBUF_BANK_RAM_CASE0
 wire sc2buf_dat_rd_next1_en = 1'b0;
 `endif
-`ifdef CBUF_BANK_RAM_CASE1
+`ifdef CBUF_BANK_RAM_CASE2
 wire sc2buf_dat_rd_next1_en = 1'b0;
 `endif
 `ifdef CBUF_BANK_RAM_CASE4
 wire sc2buf_dat_rd_next1_en = 1'b0;
 `endif
-`ifdef CBUF_BANK_RAM_CASE2
+`ifdef CBUF_BANK_RAM_CASE1
 wire [CBUF_RD_DATA_SHIFT_WIDTH-1:0] sc2buf_dat_rd_shift_w;
 wire mon_sc2buf_dat_rd_shift_w;
 wire sc2buf_dat_rd_next1_en_w;

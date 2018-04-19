@@ -106,17 +106,24 @@ end
 //: my $bank_slice= CBUF_BANK_SLICE;  #address part for select bank
 //: for(my $j=0; $j<CBUF_BANK_NUMBER ; $j++){
 //:     for(my $k=0; $k<CBUF_RAM_PER_BANK ; $k++){
+//:         my $kmod2 = $k%2;
+//:         my $kmod4 = $k%4; 
 //:         for(my $i=0; $i<CBUF_WR_PORT_NUMBER ; $i++){
-//:         if((CBUF_BANK_RAM_CASE==0)||(CBUF_BANK_RAM_CASE==1)||(CBUF_BANK_RAM_CASE==4)){
+//:         if((CBUF_BANK_RAM_CASE==0)||(CBUF_BANK_RAM_CASE==2)||(CBUF_BANK_RAM_CASE==4)){
 //:         print qq(
 //:     wire  bank${j}_ram${k}_wr${i}_en_d0 = cdma2buf_wr_en${i}&&(cdma2buf_wr_addr${i}[${bank_slice}]==${j}) &&(cdma2buf_wr_sel${i}[${k}]==1'b1);  );
 //:             }
-//:         if(CBUF_BANK_RAM_CASE==2){
+//:         if(CBUF_BANK_RAM_CASE==1){
 //:         print qq(
 //:     wire  bank${j}_ram${k}_wr${i}_en_d0 = cdma2buf_wr_en${i}&&(cdma2buf_wr_addr${i}[${bank_slice}]==${j})&&(cdma2buf_wr_addr${i}[0]==${k});  );
 //:             }
 //:         if(CBUF_BANK_RAM_CASE==3){
-//:                         #complicated,reserve, no use currently
+//:         print qq(
+//:     wire  bank${j}_ram${k}_wr${i}_en_d0 = cdma2buf_wr_en${i}&&(cdma2buf_wr_addr${i}[${bank_slice}]==${j})&&(cdma2buf_wr_addr${i}[0]==${k})&&(cdma2buf_wr_sel${i}[${kmod2}]==1'b1 );  );
+//:             }
+//:         if(CBUF_BANK_RAM_CASE==5){
+//:         print qq(
+//:     wire  bank${j}_ram${k}_wr${i}_en_d0 = cdma2buf_wr_en${i}&&(cdma2buf_wr_addr${i}[${bank_slice}]==${j})&&(cdma2buf_wr_addr${i}[0]==${k})&&(cdma2buf_wr_sel${i}[${kmod4}]==1'b1 );  );
 //:             }
 //:         }
 //:     }
@@ -180,13 +187,13 @@ end
 //map bank to sram.
 //: for(my $j=0; $j<CBUF_BANK_NUMBER ; $j++){
 //:     for(my $k=0; $k<CBUF_RAM_PER_BANK ; $k++){
-//:         if((CBUF_BANK_RAM_CASE==0)||(CBUF_BANK_RAM_CASE==1)||(CBUF_BANK_RAM_CASE==4)){
+//:         if((CBUF_BANK_RAM_CASE==0)||(CBUF_BANK_RAM_CASE==2)||(CBUF_BANK_RAM_CASE==4)){
 //:                print qq(
 //:        wire[CBUF_RAM_DEPTH_BITS-1:0]   bank${j}_ram${k}_wr_addr_d1 = bank${j}_wr_addr_d1[CBUF_RAM_DEPTH_BITS-1:0];
 //:        wire[CBUF_WR_PORT_WIDTH-1:0]    bank${j}_ram${k}_wr_data_d1 = bank${j}_wr_data_d1;
 //:        )
 //:         }
-//:         if((CBUF_BANK_RAM_CASE==2)||(CBUF_BANK_RAM_CASE==3)){
+//:         if((CBUF_BANK_RAM_CASE==1)||(CBUF_BANK_RAM_CASE==3)||(CBUF_BANK_RAM_CASE==5)){
 //:                print qq(
 //:        wire[CBUF_RAM_DEPTH_BITS-1:0]   bank${j}_ram${k}_wr_addr_d1 = bank${j}_wr_addr_d1[CBUF_RAM_DEPTH_BITS:1];
 //:        wire[CBUF_WR_PORT_WIDTH-1:0]    bank${j}_ram${k}_wr_data_d1 = bank${j}_wr_data_d1;
@@ -218,18 +225,25 @@ wire[CBUF_ADDR_WIDTH-1:0] sc2buf_dat_rd_addr1 = sc2buf_dat_rd_addr;
 //: my $bank_slice= CBUF_BANK_SLICE;  #address part for select bank
 //: for(my $j=0; $j<CBUF_BANK_NUMBER ; $j++){
 //:     for(my $k=0; $k<CBUF_RAM_PER_BANK ; $k++){
-//:         if((CBUF_BANK_RAM_CASE==0)||(CBUF_BANK_RAM_CASE==1)||(CBUF_BANK_RAM_CASE==4)){
+//:         my $kdiv2 = int($k/2);
+//:         my $kdiv4 = int($k/4);
+//:         if((CBUF_BANK_RAM_CASE==0)||(CBUF_BANK_RAM_CASE==2)||(CBUF_BANK_RAM_CASE==4)){
 //:         print qq(
 //:     wire  bank${j}_ram${k}_data_rd_en = sc2buf_dat_rd_en&&(sc2buf_dat_rd_addr[${bank_slice}]==${j}); );
 //:         }
-//:         if(CBUF_BANK_RAM_CASE==2){
-//:         for(my $i=0; $i<2; $i++){
+//:     for(my $i=0; $i<2; $i++){
+//:         if(CBUF_BANK_RAM_CASE==1){
 //:         print qq(
 //:     wire  bank${j}_ram${k}_data_rd${i}_en = sc2buf_dat_rd_en${i}&&(sc2buf_dat_rd_addr${i}[${bank_slice}]==${j})&&(sc2buf_dat_rd_addr${i}[0]==${k}); );
 //:             }
-//:         }
 //:         if(CBUF_BANK_RAM_CASE==3){
-//:             #complicated,reserve, no use currently
+//:         print qq(
+//:     wire  bank${j}_ram${k}_data_rd${i}_en = sc2buf_dat_rd_en${i}&&(sc2buf_dat_rd_addr${i}[${bank_slice}]==${j})&&(sc2buf_dat_rd_addr${i}[0]==${kdiv2}); );
+//:             }
+//:         if(CBUF_BANK_RAM_CASE==5){
+//:         print qq(
+//:     wire  bank${j}_ram${k}_data_rd${i}_en = sc2buf_dat_rd_en${i}&&(sc2buf_dat_rd_addr${i}[${bank_slice}]==${j})&&(sc2buf_dat_rd_addr${i}[0]==${kdiv4}); );
+//:             }
 //:         }
 //:     }
 //: }
@@ -238,12 +252,12 @@ wire[CBUF_ADDR_WIDTH-1:0] sc2buf_dat_rd_addr1 = sc2buf_dat_rd_addr;
 //get sram data read address.
 //: for(my $j=0; $j<CBUF_BANK_NUMBER ; $j++){
 //:     for(my $k=0; $k<CBUF_RAM_PER_BANK ; $k++){
-//:         if((CBUF_BANK_RAM_CASE==0)||(CBUF_BANK_RAM_CASE==1)||(CBUF_BANK_RAM_CASE==4)){
+//:         if((CBUF_BANK_RAM_CASE==0)||(CBUF_BANK_RAM_CASE==2)||(CBUF_BANK_RAM_CASE==4)){
 //:         print qq(
 //:     wire [CBUF_RAM_DEPTH_BITS-1:0] bank${j}_ram${k}_data_rd_addr = {CBUF_RAM_DEPTH_BITS{bank${j}_ram${k}_data_rd_en}}&(sc2buf_dat_rd_addr[CBUF_RAM_DEPTH_BITS-1:0]); );
 //:             }
 //:         for(my $i=0; $i<2; $i++){
-//:             if((CBUF_BANK_RAM_CASE==2)||(CBUF_BANK_RAM_CASE==3)){
+//:             if((CBUF_BANK_RAM_CASE==1)||(CBUF_BANK_RAM_CASE==3)||(CBUF_BANK_RAM_CASE==5)){
 //:         print qq(
 //:     wire [CBUF_RAM_DEPTH_BITS-1:0] bank${j}_ram${k}_data_rd${i}_addr = {CBUF_RAM_DEPTH_BITS{bank${j}_ram${k}_data_rd${i}_en}}&(sc2buf_dat_rd_addr${i}[CBUF_RAM_DEPTH_BITS:1]); );
 //:             }
@@ -255,12 +269,12 @@ wire[CBUF_ADDR_WIDTH-1:0] sc2buf_dat_rd_addr1 = sc2buf_dat_rd_addr;
 //add flop for sram data read en
 //: for(my $j=0; $j<CBUF_BANK_NUMBER ; $j++){
 //:     for(my $k=0; $k<CBUF_RAM_PER_BANK ; $k++){
-//:         if((CBUF_BANK_RAM_CASE==0)||(CBUF_BANK_RAM_CASE==1)||(CBUF_BANK_RAM_CASE==4)){
+//:         if((CBUF_BANK_RAM_CASE==0)||(CBUF_BANK_RAM_CASE==2)||(CBUF_BANK_RAM_CASE==4)){
 //: &eperl::flop("-q bank${j}_ram${k}_data_rd_en_d1 -d  bank${j}_ram${k}_data_rd_en"); 
 //: &eperl::flop("-q bank${j}_ram${k}_data_rd_en_d2 -d  bank${j}_ram${k}_data_rd_en_d1"); 
 //:         }
 //:         for(my $i=0; $i<2; $i++){
-//:             if((CBUF_BANK_RAM_CASE==2)||(CBUF_BANK_RAM_CASE==3)){
+//:             if((CBUF_BANK_RAM_CASE==1)||(CBUF_BANK_RAM_CASE==3)||(CBUF_BANK_RAM_CASE==5)){
 //: &eperl::flop("-q bank${j}_ram${k}_data_rd${i}_en_d1 -d bank${j}_ram${k}_data_rd${i}_en"); 
 //: &eperl::flop("-q bank${j}_ram${k}_data_rd${i}_en_d2 -d bank${j}_ram${k}_data_rd${i}_en_d1"); 
 //:             }
@@ -273,12 +287,12 @@ wire[CBUF_ADDR_WIDTH-1:0] sc2buf_dat_rd_addr1 = sc2buf_dat_rd_addr;
 //get sram data read valid.
 //: for(my $j=0; $j<CBUF_BANK_NUMBER ; $j++){
 //:     for(my $k=0; $k<CBUF_RAM_PER_BANK ; $k++){
-//:         if((CBUF_BANK_RAM_CASE==0)||(CBUF_BANK_RAM_CASE==1)||(CBUF_BANK_RAM_CASE==4)){
+//:         if((CBUF_BANK_RAM_CASE==0)||(CBUF_BANK_RAM_CASE==2)||(CBUF_BANK_RAM_CASE==4)){
 //:         print qq(
 //:     wire  bank${j}_ram${k}_data_rd_valid = bank${j}_ram${k}_data_rd_en_d2; )
 //:             }
 //:         for(my $i=0; $i<2; $i++){
-//:             if((CBUF_BANK_RAM_CASE==2)||(CBUF_BANK_RAM_CASE==3)){
+//:             if((CBUF_BANK_RAM_CASE==1)||(CBUF_BANK_RAM_CASE==3)||(CBUF_BANK_RAM_CASE==5)){
 //:         print qq(
 //:     wire  bank${j}_ram${k}_data_rd${i}_valid = bank${j}_ram${k}_data_rd${i}_en_d2; )
 //:             }
@@ -290,7 +304,7 @@ wire[CBUF_ADDR_WIDTH-1:0] sc2buf_dat_rd_addr1 = sc2buf_dat_rd_addr;
 //get sc data read valid.
 //: my $t1="";
 //: my $t2="";
-//: if((CBUF_BANK_RAM_CASE==0)||(CBUF_BANK_RAM_CASE==1)||(CBUF_BANK_RAM_CASE==4)){
+//: if((CBUF_BANK_RAM_CASE==0)||(CBUF_BANK_RAM_CASE==2)||(CBUF_BANK_RAM_CASE==4)){
 //:     for(my $j=0; $j<CBUF_BANK_NUMBER ; $j++){
 //:         for(my $k=0; $k<CBUF_RAM_PER_BANK ; $k++){
 //:         $t1 .= "bank${j}_ram${k}_data_rd_valid|";
@@ -298,7 +312,7 @@ wire[CBUF_ADDR_WIDTH-1:0] sc2buf_dat_rd_addr1 = sc2buf_dat_rd_addr;
 //:     }
 //: print "wire [0:0] sc2buf_dat_rd_valid_w = $t1"."1'b0; \n";
 //: }
-//: if((CBUF_BANK_RAM_CASE==2)||(CBUF_BANK_RAM_CASE==3)){
+//: if((CBUF_BANK_RAM_CASE==1)||(CBUF_BANK_RAM_CASE==3)||(CBUF_BANK_RAM_CASE==5)){
 //:     for(my $j=0; $j<CBUF_BANK_NUMBER ; $j++){
 //:         for(my $k=0; $k<CBUF_RAM_PER_BANK ; $k++){
 //:         $t1 .= "bank${j}_ram${k}_data_rd0_valid|"; 
@@ -331,18 +345,18 @@ wire[CBUF_ADDR_WIDTH-1:0] sc2buf_dat_rd_addr1 = sc2buf_dat_rd_addr;
 //: if(CBUF_BANK_RAM_CASE==1){
 //: for(my $j=0; $j<CBUF_BANK_NUMBER ; $j++){
 //: print qq(
-//:  wire [${kk}-1:0] bank${j}_data_rd_data = {bank${j}_ram1_rd_data&{CBUF_RAM_WIDTH{bank${j}_ram1_data_rd_valid}},
-//:                                             bank${j}_ram0_rd_data&{CBUF_RAM_WIDTH{bank${j}_ram0_data_rd_valid}}};
+//:  wire [${kk}-1:0] bank${j}_data_rd0_data = (bank${j}_ram1_rd_data&{CBUF_RAM_WIDTH{bank${j}_ram1_data_rd0_valid}})|
+//:                                             (bank${j}_ram0_rd_data&{CBUF_RAM_WIDTH{bank${j}_ram0_data_rd0_valid}});
+//:  wire [${kk}-1:0] bank${j}_data_rd1_data = (bank${j}_ram1_rd_data&{CBUF_RAM_WIDTH{bank${j}_ram1_data_rd1_valid}})|
+//:                                             (bank${j}_ram0_rd_data&{CBUF_RAM_WIDTH{bank${j}_ram0_data_rd1_valid}});
 //:     );
 //:     }
 //: }
 //: if(CBUF_BANK_RAM_CASE==2){
 //: for(my $j=0; $j<CBUF_BANK_NUMBER ; $j++){
 //: print qq(
-//:  wire [${kk}-1:0] bank${j}_data_rd0_data = (bank${j}_ram1_rd_data&{CBUF_RAM_WIDTH{bank${j}_ram1_data_rd0_valid}})|
-//:                                             (bank${j}_ram0_rd_data&{CBUF_RAM_WIDTH{bank${j}_ram0_data_rd0_valid}});
-//:  wire [${kk}-1:0] bank${j}_data_rd1_data = (bank${j}_ram1_rd_data&{CBUF_RAM_WIDTH{bank${j}_ram1_data_rd1_valid}})|
-//:                                             (bank${j}_ram0_rd_data&{CBUF_RAM_WIDTH{bank${j}_ram0_data_rd1_valid}});
+//:  wire [${kk}-1:0] bank${j}_data_rd_data = {bank${j}_ram1_rd_data&{CBUF_RAM_WIDTH{bank${j}_ram1_data_rd_valid}},
+//:                                             bank${j}_ram0_rd_data&{CBUF_RAM_WIDTH{bank${j}_ram0_data_rd_valid}}};
 //:     );
 //:     }
 //: }
@@ -370,6 +384,30 @@ wire[CBUF_ADDR_WIDTH-1:0] sc2buf_dat_rd_addr1 = sc2buf_dat_rd_addr;
 //:     );
 //:     }
 //: }
+//: if(CBUF_BANK_RAM_CASE==5){
+//: for(my $j=0; $j<CBUF_BANK_NUMBER ; $j++){
+//: print qq(
+//:  wire [${kk}-1:0] bank${j}_data_rd0_data = {
+//:                                             bank${j}_ram3_rd_data&{CBUF_RAM_WIDTH{bank${j}_ram3_data_rd0_valid}},
+//:                                             bank${j}_ram2_rd_data&{CBUF_RAM_WIDTH{bank${j}_ram2_data_rd0_valid}},
+//:                                             bank${j}_ram1_rd_data&{CBUF_RAM_WIDTH{bank${j}_ram1_data_rd0_valid}},
+//:                                             bank${j}_ram0_rd_data&{CBUF_RAM_WIDTH{bank${j}_ram0_data_rd0_valid}}}|
+//:                                             {bank${j}_ram7_rd_data&{CBUF_RAM_WIDTH{bank${j}_ram7_data_rd0_valid}},
+//:                                             bank${j}_ram6_rd_data&{CBUF_RAM_WIDTH{bank${j}_ram6_data_rd0_valid}},
+//:                                             bank${j}_ram5_rd_data&{CBUF_RAM_WIDTH{bank${j}_ram5_data_rd0_valid}},
+//:                                             bank${j}_ram4_rd_data&{CBUF_RAM_WIDTH{bank${j}_ram4_data_rd0_valid}}};
+//:  wire [${kk}-1:0] bank${j}_data_rd1_data = {
+//:                                             bank${j}_ram3_rd_data&{CBUF_RAM_WIDTH{bank${j}_ram3_data_rd1_valid}},
+//:                                             bank${j}_ram2_rd_data&{CBUF_RAM_WIDTH{bank${j}_ram2_data_rd1_valid}},
+//:                                             bank${j}_ram1_rd_data&{CBUF_RAM_WIDTH{bank${j}_ram1_data_rd1_valid}},
+//:                                             bank${j}_ram0_rd_data&{CBUF_RAM_WIDTH{bank${j}_ram0_data_rd1_valid}}}|
+//:                                             {bank${j}_ram7_rd_data&{CBUF_RAM_WIDTH{bank${j}_ram7_data_rd1_valid}},
+//:                                             bank${j}_ram6_rd_data&{CBUF_RAM_WIDTH{bank${j}_ram6_data_rd1_valid}},
+//:                                             bank${j}_ram5_rd_data&{CBUF_RAM_WIDTH{bank${j}_ram5_data_rd1_valid}},
+//:                                             bank${j}_ram4_rd_data&{CBUF_RAM_WIDTH{bank${j}_ram4_data_rd1_valid}}};
+//:     );
+//:     }
+//: }
 
 
 //: my $kk=CBUF_RD_DATA_SHIFT_WIDTH;
@@ -377,7 +415,7 @@ wire[CBUF_ADDR_WIDTH-1:0] sc2buf_dat_rd_addr1 = sc2buf_dat_rd_addr;
 
 // pipe solution. for timing concern, 4 level pipe. 
 //: my $kk=CBUF_RD_PORT_WIDTH;
-//: if((CBUF_BANK_RAM_CASE==0)||(CBUF_BANK_RAM_CASE==1)||(CBUF_BANK_RAM_CASE==4)){
+//: if((CBUF_BANK_RAM_CASE==0)||(CBUF_BANK_RAM_CASE==2)||(CBUF_BANK_RAM_CASE==4)){
 //: for (my $i=0; $i<CBUF_BANK_NUMBER; $i++){
 //: &eperl::flop("-wid ${kk} -norst -q l1group${i}_data_rd_data   -d bank${i}_data_rd_data");
 //: }
@@ -418,7 +456,7 @@ wire[CBUF_ADDR_WIDTH-1:0] sc2buf_dat_rd_addr1 = sc2buf_dat_rd_addr;
 //:
 //:
 //: my $kk=CBUF_RD_PORT_WIDTH;
-//: if((CBUF_BANK_RAM_CASE==2)||(CBUF_BANK_RAM_CASE==3)){
+//: if((CBUF_BANK_RAM_CASE==1)||(CBUF_BANK_RAM_CASE==3)||(CBUF_BANK_RAM_CASE==5)){
 //: for (my $i=0; $i<CBUF_BANK_NUMBER; $i++){
 //: &eperl::flop("-wid ${kk} -norst -q l1group${i}_data_rd0_data   -d bank${i}_data_rd0_data");
 //: &eperl::flop("-wid ${kk} -norst -q l1group${i}_data_rd1_data   -d bank${i}_data_rd1_data");
@@ -473,14 +511,14 @@ wire[CBUF_ADDR_WIDTH-1:0] sc2buf_dat_rd_addr1 = sc2buf_dat_rd_addr;
 ////: my $t1="";
 ////: my $t2="";
 ////: my $kk=CBUF_RD_PORT_WIDTH;
-////: if((CBUF_BANK_RAM_CASE==0)||(CBUF_BANK_RAM_CASE==1)||(CBUF_BANK_RAM_CASE==4)){
+////: if((CBUF_BANK_RAM_CASE==0)||(CBUF_BANK_RAM_CASE==2)||(CBUF_BANK_RAM_CASE==4)){
 ////:     for(my $j=0; $j<CBUF_BANK_NUMBER ; $j++){
 ////:         $t1 .= "bank${j}_data_rd_data|";    
 ////:     }
 ////: print "wire[${kk}-1:0] sc2buf_dat_rd_data =".${t1}."{${kk}{1'b0}}; \n";
 ////: }
 ////:     
-////: if((CBUF_BANK_RAM_CASE==2)|(CBUF_BANK_RAM_CASE==3)){
+////: if((CBUF_BANK_RAM_CASE==1)|(CBUF_BANK_RAM_CASE==3)||(CBUF_BANK_RAM_CASE==5)){
 ////:     for(my $j=0; $j<CBUF_BANK_NUMBER ; $j++){
 ////:         $t1 .= "bank${j}_data_rd0_data|";    
 ////:         $t2 .= "bank${j}_data_rd1_data|";    
@@ -499,17 +537,23 @@ wire[CBUF_ADDR_WIDTH-1:0] sc2buf_dat_rd_addr1 = sc2buf_dat_rd_addr;
 //: my $bank_slice= CBUF_BANK_SLICE;  #address part for select bank
 //: for(my $j=0; $j<CBUF_BANK_NUMBER ; $j++){
 //:     for(my $k=0; $k<CBUF_RAM_PER_BANK ; $k++){
-//:         if((CBUF_BANK_RAM_CASE==0)||(CBUF_BANK_RAM_CASE==1)||(CBUF_BANK_RAM_CASE==4)){
+//:         my $kdiv2 = int($k/2);
+//:         my $kdiv4 = int($k/4);
+//:         if((CBUF_BANK_RAM_CASE==0)||(CBUF_BANK_RAM_CASE==2)||(CBUF_BANK_RAM_CASE==4)){
 //:         print qq(
 //:     wire  bank${j}_ram${k}_wt_rd_en = sc2buf_wt_rd_en&&(sc2buf_wt_rd_addr[${bank_slice}]==${j}); )
 //:         }
-//:         if(CBUF_BANK_RAM_CASE==2){
+//:         if(CBUF_BANK_RAM_CASE==1){
 //:         print qq(
 //:     wire  bank${j}_ram${k}_wt_rd_en = sc2buf_wt_rd_en&&(sc2buf_wt_rd_addr[${bank_slice}]==${j})&&(sc2buf_wt_rd_addr[0]==${k}); )
 //:         }
 //:         if(CBUF_BANK_RAM_CASE==3){
 //:         print qq(
-//:     wire  bank${j}_ram${k}_wt_rd_en = sc2buf_wt_rd_en&&(sc2buf_wt_rd_addr[${bank_slice}]==${j})&&(sc2buf_wt_rd_addr[0]==${k}/2); )
+//:     wire  bank${j}_ram${k}_wt_rd_en = sc2buf_wt_rd_en&&(sc2buf_wt_rd_addr[${bank_slice}]==${j})&&(sc2buf_wt_rd_addr[0]==${kdiv2}); )
+//:         }
+//:         if(CBUF_BANK_RAM_CASE==5){
+//:         print qq(
+//:     wire  bank${j}_ram${k}_wt_rd_en = sc2buf_wt_rd_en&&(sc2buf_wt_rd_addr[${bank_slice}]==${j})&&(sc2buf_wt_rd_addr[0]==${kdiv4}); )
 //:         }
 //:     }
 //: }
@@ -518,11 +562,11 @@ wire[CBUF_ADDR_WIDTH-1:0] sc2buf_dat_rd_addr1 = sc2buf_dat_rd_addr;
 //get sram weight read address.
 //: for(my $j=0; $j<CBUF_BANK_NUMBER ; $j++){
 //:     for(my $k=0; $k<CBUF_RAM_PER_BANK ; $k++){
-//:         if((CBUF_BANK_RAM_CASE==0)||(CBUF_BANK_RAM_CASE==1)||(CBUF_BANK_RAM_CASE==4)){
+//:         if((CBUF_BANK_RAM_CASE==0)||(CBUF_BANK_RAM_CASE==2)||(CBUF_BANK_RAM_CASE==4)){
 //:         print qq(
 //:     wire [CBUF_RAM_DEPTH_BITS-1:0] bank${j}_ram${k}_wt_rd_addr = {CBUF_RAM_DEPTH_BITS{bank${j}_ram${k}_wt_rd_en}}&(sc2buf_wt_rd_addr[CBUF_RAM_DEPTH_BITS-1:0]); )
 //:             }
-//:         if((CBUF_BANK_RAM_CASE==2)||(CBUF_BANK_RAM_CASE==3)){
+//:         if((CBUF_BANK_RAM_CASE==1)||(CBUF_BANK_RAM_CASE==3)||(CBUF_BANK_RAM_CASE==5)){
 //:         print qq(
 //:     wire [CBUF_RAM_DEPTH_BITS-1:0] bank${j}_ram${k}_wt_rd_addr = {CBUF_RAM_DEPTH_BITS{bank${j}_ram${k}_wt_rd_en}}&(sc2buf_wt_rd_addr[CBUF_RAM_DEPTH_BITS:1]); )
 //:         }
@@ -571,16 +615,16 @@ wire[CBUF_ADDR_WIDTH-1:0] sc2buf_dat_rd_addr1 = sc2buf_dat_rd_addr;
 //: if(CBUF_BANK_RAM_CASE==1){
 //: for(my $j=0; $j<CBUF_BANK_NUMBER ; $j++){
 //: print qq(
-//: wire [${kk}-1:0]  bank${j}_wt_rd_data = {bank${j}_ram1_rd_data&{CBUF_RAM_WIDTH{bank${j}_ram1_wt_rd_valid}},
-//:                                                         bank${j}_ram0_rd_data&{CBUF_RAM_WIDTH{bank${j}_ram0_wt_rd_valid}}}; );
+//: wire [${kk}-1:0]  bank${j}_wt_rd_data = (bank${j}_ram1_rd_data&{CBUF_RAM_WIDTH{bank${j}_ram1_wt_rd_valid}})|
+//:                                                         (bank${j}_ram0_rd_data&{CBUF_RAM_WIDTH{bank${j}_ram0_wt_rd_valid}});
+//:     );
 //:     }
 //: }
 //: if(CBUF_BANK_RAM_CASE==2){
 //: for(my $j=0; $j<CBUF_BANK_NUMBER ; $j++){
 //: print qq(
-//: wire [${kk}-1:0]  bank${j}_wt_rd_data = (bank${j}_ram1_rd_data&{CBUF_RAM_WIDTH{bank${j}_ram1_wt_rd_valid}})|
-//:                                                         (bank${j}_ram0_rd_data&{CBUF_RAM_WIDTH{bank${j}_ram0_wt_rd_valid}});
-//:     );
+//: wire [${kk}-1:0]  bank${j}_wt_rd_data = {bank${j}_ram1_rd_data&{CBUF_RAM_WIDTH{bank${j}_ram1_wt_rd_valid}},
+//:                                                         bank${j}_ram0_rd_data&{CBUF_RAM_WIDTH{bank${j}_ram0_wt_rd_valid}}}; );
 //:     }
 //: }
 //: if(CBUF_BANK_RAM_CASE==3){
@@ -597,6 +641,20 @@ wire[CBUF_ADDR_WIDTH-1:0] sc2buf_dat_rd_addr1 = sc2buf_dat_rd_addr;
 //: for(my $j=0; $j<CBUF_BANK_NUMBER ; $j++){
 //: print qq(
 //: wire [${kk}-1:0]  bank${j}_wt_rd_data = {bank${j}_ram3_rd_data&{CBUF_RAM_WIDTH{bank${j}_ram3_wt_rd_valid}},
+//:                                                         bank${j}_ram2_rd_data&{CBUF_RAM_WIDTH{bank${j}_ram2_wt_rd_valid}},
+//:                                                         bank${j}_ram1_rd_data&{CBUF_RAM_WIDTH{bank${j}_ram1_wt_rd_valid}},
+//:                                                         bank${j}_ram0_rd_data&{CBUF_RAM_WIDTH{bank${j}_ram0_wt_rd_valid}}};
+//:     );
+//:     }
+//: }
+//: if(CBUF_BANK_RAM_CASE==5){
+//: for(my $j=0; $j<CBUF_BANK_NUMBER ; $j++){
+//: print qq(
+//: wire [${kk}-1:0]  bank${j}_wt_rd_data = {bank${j}_ram7_rd_data&{CBUF_RAM_WIDTH{bank${j}_ram7_wt_rd_valid}},
+//:                                                         bank${j}_ram6_rd_data&{CBUF_RAM_WIDTH{bank${j}_ram6_wt_rd_valid}},
+//:                                                         bank${j}_ram5_rd_data&{CBUF_RAM_WIDTH{bank${j}_ram5_wt_rd_valid}},
+//:                                                         bank${j}_ram4_rd_data&{CBUF_RAM_WIDTH{bank${j}_ram4_wt_rd_valid}}}|
+//:                                                         {bank${j}_ram3_rd_data&{CBUF_RAM_WIDTH{bank${j}_ram3_wt_rd_valid}},
 //:                                                         bank${j}_ram2_rd_data&{CBUF_RAM_WIDTH{bank${j}_ram2_wt_rd_valid}},
 //:                                                         bank${j}_ram1_rd_data&{CBUF_RAM_WIDTH{bank${j}_ram1_wt_rd_valid}},
 //:                                                         bank${j}_ram0_rd_data&{CBUF_RAM_WIDTH{bank${j}_ram0_wt_rd_valid}}};
@@ -660,17 +718,23 @@ wire[CBUF_RD_PORT_WIDTH-1:0] sc2buf_wt_rd_data = l4group_wt_rd_data[CBUF_RD_PORT
 //: print  "`ifdef  CBUF_WEIGHT_COMPRESSED";
 //: for(my $j=CBUF_BANK_NUMBER-1; $j<CBUF_BANK_NUMBER ; $j++){
 //:     for(my $k=0; $k<CBUF_RAM_PER_BANK ; $k++){
-//:         if((CBUF_BANK_RAM_CASE==0)||(CBUF_BANK_RAM_CASE==1)||(CBUF_BANK_RAM_CASE==4)){
+//:         my $kdiv2 = int($k/2);
+//:         my $kdiv4 = int($k/4);
+//:         if((CBUF_BANK_RAM_CASE==0)||(CBUF_BANK_RAM_CASE==2)||(CBUF_BANK_RAM_CASE==4)){
 //:         print qq(
 //:     wire  bank${j}_ram${k}_wmb_rd_en = sc2buf_wmb_rd_en&&(sc2buf_wmb_rd_addr[${bank_slice}]==${j}); )
 //:         }
-//:         if(CBUF_BANK_RAM_CASE==2){
+//:         if(CBUF_BANK_RAM_CASE==1){
 //:         print qq(
 //:     wire  bank${j}_ram${k}_wmb_rd_en = sc2buf_wmb_rd_en&&(sc2buf_wmb_rd_addr[${bank_slice}]==${j})&&(sc2buf_wmb_rd_addr[0]==${k}); )
 //:         }
 //:         if(CBUF_BANK_RAM_CASE==3){
 //:         print qq(
-//:     wire  bank${j}_ram${k}_wmb_rd_en = sc2buf_wmb_rd_en&&(sc2buf_wmb_rd_addr[${bank_slice}]==${j})&&(sc2buf_wmb_rd_addr[0]==${k}/2); )
+//:     wire  bank${j}_ram${k}_wmb_rd_en = sc2buf_wmb_rd_en&&(sc2buf_wmb_rd_addr[${bank_slice}]==${j})&&(sc2buf_wmb_rd_addr[0]==${kdiv2}); )
+//:         }
+//:         if(CBUF_BANK_RAM_CASE==5){
+//:         print qq(
+//:     wire  bank${j}_ram${k}_wmb_rd_en = sc2buf_wmb_rd_en&&(sc2buf_wmb_rd_addr[${bank_slice}]==${j})&&(sc2buf_wmb_rd_addr[0]==${kdiv4}); )
 //:         }
 //:     }
 //: }
@@ -680,11 +744,11 @@ wire[CBUF_RD_PORT_WIDTH-1:0] sc2buf_wt_rd_data = l4group_wt_rd_data[CBUF_RD_PORT
 //: print  "`ifdef  CBUF_WEIGHT_COMPRESSED";
 //: for(my $j=CBUF_BANK_NUMBER-1; $j<CBUF_BANK_NUMBER ; $j++){
 //:     for(my $k=0; $k<CBUF_RAM_PER_BANK ; $k++){
-//:         if((CBUF_BANK_RAM_CASE==0)||(CBUF_BANK_RAM_CASE==1)||(CBUF_BANK_RAM_CASE==4)){
+//:         if((CBUF_BANK_RAM_CASE==0)||(CBUF_BANK_RAM_CASE==2)||(CBUF_BANK_RAM_CASE==4)){
 //:         print qq(
 //:     wire [CBUF_RAM_DEPTH_BITS-1:0] bank${j}_ram${k}_wmb_rd_addr = {CBUF_RAM_DEPTH_BITS{bank${j}_ram${k}_wmb_rd_en}}&(sc2buf_wmb_rd_addr[CBUF_RAM_DEPTH_BITS-1:0]); )
 //:             }
-//:         if((CBUF_BANK_RAM_CASE==2)||(CBUF_BANK_RAM_CASE==3)){
+//:         if((CBUF_BANK_RAM_CASE==1)||(CBUF_BANK_RAM_CASE==3)||(CBUF_BANK_RAM_CASE==5)){
 //:         print qq(
 //:     wire [CBUF_RAM_DEPTH_BITS-1:0] bank${j}_ram${k}_wmb_rd_addr = {CBUF_RAM_DEPTH_BITS{bank${j}_ram${k}_wmb_rd_en}}&(sc2buf_wmb_rd_addr[CBUF_RAM_DEPTH_BITS:1]); )
 //:         }
@@ -735,20 +799,24 @@ wire[CBUF_RD_PORT_WIDTH-1:0] sc2buf_wt_rd_data = l4group_wt_rd_data[CBUF_RD_PORT
 //: my $kk=CBUF_RD_PORT_WIDTH;
 //: for(my $j=CBUF_BANK_NUMBER-1; $j<CBUF_BANK_NUMBER ; $j++){
 //:     for(my $k=0; $k<CBUF_RAM_PER_BANK ; $k++){
-//:         if((CBUF_BANK_RAM_CASE==0)||(CBUF_BANK_RAM_CASE==1)||(CBUF_BANK_RAM_CASE==4)){
+//:         if((CBUF_BANK_RAM_CASE==0)||(CBUF_BANK_RAM_CASE==2)||(CBUF_BANK_RAM_CASE==4)){
 //:         $t1 .="{CBUF_RAM_WIDTH{bank${j}_ram${k}_wmb_rd_valid}} & bank${j}_ram${k}_wmb_rd_data ,";    
 //:         }
 //:     }
 //: }
 //: print "wire[${kk}-1:0] sc2buf_wmb_rd_data ="."{"."${t1}"."}; \n";
 //: for(my $j=CBUF_BANK_NUMBER-1; $j<CBUF_BANK_NUMBER ; $j++){
-//:         if(CBUF_BANK_RAM_CASE==2){
+//:         if(CBUF_BANK_RAM_CASE==1){
 //:         $t1 .="{CBUF_RAM_WIDTH{bank${j}_ram0_wmb_rd_valid}} & bank${j}_ram0_wmb_rd_data"; 
 //:         $t2 .="{CBUF_RAM_WIDTH{bank${j}_ram1_wmb_rd_valid}} & bank${j}_ram1_wmb_rd_data"; 
 //:         }
 //:         if(CBUF_BANK_RAM_CASE==3){
 //:         $t1 .="{{CBUF_RAM_WIDTH{bank${j}_ram1_wmb_rd_valid}} & bank${j}_ram1_wmb_rd_data,{CBUF_RAM_WIDTH{bank${j}_ram0_wmb_rd_valid}} & bank${j}_ram0_wmb_rd_data}"; 
 //:         $t2 .="{{CBUF_RAM_WIDTH{bank${j}_ram3_wmb_rd_valid}} & bank${j}_ram3_wmb_rd_data,{CBUF_RAM_WIDTH{bank${j}_ram2_wmb_rd_valid}} & bank${j}_ram2_wmb_rd_data}";
+//:     }
+//:         if(CBUF_BANK_RAM_CASE==5){
+//:         $t1 .="{{CBUF_RAM_WIDTH{bank${j}_ram3_wmb_rd_valid}} & bank${j}_ram3_wmb_rd_data,{CBUF_RAM_WIDTH{bank${j}_ram2_wmb_rd_valid}} & bank${j}_ram2_wmb_rd_data,{CBUF_RAM_WIDTH{bank${j}_ram1_wmb_rd_valid}} & bank${j}_ram1_wmb_rd_data,{CBUF_RAM_WIDTH{bank${j}_ram0_wmb_rd_valid}} & bank${j}_ram0_wmb_rd_data}"; 
+//:         $t2 .="{{CBUF_RAM_WIDTH{bank${j}_ram7_wmb_rd_valid}} & bank${j}_ram7_wmb_rd_data,{CBUF_RAM_WIDTH{bank${j}_ram6_wmb_rd_valid}} & bank${j}_ram6_wmb_rd_data,{CBUF_RAM_WIDTH{bank${j}_ram5_wmb_rd_valid}} & bank${j}_ram5_wmb_rd_data,{CBUF_RAM_WIDTH{bank${j}_ram4_wmb_rd_valid}} & bank${j}_ram4_wmb_rd_data}"; 
 //:     }
 //: }
 //: print "wire[${kk}-1:0] wmb_rd_data ="."(${t1})|(${t2}); \n";
@@ -757,7 +825,7 @@ wire[CBUF_RD_PORT_WIDTH-1:0] sc2buf_wt_rd_data = l4group_wt_rd_data[CBUF_RD_PORT
 
 
 //get sram read en, data_rd0/data_rd1/weight/wmb
-//: if ((CBUF_BANK_RAM_CASE==0)|(CBUF_BANK_RAM_CASE==1)|(CBUF_BANK_RAM_CASE==4)){
+//: if ((CBUF_BANK_RAM_CASE==0)|(CBUF_BANK_RAM_CASE==2)|(CBUF_BANK_RAM_CASE==4)){
 //: for (my $i=0; $i<CBUF_BANK_NUMBER-1; $i++){
 //:     for (my $j=0; $j<CBUF_RAM_PER_BANK; $j++){
 //: print qq(
@@ -777,7 +845,7 @@ wire[CBUF_RD_PORT_WIDTH-1:0] sc2buf_wt_rd_data = l4group_wt_rd_data[CBUF_RD_PORT
 //: }
 //: }
 //:
-//: if ((CBUF_BANK_RAM_CASE==2)|(CBUF_BANK_RAM_CASE==3)){
+//: if ((CBUF_BANK_RAM_CASE==1)||(CBUF_BANK_RAM_CASE==3)||(CBUF_BANK_RAM_CASE==5)){
 //: for (my $i=0; $i<CBUF_BANK_NUMBER-1; $i++){
 //:     for (my $j=0; $j<CBUF_RAM_PER_BANK; $j++){
 //: print qq(
@@ -800,7 +868,7 @@ wire[CBUF_RD_PORT_WIDTH-1:0] sc2buf_wt_rd_data = l4group_wt_rd_data[CBUF_RD_PORT
 
 //get sram read addr, data_rd0/data_rd1/weight/wmb
 //: my $kk=CBUF_RAM_DEPTH_BITS;
-//: if ((CBUF_BANK_RAM_CASE==0)|(CBUF_BANK_RAM_CASE==1)|(CBUF_BANK_RAM_CASE==4)){
+//: if ((CBUF_BANK_RAM_CASE==0)|(CBUF_BANK_RAM_CASE==2)|(CBUF_BANK_RAM_CASE==4)){
 //: for (my $i=0; $i<CBUF_BANK_NUMBER-1; $i++){
 //:     for (my $j=0; $j<CBUF_RAM_PER_BANK; $j++){
 //: print qq(
@@ -824,7 +892,7 @@ wire[CBUF_RD_PORT_WIDTH-1:0] sc2buf_wt_rd_data = l4group_wt_rd_data[CBUF_RD_PORT
 //: }
 //: }
 //:
-//: if ((CBUF_BANK_RAM_CASE==2)|(CBUF_BANK_RAM_CASE==3)){
+//: if ((CBUF_BANK_RAM_CASE==1)||(CBUF_BANK_RAM_CASE==3)||(CBUF_BANK_RAM_CASE==5)){
 //: for (my $i=0; $i<CBUF_BANK_NUMBER-1; $i++){
 //:     for (my $j=0; $j<CBUF_RAM_PER_BANK; $j++){
 //: print qq(
