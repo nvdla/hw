@@ -93,6 +93,8 @@ class NV_NVDLA_cdma:
 
     private:
         // Variables
+        bool sc_dt_kick_off;
+        bool sc_wt_kick_off;
         bool dat_first_layer;
         bool wt_first_layer;
         bool wmb_first_layer;
@@ -276,6 +278,9 @@ class NV_NVDLA_cdma:
         void WaitUntilDataEntryPlanedIndexEqualEntryFreeIndex();
         void WaitUntilWeightEntryPlanedIndexEqualEntryFreeIndex();
         void WaitUntilWmbEntryPlanedIndexEqualEntryFreeIndex();
+
+        void WaitUntilSCDataKickOff();
+        void WaitUntilSCWeightKickOff();
 
         // Sequencers
         // Direct convolution sequencer
