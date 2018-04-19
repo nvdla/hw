@@ -24,7 +24,7 @@
 #define DATA_FORMAT_INT16       NVDLA_CSC_D_MISC_CFG_0_IN_PRECISION_INT16
 #define DATA_FORMAT_FP16        NVDLA_CSC_D_MISC_CFG_0_IN_PRECISION_FP16
 
-#define LOG_DETAIL 1
+#define LOG_DETAIL 0
 #define ENABLE_WEIGHT_REUSE 1
 
 USING_SCSIM_NAMESPACE(cmod)
@@ -241,6 +241,10 @@ void NV_NVDLA_csc::DataLoadSequenceThread () {
             }
         }
 
+        //notify cdma for kick off
+        dat_up_sc2cdma_payload.dat_entries = 0;
+        dat_up_sc2cdma_b_transport(&dat_up_sc2cdma_payload, b_transport_delay_);
+
         // Evaluation operation mode
         if (NVDLA_CSC_D_MISC_CFG_0_CONV_MODE_DIRECT == csc_conv_mode_) {
             // Direct convolution
@@ -369,7 +373,7 @@ void NV_NVDLA_csc::WeightLoadSequenceThread () {
 
                 wmb_entry_idx_start_        = 0;
                 wmb_entry_idx_available_    = 0;
-                if (csc_wt_prev_skip_weight_rls_) {
+                if (csc_wt_prev_skip_weight_rls_ && csc_prev_left_wt_entries_>0) {
                     wt_up_sc2cdma_payload.wt_kernels = csc_prev_left_wt_kernels_;   // Release the entire weight of previous layer in cbuf
                     wt_up_sc2cdma_payload.wt_entries = csc_prev_left_wt_entries_;
                     wt_up_sc2cdma_payload.wmb_entries = csc_prev_left_wmb_entries_;
@@ -422,6 +426,10 @@ void NV_NVDLA_csc::WeightLoadSequenceThread () {
             }
             cslInfo(("NV_NVDLA_csc::WeightLoadSequenceThread. Not reuse previous layer's weight. weight_entry_idx_start_=0x%lx weight_entry_idx_available_=0x%lx\n", weight_entry_idx_start_, weight_entry_idx_available_));
         }
+
+        //notify cdma for kick off
+        wt_up_sc2cdma_payload.wt_entries = 0;
+        wt_up_sc2cdma_b_transport(&wt_up_sc2cdma_payload, b_transport_delay_);
 
         // Evaluation operation mode
         if (NVDLA_CSC_D_MISC_CFG_0_CONV_MODE_DIRECT == csc_conv_mode_) {

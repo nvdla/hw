@@ -26,7 +26,7 @@
 
 #define WGS_FIFO_DEPTH          32 // The depth of WGS FIFO in RTL is 32*4Bytes
 
-#define LOG_DETAIL              1
+#define LOG_DETAIL              0
 
 USING_SCSIM_NAMESPACE(cmod)
 USING_SCSIM_NAMESPACE(clib)
@@ -105,6 +105,9 @@ NV_NVDLA_cdma::NV_NVDLA_cdma( sc_module_name module_name ):
     wgs_first_layer        = true;
     wmb_first_layer        = true;
     wt_first_layer         = true;
+
+    sc_dt_kick_off         = false;
+    sc_wt_kick_off         = false;
 
     // Reset
     Reset();
@@ -223,6 +226,9 @@ void NV_NVDLA_cdma::ActDataReadRequestSequenceThread () {
         cslInfo(("NV_NVDLA_cdma::ActDataReadRequestSequenceThread, before cdma_kickoff_\n"));
         wait(cdma_kickoff_);
         cslInfo(("NV_NVDLA_cdma::ActDataReadRequestSequenceThread, after cdma_kickoff_\n"));
+
+        WaitUntilSCDataKickOff();
+        cslInfo(("NV_NVDLA_cdma::ActDataReadRequestSequenceThread, after csc_kickoff_\n"));
 
         if (cdma_conv_mode_ == NVDLA_CDMA_D_MISC_CFG_0_CONV_MODE_DIRECT) {
             if (cdma_datain_format_ == NVDLA_CDMA_D_DATAIN_FORMAT_0_DATAIN_FORMAT_FEATURE)
@@ -448,6 +454,9 @@ void NV_NVDLA_cdma::WeightReadRequestSequenceThread () {
         cslInfo(("before wait cdma_kickoff_\n"));
         wait(cdma_kickoff_);
         cslInfo(("wait cdma_kickoff_ done\n"));
+
+        WaitUntilSCWeightKickOff();
+        cslInfo(("wait csc_kickoff_ done\n"));
 
         if (cdma_conv_mode_ == NVDLA_CDMA_D_MISC_CFG_0_CONV_MODE_DIRECT) {
             if (cdma_datain_format_ == NVDLA_CDMA_D_DATAIN_FORMAT_0_DATAIN_FORMAT_FEATURE)
@@ -3326,6 +3335,32 @@ void NV_NVDLA_cdma::SendWeightDmaReadRequest(nvdla_dma_rd_req_t* payload, uint8_
     cslDebug((50, "NV_NVDLA_cdma::SendWeightDmaReadRequest, end.\n"));
 }
 
+void NV_NVDLA_cdma::WaitUntilSCDataKickOff() {
+    while(true) {
+        if(sc_dt_kick_off) {
+            cslDebug((50, "NV_NVDLA_cdma::WaitUntilCSCDataKickOff, break\n"));
+            sc_dt_kick_off = false;
+            break;
+        } else {
+            cslDebug((50, "NV_NVDLA_cdma::WaitUntilCSCDataKickOff, go to sleep\n"));
+            wait(sc_updated_cbuf_usage_data_);
+        }
+    }
+}
+
+void NV_NVDLA_cdma::WaitUntilSCWeightKickOff() {
+    while(true) {
+        if(sc_wt_kick_off) {
+            cslDebug((50, "NV_NVDLA_cdma::WaitUntilCSCWeightKickOff, break\n"));
+            sc_wt_kick_off = false;
+            break;
+        } else {
+            cslDebug((50, "NV_NVDLA_cdma::WaitUntilCSCWeightKickOff, go to sleep\n"));
+            wait(sc_updated_cbuf_usage_weight_);
+        }
+    }
+}
+
 void NV_NVDLA_cdma::WaitUntilCBufferHasEnoughFreeDataEntry() {
     while (true) {
         if(data_entry_idx_planed_ <= data_entry_idx_free_) {
@@ -3506,7 +3541,15 @@ void NV_NVDLA_cdma::cvif2cdma_wt_rd_rsp_b_transport(int ID, nvdla_dma_rd_rsp_t* 
 }
 
 void NV_NVDLA_cdma::dat_up_sc2cdma_b_transport(int ID, nvdla_dat_info_update_t* payload, sc_time& delay){
-    data_entry_idx_free_            += payload->dat_entries;
+    if(payload->dat_entries == 0)
+    {
+        sc_dt_kick_off = true;
+        sc_updated_cbuf_usage_data_.notify();
+        cslDebug((50, "NV_NVDLA_cdma::dat_up_sc2cdma_b_transport sc_dt_kick_off\n"));
+        return;
+    }
+
+    data_entry_idx_free_ += payload->dat_entries;
     cslDebug((50, "NV_NVDLA_cdma::dat_up_sc2cdma_b_transport\n"));
     cslDebug((50, "    payload->dat_entries is 0x%x\n", uint32_t (payload->dat_entries)));
     cslDebug((50, "    data_entry_idx_free_ is 0x%x\n", data_entry_idx_free_));
@@ -3515,8 +3558,16 @@ void NV_NVDLA_cdma::dat_up_sc2cdma_b_transport(int ID, nvdla_dat_info_update_t* 
 }
 
 void NV_NVDLA_cdma::wt_up_sc2cdma_b_transport(int ID, nvdla_wt_info_update_t* payload, sc_time& delay){
-    weight_entry_idx_free_  +=  payload->wt_entries;
-    wmb_entry_idx_free_     +=  payload->wmb_entries;
+    if(payload->wt_entries == 0)
+    {
+        sc_wt_kick_off = true;
+        sc_updated_cbuf_usage_weight_.notify();
+        cslDebug((50, "NV_NVDLA_cdma::wt_up_sc2cdma_b_transport, sc_wt_kick_off\n"));
+        return;
+    }
+
+    weight_entry_idx_free_ +=  payload->wt_entries;
+    wmb_entry_idx_free_    +=  payload->wmb_entries;
     cslDebug((50, "NV_NVDLA_cdma::wt_up_sc2cdma_b_transport\n"));
     cslDebug((50, "    payload->wt_kernels is 0x%x\n", uint32_t (payload->wt_kernels)));
     cslDebug((50, "    payload->wt_entries is 0x%x\n", uint32_t (payload->wt_entries)));
