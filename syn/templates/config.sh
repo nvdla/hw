@@ -38,6 +38,7 @@ export EXTRA_RTL=" \
 # If there are verilog header files, where do I find them?
 export RTL_INCLUDE_SEARCH_PATH=" \
     ${NVDLA_ROOT}/outdir/${PROJECT}/vmod/include \
+    ${NVDLA_ROOT}/outdir/${PROJECT}/spec/defs \
 "
 
 

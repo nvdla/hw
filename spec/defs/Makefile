@@ -31,7 +31,9 @@ project.h : $(OUT_DIR)/project.def
 project.vh : $(OUT_DIR)/project.def
 	$(AT)$(PYTHON) $(DEFGEN) -i $< -o $(OUT_DIR)/$@ -b v
 	@echo "" >> $(OUT_DIR)/$@
+ifeq (${DESIGNWARE_NOEXIST},1)
 	@echo "\`define DESIGNWARE_NOEXIST ${DESIGNWARE_NOEXIST}" >> $(OUT_DIR)/$@
+endif                          
 
 project.py : $(OUT_DIR)/project.def
 	$(AT)$(PYTHON) $(DEFGEN) -i $< -o $(OUT_DIR)/$@ -b py
