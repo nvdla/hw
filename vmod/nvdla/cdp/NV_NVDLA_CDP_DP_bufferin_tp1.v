@@ -51,15 +51,17 @@ wire           cdp_rdma2dp_ready;
 reg      [3:0] cube_end_width_cnt;
 //: my $tp = NVDLA_CDP_THROUGHPUT;
 //: my $bpe = NVDLA_CDP_ICVTO_BWPE;
+//: my $reg_num = int(8/$tp + 1);
+//: my $reg_1stc_num = int(4/$tp);
 //: foreach my $m  (0..7) {
-//:     foreach my $k  (0..8) {
+//:     foreach my $k  (0..$reg_num -1) {
 //:     print qq(
 //:         reg     [${tp}*${bpe}-1:0] data_shift_${k}${m};
 //:     );
 //:     }
 //: }
 //: foreach my $m  (0..7) {
-//:     foreach my $k  (0..4) {
+//:     foreach my $k  (0..$reg_1stc_num -1) {
 //:     print qq(
 //:         reg     [${tp}*${bpe}-1:0] data_1stC_${k}${m};
 //:     );
@@ -217,10 +219,10 @@ always @(*) begin
 //: my $atmm = NVDLA_MEMORY_ATOMIC_SIZE;
 //: if($atmm == 4) {
 //:     print qq(
-//:           if(is_last_c & is_last_h & is_last_w) begin
+//:           if(is_posc_end & is_last_c & is_last_h & is_last_w) begin
 //:               NormalC2CubeEnd = 1;
 //:               stat_nex = CUBE_END;
-//:           end else if(is_last_c & (~(is_last_h & is_last_w))) begin
+//:           end else if(is_posc_end & is_last_c) begin
 //:               stat_nex = FIRST_C; 
 //:           end else begin
 //:               stat_nex = NORMAL_C;
@@ -234,10 +236,10 @@ always @(*) begin
         end
       end
       NORMAL_C: begin
-        if ((is_b_sync & is_posc_end & is_last_c & is_last_h & is_last_w & load_din)) begin
+        if (is_b_sync & is_posc_end & is_last_c & is_last_h & is_last_w & load_din) begin
           NormalC2CubeEnd = 1;
           stat_nex = CUBE_END; 
-        end else if ((is_b_sync & is_posc_end & is_last_c) & (~(is_last_h & is_last_w) & load_din)) begin
+        end else if (is_b_sync & is_posc_end & is_last_c & load_din) begin
           stat_nex = FIRST_C; 
         end
       end
@@ -247,9 +249,9 @@ always @(*) begin
 //: my $atmm = NVDLA_MEMORY_ATOMIC_SIZE;
 //: if($atmm == 4) {
 //:     print qq(
-//:            if(is_last_c & is_last_h & is_last_w)
+//:            if(is_posc_end & is_last_c & is_last_h & is_last_w)
 //:                stat_nex = CUBE_END;
-//:            else if(is_posc_end)
+//:            else if(is_posc_end & is_last_c)
 //:                stat_nex = FIRST_C;
 //:            else
 //:                stat_nex = SECOND_C; 
@@ -305,15 +307,17 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
 //: my $tp = NVDLA_CDP_THROUGHPUT;
 //: my $bpe = NVDLA_CDP_ICVTO_BWPE;
+//: my $reg_num = int(8/$tp + 1);
+//: my $reg_1stc_num = int(4/$tp);
 //:     foreach my $m  (0..7) {
-//:         foreach my $k  (0..8) {
+//:         foreach my $k  (0..$reg_num -1) {
 //:         print qq(
 //:                 data_shift_${k}${m} <= {${tp}*${bpe}{1'd0}};
 //:         );
 //:         }
 //:     }
 //:     foreach my $m  (0..7) {
-//:         foreach my $k  (0..3) {
+//:         foreach my $k  (0..$reg_1stc_num -1) {
 //:         print qq(
 //:                data_1stC_${k}${m} <= {${tp}*${bpe}{1'd0}};
 //:         );
@@ -325,42 +329,41 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
           if(load_din) begin
 //: my $tp = NVDLA_CDP_THROUGHPUT;
 //: my $bpe = NVDLA_CDP_ICVTO_BWPE;
+//: my $reg_num = int(8/$tp + 1);
 //:             foreach my $m  (0..7) {
 //:                 print qq(
 //:                     if(is_pos_w==4'd${m}) begin    
 //:                     data_shift_0${m} <= dp_data[${tp}*${bpe}-1:0];
-//:                     data_shift_1${m} <= data_shift_0${m};
-//:                     data_shift_2${m} <= data_shift_1${m};
-//:                     data_shift_3${m} <= data_shift_2${m};
+//:                 );
+//:                 my $p = 4/$tp-2;
+//:                 foreach my $s  (0..$p) {
+//:                     my $q = $s +1;
+//:                     print qq(
+//:                         data_shift_${q}${m} <= data_shift_${s}${m};
+//:                     );
+//:                 }
+//:                 print qq(
 //:                     end
 //:                 );
-//:             }
-
-//:             foreach my $k  (0..4) {
-//:             my $m = $k + 4;
-//:                 foreach my $j  (0..7) {
-//:                 print qq(
-//:                     data_shift_${m}${j} <= {${tp}*${bpe}{1'd0}};
-//:                 );
-//:                 }
 //:             }
       end end
       NORMAL_C: begin
           if(load_din) begin
 //: my $tp = NVDLA_CDP_THROUGHPUT;
 //: my $bpe = NVDLA_CDP_ICVTO_BWPE;
+//: my $reg_num = int(8/$tp + 1);
 //:             foreach my $m  (0..7) {
 //:                 print qq(
 //:                         if(is_pos_w==4'd${m}) begin
 //:                            data_shift_0${m} <= dp_data[${tp}*${bpe}-1:0];
-//:                            data_shift_1${m} <= data_shift_0${m};
-//:                            data_shift_2${m} <= data_shift_1${m};
-//:                            data_shift_3${m} <= data_shift_2${m};
-//:                            data_shift_4${m} <= data_shift_3${m};
-//:                            data_shift_5${m} <= data_shift_4${m};
-//:                            data_shift_6${m} <= data_shift_5${m};
-//:                            data_shift_7${m} <= data_shift_6${m};
-//:                            data_shift_8${m} <= data_shift_7${m};
+//:                 );
+//:                 foreach my $s  (0..$reg_num -2) {
+//:                 my $k = $s + 1;
+//:                     print qq(
+//:                            data_shift_${k}${m} <= data_shift_${s}${m};
+//:                     );
+//:                 }
+//:                 print qq(
 //:                        end
 //:                 );
 //:             }
@@ -368,35 +371,40 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
       FIRST_C: begin
 //: my $tp = NVDLA_CDP_THROUGHPUT;
 //: my $bpe = NVDLA_CDP_ICVTO_BWPE;
+//: my $reg_num = int(8/$tp + 1);
+//: my $reg_1stc_num = int(4/$tp);
 //:             foreach my $m  (0..7) {
 //:                 print qq(
 //:                          if(hold_here & rdma2dp_ready_normal) begin                
 //:                              if(width_pre_cnt==4'd${m}) begin                      
 //:                                  data_shift_0${m} <= {${tp}*${bpe}{1'd0}};      
-//:                                  data_shift_1${m} <= data_shift_0${m};             
-//:                                  data_shift_2${m} <= data_shift_1${m};             
-//:                                  data_shift_3${m} <= data_shift_2${m};             
-//:                                  data_shift_4${m} <= data_shift_3${m};             
-//:                                  data_shift_5${m} <= data_shift_4${m};             
-//:                                  data_shift_6${m} <= data_shift_5${m};             
-//:                                  data_shift_7${m} <= data_shift_6${m};             
-//:                                  data_shift_8${m} <= data_shift_7${m};             
+//:                 );
+//:                 foreach my $s  (0..$reg_num -2) {
+//:                 my $k = $s + 1;
+//:                     print qq(
+//:                                  data_shift_${k}${m} <= data_shift_${s}${m};             
+//:                     );
+//:                 }
+//:                 print qq(
 //:                              end                                                   
 //:                          end else begin                                            
 //:                              if((is_pos_w==4'd${m}) & load_din) begin              
 //:                                  data_1stC_0${m}  <= dp_data[${tp}*${bpe}-1:0]; 
-//:                                  data_1stC_1${m}  <= data_1stC_0${m};              
-//:                                  data_1stC_2${m}  <= data_1stC_1${m};              
-//:                                  data_1stC_3${m}  <= data_1stC_2${m};              
 //:                                  data_shift_0${m} <= {${tp}*${bpe}{1'd0}};      
-//:                                  data_shift_1${m} <= data_shift_0${m};             
-//:                                  data_shift_2${m} <= data_shift_1${m};             
-//:                                  data_shift_3${m} <= data_shift_2${m};             
-//:                                  data_shift_4${m} <= data_shift_3${m};             
-//:                                  data_shift_5${m} <= data_shift_4${m};             
-//:                                  data_shift_6${m} <= data_shift_5${m};             
-//:                                  data_shift_7${m} <= data_shift_6${m};             
-//:                                  data_shift_8${m} <= data_shift_7${m};             
+//:                 );
+//:                 foreach my $s  (0..$reg_num -2) {
+//:                 my $k = $s + 1;
+//:                     print qq(
+//:                                  data_shift_${k}${m} <= data_shift_${s}${m};             
+//:                     );
+//:                 }
+//:                 foreach my $s  (0..$reg_1stc_num -2) {
+//:                 my $k = $s + 1;
+//:                     print qq(
+//:                                  data_1stC_${k}${m} <= data_1stC_${s}${m};             
+//:                     );
+//:                 }
+//:                 print qq(
 //:                              end                                                   
 //:                          end                                                       
 //:                 );
@@ -406,18 +414,26 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
           if(load_din) begin
 //: my $tp = NVDLA_CDP_THROUGHPUT;
 //: my $bpe = NVDLA_CDP_ICVTO_BWPE;
+//: my $reg_num = int(8/$tp + 1);
+//: my $reg_1stc_num = int(4/$tp);
 //:             foreach my $m  (0..7) {
 //:                 print qq(
 //:                        if(is_pos_w==4'd${m}) begin
 //:                            data_shift_0${m} <= dp_data[${tp}*${bpe}-1:0];
-//:                            data_shift_1${m} <= data_1stC_0${m};
-//:                            data_shift_2${m} <= data_1stC_1${m};
-//:                            data_shift_3${m} <= data_1stC_2${m};
-//:                            data_shift_4${m} <= data_1stC_3${m};
-//:                            data_shift_5${m} <= {${tp}*${bpe}{1'd0}};
-//:                            data_shift_6${m} <= {${tp}*${bpe}{1'd0}};
-//:                            data_shift_7${m} <= {${tp}*${bpe}{1'd0}};
-//:                            data_shift_8${m} <= {${tp}*${bpe}{1'd0}};
+//:                 );
+//:                 foreach my $s  (0..$reg_1stc_num -1) {
+//:                 my $k = $s + 1;
+//:                     print qq(
+//:                            data_shift_${k}${m} <= data_1stC_${s}${m};
+//:                     );
+//:                 }
+//:                 foreach my $s  (0..$reg_1stc_num -1) {
+//:                 my $k = $s + $reg_1stc_num + 1;
+//:                     print qq(
+//:                            data_shift_${k}${m} <= {${tp}*${bpe}{1'd0}};
+//:                     );
+//:                 }
+//:                 print qq(
 //:                        end
 //:                 );
 //:             }
@@ -426,18 +442,20 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
           if(rdma2dp_ready_normal) begin
 //: my $tp = NVDLA_CDP_THROUGHPUT;
 //: my $bpe = NVDLA_CDP_ICVTO_BWPE;
+//: my $reg_num = int(8/$tp + 1);
+//: my $reg_1stc_num = int(4/$tp);
 //:             foreach my $m  (0..7) {
 //:                 print qq(
 //:                         if(cube_end_width_cnt==4'd${m}) begin                
 //:                                  data_shift_0${m} <= {${tp}*${bpe}{1'd0}};
-//:                                  data_shift_1${m} <= data_shift_0${m};       
-//:                                  data_shift_2${m} <= data_shift_1${m};       
-//:                                  data_shift_3${m} <= data_shift_2${m};       
-//:                                  data_shift_4${m} <= data_shift_3${m};       
-//:                                  data_shift_5${m} <= data_shift_4${m};       
-//:                                  data_shift_6${m} <= data_shift_5${m};       
-//:                                  data_shift_7${m} <= data_shift_6${m};       
-//:                                  data_shift_8${m} <= data_shift_7${m};       
+//:                 );
+//:                 foreach my $s  (0..$reg_num -2) {
+//:                 my $k = $s + 1;
+//:                     print qq(
+//:                                  data_shift_${k}${m} <= data_shift_${s}${m};       
+//:                     );
+//:                 }
+//:                 print qq(
 //:                        end                                                   
 //:                 );
 //:             }
@@ -445,15 +463,17 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
       default: begin 
 //: my $tp = NVDLA_CDP_THROUGHPUT;
 //: my $bpe = NVDLA_CDP_ICVTO_BWPE;
+//: my $reg_num = int(8/$tp + 1);
+//: my $reg_1stc_num = int(4/$tp);
 //:             foreach my $m  (0..7) {
-//:                 foreach my $k  (0..8) {
+//:                 foreach my $k  (0..$reg_num -1) {
 //:                 print qq(
 //:                         data_shift_${k}${m} <= {${tp}*${bpe}{1'd0}};
 //:                 );
 //:                 }
 //:             }
 //:             foreach my $m  (0..7) {
-//:                 foreach my $k  (0..3) {
+//:                 foreach my $k  (0..$reg_1stc_num -1) {
 //:                 print qq(
 //:                        data_1stC_${k}${m} <= {${tp}*${bpe}{1'd0}};
 //:                 );
@@ -468,13 +488,11 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
     width_pre <= {4{1'b0}};
   end else begin
-    //if((stat_cur==NORMAL_C) & is_last_c & is_b_sync & (is_pos_c==3'd3) & load_din)
-    if((stat_cur==NORMAL_C) & is_last_c & is_b_sync & is_posc_end/*(is_pos_c==3'd7)*/ & load_din)
+    if((stat_cur==NORMAL_C) & is_last_c & is_b_sync & is_posc_end & load_din)
         width_pre <= is_width;
   end
 end
 always @(*) begin
-    //if((stat_cur==FIRST_C) & (is_pos_w == 0))
     if((stat_cur==FIRST_C) & (is_pos_w == 0) & (is_pos_c == 0))
         width_cur_1 = is_width;
     else
@@ -585,7 +603,7 @@ end
 //: if( $tp >= 4 ) {
 //:     print " assign cube_done = (stat_cur==CUBE_END) & (cube_end_width_cnt == last_width) & rdma2dp_ready_normal;    \n";
 //: } elsif( $tp == 2 ) {
-//:     print " assign cube_done = (stat_cur==CUBE_END) & (cube_end_width_cnt == last_width) & (cube_end_c_cnt == 3'd2) & rdma2dp_ready_normal; \n";
+//:     print " assign cube_done = (stat_cur==CUBE_END) & (cube_end_width_cnt == last_width) & (cube_end_c_cnt == 3'd1) & rdma2dp_ready_normal; \n";
 //: } elsif( $tp == 1 ) {
 //:     print " assign cube_done = (stat_cur==CUBE_END) & (cube_end_width_cnt == last_width) & (cube_end_c_cnt == 3'd3) & rdma2dp_ready_normal; \n";
 //: }
@@ -668,16 +686,26 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     buffer_data <= {buf2sq_data_bw{1'b0}};
   end else begin
   if(((stat_cur_dly==NORMAL_C) || (stat_cur_dly==SECOND_C) || (stat_cur_dly==CUBE_END)) & data_shift_load) begin
-//: foreach my $m  (0..7) {
-//:     print qq(
-//:         if(is_pos_w_dly == 4'd${m})
-//:             buffer_data <= {data_shift_0${m},data_shift_1${m},data_shift_2${m},data_shift_3${m},
-//:                             data_shift_4${m},data_shift_5${m},data_shift_6${m},data_shift_7${m},data_shift_8${m}};
-//:     );
+//: if(NVDLA_CDP_THROUGHPUT == 1) {
+//:     foreach my $m  (0..7) {
+//:         print qq(
+//:             if(is_pos_w_dly == 4'd${m})
+//:                 buffer_data <= {data_shift_0${m},data_shift_1${m},data_shift_2${m},data_shift_3${m},
+//:                                 data_shift_4${m},data_shift_5${m},data_shift_6${m},data_shift_7${m},data_shift_8${m}};
+//:         );
+//:     }
+//: } elsif(NVDLA_CDP_THROUGHPUT == 2) {
+//:     foreach my $m  (0..7) {
+//:         print qq(
+//:             if(is_pos_w_dly == 4'd${m})
+//:                 buffer_data <= {data_shift_0${m},data_shift_1${m},data_shift_2${m},data_shift_3${m},data_shift_4${m}};
+//:         );
+//:     }
 //: }
   end else if(stat_cur_dly==FIRST_C) begin
       if(more2less_dly) begin
           if(data_shift_load) begin
+//: if(NVDLA_CDP_THROUGHPUT == 1) {
 //:         foreach my $m  (0..7) {
 //:             print qq(
 //:                 if(is_pos_w_dly == 4'd${m})
@@ -685,7 +713,16 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 //:                                     data_shift_4${m},data_shift_5${m},data_shift_6${m},data_shift_7${m},data_shift_8${m}};
 //:             );
 //:         }
+//: } elsif(NVDLA_CDP_THROUGHPUT == 2) {
+//:         foreach my $m  (0..7) {
+//:             print qq(
+//:                 if(is_pos_w_dly == 4'd${m})
+//:                     buffer_data <= {data_shift_0${m},data_shift_1${m},data_shift_2${m},data_shift_3${m},data_shift_4${m}};
+//:             );
+//:         }
+//: }
           end else if(hold_here_dly & data_shift_ready) begin
+//: if(NVDLA_CDP_THROUGHPUT == 1) {
 //:         foreach my $m  (0..7) {
 //:             print qq(
 //:                 if(width_pre_cnt_dly == 4'd${m})
@@ -693,9 +730,18 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 //:                                     data_shift_4${m},data_shift_5${m},data_shift_6${m},data_shift_7${m},data_shift_8${m}};
 //:             );
 //:         }
+//: } elsif(NVDLA_CDP_THROUGHPUT == 2) {
+//:         foreach my $m  (0..7) {
+//:             print qq(
+//:                 if(width_pre_cnt_dly == 4'd${m})
+//:                     buffer_data <= {data_shift_0${m},data_shift_1${m},data_shift_2${m},data_shift_3${m},data_shift_4${m}};
+//:             );
+//:         }
+//: }
           end
       end else begin
           if((is_pos_w_dly<=width_pre_dly) & data_shift_load) begin
+//: if(NVDLA_CDP_THROUGHPUT == 1) {
 //:         foreach my $m  (0..7) {
 //:             print qq(
 //:                 if(is_pos_w_dly == 4'd${m})
@@ -703,6 +749,14 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 //:                                     data_shift_4${m},data_shift_5${m},data_shift_6${m},data_shift_7${m},data_shift_8${m}};
 //:             );
 //:         }
+//: } elsif(NVDLA_CDP_THROUGHPUT == 2) {
+//:         foreach my $m  (0..7) {
+//:             print qq(
+//:                 if(is_pos_w_dly == 4'd${m})
+//:                     buffer_data <= {data_shift_0${m},data_shift_1${m},data_shift_2${m},data_shift_3${m},data_shift_4${m}};
+//:             );
+//:         }
+//: }
           end else if(data_shift_load) begin
               buffer_data <= {buf2sq_data_bw{1'b0}};
           end
