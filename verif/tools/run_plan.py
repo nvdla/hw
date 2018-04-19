@@ -9,11 +9,12 @@ import sys
 import random
 import json
 import re
-from pprint import pprint
-from datetime import datetime
+from pprint      import pprint
+from datetime    import datetime
 from collections import OrderedDict
-from testplan import TestPlan
-from run_report import RunReport
+from testplan    import TestPlan
+from run_report  import RunReport
+from lsf_monitor import LSFMonitor
 
 __DESCRIPTION__='''
 This class is used to run a batch of tests from a givin test plan:
@@ -250,20 +251,24 @@ class RunPlan(object):
 
     def dump_regression_status(self):
         # dump regression status data in JSON fromat
-        sts_data = {}
-        test_list = []
-        test_run_multi_time_list = []
-        git_cm_id = subprocess.check_output('git log -n 1 --pretty=format:"%H"', shell=True, encoding='ascii')
-        sts_data['unique_id'] = git_cm_id;
-        sts_data['plan_seed'] = self.config['seed']
-        sts_data['start_time'] = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
-        sts_data['status'] = 'running'
-        sts_data['is_official'] = 1
+        sts_data                   = {}
+        test_list                  = []
+        test_run_multi_time_list   = []
+        git_cm_id                  = subprocess.check_output('git log -n 1 --pretty=format:"%H"', shell = True, encoding = 'ascii')
+        sts_data['unique_id']      = git_cm_id;
+        sts_data['plan_seed']      = self.config['seed']
+        sts_data['start_time']     = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
+        sts_data['status']         = 'running'
+        sts_data['is_official']    = 1
         sts_data['metrics_result'] = {}
         if self.config['dump_trace_only']:
             sts_data['dump_trace_only'] = 'True'
         else:
             sts_data['dump_trace_only'] = 'False'
+        if not self.config['no_lsf'] and self.config['lsf_cmd']:
+            sts_data['farm_type'] = 'LSF'
+        else:
+            sts_data['farm_type'] = 'Local'
         for item in self.run_test_list:
             if item['name'] not in test_list:
                 test_list.append(item['name']) 
@@ -271,18 +276,20 @@ class RunPlan(object):
                 test_run_multi_time_list.append(item['name'])
         print('RUN_PLAN: following tests will be run multiple times')
         pprint(test_run_multi_time_list)
-        sts_data['metrics_result']['planned_test_number'] = len(test_list)
+        sts_data['metrics_result']['planned_test_number']    = len(test_list)
         sts_data['metrics_result']['unwrittern_test_number'] = 0
-        sts_data['metrics_result']['running_test_number'] = len(self._test_dir_cmd)
-        sts_data['metrics_result']['passing_rate'] = 0
-        sts_data['metrics_result']['code_coverage'] = 0
-        sts_data['metrics_result']['functional_coverage'] = 0
+        sts_data['metrics_result']['running_test_number']    = len(self._test_dir_cmd)
+        sts_data['metrics_result']['passing_rate']           = 0
+        sts_data['metrics_result']['code_coverage']          = 0
+        sts_data['metrics_result']['functional_coverage']    = 0
         with open(self.config['run_dir']+'/regression_status.json', 'w') as sts_fh:
             json.dump(sts_data, sts_fh, sort_keys=True, indent=4)
 
     def dump_test_orgz(self):
         test_orgz_data = {}
         test_id = 0
+        if not self.config['no_lsf'] and self.config['lsf_cmd']:
+            lsf_monitor = LSFMonitor()
         for test_dir,cmd_file in self._test_dir_cmd.items():
             test_orgz_data[test_id] = {}
             test_orgz_data[test_id]['dir'] = test_dir
@@ -293,7 +300,11 @@ class RunPlan(object):
                     test_orgz_data[test_id]['tags'] = item['tags']
                     break
             test_orgz_data[test_id]['test_bench'] = 'nvdla_utb'
-            test_orgz_data[test_id]['lsf_id'] = 'FIXME'
+            if not self.config['no_lsf'] and self.config['lsf_cmd']:
+                job_id = lsf_monitor.get_job_by_name('*'+test_dir+'*')
+                test_orgz_data[test_id]['job_id'] = int(job_id[0])
+            else:
+                test_orgz_data[test_id]['job_id'] = ''
             test_id += 1
         with open(self.config['run_dir']+'/test_organization.json', 'w') as test_orgz_fh:
             json.dump(test_orgz_data, test_orgz_fh, sort_keys=True, indent=4)

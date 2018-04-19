@@ -38,20 +38,32 @@ class LSFMonitor(object):
             self.print_job_report(jobs_sts)
             if self.no_running_jobs(jobs_sts):
                 break
-            self.time_sleep(self._interval)
             jobs_sts = self.get_job_exec_status(jobs_sts)
+            self.time_sleep(self._interval)
 
     def get_job_by_name(self, job_name=''):
         job_info = subprocess.check_output("bjobs -a -J '%0s'" % job_name, shell=True) 
         pattern = re.compile(r'\\n(\d+) ')
         job_id = pattern.findall(str(job_info))
+        job_id = [int(k) for k in job_id]
         return job_id
 
     def get_job_init_status(self, job_id=[]):
         exec_host_info = {}
         for item in job_id:
             exec_host_info[item] = {}
-            info       = subprocess.check_output('bjobs -l '+item, shell = True)
+            info       = subprocess.check_output('bjobs -l '+str(item), shell = True)
+            if not info:
+                exec_host_info[item]['status']       = 'EXPIRE'
+                exec_host_info[item]['testdir']      = '-'
+                exec_host_info[item]['cpulimit']     = '-'
+                exec_host_info[item]['exechost']     = '-'
+                exec_host_info[item]['runlimit']     = '-'
+                exec_host_info[item]['memlimit']     = '-'
+                exec_host_info[item]['cputime_used'] = '-'
+                exec_host_info[item]['maxmem']       = '-'
+                exec_host_info[item]['syndrome']     = '-'
+                continue
             cputime_p  = re.compile(r'CPU time used is ([\d\.]+)')
             cputime    = cputime_p.search(str(info))
             maxmem_p   = re.compile(r'MAX MEM:\s+(\d+.*)Mbytes;')
@@ -82,12 +94,24 @@ class LSFMonitor(object):
     def get_job_exec_status(self, job_status={}):
         for key,value in job_status.items():
             if value['status'] == 'RUN':
-                info = subprocess.check_output('bjobs -l '+key, shell = True)
-                match = re.search(r'.*Status\s+<(\w+)>,.*CPU time used is ([\d\.]+).*MAX MEM:\s+(\d+.*)Mbytes;', str(info))
-                job_status[key]['status']       = match.group(1)
-                job_status[key]['cputime_used'] = '{:.1f}'.format(float(match.group(2))/60)+' min'
-                job_status[key]['maxmem']       = match.group(3)+'MB'
-                if match.group(1) == 'EXIT':
+                info = subprocess.check_output('bjobs -l '+str(key), shell = True)
+                status_p   = re.compile(r'Status\s+<(\w+)>,')
+                status     = status_p.search(str(info))
+                cputime_p  = re.compile(r'CPU time used is ([\d\.]+)')
+                cputime    = cputime_p.search(str(info))
+                maxmem_p   = re.compile(r'MAX MEM:\s+(\d+.*)Mbytes;')
+                maxmem     = maxmem_p.search(str(info))
+
+                job_status[key]['status']       = status.group(1)
+                if cputime:
+                    job_status[key]['cputime_used']   = '{:.1f}'.format(float(cputime.group(1))/60)+' min'
+                else:
+                    job_status[key]['cputime_used']   = '-'
+                if maxmem:
+                    job_status[key]['maxmem']   = maxmem.group(1)+'MB'
+                else:
+                    job_status[key]['maxmem']   = '-'
+                if status.group(1) == 'EXIT':
                     syndrome = re.search(r'.*Completed <exit>;\s*(\w.*)\..*MEMORY USAGE', str(info))
                     job_status[key]['syndrome'] = str(re.sub(r'\\n\s+','',syndrome.group(1)))
         return job_status
