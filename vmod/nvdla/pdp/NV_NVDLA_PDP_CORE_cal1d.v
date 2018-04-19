@@ -64,7 +64,7 @@ input          nvdla_core_rstn;
 input          datin_src_cfg;
 input          dp2reg_done;
 input    [2:0] padding_h_cfg;
-input   [NVDLA_PDP_THROUGHPUT*NVDLA_BPE+13:0] pdp_rdma2dp_pd;
+input   [NVDLA_PDP_THROUGHPUT*NVDLA_BPE+11:0] pdp_rdma2dp_pd;
 input          pdp_rdma2dp_valid;
 input          pooling1d_prdy;
 input   [12:0] pooling_channel_cfg;
@@ -117,7 +117,7 @@ wire    [12:0] cube_out_channel;
 wire     [3:0] cube_width_in;
 wire           cur_datin_disable_sync;
 wire    [NVDLA_PDP_THROUGHPUT*(NVDLA_BPE+3)-1:0] datain_ext;
-wire    [NVDLA_PDP_THROUGHPUT*(NVDLA_BPE+3)+10:0] datin_buf;
+wire    [NVDLA_PDP_THROUGHPUT*(NVDLA_BPE+3)+8:0] datin_buf;
 wire     [2:0] first_out_num_dec2;
 wire           first_splitw;
 wire           first_splitw_en;
@@ -177,10 +177,10 @@ wire     [2:0] padding_stride4_num;
 wire    [10:0] partial_w_last;
 wire           pdp_cube_end;
 wire           pdp_cube_sync;
-wire   [NVDLA_PDP_THROUGHPUT*(NVDLA_BPE+3) + 14:0] pdp_datin_pd;
-wire   [NVDLA_PDP_THROUGHPUT*(NVDLA_BPE+3) + 14:0] pdp_datin_pd_f0;
-wire    [NVDLA_PDP_THROUGHPUT*NVDLA_BPE+13:0] pdp_datin_pd_f_0;
-wire    [NVDLA_PDP_THROUGHPUT*NVDLA_BPE+13:0] pdp_datin_pd_f_mux0;
+wire   [NVDLA_PDP_THROUGHPUT*(NVDLA_BPE+3) + 12:0] pdp_datin_pd;
+wire   [NVDLA_PDP_THROUGHPUT*(NVDLA_BPE+3) + 12:0] pdp_datin_pd_f0;
+wire    [NVDLA_PDP_THROUGHPUT*NVDLA_BPE+11:0] pdp_datin_pd_f_0;
+wire    [NVDLA_PDP_THROUGHPUT*NVDLA_BPE+11:0] pdp_datin_pd_f_mux0;
 wire           pdp_datin_prdy;
 wire           pdp_datin_prdy_0;
 wire           pdp_datin_prdy_1;
@@ -304,6 +304,9 @@ reg      [7:0] pad_r_remain;
 reg     [18:0] pad_table_out;
 reg      [2:0] padding_left;
 reg      [2:0] padding_stride_num;
+//reg    [NVDLA_PDP_THROUGHPUT*(NVDLA_BPE+3) + 12:0] pdp_datin_pd0;
+//reg            pdp_datin_prdy_f0;
+//reg            pdp_datin_pvld0;
 reg            pdp_op_pending;
 reg            pdpw_active_en;
 reg    [NVDLA_PDP_THROUGHPUT*(NVDLA_BPE+6)-1:0] pooling1d_data_pad;
@@ -370,7 +373,7 @@ assign pdp_datin_pvld_f = pdp_datin_pvld_mux0;
 //---------------------------------------------------------------
 //: my $dbw = NVDLA_PDP_THROUGHPUT*NVDLA_BPE;
 //: my $Enum = NVDLA_MEMORY_ATOMIC_SIZE/NVDLA_PDP_THROUGHPUT-1;
-//: print " assign posc_last = (pdp_datin_pd_f_0[${dbw}+8:${dbw}+4]==${Enum}); \n";
+//: print " assign posc_last = (pdp_datin_pd_f_0[${dbw}+6:${dbw}+4]==${Enum}); \n";
 
 
 //: my $k = NVDLA_PDP_THROUGHPUT;
@@ -391,8 +394,8 @@ assign datain_ext = {
 //: }
 pdp_din_0};
 
-assign pdp_datin_pd_f0 = {posc_last,pdp_datin_pd_f_0[NVDLA_PDP_THROUGHPUT*NVDLA_BPE+13:NVDLA_PDP_THROUGHPUT*NVDLA_BPE],datain_ext};
-//: my $k = NVDLA_PDP_THROUGHPUT*(NVDLA_BPE+3) + 15;
+assign pdp_datin_pd_f0 = {posc_last,pdp_datin_pd_f_0[NVDLA_PDP_THROUGHPUT*NVDLA_BPE+11:NVDLA_PDP_THROUGHPUT*NVDLA_BPE],datain_ext};
+//: my $k = NVDLA_PDP_THROUGHPUT*(NVDLA_BPE+3) + 13;
 //: &eperl::pipe(" -wid $k -is -do pdp_datin_pd0 -vo pdp_datin_pvld0 -ri pdp_datin_prdy -di pdp_datin_pd_f0 -vi pdp_datin_pvld_f -ro pdp_datin_prdy_f0 ");
 assign pdp_datin_prdy_f = pdp_datin_prdy_f0;
 assign pdp_datin_pvld = pdp_datin_pvld0;
@@ -403,9 +406,12 @@ assign pdp_datin_prdy_0 = ~ cur_datin_disable;
 //==============================================================
 //new splitw
 //---------------------------------------------------------------
-assign bsync           = pdp_datin_pd[NVDLA_PDP_THROUGHPUT*(NVDLA_BPE+3)+9];
-assign splitw_end_sync = load_din ? pdp_datin_pd[NVDLA_PDP_THROUGHPUT*(NVDLA_BPE+3)+12] : 1'b0;
-assign pdp_cube_sync   = pdp_datin_pd[NVDLA_PDP_THROUGHPUT*(NVDLA_BPE+3)+13];
+//assign bsync           = pdp_datin_pd[95];
+//assign splitw_end_sync = load_din ? pdp_datin_pd[98] : 1'b0;
+//assign pdp_cube_sync   = pdp_datin_pd[99];
+assign bsync           = pdp_datin_pd[NVDLA_PDP_THROUGHPUT*(NVDLA_BPE+3)+7];
+assign splitw_end_sync = load_din ? pdp_datin_pd[NVDLA_PDP_THROUGHPUT*(NVDLA_BPE+3)+10] : 1'b0;
+assign pdp_cube_sync   = pdp_datin_pd[NVDLA_PDP_THROUGHPUT*(NVDLA_BPE+3)+11];
 assign pdp_cube_end    = pdp_cube_sync & bsync & load_din;
 
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
@@ -643,7 +649,7 @@ assign load_din            = pdp_datin_prdy & pdp_datin_pvld;
 assign pooling_size_h[3:0] = pooling_size_h_cfg[2:0] + 3'd1;
 assign strip_recieve_done  = load_din & pdp_din_lc;
 //assign pdp_din_lc          = pdp_datin_pd[100];
-assign pdp_din_lc          = pdp_datin_pd[NVDLA_PDP_THROUGHPUT*(NVDLA_BPE+3)+14];
+assign pdp_din_lc          = pdp_datin_pd[NVDLA_PDP_THROUGHPUT*(NVDLA_BPE+3)+12];
 assign stride_end          = strip_recieve_done & (strip_xcnt_stride==pooling_stride_h_cfg[3:0]);
 assign init_cnt            = line_last_stripe_done | pdp_op_start;
 
@@ -1248,7 +1254,9 @@ assign line_ldata_valid = line_last_stripe_done;
 //:  }
 
 //////////////////////////////////////////////////////////////////////////////////////
-assign datin_buf    = pdp_datin_pd[NVDLA_PDP_THROUGHPUT*(NVDLA_BPE+3)+10:0];
+//assign datin_buf    = pdp_datin_pd[96:0];
+//assign datin_buf_1  = {pdp_datin_pd[96:88],pdp_datin_pd0[87:0]};
+assign datin_buf    = pdp_datin_pd[NVDLA_PDP_THROUGHPUT*(NVDLA_BPE+3)+8:0];
 assign pdp_datin_prdy_1 = &unit1d_prdy & pdp_info_in_prdy;
 assign pdp_full_pvld = pdp_datin_pvld | cur_datin_disable;
 
@@ -1294,7 +1302,7 @@ assign {pdp_din_lc_sync,last_c_sync, last_out_en_sync,cur_datin_disable_sync,poo
 //:       ,.average_pooling_en      (average_pooling_en)                          //|< w
 //:       ,.cur_datin_disable       (cur_datin_disable)                           //|< r
 //:       ,.last_out_en             ((last_out_en_sync | cur_datin_disable_sync)) //|< ?
-//:       ,.pdma2pdp_pd             (datin_buf[NVDLA_PDP_THROUGHPUT*(NVDLA_BPE+3)+8:0])                             //|< w
+//:       ,.pdma2pdp_pd             (datin_buf[NVDLA_PDP_THROUGHPUT*(NVDLA_BPE+3)+6:0])                             //|< w
 //:       ,.pdma2pdp_pvld           (unit1d_pvld[$i])                              //|< w
 //:       ,.pdp_din_lc_f            (pdp_din_lc)                                  //|< w
 //:       ,.pooling_din_1st         ((pooling_din_1st_$i ))                        //|< r

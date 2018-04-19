@@ -66,7 +66,7 @@ output [NVDLA_DMA_RD_REQ-1:0] cdp2mcif_rd_req_pd;
 #ifdef NVDLA_SECONDARY_MEMIF_ENABLE
 output        cdp2cvif_rd_req_valid;  /* data valid */
 input         cdp2cvif_rd_req_ready;  /* data return handshake */
-output [NVDLA_DMA_RD_REQ-1:0] cdp2cvif_rd_req_pd;
+output [78:0] cdp2cvif_rd_req_pd;
 #endif
 
 output       cq_wr_pvld;  /* data valid */
@@ -113,6 +113,15 @@ wire          cmd_accept;
 wire          cnt_cen;
 wire          cnt_clr;
 wire          cnt_inc;
+wire          cv_dma_rd_req_rdy;
+wire          cv_dma_rd_req_vld;
+wire   [78:0] cv_int_rd_req_pd;
+wire   [78:0] cv_int_rd_req_pd_d0;
+wire          cv_int_rd_req_ready;
+wire          cv_int_rd_req_ready_d0;
+wire          cv_int_rd_req_valid;
+wire          cv_int_rd_req_valid_d0;
+wire          cv_rd_req_rdyi;
 wire   [NVDLA_CDP_MEM_ADDR_BW+14:0] dma_rd_req_pd;
 wire          dma_rd_req_ram_type;
 wire          dma_rd_req_rdy;
@@ -130,6 +139,15 @@ wire          is_last_c;
 wire          is_last_h;
 wire          is_last_w;
 wire          is_slice_end;
+wire          mc_dma_rd_req_rdy;
+wire          mc_dma_rd_req_vld;
+wire   [78:0] mc_int_rd_req_pd;
+wire   [78:0] mc_int_rd_req_pd_d0;
+wire          mc_int_rd_req_ready;
+wire          mc_int_rd_req_ready_d0;
+wire          mc_int_rd_req_valid;
+wire          mc_int_rd_req_valid_d0;
+wire          mc_rd_req_rdyi;
 wire          mon_number_of_32x1_block_in_channel_c;
 wire          mon_op_en_neg;
 wire          mon_op_en_pos;

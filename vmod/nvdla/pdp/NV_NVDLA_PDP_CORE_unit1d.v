@@ -36,7 +36,7 @@ input          nvdla_core_rstn;
 input          average_pooling_en;
 input          cur_datin_disable;
 input          last_out_en;
-input   [NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+3)+8:0] pdma2pdp_pd;
+input   [NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+3)+6:0] pdma2pdp_pd;
 input          pdma2pdp_pvld;
 input          pdp_din_lc_f;
 input          pooling_din_1st;
@@ -136,7 +136,7 @@ reg      [2:0] pooling_size;
 
 // interface
 assign pdp_din_wpos  = pdma2pdp_pd[NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+3)+3:NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+3)];
-assign pdp_din_cpos  = pdma2pdp_pd[NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+3)+8:NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+3)+4];
+assign pdp_din_cpos  = {2'd0,pdma2pdp_pd[NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+3)+6:NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+3)+4]};
 assign buf_sel       = pdp_din_cpos;
 
 assign load_din      = pdma2pdp_pvld & pdma2pdp_prdy_f & (~cur_datin_disable) & pooling_unit_en;
