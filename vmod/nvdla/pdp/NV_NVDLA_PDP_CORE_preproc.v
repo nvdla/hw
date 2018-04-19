@@ -38,7 +38,7 @@ input          reg2dp_flying_mode;
 input          reg2dp_op_en;
 input  [NVDLA_PDP_ONFLY_INPUT_BW-1:0] sdp2pdp_pd;
 input          sdp2pdp_valid;
-output [NVDLA_PDP_THROUGHPUT*NVDLA_PDP_BWPE+13:0] pre2cal1d_pd;
+output [NVDLA_PDP_THROUGHPUT*NVDLA_PDP_BWPE+11:0] pre2cal1d_pd;
 output         pre2cal1d_pvld;
 output         sdp2pdp_ready;
 /////////////////////////////////////////////////////////////////
@@ -50,7 +50,7 @@ wire           line_end;
 wire           load_din;
 wire           onfly_en;
 wire           op_en_load;
-wire    [13:0] pre2cal1d_info;
+wire    [11:0] pre2cal1d_info;
 wire           pre2cal1d_pvld_f;
 wire           sdp2pdp_c_end;
 wire           sdp2pdp_cube_end;
@@ -438,7 +438,7 @@ end
 assign cube_end = split_end ;
 assign b_sync = line_end;
 
-assign pre2cal1d_info = {cube_end,split_end,surf_end,line_end,b_sync,pos_c[4:0],4'd0};// need update pos_c width into 5bits at final
+assign pre2cal1d_info = {cube_end,split_end,surf_end,line_end,b_sync,pos_c[2:0],4'd0};// need update pos_c width into 5bits at final
 assign pre2cal1d_pd = {pre2cal1d_info,pre2cal1d_data};
 ////////////////////////////
 ////////////////////////////

@@ -67,7 +67,7 @@ module NV_NVDLA_CDP_rdma (
 
  output        cdp_rdma2dp_valid;  /* data valid */
  input         cdp_rdma2dp_ready;  /* data return handshake */
- output [NVDLA_CDP_THROUGHPUT*NVDLA_BPE+24:0] cdp_rdma2dp_pd;
+ output [NVDLA_CDP_THROUGHPUT*NVDLA_BPE+22:0] cdp_rdma2dp_pd;
 
  input         csb2cdp_rdma_req_pvld;  /* data valid */
  output        csb2cdp_rdma_req_prdy;  /* data return handshake */

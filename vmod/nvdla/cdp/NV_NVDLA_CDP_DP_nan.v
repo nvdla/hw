@@ -29,7 +29,7 @@ module NV_NVDLA_CDP_DP_nan (
 //////////////////////////////////////////////////////
 input         nvdla_core_clk;
 input         nvdla_core_rstn;
-input  [NVDLA_CDP_THROUGHPUT*NVDLA_BPE+24:0] cdp_rdma2dp_pd;
+input  [NVDLA_CDP_THROUGHPUT*NVDLA_BPE+22:0] cdp_rdma2dp_pd;
 input         cdp_rdma2dp_valid;
 input         dp2reg_done;
 input         nan_preproc_prdy;
@@ -39,10 +39,10 @@ input         reg2dp_op_en;
 output        cdp_rdma2dp_ready;
 output [31:0] dp2reg_inf_input_num;
 output [31:0] dp2reg_nan_input_num;
-output [NVDLA_CDP_THROUGHPUT*NVDLA_BPE+24:0] nan_preproc_pd;
+output [NVDLA_CDP_THROUGHPUT*NVDLA_BPE+22:0] nan_preproc_pd;
 output        nan_preproc_pvld;
 //////////////////////////////////////////////////////
-reg    [NVDLA_CDP_THROUGHPUT*NVDLA_BPE+24:0] datin_d;
+reg    [NVDLA_CDP_THROUGHPUT*NVDLA_BPE+22:0] datin_d;
 reg           din_pvld_d1;
 wire   [31:0] dp2reg_inf_input_num=0;
 wire   [31:0] dp2reg_nan_input_num=0;
@@ -129,10 +129,8 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   end
 end
 assign op_en_load = reg2dp_op_en & (~op_en_d1);
-//: my $k = int( log(NVDLA_MEMORY_ATOMIC_SIZE/NVDLA_CDP_THROUGHPUT)/log(2) ) ;
-//: print qq(
-//: assign layer_end = &{cdp_rdma2dp_pd[NVDLA_CDP_THROUGHPUT*NVDLA_BPE+16:NVDLA_CDP_THROUGHPUT*NVDLA_BPE+13],cdp_rdma2dp_pd[NVDLA_CDP_THROUGHPUT*NVDLA_BPE+8+${k}-1:NVDLA_CDP_THROUGHPUT*NVDLA_BPE+8]} & load_din;
-//: );
+assign layer_end = &{cdp_rdma2dp_pd[NVDLA_CDP_THROUGHPUT*NVDLA_BPE+14:NVDLA_CDP_THROUGHPUT*NVDLA_BPE+11],cdp_rdma2dp_pd[NVDLA_CDP_THROUGHPUT*NVDLA_BPE+10:NVDLA_CDP_THROUGHPUT*NVDLA_BPE+8]} & load_din;
+
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
     waiting_for_op_en <= 1'b1;
