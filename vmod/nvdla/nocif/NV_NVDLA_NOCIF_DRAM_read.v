@@ -84,7 +84,7 @@ output  [7:0] mcif2noc_axi_ar_arid;
 output  [3:0] mcif2noc_axi_ar_arlen;
 output [NVDLA_MEM_ADDRESS_WIDTH-1:0] mcif2noc_axi_ar_araddr;
 input  [31:0] pwrbus_ram_pd;
-
+wire          eg2ig_axi_vld;
 
 wire  [3:0] cq_wr_thread_id;
 wire [6:0] cq_wr_pd;
@@ -165,9 +165,8 @@ NV_NVDLA_NOCIF_DRAM_READ_cq u_cq (
   //: ,.cq_rd${i}_pd(cq_rd${i}_pd[6:0])
   //: );
   //:}
-
   //:my $i;
-  //:for($i=NVDLA_NUM_DMA_READ_CLIENTS;$i<16;$i++) {
+  //:for($i=NVDLA_NUM_DMA_READ_CLIENTS;$i<10;$i++) {
   //: print qq(
   //: ,.cq_rd${i}_prdy(1'b1)
   //:);

@@ -11,6 +11,8 @@
 module NV_NVDLA_nocif (
    nvdla_core_clk
   ,nvdla_core_rstn
+  ,pwrbus_ram_pd
+#ifdef NVDLA_SECONDARY_MEMIF_ENABLE
 //: my $k = NVDLA_NUM_DMA_READ_CLIENTS;
 //: my $i = 0;
 //: for($i=0; $i<$k; $i++) {
@@ -33,6 +35,7 @@ module NV_NVDLA_nocif (
 //: print("  ,cvif2client${i}_wr_rsp_complete\n");
 //: print("  ,client${i}2cvif_wr_axid\n");
 //: }
+#endif
 //: my $k = NVDLA_NUM_DMA_READ_CLIENTS;
 //: my $i = 0;
 //: for($i=0; $i<$k; $i++) {
@@ -55,6 +58,7 @@ module NV_NVDLA_nocif (
 //: print("  ,mcif2client${i}_wr_rsp_complete\n");
 //: print("  ,client${i}2mcif_wr_axid\n");
 //: }
+#ifdef NVDLA_SECONDARY_MEMIF_ENABLE
   ,noc2cvif_axi_b_bid             //|< i
   ,noc2cvif_axi_b_bvalid          //|< i
   ,noc2cvif_axi_r_rdata           //|< i
@@ -80,6 +84,12 @@ module NV_NVDLA_nocif (
   ,cvif2noc_axi_w_wvalid          //|> o
   ,noc2cvif_axi_b_bready          //|> o
   ,noc2cvif_axi_r_rready          //|> o
+#endif
+  ,csb2mcif_req_pd                //|< i
+  ,csb2mcif_req_pvld              //|< i
+  ,csb2mcif_req_prdy              //|> o
+  ,mcif2csb_resp_pd               //|> o
+  ,mcif2csb_resp_valid            //|> o
   ,noc2mcif_axi_b_bid             //|< i
   ,noc2mcif_axi_b_bvalid          //|< i
   ,noc2mcif_axi_r_rdata           //|< i
@@ -89,8 +99,6 @@ module NV_NVDLA_nocif (
   ,mcif2noc_axi_ar_arready        //|< i
   ,mcif2noc_axi_aw_awready        //|< i
   ,mcif2noc_axi_w_wready          //|< i
-  ,mcif2csb_resp_pd               //|> o
-  ,mcif2csb_resp_valid            //|> o
   ,mcif2noc_axi_ar_araddr         //|> o
   ,mcif2noc_axi_ar_arid           //|> o
   ,mcif2noc_axi_ar_arlen          //|> o
@@ -107,6 +115,7 @@ module NV_NVDLA_nocif (
   ,noc2mcif_axi_r_rready          //|> o
 );
 
+#ifdef NVDLA_SECONDARY_MEMIF_ENABLE
 //:my $k = NVDLA_NUM_DMA_READ_CLIENTS;
 //:my $i = 0;
 //:for ($i=0;$i<$k;$i++) {
@@ -130,17 +139,18 @@ module NV_NVDLA_nocif (
 //: print("output cvif2client${i}_wr_rsp_complete;\n");
 //: print("input [3:0] client${i}2cvif_wr_axid;\n");
 //: }
-//
+#endif
+
 //:my $k = NVDLA_NUM_DMA_READ_CLIENTS;
 //:my $i = 0;
 //:for ($i=0;$i<$k;$i++) {
 //: print ("input client${i}2mcif_rd_cdt_lat_fifo_pop;\n");
 //: print("input client${i}2mcif_rd_req_valid;\n");
-//: print qq(input [NVDLA_MEM_ADDRESS_WIDTH+14:0] client${i}2mcif_rd_req_pd;);
+//: print qq(input [NVDLA_DMA_RD_REQ-1:0] client${i}2mcif_rd_req_pd;\n);
 //: print("output client${i}2mcif_rd_req_ready;\n");
 //: print("output mcif2client${i}_rd_rsp_valid;\n");
 //: print("input mcif2client${i}_rd_rsp_ready;\n");
-//: print qq(output [NVDLA_SECONDARY_MEMIF_WIDTH+1:0] mcif2client${i}_rd_rsp_pd;);
+//: print qq(output [NVDLA_DMA_RD_RSP-1:0] mcif2client${i}_rd_rsp_pd;\n);
 //: print("input [7:0] client${i}2mcif_lat_fifo_depth;\n");
 //: print("input [3:0] client${i}2mcif_rd_axid;\n");
 //: }
@@ -148,7 +158,7 @@ module NV_NVDLA_nocif (
 //:my $k = NVDLA_NUM_DMA_WRITE_CLIENTS;
 //:my $i = 0;
 //:for ($i=0;$i<$k;$i++) {
-//: print qq(input [NVDLA_SECONDARY_MEMIF_WIDTH+2:0] client${i}2mcif_wr_req_pd;);
+//: print qq(input [NVDLA_DMA_WR_REQ-1:0] client${i}2mcif_wr_req_pd;\n);
 //: print("input client${i}2mcif_wr_req_valid;\n");
 //: print("output client${i}2mcif_wr_req_ready;\n");
 //: print("output mcif2client${i}_wr_rsp_complete;\n");
@@ -156,6 +166,10 @@ module NV_NVDLA_nocif (
 //: }
 input         nvdla_core_clk;
 input         nvdla_core_rstn; 
+input  [31:0] pwrbus_ram_pd;
+#ifdef NVDLA_SECONDARY_MEMIF_ENABLE
+output [33:0] cvif2csb_resp_pd;
+output cvif2csb_resp_valid;
 output        cvif2noc_axi_ar_arvalid;  /* data valid */
 input         cvif2noc_axi_ar_arready;  /* data return handshake */
 output  [7:0] cvif2noc_axi_ar_arid;
@@ -182,7 +196,7 @@ output         noc2cvif_axi_r_rready;  /* data return handshake */
 input    [7:0] noc2cvif_axi_r_rid;
 input          noc2cvif_axi_r_rlast;
 input  [NVDLA_SECONDARY_MEMIF_WIDTH-1:0] noc2cvif_axi_r_rdata;
-
+#endif
 
 output        mcif2noc_axi_ar_arvalid;  /* data valid */
 input         mcif2noc_axi_ar_arready;  /* data return handshake */
@@ -211,13 +225,14 @@ input    [7:0] noc2mcif_axi_r_rid;
 input          noc2mcif_axi_r_rlast;
 input  [NVDLA_PRIMARY_MEMIF_WIDTH-1:0] noc2mcif_axi_r_rdata;
 
-output [33:0] cvif2csb_resp_pd;
-output cvif2csb_resp_valid;
+input         csb2mcif_req_pvld;  /* data valid */
+output        csb2mcif_req_prdy;  /* data return handshake */
+input  [62:0] csb2mcif_req_pd;
+output        mcif2csb_resp_valid;  /* data valid */
+output [33:0] mcif2csb_resp_pd;     /* pkt_id_width=1 pkt_widths=33,33  */
 
-output [33:0] mcif2csb_resp_pd;
-output mcif2csb_resp_valid;
 
-
+#ifdef NVDLA_SECONDARY_MEMIF_ENABLE
 NV_NVDLA_NOCIF_sram u_sram (
     .nvdla_core_clk(nvdla_core_clk)
     ,.nvdla_core_rstn(nvdla_core_rstn)
@@ -269,11 +284,17 @@ NV_NVDLA_NOCIF_sram u_sram (
   ,.noc2cvif_axi_b_bready(noc2cvif_axi_b_bready          )          //|> o
   ,.noc2cvif_axi_r_rready(noc2cvif_axi_r_rready          )          //|> o
 );
-
+#endif
 
 NV_NVDLA_NOCIF_dram u_dram (
     .nvdla_core_clk(nvdla_core_clk)
     ,.nvdla_core_rstn(nvdla_core_rstn)
+    ,.pwrbus_ram_pd (pwrbus_ram_pd)
+    ,.csb2mcif_req_pvld   (csb2mcif_req_pvld)              //|< i
+    ,.csb2mcif_req_prdy   (csb2mcif_req_prdy)              //|> o
+    ,.csb2mcif_req_pd     (csb2mcif_req_pd[62:0])          //|< i
+    ,.mcif2csb_resp_valid (mcif2csb_resp_valid)            //|> o
+    ,.mcif2csb_resp_pd    (mcif2csb_resp_pd[33:0])         //|> o
 //: my $k = NVDLA_NUM_DMA_READ_CLIENTS;
 //: my $i = 0;
 //: for($i=0; $i<$k; $i++) {
@@ -282,6 +303,7 @@ NV_NVDLA_NOCIF_dram u_dram (
 //: print("  ,.client${i}2mcif_rd_req_pd(client${i}2mcif_rd_req_pd)\n");
 //: print("  ,.client${i}2mcif_rd_req_ready(client${i}2mcif_rd_req_ready)\n");
 //: print("  ,.mcif2client${i}_rd_rsp_valid(mcif2client${i}_rd_rsp_valid)\n");
+//: print("  ,.mcif2client${i}_rd_rsp_ready(mcif2client${i}_rd_rsp_ready)\n");
 //: print("  ,.mcif2client${i}_rd_rsp_pd(mcif2client${i}_rd_rsp_pd)\n");
 //: print("  ,.client${i}2mcif_rd_axid(client${i}2mcif_rd_axid)\n");
 //: print("  ,.client${i}2mcif_lat_fifo_depth(client${i}2mcif_lat_fifo_depth)\n");
@@ -304,8 +326,6 @@ NV_NVDLA_NOCIF_dram u_dram (
   ,.mcif2noc_axi_ar_arready(mcif2noc_axi_ar_arready        )        //|< i
   ,.mcif2noc_axi_aw_awready(mcif2noc_axi_aw_awready        )        //|< i
   ,.mcif2noc_axi_w_wready(mcif2noc_axi_w_wready          )          //|< i
-  ,.mcif2csb_resp_pd(mcif2csb_resp_pd               )               //|> o
-  ,.mcif2csb_resp_valid(mcif2csb_resp_valid            )            //|> o
   ,.mcif2noc_axi_ar_araddr(mcif2noc_axi_ar_araddr         )         //|> o
   ,.mcif2noc_axi_ar_arid(mcif2noc_axi_ar_arid           )           //|> o
   ,.mcif2noc_axi_ar_arlen(mcif2noc_axi_ar_arlen          )          //|> o
