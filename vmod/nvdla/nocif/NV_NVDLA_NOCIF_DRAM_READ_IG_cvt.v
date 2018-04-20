@@ -221,7 +221,7 @@ assign        cmd_ftran  =    spt2cvt_req_pd[NVDLA_MEM_ADDRESS_WIDTH+10];
 `endif // SPYGLASS_ASSERT_ON
 assign stt_offset = cmd_addr[7:5]; // start position within a 256B block
 
-assign stt_addr_is_32_align = (NVDLA_MEMORY_ATOMIC_LOG2 == NVDLA_PRIMARY_MEMIF_WIDTH_LOG2) ? 1'b0 : (stt_offset[0]== 1'b1 );
+assign stt_addr_is_32_align = 1'b0; //(NVDLA_MEMORY_ATOMIC_LOG2 == NVDLA_PRIMARY_MEMIF_WIDTH_LOG2) ? 1'b0 : (stt_offset[0]== 1'b1 );
 
 assign {mon_end_offset_c,end_offset[2:0]} = stt_offset + cmd_size;
 `ifdef SPYGLASS_ASSERT_ON
@@ -270,7 +270,7 @@ assign {mon_end_offset_c,end_offset[2:0]} = stt_offset + cmd_size;
 // spyglass enable_block WRN_61 
 `endif // SPYGLASS_ASSERT_ON
 assign end_offset_2_1_NC = end_offset[2:1]; // only need end_offset bit0 to know end addr alignment
-assign end_addr_is_32_align = (NVDLA_MEMORY_ATOMIC_LOG2 == NVDLA_PRIMARY_MEMIF_WIDTH_LOG2)? 1'b0 : (end_offset[0]== 1'b0 );
+assign end_addr_is_32_align = 1'b0; //(NVDLA_MEMORY_ATOMIC_LOG2 == NVDLA_PRIMARY_MEMIF_WIDTH_LOG2)? 1'b0 : (end_offset[0]== 1'b0 );
 
 // IG===AXI Trans GEN
 assign axi_axid   = cmd_axid;
@@ -287,7 +287,8 @@ reg  [NVDLA_MEM_ADDRESS_WIDTH-1:0] axi_addr_i;
 //:);
 //assign axi_size = AXSIZE_64; //stepheng. remove
 assign inc = cmd_ftran & cmd_ltran & (cmd_size[0]==1) & cmd_swizzle;
-assign {mon_axi_len_c, axi_len[1:0]}  = cmd_size[2:1] + inc;
+//assign {mon_axi_len_c, axi_len[1:0]}  = cmd_size[2:1] + inc;
+assign  axi_len[1:0] = cmd_size[1:0];
 `ifdef SPYGLASS_ASSERT_ON
 `else
 // spyglass disable_block NoWidthInBasedNum-ML 

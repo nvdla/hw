@@ -43,7 +43,7 @@ output [NVDLA_MEM_ADDRESS_WIDTH+10:0] arb2spt_req_pd;
 //:}
 
 reg [NVDLA_MEM_ADDRESS_WIDTH+10:0] arb_pd;
-wire [15:0] arb_gnt;
+wire [NVDLA_NUM_DMA_READ_CLIENTS-1:0] arb_gnt;
 wire gnt_busy;
 //:my $k=NVDLA_NUM_DMA_READ_CLIENTS;
 //:my $i;
@@ -91,9 +91,8 @@ wire gnt_busy;
 
 //:my $k=NVDLA_NUM_DMA_READ_CLIENTS;
 //:my $i;
-//:for($i=NVDLA_NUM_DMA_READ_CLIENTS;$i<16;$i++) {
+//:for($i=NVDLA_NUM_DMA_READ_CLIENTS;$i<10;$i++) {
 //:  print("assign src${i}_req = 1'b0;\n");
-//:  print("assign arb_src${i}_rdy = 1'b1;\n");
 //:  print("wire [7:0] wt${i} = 0;\n");
 //:}
 
@@ -114,12 +113,12 @@ read_ig_arb u_read_ig_arb (
   ,.req7               (src7_req)              //|< w
   ,.req8               (src8_req)              //|< w
   ,.req9               (src9_req)              //|< w
-  ,.req10              (src10_req)              //|< w
-  ,.req11              (src11_req)              //|< w
-  ,.req12              (src12_req)              //|< w
-  ,.req13              (src13_req)              //|< w
-  ,.req14              (src14_req)              //|< w
-  ,.req15              (src15_req)              //|< w
+  //,.req10              (src10_req)              //|< w
+  //,.req11              (src11_req)              //|< w
+  //,.req12              (src12_req)              //|< w
+  //,.req13              (src13_req)              //|< w
+  //,.req14              (src14_req)              //|< w
+  //,.req15              (src15_req)              //|< w
   ,.wt0                (wt0[7:0])              //|< w
   ,.wt1                (wt1[7:0])              //|< w
   ,.wt2                (wt2[7:0])              //|< w
@@ -130,12 +129,12 @@ read_ig_arb u_read_ig_arb (
   ,.wt7                (wt7[7:0])              //|< w
   ,.wt8                (wt8[7:0])              //|< w
   ,.wt9                (wt9[7:0])              //|< w
-  ,.wt10               (wt10[7:0])              //|< w
-  ,.wt11               (wt11[7:0])              //|< w
-  ,.wt12               (wt12[7:0])              //|< w
-  ,.wt13               (wt13[7:0])              //|< w
-  ,.wt14               (wt14[7:0])              //|< w
-  ,.wt15               (wt15[7:0])              //|< w
+  //,.wt10               (wt10[7:0])              //|< w
+  //,.wt11               (wt11[7:0])              //|< w
+  //,.wt12               (wt12[7:0])              //|< w
+  //,.wt13               (wt13[7:0])              //|< w
+  //,.wt14               (wt14[7:0])              //|< w
+  //,.wt15               (wt15[7:0])              //|< w
   ,.gnt_busy           (gnt_busy)              //|< w
   ,.clk                (nvdla_core_clk)        //|< i
   ,.reset_             (nvdla_core_rstn)       //|< i
@@ -149,12 +148,12 @@ read_ig_arb u_read_ig_arb (
   ,.gnt7               (src7_gnt)              //|> w
   ,.gnt8               (src8_gnt)              //|> w
   ,.gnt9               (src9_gnt)              //|> w
-  ,.gnt10              (src10_gnt)              //|> w
-  ,.gnt11              (src11_gnt)              //|> w
-  ,.gnt12              (src12_gnt)              //|> w
-  ,.gnt13              (src13_gnt)              //|> w
-  ,.gnt14              (src14_gnt)              //|> w
-  ,.gnt15              (src15_gnt)              //|> w
+  //,.gnt10              (src10_gnt)              //|> w
+  //,.gnt11              (src11_gnt)              //|> w
+  //,.gnt12              (src12_gnt)              //|> w
+  //,.gnt13              (src13_gnt)              //|> w
+  //,.gnt14              (src14_gnt)              //|> w
+  //,.gnt15              (src15_gnt)              //|> w
   );
 // MUX OUT
 always @(
@@ -172,24 +171,24 @@ always @(
   or arb_src5_pd
   or src6_gnt
   or arb_src6_pd
-  or src7_gnt
-  or arb_src7_pd
-  or src8_gnt
-  or arb_src8_pd
-  or src9_gnt
-  or arb_src9_pd
-  or src10_gnt
-  or arb_src10_pd
-  or src11_gnt
-  or arb_src11_pd
-  or src12_gnt
-  or arb_src12_pd
-  or src13_gnt
-  or arb_src13_pd
-  or src14_gnt
-  or arb_src14_pd
-  or src15_gnt
-  or arb_src15_pd
+  //or src7_gnt
+  //or arb_src7_pd
+  //or src8_gnt
+  //or arb_src8_pd
+  //or src9_gnt
+  //or arb_src9_pd
+  //or src10_gnt
+  //or arb_src10_pd
+  //or src11_gnt
+  //or arb_src11_pd
+  //or src12_gnt
+  //or arb_src12_pd
+  //or src13_gnt
+  //or arb_src13_pd
+  //or src14_gnt
+  //or arb_src14_pd
+  //or src15_gnt
+  //or arb_src15_pd
   ) begin
 //spyglass disable_block W171 W226
     case (1'b1 )
@@ -200,15 +199,15 @@ always @(
        src4_gnt: arb_pd = arb_src4_pd;
        src5_gnt: arb_pd = arb_src5_pd;
        src6_gnt: arb_pd = arb_src6_pd;
-       src7_gnt: arb_pd = arb_src7_pd;
-       src8_gnt: arb_pd = arb_src8_pd;
-       src9_gnt: arb_pd = arb_src9_pd;
-       src10_gnt: arb_pd = arb_src10_pd;
-       src11_gnt: arb_pd = arb_src11_pd;
-       src12_gnt: arb_pd = arb_src12_pd;
-       src13_gnt: arb_pd = arb_src13_pd;
-       src14_gnt: arb_pd = arb_src14_pd;
-       src15_gnt: arb_pd = arb_src15_pd;
+       //src7_gnt: arb_pd = arb_src7_pd;
+       //src8_gnt: arb_pd = arb_src8_pd;
+       //src9_gnt: arb_pd = arb_src9_pd;
+       //src10_gnt: arb_pd = arb_src10_pd;
+       //src11_gnt: arb_pd = arb_src11_pd;
+       //src12_gnt: arb_pd = arb_src12_pd;
+       //src13_gnt: arb_pd = arb_src13_pd;
+       //src14_gnt: arb_pd = arb_src14_pd;
+       //src15_gnt: arb_pd = arb_src15_pd;
     //VCS coverage off
     default : begin 
                 arb_pd[NVDLA_MEM_ADDRESS_WIDTH+10:0] = {NVDLA_MEM_ADDRESS_WIDTH+11{`x_or_0}};
@@ -218,7 +217,7 @@ always @(
 //spyglass enable_block W171 W226
 end
 
-assign arb_gnt = {src15_gnt, src14_gnt, src13_gnt, src12_gnt, src11_gnt, src10_gnt, src9_gnt, src8_gnt, src7_gnt, src6_gnt, src5_gnt, src4_gnt, src3_gnt, src2_gnt, src1_gnt, src0_gnt};
+assign arb_gnt = {/*src15_gnt, src14_gnt, src13_gnt, src12_gnt, src11_gnt, src10_gnt, src9_gnt, src8_gnt, src7_gnt,*/ src6_gnt, src5_gnt, src4_gnt, src3_gnt, src2_gnt, src1_gnt, src0_gnt};
 assign arb2spt_req_valid = |arb_gnt;
 assign gnt_busy = !arb2spt_req_ready;
 
