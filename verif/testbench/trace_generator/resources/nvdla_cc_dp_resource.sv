@@ -219,6 +219,7 @@ class nvdla_cc_dp_resource extends nvdla_base_resource;
     extern function void    trace_dump(int fh);
     extern function void    set_register();
     extern function void    record_rand_variable();
+    extern function void    pre_randomize();
     extern function void    post_randomize();
     extern function void    set_sim_constraint();
 
@@ -253,6 +254,8 @@ class nvdla_cc_dp_resource extends nvdla_base_resource;
     extern constraint c_sim_output_cube_size_large;
     extern constraint c_sim_output_cube_size_normal;
     extern constraint c_sim_datain_ext;
+    extern constraint c_sim_solve_height_before_width;
+    extern constraint c_sim_solve_channel_before_width;
 
 endclass : nvdla_cc_dp_resource
 
@@ -745,6 +748,14 @@ constraint nvdla_cc_dp_resource::c_sim_datain_ext {
     `weight_dist_13bit(datain_channel_ext)
 }
 
+constraint nvdla_cc_dp_resource::c_sim_solve_height_before_width {
+    solve dataout_height  before dataout_width;
+}
+
+constraint nvdla_cc_dp_resource::c_sim_solve_channel_before_width {
+    solve dataout_channel before dataout_width;
+}
+
 constraint nvdla_cc_dp_resource::c_sim_dilation_dist {
     `weight_dist_5bit(x_dilation_ext)
     `weight_dist_5bit(y_dilation_ext)
@@ -990,6 +1001,12 @@ function void nvdla_cc_dp_resource::record_rand_variable();
     //surf_stride_cacc  = 
     //clip_truncate       = clip_truncate;
 endfunction : record_rand_variable
+
+function void nvdla_cc_dp_resource::pre_randomize();
+    super.pre_randomize();
+    c_sim_solve_height_before_width.constraint_mode($urandom_range(0, 1));
+    c_sim_solve_channel_before_width.constraint_mode($urandom_range(0, 1));
+endfunction : pre_randomize
 
 function void nvdla_cc_dp_resource::post_randomize();
     set_register();

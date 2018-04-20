@@ -373,6 +373,7 @@ class nvdla_cdma_resource extends nvdla_base_resource;
     extern function void    surface_dump(int fh);
     extern function void    set_register();
     extern function void    record_rand_variable();
+    extern function void    pre_randomize();
     extern function void    post_randomize();
     extern function void    set_sim_constraint();
 
@@ -418,6 +419,8 @@ class nvdla_cdma_resource extends nvdla_base_resource;
     extern constraint c_sim_input_cube_size_medium;
     extern constraint c_sim_input_cube_size_large;
     extern constraint c_sim_input_cube_size_normal;
+    extern constraint c_sim_solve_height_before_width;
+    extern constraint c_sim_solve_channel_before_width;
 
 endclass : nvdla_cdma_resource
 
@@ -663,7 +666,7 @@ constraint nvdla_cdma_resource::c_ias_datain_direct {
 
 constraint nvdla_cdma_resource::c_ias_stride_size {
     if(datain_format == datain_format_FEATURE) {
-        (line_stride - (datain_width+64'h1)*`NVDLA_MEMORY_ATOMIC_SIZE)/`NVDLA_MEMORY_ATOMIC_SIZE dist { 0:=30, ['h1:'hF]:=45, ['h10:'h7F]:=20, ['h80:'hFF]:=5}; // 32byte per unit
+        (line_stride - (datain_width+64'h1)*`NVDLA_MEMORY_ATOMIC_SIZE)/`NVDLA_MEMORY_ATOMIC_SIZE dist { 0:=30, ['h1:'hF]:=45, ['h10:'h7F]:=20, ['h80:'hFF]:=5};
         (line_stride/`NVDLA_MEMORY_ATOMIC_SIZE >= (datain_width+64'h1));
         (surf_stride - line_stride*(datain_height+1))/`NVDLA_MEMORY_ATOMIC_SIZE dist { 0:=45, ['h1:'hF]:=45, ['h10:'h7F]:=5, ['h80:'hFF]:=5};
 
@@ -1146,6 +1149,14 @@ constraint nvdla_cdma_resource::c_sim_input_cube_size_normal {
     (datain_width+1)*(datain_height+1)*(datain_channel+1) <= 64'h10_0000;
 }
 
+constraint nvdla_cdma_resource::c_sim_solve_height_before_width {
+    solve datain_height  before datain_width;
+}
+
+constraint nvdla_cdma_resource::c_sim_solve_channel_before_width {
+    solve datain_channel before datain_width;
+}
+
 function void nvdla_cdma_resource::record_rand_variable();
     is_data_bank_changed    = (data_bank != prev_data_bank);
     is_weight_bank_changed  = (weight_bank != prev_weight_bank);
@@ -1319,6 +1330,12 @@ function void nvdla_cdma_resource::record_rand_variable();
     //surf_stride_cacc  = 
     //clip_truncate       = clip_truncate;
 endfunction : record_rand_variable
+
+function void nvdla_cdma_resource::pre_randomize();
+    super.pre_randomize();
+    c_sim_solve_height_before_width.constraint_mode($urandom_range(0, 1));
+    c_sim_solve_channel_before_width.constraint_mode($urandom_range(0, 1));
+endfunction : pre_randomize
 
 function void nvdla_cdma_resource::post_randomize();
     set_mem_addr();
