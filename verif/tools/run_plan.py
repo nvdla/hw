@@ -288,6 +288,7 @@ class RunPlan(object):
     def dump_test_orgz(self):
         test_orgz_data = {}
         test_id = 0
+        jobid_list = []
         if not self.config['no_lsf'] and self.config['lsf_cmd']:
             lsf_monitor = LSFMonitor()
         for test_dir,cmd_file in self._test_dir_cmd.items():
@@ -301,13 +302,19 @@ class RunPlan(object):
                     break
             test_orgz_data[test_id]['test_bench'] = 'nvdla_utb'
             if not self.config['no_lsf'] and self.config['lsf_cmd']:
-                job_id = lsf_monitor.get_job_by_name('*'+test_dir+'*')
+                job_id      = lsf_monitor.get_job_by_name('*'+test_dir+'*')
+                jobid_list += job_id
                 test_orgz_data[test_id]['job_id'] = int(job_id[0])
             else:
                 test_orgz_data[test_id]['job_id'] = ''
             test_id += 1
         with open(self.config['run_dir']+'/test_organization.json', 'w') as test_orgz_fh:
             json.dump(test_orgz_data, test_orgz_fh, sort_keys=True, indent=4)
+        if not self.config['no_lsf'] and self.config['lsf_cmd']:
+            kill_plan = self.config['run_dir']+'/kill_plan.sh'
+            with open(kill_plan, 'w') as fh:
+                fh.write('bkill ' + ' '.join([str(x) for x in jobid_list]))
+            subprocess.run('chmod 755 '+kill_plan, shell=True)
 
 def main():
     parser = argparse.ArgumentParser(description=__DESCRIPTION__)

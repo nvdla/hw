@@ -70,6 +70,10 @@ class LSFMonitor(object):
             maxmem     = maxmem_p.search(str(info))
 
             match = re.search(r'.*Status\s+<(\w+)>,.*CWD <(.*)>, Requested.*CPULIMIT\s*\\n\s*([\d\.]+\s*min) of\s+([a-zA-Z0-9-]+)\s*\\n.*RUNLIMIT\s*\\n\s*([\d\.]+\s*min)\s.*MEMLIMIT\s*\\n\s*(\d+\s*)K\s', str(info))
+            if match is None:
+                with open('log_of_job_'+str(item), 'w') as fh:
+                    fh.write(info)
+                raise Exception('Job status extraction failed')
             exec_host_info[item]['status']   = match.group(1)
             exec_host_info[item]['testdir']  = os.path.basename(re.sub(r'\\n|\s','',match.group(2)))
             exec_host_info[item]['cpulimit'] = match.group(3)
