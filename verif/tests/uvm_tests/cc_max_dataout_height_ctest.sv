@@ -24,7 +24,7 @@ class cc_max_dataout_height_scenario extends nvdla_cc_sdp_scenario;
         this.sdp.cvt_scale          == 1;
         this.sdp.cvt_shift          == 0;
 
-        this.cc_dp.dataout_height   == 'h1fff;
+        this.cc_dp.dataout_height   == 'heff; // 4k, doesn't support 8k due to cbuf size limitation.
     }
     `uvm_component_utils(cc_max_dataout_height_scenario)
 endclass: cc_max_dataout_height_scenario

@@ -15,8 +15,8 @@ class cc_max_dataout_width_scenario extends nvdla_cc_sdp_scenario;
         this.cdma.weight_reuse      == nvdla_cdma_resource::weight_reuse_DISABLE;
         this.cdma.datain_format     == nvdla_cdma_resource::datain_format_FEATURE;
 
-        this.sdp.bs_bypass          == nvdla_sdp_resource::bs_bypass_YES;
-        this.sdp.bn_bypass          == nvdla_sdp_resource::bn_bypass_YES;
+//      this.sdp.bs_bypass          == nvdla_sdp_resource::bs_bypass_YES;
+//      this.sdp.bn_bypass          == nvdla_sdp_resource::bn_bypass_YES;
         this.sdp.flying_mode        == nvdla_sdp_resource::flying_mode_ON;
         this.sdp.output_dst         == nvdla_sdp_resource::output_dst_MEM;
 

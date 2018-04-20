@@ -109,6 +109,27 @@ for i in range(plan_arguments['RUN_NUM']):
              config=['nvdla_utb'],
              desc=''' None reuse PDP semi-random case, to cover max value of output cube channel''')
 
+    add_test(name='pdp_max_partial_width_in_first_ctest',
+             tags=['L21', 'pdp', 'cover'],
+             args=[rtlarg, get_seed_args(), DISABLE_COMPARE_ALL_UNITS_SB_ARG],
+             module='nvdla_uvm_test',
+             config=['nvdla_utb'],
+             desc=''' None reuse PDP semi-random case, to cover max value of partial_width_in_first''')
+
+    add_test(name='pdp_max_partial_width_in_last_ctest',
+             tags=['L21', 'pdp', 'cover'],
+             args=[rtlarg, get_seed_args(), DISABLE_COMPARE_ALL_UNITS_SB_ARG],
+             module='nvdla_uvm_test',
+             config=['nvdla_utb'],
+             desc=''' None reuse PDP semi-random case, to cover max value of partial_width_in_last''')
+
+    add_test(name='pdp_zero_partial_width_in_mid_ctest',
+             tags=['L21', 'pdp', 'cover'],
+             args=[rtlarg, get_seed_args(), DISABLE_COMPARE_ALL_UNITS_SB_ARG],
+             module='nvdla_uvm_test',
+             config=['nvdla_utb'],
+             desc=''' None reuse PDP semi-random case, to cover zero value of partial_width_in_mid''')
+
     add_test(name='pdp_split_ctest',
              tags=['L21', 'pdp', 'cover'],
              args=[rtlarg, get_seed_args(), DISABLE_COMPARE_ALL_UNITS_SB_ARG],

@@ -71,3 +71,7 @@
 `include "cdp_max_cube_width_ctest.sv"
 `include "cdp_max_cube_height_ctest.sv"
 `include "cdp_max_cube_channel_ctest.sv"
+
+`include "pdp_max_partial_width_in_first_ctest.sv"
+`include "pdp_max_partial_width_in_last_ctest.sv"
+`include "pdp_zero_partial_width_in_mid_ctest.sv"
