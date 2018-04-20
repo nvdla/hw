@@ -138,4 +138,14 @@ constraint nvdla_pdprdma_pdp_scenario::sce_pdprdma_pdp_sim_solve_channel_before_
     solve pdp.cube_out_channel before pdp.cube_out_width;
 }
 
+constraint nvdla_pdprdma_pdp_scenario::sce_pdprdma_pdp_sim_solve_height_before_width {
+    solve pdp.cube_in_height  before pdp.cube_in_width;
+    solve pdp.cube_out_height before pdp.cube_out_width;
+}
+
+constraint nvdla_pdprdma_pdp_scenario::sce_pdprdma_pdp_sim_solve_channel_before_width {
+    solve pdp.cube_in_channel  before pdp.cube_in_width;
+    solve pdp.cube_out_channel before pdp.cube_out_width;
+}
+
 `endif //_NVDLA_PDPRDMA_PDP_SCENARIO_SV_
