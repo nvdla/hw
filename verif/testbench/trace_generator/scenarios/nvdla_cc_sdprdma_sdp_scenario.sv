@@ -44,6 +44,10 @@ class nvdla_cc_sdprdma_sdp_scenario extends nvdla_base_scenario;
 
     `uvm_component_utils_begin(nvdla_cc_sdprdma_sdp_scenario)
         `uvm_field_string(cdma_weight_surface_pattern,  UVM_ALL_ON)
+        `uvm_field_object(cdma                       ,  UVM_DEFAULT)
+        `uvm_field_object(cc_dp                      ,  UVM_DEFAULT)
+        `uvm_field_object(sdp_rdma                   ,  UVM_DEFAULT)
+        `uvm_field_object(sdp                        ,  UVM_DEFAULT)
     `uvm_component_utils_end
 
 endclass : nvdla_cc_sdprdma_sdp_scenario

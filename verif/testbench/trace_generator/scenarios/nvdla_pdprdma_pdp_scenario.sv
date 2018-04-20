@@ -23,6 +23,8 @@ class nvdla_pdprdma_pdp_scenario extends nvdla_base_scenario;
     */
     extern constraint sce_pdprdma_pdp_sim_constraint_for_demo;
     extern constraint sce_pdprdma_pdp_ias_constraint;
+    extern constraint sce_pdprdma_pdp_sim_solve_height_before_width;
+    extern constraint sce_pdprdma_pdp_sim_solve_channel_before_width;
     /*
         method
     */
@@ -32,6 +34,7 @@ class nvdla_pdprdma_pdp_scenario extends nvdla_base_scenario;
     extern function void    set_sync_evt_name();
     extern function void    update_sync_evt_queue();
     extern function void    set_sim_constraint();
+    extern function void    pre_randomize();
 
     /*
         phase
@@ -102,6 +105,12 @@ function void nvdla_pdprdma_pdp_scenario::set_sim_constraint();
     pdp.set_sim_constraint();
 endfunction: set_sim_constraint
 
+function void nvdla_pdprdma_pdp_scenario::pre_randomize();
+    super.pre_randomize();
+    sce_pdprdma_pdp_sim_solve_height_before_width.constraint_mode($urandom_range(0, 1));
+    sce_pdprdma_pdp_sim_solve_channel_before_width.constraint_mode($urandom_range(0, 1));
+endfunction
+
 constraint nvdla_pdprdma_pdp_scenario::sce_pdprdma_pdp_sim_constraint_for_demo {
 }
 
@@ -122,6 +131,16 @@ constraint nvdla_pdprdma_pdp_scenario::sce_pdprdma_pdp_ias_constraint {
     pdp.partial_width_in_first == pdp_rdma.partial_width_in_first;
     pdp.partial_width_in_mid   == pdp_rdma.partial_width_in_mid;
     pdp.partial_width_in_last  == pdp_rdma.partial_width_in_last; 
+}
+
+constraint nvdla_pdprdma_pdp_scenario::sce_pdprdma_pdp_sim_solve_height_before_width {
+    solve pdp.cube_in_height  before pdp.cube_in_width;
+    solve pdp.cube_out_height before pdp.cube_out_width;
+}
+
+constraint nvdla_pdprdma_pdp_scenario::sce_pdprdma_pdp_sim_solve_channel_before_width {
+    solve pdp.cube_in_channel  before pdp.cube_in_width;
+    solve pdp.cube_out_channel before pdp.cube_out_width;
 }
 
 `endif //_NVDLA_PDPRDMA_PDP_SCENARIO_SV_
