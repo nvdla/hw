@@ -74,7 +74,7 @@ wire         dfifo_rd_pvld;
 wire         dfifo_rd_prdy;
 reg   [NVDLA_MEM_ADDRESS_WIDTH-1:0] out_addr;
 wire    [2:0] out_size;
-reg   [NVDLA_DMA_WR_SIZE:0]   req_num;
+reg   [NVDLA_DMA_WR_SIZE-1:0] req_num;
 reg   [NVDLA_DMA_WR_SIZE-1:0] req_count;
 reg    [2:0] beat_count;
 wire   [2:0] beat_size;
@@ -672,7 +672,7 @@ always @( *
   //or mtran_num
   ) begin
     //if (NVDLA_MEMORY_ATOMIC_LOG2 == NVDLA_PRIMARY_MEMIF_WIDTH_LOG2) 
-       req_num = in_cmd_size + 1;
+       req_num = in_cmd_size;// + 1;
     //else if (is_single_tran) begin
     //    req_num = 1;
     //end else if (mtran_num==0) begin
@@ -684,7 +684,7 @@ end
 
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
-    req_count <= {13{1'b0}};
+    req_count <= {NVDLA_DMA_WR_SIZE{1'b0}};
   end else begin
     if (bpt2arb_dat_accept & is_last_beat) begin
         if (is_ltran) begin
@@ -696,8 +696,8 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   end
 end
 assign   is_ftran = (req_count==0);
-assign   is_mtran = (req_count>0 && req_count<req_num-1);
-assign   is_ltran = (req_count==req_num-1);
+assign   is_mtran = (req_count>0 && req_count<req_num);
+assign   is_ltran = (req_count==req_num);
 
 assign   out_cmd_vld  = cmd_en & in_cmd_vld;
 assign   out_cmd_addr = (is_ftran) ? in_cmd_addr : out_addr;
