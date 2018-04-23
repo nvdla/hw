@@ -304,6 +304,7 @@ always @(src0_gnt or rq0_rd_pd
 //:print("or src${i}_gnt or rq${i}_rd_pd\n");
 //:}
 ) begin
+//spyglass disable_block W171 W226
  case (1'b1)
 //:my $k = NVDLA_NUM_DMA_READ_CLIENTS;
 //:my $i;
@@ -325,6 +326,7 @@ always @(src0_gnt or ctt0_cq_pd
 //:print("or src${i}_gnt or ctt${i}_cq_pd\n");
 //:}
 ) begin
+//spyglass disable_block W171 W226
  case (1'b1)
 //:my $k = NVDLA_NUM_DMA_READ_CLIENTS;
 //:my $i;
@@ -346,6 +348,7 @@ always @(src0_gnt or ctt0_cnt
 //:print("or src${i}_gnt or ctt${i}_cnt\n");
 //:}
 ) begin
+//spyglass disable_block W171 W226
  case (1'b1)
 //:my $k = NVDLA_NUM_DMA_READ_CLIENTS;
 //:my $i;
