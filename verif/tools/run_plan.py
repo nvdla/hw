@@ -310,7 +310,7 @@ class RunPlan(object):
                     break
             test_orgz_data[test_id]['test_bench'] = 'nvdla_utb'
             if not self.config['no_lsf'] and self.config['lsf_cmd']:
-                job_id      = lsf_monitor.get_job_by_name('*'+test_dir+'*')
+                job_id      = lsf_monitor.get_job_by_name(os.path.join(test_dir,cmd_file))
                 jobid_list += job_id
                 test_orgz_data[test_id]['job_id'] = int(job_id[0])
             else:

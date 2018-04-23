@@ -38,17 +38,19 @@ class LSFMonitor(object):
             self.print_job_report(jobs_sts)
             if self.no_running_jobs(jobs_sts):
                 break
-            jobs_sts = self.get_job_exec_status(jobs_sts)
+            self.update_job_exec_status(jobs_sts)
             self.time_sleep(self._interval)
 
     def get_job_by_name(self, job_name=''):
-        job_info = subprocess.check_output("bjobs -a -J '%0s'" % job_name, shell=True) 
-        if job_info is None:
-            print('Job <%0s> not found, wait 10s and retry' % job_name)
-            time.sleep(10)
+        try:
             job_info = subprocess.check_output("bjobs -a -J '%0s'" % job_name, shell=True) 
-            if job_info is None:
-                raise Exception('Job <%0s> not found' % job_name)
+        except Exception as err1:
+            print('%0s, wait 5s and retry' % err)
+            time.sleep(5)
+            try:
+                job_info = subprocess.check_output("bjobs -a -J '%0s'" % job_name, shell=True) 
+            except Exception as err2:
+                raise Exception('%0s' % err2)
         pattern = re.compile(r'\\n(\d+) ')
         job_id = pattern.findall(str(job_info))
         job_id = [int(k) for k in job_id]
@@ -58,19 +60,25 @@ class LSFMonitor(object):
         exec_host_info = {}
         for item in job_id:
             exec_host_info[item] = {}
-            info = subprocess.check_output('bjobs -l '+str(item), shell = True)
+            try:
+                info = subprocess.check_output('bjobs -al '+str(item), shell = True)
+            except Exception as err:
+                print('%0s, retry' % err)
+                time.sleep(1)
+                try:
+                    info = subprocess.check_output('bjobs -al '+str(item), shell = True)
+                except Exception:
+                    exec_host_info[item]['status']       = 'EXPIRE'
+                    exec_host_info[item]['testdir']      = '-'
+                    exec_host_info[item]['cpulimit']     = '-'
+                    exec_host_info[item]['exechost']     = '-'
+                    exec_host_info[item]['runlimit']     = '-'
+                    exec_host_info[item]['memlimit']     = '-'
+                    exec_host_info[item]['cputime_used'] = '-'
+                    exec_host_info[item]['maxmem']       = '-'
+                    exec_host_info[item]['syndrome']     = '-'
+                    continue
             info = re.sub(r'\\n\s*','', str(info))
-            if not info:
-                exec_host_info[item]['status']       = 'EXPIRE'
-                exec_host_info[item]['testdir']      = '-'
-                exec_host_info[item]['cpulimit']     = '-'
-                exec_host_info[item]['exechost']     = '-'
-                exec_host_info[item]['runlimit']     = '-'
-                exec_host_info[item]['memlimit']     = '-'
-                exec_host_info[item]['cputime_used'] = '-'
-                exec_host_info[item]['maxmem']       = '-'
-                exec_host_info[item]['syndrome']     = '-'
-                continue
             cputime_p  = re.compile(r'CPU\s*time\s*used\s*is\s*([\d\.]+)')
             cputime    = cputime_p.search(str(info))
             maxmem_p   = re.compile(r'MAX\s*MEM:\s*(\d+.*)Mbytes;')
@@ -105,10 +113,18 @@ class LSFMonitor(object):
                 exec_host_info[item]['syndrome'] = ''
         return exec_host_info
 
-    def get_job_exec_status(self, job_status={}):
+    def update_job_exec_status(self, job_status={}):
         for key,value in job_status.items():
-            if value['status'] == 'RUN':
-                info = subprocess.check_output('bjobs -l '+str(key), shell = True)
+            if value['status'] in ('RUN','PEND'):
+                try:
+                    info = subprocess.check_output('bjobs -al '+str(key), shell = True)
+                except Exception as err1:
+                    print('%0s, retry' % err1)
+                    time.sleep(1)
+                    try:
+                        info = subprocess.check_output('bjobs -al '+str(key), shell = True)
+                    except Exception as err2:
+                        raise Exception('%0s' % err2)
                 info = re.sub(r'\\n\s*','', str(info))
                 status_p   = re.compile(r'Status\s*<(\w+)>,')
                 status     = status_p.search(str(info))
@@ -117,23 +133,21 @@ class LSFMonitor(object):
                 maxmem_p   = re.compile(r'MAX\s*MEM:\s*(\d+.*)Mbytes;')
                 maxmem     = maxmem_p.search(str(info))
 
-                job_status[key]['status']       = status.group(1)
+                job_status[key].update({'status':status.group(1)})
                 if cputime:
-                    job_status[key]['cputime_used']   = '{:.1f}'.format(float(cputime.group(1))/60)+' min'
+                    job_status[key].update({'cputime_used':'{:.1f}'.format(float(cputime.group(1))/60)+' min'})
                 else:
-                    job_status[key]['cputime_used']   = '-'
+                    job_status[key].update({'cputime_used':'-'})
                 if maxmem:
-                    job_status[key]['maxmem']   = maxmem.group(1)+' MB'
+                    job_status[key].update({'maxmem':maxmem.group(1)+' MB'})
                 else:
-                    job_status[key]['maxmem']   = '-'
+                    job_status[key].update({'maxmem':'-'})
                 if status.group(1) == 'EXIT':
                     syndrome = re.search(r'Completed\s*<exit>;\s*(\w.*)\..*MEMORY\s*USAGE', str(info))
-                    #job_status[key]['syndrome'] = str(syndrome.group(1))
                     if syndrome:
-                        job_status[key]['syndrome'] = str(syndrome.group(1))
+                        job_status[key].update({'syndrome':str(syndrome.group(1))})
                     else:
-                        job_status[key]['syndrome'] = 'LSF job exited with unknown reason'
-        return job_status
+                        job_status[key].update({'syndrome':'LSF job exited with unknown reason'})
 
     def print_job_report(self, job_status):
         print('[LSF] Jobs status with name ' + self._job_name)

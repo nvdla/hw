@@ -173,7 +173,7 @@ class RunReport(object):
     def __parse_regress_status(self):
         if self.regr_sts_data['farm_type'] == 'LSF':
             lsfm = LSFMonitor()
-            self.job_status = lsfm.get_job_exec_status(self.job_status)
+            lsfm.update_job_exec_status(self.job_status)
         for tid, info in self.test_orgz_data.items():
             # ~dump_trace_only~ means we only run trace_generator regression.
             if self.regr_sts_data['dump_trace_only'] == 'True':
