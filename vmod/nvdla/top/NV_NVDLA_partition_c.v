@@ -388,6 +388,7 @@ wire           sc2buf_dat_rd_en;
 wire           sc2buf_dat_rd_valid;
 wire [CBUF_RD_DATA_SHIFT_WIDTH-1:0] sc2buf_dat_rd_shift;
 wire sc2buf_dat_rd_next1_en;
+wire [CBUF_ADDR_WIDTH-1:0] sc2buf_dat_rd_next1_addr;
 `ifdef CBUF_WEIGHT_COMPRESSED
 wire  [CBUF_ADDR_WIDTH-1:0] sc2buf_wmb_rd_addr;
 wire  [CBUF_ENTRY_BITS-1:0] sc2buf_wmb_rd_data;
@@ -703,6 +704,7 @@ NV_NVDLA_cbuf u_NV_NVDLA_cbuf (
   ,.sc2buf_dat_rd_valid           (sc2buf_dat_rd_valid)            //|> w
   ,.sc2buf_dat_rd_shift           (sc2buf_dat_rd_shift)
   ,.sc2buf_dat_rd_next1_en        (sc2buf_dat_rd_next1_en)
+  ,.sc2buf_dat_rd_next1_addr      (sc2buf_dat_rd_next1_addr)
   ,.sc2buf_dat_rd_data            (sc2buf_dat_rd_data[CBUF_ENTRY_BITS-1:0])     //|> w
   ,.sc2buf_wt_rd_en               (sc2buf_wt_rd_en)                //|< w
   ,.sc2buf_wt_rd_addr             (sc2buf_wt_rd_addr[CBUF_ADDR_WIDTH-1:0])        //|< w
@@ -746,6 +748,7 @@ NV_NVDLA_csc u_NV_NVDLA_csc (
   ,.sc2buf_dat_rd_data            (sc2buf_dat_rd_data[CBUF_ENTRY_BITS-1:0])     //|< w
   ,.sc2buf_dat_rd_shift           (sc2buf_dat_rd_shift[CBUF_RD_DATA_SHIFT_WIDTH-1:0])
   ,.sc2buf_dat_rd_next1_en        (sc2buf_dat_rd_next1_en)
+  ,.sc2buf_dat_rd_next1_addr      (sc2buf_dat_rd_next1_addr)
   `ifdef CBUF_WEIGHT_COMPRESSED
   ,.sc2buf_wmb_rd_en              (sc2buf_wmb_rd_en)               //|> w
   ,.sc2buf_wmb_rd_addr            (sc2buf_wmb_rd_addr[CBUF_ADDR_WIDTH-1:0])        //|> w
