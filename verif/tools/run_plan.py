@@ -209,7 +209,15 @@ class RunPlan(object):
         origin_working_dir = os.getcwd()
         lsf_cmd = self.config['lsf_cmd'] 
         for test_dir,cmd_file in test_dir_cmd.items():
-            os.chdir(test_dir)
+            try:
+                os.chdir(test_dir)
+            except FileNotFoundError as err1:
+                print('%0s, wait 3s and retry' % err1)
+                time.sleep(3)
+                try:
+                    os.chdir(test_dir)
+                except FileNotFoundError as err2:
+                    raise Exception('%0s' % err2)
             cmd = os.path.join(test_dir, cmd_file)
             cmd = ' '.join([lsf_cmd, cmd])
             subprocess.Popen(cmd, shell=True)
