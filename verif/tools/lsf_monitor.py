@@ -97,7 +97,10 @@ class LSFMonitor(object):
                 exec_host_info[item]['maxmem']   = '-'
             if match.group(1) == 'EXIT':
                 syndrome = re.search(r'Completed\s*<exit>;\s*(\w.*)\..*MEMORY\s*USAGE', str(info))
-                exec_host_info[item]['syndrome'] = str(syndrome.group(1))
+                if syndrome:
+                    exec_host_info[item]['syndrome'] = str(syndrome.group(1))
+                else:
+                    exec_host_info[item]['syndrome'] = 'LSF job exited with unknown reason'
             else:
                 exec_host_info[item]['syndrome'] = ''
         return exec_host_info
@@ -125,7 +128,11 @@ class LSFMonitor(object):
                     job_status[key]['maxmem']   = '-'
                 if status.group(1) == 'EXIT':
                     syndrome = re.search(r'Completed\s*<exit>;\s*(\w.*)\..*MEMORY\s*USAGE', str(info))
-                    job_status[key]['syndrome'] = str(syndrome.group(1))
+                    #job_status[key]['syndrome'] = str(syndrome.group(1))
+                    if syndrome:
+                        job_status[key]['syndrome'] = str(syndrome.group(1))
+                    else:
+                        job_status[key]['syndrome'] = 'LSF job exited with unknown reason'
         return job_status
 
     def print_job_report(self, job_status):
