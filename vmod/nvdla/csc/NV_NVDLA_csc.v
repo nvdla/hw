@@ -33,6 +33,7 @@ module NV_NVDLA_csc (
   ,sc2buf_dat_rd_valid           //|< i
   ,sc2buf_dat_rd_shift           //|> o
   ,sc2buf_dat_rd_next1_en        //|> o
+  ,sc2buf_dat_rd_next1_addr      //|> o
   ,sc2buf_wt_rd_data             //|< i
   ,sc2buf_wt_rd_valid            //|< i
   ,tmc2slcg_disable_clock_gating //|< i
@@ -114,6 +115,7 @@ input          sc2buf_dat_rd_valid;  /* data valid */
 input [CBUF_ENTRY_BITS-1:0] sc2buf_dat_rd_data;
 output [CBUF_RD_DATA_SHIFT_WIDTH-1:0] sc2buf_dat_rd_shift;
 output sc2buf_dat_rd_next1_en;
+output [CBUF_ADDR_WIDTH-1:0] sc2buf_dat_rd_next1_addr;
 `ifdef CBUF_WEIGHT_COMPRESSED
 output       sc2buf_wmb_rd_en;    /* data valid */
 output [CBUF_ADDR_WIDTH-1:0] sc2buf_wmb_rd_addr;
@@ -403,6 +405,7 @@ NV_NVDLA_CSC_dl u_dl (
   ,.sc2buf_dat_rd_addr            (sc2buf_dat_rd_addr[CBUF_ADDR_WIDTH-1:0])        //|> o
   ,.sc2buf_dat_rd_shift           (sc2buf_dat_rd_shift)
   ,.sc2buf_dat_rd_next1_en        (sc2buf_dat_rd_next1_en)
+  ,.sc2buf_dat_rd_next1_addr      (sc2buf_dat_rd_next1_addr)
   ,.sc2buf_dat_rd_valid           (sc2buf_dat_rd_valid)             //|< i
   ,.sc2buf_dat_rd_data            (sc2buf_dat_rd_data)      //|< i
   ,.sc2mac_dat_a_pvld             (sc2mac_dat_a_pvld)               //|> o
