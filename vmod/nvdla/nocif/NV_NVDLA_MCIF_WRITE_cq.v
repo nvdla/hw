@@ -65,37 +65,37 @@ output        cq_rd4_pvld;
 output [2:0] cq_rd4_pd;
 input  [31:0] pwrbus_ram_pd;
 
-
+// -rd_take_to_rd_busy internal credit/take/data signals (which would have been ports)
 //
-
+//wire [4:0] cq_rd_credit;
 wire       cq_rd_take;
 wire [2:0] cq_rd_pd_p;
 wire [2:0] cq_rd_take_thread_id;
 
-
-
-
+// We also declare some per-thread flags that indicate whether to have the write bypass the internal fifo.
+// These per-class wr_bypassing* flags are set by the take-side logic.  We basically pretend that we never pushed the fifo,
+// but make sure we return a credit to the sender.
 //
-wire       wr_bypassing;        
+wire       wr_bypassing;        // any thread bypassed
 
-
+// Master Clock Gating (SLCG)
 //
-
-
-
+// We gate the clock(s) when idle or stalled.
+// This allows us to turn off numerous miscellaneous flops
+// that don't get gated during synthesis for one reason or another.
 //
-
-
-
-
+// We gate write side and read side separately. 
+// If the fifo is synchronous, we also gate the ram separately, but if
+// -master_clk_gated_unified or -status_reg/-status_logic_reg is specified, 
+// then we use one clk gate for write, ram, and read.
 //
 
 wire nvdla_core_clk_mgated_skid;
 wire nvdla_core_clk_mgated_skid_enable;
 NV_CLK_gate_power nvdla_core_clk_rd_mgate_skid( .clk(nvdla_core_clk), .reset_(nvdla_core_rstn), .clk_en(nvdla_core_clk_mgated_skid_enable), .clk_gated(nvdla_core_clk_mgated_skid) );
 
-wire nvdla_core_clk_mgated_enable;   
-wire nvdla_core_clk_mgated;               
+wire nvdla_core_clk_mgated_enable;   // assigned by code at end of this module
+wire nvdla_core_clk_mgated;               // used only in synchronous fifos
 NV_CLK_gate_power nvdla_core_clk_mgate( .clk(nvdla_core_clk), .reset_(nvdla_core_rstn), .clk_en(nvdla_core_clk_mgated_enable), .clk_gated(nvdla_core_clk_mgated) );
 
 // 
@@ -104,19 +104,19 @@ NV_CLK_gate_power nvdla_core_clk_mgate( .clk(nvdla_core_clk), .reset_(nvdla_core
 // synopsys translate_off
 `ifndef SYNTH_LEVEL1_COMPILE
 `ifndef SYNTHESIS
-wire wr_pause_rand;  
+wire wr_pause_rand;  // random stalling
 `endif	
 `endif	
 // synopsys translate_on
 wire wr_reserving;
-reg        cq_wr_busy_int;		        	
+reg        cq_wr_busy_int;		        	// copy for internal use
 assign     cq_wr_prdy = !cq_wr_busy_int;
-assign       wr_reserving = cq_wr_pvld && !cq_wr_busy_int; 
+assign       wr_reserving = cq_wr_pvld && !cq_wr_busy_int; // reserving write space?
 
 
-wire       wr_popping;                          
+wire       wr_popping;                          // fwd: write side sees pop?
 
-reg  [8:0] cq_wr_count;			
+reg  [8:0] cq_wr_count;			// write-side count
 wire wr_reserving_and_not_bypassing = wr_reserving && !wr_bypassing;
 
 wire [8:0] wr_count_next_wr_popping = wr_reserving_and_not_bypassing ? cq_wr_count : (cq_wr_count - 1'd1); // spyglass disable W164a W484
@@ -127,18 +127,18 @@ wire [8:0] wr_count_next = wr_popping ? wr_count_next_wr_popping :
 wire wr_count_next_no_wr_popping_is_256 = ( wr_count_next_no_wr_popping == 9'd256 );
 wire wr_count_next_is_256 = wr_popping ? 1'b0 :
                                           wr_count_next_no_wr_popping_is_256;
-wire [8:0] wr_limit_muxed;  
+wire [8:0] wr_limit_muxed;  // muxed with simulation/emulation overrides
 wire [8:0] wr_limit_reg = wr_limit_muxed;
 `ifdef FV_RAND_WR_PAUSE
                           // VCS coverage off
-wire       cq_wr_busy_next = wr_count_next_is_256 || 
-                          (wr_limit_reg != 9'd0 &&      
+wire       cq_wr_busy_next = wr_count_next_is_256 || // busy next cycle?
+                          (wr_limit_reg != 9'd0 &&      // check cq_wr_limit if != 0
                            wr_count_next >= wr_limit_reg) || cq_wr_pause;
                           // VCS coverage on
 `else
                           // VCS coverage off
-wire       cq_wr_busy_next = wr_count_next_is_256 || 
-                          (wr_limit_reg != 9'd0 &&      
+wire       cq_wr_busy_next = wr_count_next_is_256 || // busy next cycle?
+                          (wr_limit_reg != 9'd0 &&      // check cq_wr_limit if != 0
                            wr_count_next >= wr_limit_reg)  
  // synopsys translate_off
   `ifndef SYNTH_LEVEL1_COMPILE
@@ -169,28 +169,28 @@ always @( posedge nvdla_core_clk_mgated or negedge nvdla_core_rstn ) begin
     end
 end
 
-wire       wr_pushing = wr_reserving && !wr_bypassing;   
-wire [2:0] wr_pushing_thread_id = cq_wr_thread_id; 
+wire       wr_pushing = wr_reserving && !wr_bypassing;   // data pushed same cycle as cq_wr_pvld
+wire [2:0] wr_pushing_thread_id = cq_wr_thread_id; // thread being written
 
 //
 // RAM
 //
 
-wire wr_adr_popping = wr_pushing;	
+wire wr_adr_popping = wr_pushing;	// pop free list when wr_pushing=1
 
-wire [7:0] cq_wr_adr;			
+wire [7:0] cq_wr_adr;			// current write address
 reg  [7:0] cq_rd_adr;
-wire [7:0] cq_rd_adr_p = cq_rd_adr;		
+wire [7:0] cq_rd_adr_p = cq_rd_adr;		// read address to use for ram
 
 wire rd_enable;
 
 wire [31 : 0] pwrbus_ram_pd;
 
+// Adding parameter for fifogen to disable wr/rd contention assertion in ramgen.
+// Fifogen handles this by ignoring the data on the ram data out for that cycle.
 
 
-
-
-nv_ram_rws_256x3 #(`FORCE_CONTENTION_ASSERTION_RESET_ACTIVE) ram (
+nv_ram_rws_256x3_dlarr #(`FORCE_CONTENTION_ASSERTION_RESET_ACTIVE) ram (
       .clk		 ( nvdla_core_clk )
     , .pwrbus_ram_pd ( pwrbus_ram_pd )
     , .wa        ( cq_wr_adr )
@@ -201,29 +201,29 @@ nv_ram_rws_256x3 #(`FORCE_CONTENTION_ASSERTION_RESET_ACTIVE) ram (
     , .dout        ( cq_rd_pd_p )
     );
 
-wire   rd_popping;              
+wire   rd_popping;              // read side doing pop this cycle?
 
 //
-
+// SYNCHRONOUS BOUNDARY
 //
 
 
 
-wire   rd_pushing = wr_pushing;		
+wire   rd_pushing = wr_pushing;		// let it be seen immediately
 wire [2:0] rd_pushing_thread_id = wr_pushing_thread_id;
 wire [7:0] rd_pushing_adr = cq_wr_adr;
 
 //
-
+// MULTITHREADED FREE LIST FIFO
 //
-
-
-
-
-
-
+// free list of cq_wr_adr's from read side to write side
+// these are passed in a ff fifo when the fifo is popped
 //
-wire [7:0] rd_popping_adr;   
+// there's an extra mux of the internal flops that is
+// used to determine which address to use when 
+// rd_pushing is 1 if the fifo is async.  
+//
+wire [7:0] rd_popping_adr;   // cq_rd_adr to free up
 
 wire [7:0] free_adr_index;
 reg [255-1:0] free_adr_mask_next;
@@ -2057,9 +2057,9 @@ assign wr_popping = rd_popping;
 //
 
 //
-
+// credits for taker are simply rd_pushing*
 //
-reg [4:0] cq_rd_credit;			
+reg [4:0] cq_rd_credit;			// registered out take credits
 reg rd_pushing_q;
 always @( posedge nvdla_core_clk_mgated or negedge nvdla_core_rstn ) begin
     if ( !nvdla_core_rstn ) begin
@@ -2089,20 +2089,20 @@ wire rd_take3 = cq_rd_take && cq_rd_take_thread_id == 3'd3;
 wire rd_take4 = cq_rd_take && cq_rd_take_thread_id == 3'd4; 
 
 
-reg [7:0] head0; 
-reg [7:0] tail0; 
+reg [7:0] head0; // thread 0's head pointer
+reg [7:0] tail0; // thread 0's tail pointer
 
-reg [7:0] head1; 
-reg [7:0] tail1; 
+reg [7:0] head1; // thread 1's head pointer
+reg [7:0] tail1; // thread 1's tail pointer
 
-reg [7:0] head2; 
-reg [7:0] tail2; 
+reg [7:0] head2; // thread 2's head pointer
+reg [7:0] tail2; // thread 2's tail pointer
 
-reg [7:0] head3; 
-reg [7:0] tail3; 
+reg [7:0] head3; // thread 3's head pointer
+reg [7:0] tail3; // thread 3's tail pointer
 
-reg [7:0] head4; 
-reg [7:0] tail4; 
+reg [7:0] head4; // thread 4's head pointer
+reg [7:0] tail4; // thread 4's tail pointer
 
 reg [4:0] rd_take_n_dly;
 reg rd_take_dly_cg;
@@ -2431,7 +2431,7 @@ end
 
 
 //
-
+// take data comes out next cycle for non-ff rams.
 //
 reg rd_take_dly;
 assign rd_popping = rd_take_dly;
@@ -2462,18 +2462,18 @@ end
 
 
 //
-
+// -rd_take_to_rd_busy conversion (conceptually outside the fifo except for ra2 bypass)
 //
-wire [4:0] cq_rd_take_elig;   
+wire [4:0] cq_rd_take_elig;   // mask of threads that can do takes this cycle
 
-wire rd_pre_bypassing0;          
-wire rd_bypassing0;              
-reg  [2:0] rd_skid0_0;     
-reg  [2:0] rd_skid0_1;     
-reg  [2:0] rd_skid0_2;    
-reg  rd_skid0_0_vld;             
-reg  rd_skid0_1_vld;             
-reg  rd_skid0_2_vld;             
+wire rd_pre_bypassing0;          // bypassing is split up into two parts to avoid combinatorial loop
+wire rd_bypassing0;              //      between cq_rd0_pvld and cq_rd0_prdy when doing full bypass
+reg  [2:0] rd_skid0_0;     // head   skid reg
+reg  [2:0] rd_skid0_1;     // head+1 skid reg
+reg  [2:0] rd_skid0_2;     // head+2 skid reg (for -rd_take_reg)
+reg  rd_skid0_0_vld;             // head   skid reg has valid data
+reg  rd_skid0_1_vld;             // head+1 skid reg has valid data
+reg  rd_skid0_2_vld;             // head+2 skid reg has valid data (for -rd_take_reg)
 
 reg  cq_rd0_prdy_d;  
 always @( posedge nvdla_core_clk or negedge nvdla_core_rstn ) begin
@@ -2485,8 +2485,8 @@ always @( posedge nvdla_core_clk or negedge nvdla_core_rstn ) begin
     end
 end
 
-assign cq_rd0_pvld = rd_skid0_0_vld || rd_pre_bypassing0;  			
-assign cq_rd0_pd = rd_skid0_0_vld ? rd_skid0_0 : cq_wr_pd;        
+assign cq_rd0_pvld = rd_skid0_0_vld || rd_pre_bypassing0;  			// full bypass for 0-latency
+assign cq_rd0_pd = rd_skid0_0_vld ? rd_skid0_0 : cq_wr_pd;        // full bypass for 0-latency
 
 always @( posedge nvdla_core_clk_mgated_skid ) begin
     if ( (rd_bypassing0 || rd_take_n_dly[0]) && (!rd_skid0_0_vld || (cq_rd0_pvld && cq_rd0_prdy && !rd_skid0_1_vld)) ) begin
@@ -2542,7 +2542,7 @@ always @( posedge nvdla_core_clk_mgated_skid or negedge nvdla_core_rstn ) begin
 end
 
 // spyglass disable_block W164a W116 W484
-reg  [8:0] cq_rd0_credits;   
+reg  [8:0] cq_rd0_credits;   // unused credits
 reg             cq_rd0_credits_ne0; 
 wire [8:0] cq_rd0_credits_w_take_next  =  cq_rd0_credits + cq_rd_credit[0] - 1'b1;
 wire [8:0] cq_rd0_credits_wo_take_next =  cq_rd0_credits + cq_rd_credit[0];
@@ -2553,7 +2553,7 @@ wire [8:0] cq_rd0_credits_next =  rd_take0 ? cq_rd0_credits_w_take_next : cq_rd0
 assign cq_rd_take_elig[0] = (cq_rd0_prdy_d || !rd_skid0_0_vld || !rd_skid0_1_vld || (!rd_skid0_2_vld && !rd_take_n_dly[0])) && (cq_rd_credit[0] || cq_rd0_credits_ne0);
 //VCS coverage on
 
-assign rd_pre_bypassing0 = cq_wr_pvld && !cq_wr_busy_int && (cq_wr_thread_id == 3'd0) && cq_rd0_credits == 0 && !cq_rd_credit[0] && (!rd_take_n_dly[0] || rd_skid0_0_vld); 
+assign rd_pre_bypassing0 = cq_wr_pvld && !cq_wr_busy_int && (cq_wr_thread_id == 3'd0) && cq_rd0_credits == 0 && !cq_rd_credit[0] && (!rd_take_n_dly[0] || rd_skid0_0_vld); // split this up to avoid combinatorial loop when full bypass is in effect
 assign rd_bypassing0 = rd_pre_bypassing0 && (!rd_skid0_2_vld || !rd_skid0_1_vld || !(!cq_rd0_prdy_d && rd_skid0_0_vld && rd_skid0_1_vld)) && !rd_take_n_dly[0];
 always @( posedge nvdla_core_clk_mgated_skid or negedge nvdla_core_rstn ) begin
     if ( !nvdla_core_rstn ) begin
@@ -2575,14 +2575,14 @@ always @( posedge nvdla_core_clk_mgated_skid or negedge nvdla_core_rstn ) begin
     end
 end
 
-wire rd_pre_bypassing1;          
-wire rd_bypassing1;              
-reg  [2:0] rd_skid1_0;     
-reg  [2:0] rd_skid1_1;     
-reg  [2:0] rd_skid1_2;     
-reg  rd_skid1_0_vld;             
-reg  rd_skid1_1_vld;             
-reg  rd_skid1_2_vld;             
+wire rd_pre_bypassing1;          // bypassing is split up into two parts to avoid combinatorial loop
+wire rd_bypassing1;              //      between cq_rd1_pvld and cq_rd1_prdy when doing full bypass
+reg  [2:0] rd_skid1_0;     // head   skid reg
+reg  [2:0] rd_skid1_1;     // head+1 skid reg
+reg  [2:0] rd_skid1_2;     // head+2 skid reg (for -rd_take_reg)
+reg  rd_skid1_0_vld;             // head   skid reg has valid data
+reg  rd_skid1_1_vld;             // head+1 skid reg has valid data
+reg  rd_skid1_2_vld;             // head+2 skid reg has valid data (for -rd_take_reg)
 
 reg  cq_rd1_prdy_d;  
 always @( posedge nvdla_core_clk or negedge nvdla_core_rstn ) begin
@@ -2594,8 +2594,8 @@ always @( posedge nvdla_core_clk or negedge nvdla_core_rstn ) begin
     end
 end
 
-assign cq_rd1_pvld = rd_skid1_0_vld || rd_pre_bypassing1;  			
-assign cq_rd1_pd = rd_skid1_0_vld ? rd_skid1_0 : cq_wr_pd;        
+assign cq_rd1_pvld = rd_skid1_0_vld || rd_pre_bypassing1;  			// full bypass for 0-latency
+assign cq_rd1_pd = rd_skid1_0_vld ? rd_skid1_0 : cq_wr_pd;        // full bypass for 0-latency
 
 always @( posedge nvdla_core_clk_mgated_skid ) begin
     if ( (rd_bypassing1 || rd_take_n_dly[1]) && (!rd_skid1_0_vld || (cq_rd1_pvld && cq_rd1_prdy && !rd_skid1_1_vld)) ) begin
@@ -2651,7 +2651,7 @@ always @( posedge nvdla_core_clk_mgated_skid or negedge nvdla_core_rstn ) begin
 end
 
 // spyglass disable_block W164a W116 W484
-reg  [8:0] cq_rd1_credits;   
+reg  [8:0] cq_rd1_credits;   // unused credits
 reg             cq_rd1_credits_ne0; 
 wire [8:0] cq_rd1_credits_w_take_next  =  cq_rd1_credits + cq_rd_credit[1] - 1'b1;
 wire [8:0] cq_rd1_credits_wo_take_next =  cq_rd1_credits + cq_rd_credit[1];
@@ -2662,7 +2662,7 @@ wire [8:0] cq_rd1_credits_next =  rd_take1 ? cq_rd1_credits_w_take_next : cq_rd1
 assign cq_rd_take_elig[1] = (cq_rd1_prdy_d || !rd_skid1_0_vld || !rd_skid1_1_vld || (!rd_skid1_2_vld && !rd_take_n_dly[1])) && (cq_rd_credit[1] || cq_rd1_credits_ne0);
 //VCS coverage on
 
-assign rd_pre_bypassing1 = cq_wr_pvld && !cq_wr_busy_int && (cq_wr_thread_id == 3'd1) && cq_rd1_credits == 0 && !cq_rd_credit[1] && (!rd_take_n_dly[1] || rd_skid1_0_vld);
+assign rd_pre_bypassing1 = cq_wr_pvld && !cq_wr_busy_int && (cq_wr_thread_id == 3'd1) && cq_rd1_credits == 0 && !cq_rd_credit[1] && (!rd_take_n_dly[1] || rd_skid1_0_vld); // split this up to avoid combinatorial loop when full bypass is in effect
 assign rd_bypassing1 = rd_pre_bypassing1 && (!rd_skid1_2_vld || !rd_skid1_1_vld || !(!cq_rd1_prdy_d && rd_skid1_0_vld && rd_skid1_1_vld)) && !rd_take_n_dly[1];
 always @( posedge nvdla_core_clk_mgated_skid or negedge nvdla_core_rstn ) begin
     if ( !nvdla_core_rstn ) begin
@@ -2684,14 +2684,14 @@ always @( posedge nvdla_core_clk_mgated_skid or negedge nvdla_core_rstn ) begin
     end
 end
 
-wire rd_pre_bypassing2;          
-wire rd_bypassing2;              
-reg  [2:0] rd_skid2_0;     
-reg  [2:0] rd_skid2_1;     
-reg  [2:0] rd_skid2_2;     
-reg  rd_skid2_0_vld;             
-reg  rd_skid2_1_vld;             
-reg  rd_skid2_2_vld;             
+wire rd_pre_bypassing2;          // bypassing is split up into two parts to avoid combinatorial loop
+wire rd_bypassing2;              //      between cq_rd2_pvld and cq_rd2_prdy when doing full bypass
+reg  [2:0] rd_skid2_0;     // head   skid reg
+reg  [2:0] rd_skid2_1;     // head+1 skid reg
+reg  [2:0] rd_skid2_2;     // head+2 skid reg (for -rd_take_reg)
+reg  rd_skid2_0_vld;             // head   skid reg has valid data
+reg  rd_skid2_1_vld;             // head+1 skid reg has valid data
+reg  rd_skid2_2_vld;             // head+2 skid reg has valid data (for -rd_take_reg)
 
 reg  cq_rd2_prdy_d;  
 always @( posedge nvdla_core_clk or negedge nvdla_core_rstn ) begin
@@ -2703,8 +2703,8 @@ always @( posedge nvdla_core_clk or negedge nvdla_core_rstn ) begin
     end
 end
 
-assign cq_rd2_pvld = rd_skid2_0_vld || rd_pre_bypassing2;  			
-assign cq_rd2_pd = rd_skid2_0_vld ? rd_skid2_0 : cq_wr_pd;       
+assign cq_rd2_pvld = rd_skid2_0_vld || rd_pre_bypassing2;  			// full bypass for 0-latency
+assign cq_rd2_pd = rd_skid2_0_vld ? rd_skid2_0 : cq_wr_pd;        // full bypass for 0-latency
 
 always @( posedge nvdla_core_clk_mgated_skid ) begin
     if ( (rd_bypassing2 || rd_take_n_dly[2]) && (!rd_skid2_0_vld || (cq_rd2_pvld && cq_rd2_prdy && !rd_skid2_1_vld)) ) begin
@@ -2760,7 +2760,7 @@ always @( posedge nvdla_core_clk_mgated_skid or negedge nvdla_core_rstn ) begin
 end
 
 // spyglass disable_block W164a W116 W484
-reg  [8:0] cq_rd2_credits;   
+reg  [8:0] cq_rd2_credits;   // unused credits
 reg             cq_rd2_credits_ne0; 
 wire [8:0] cq_rd2_credits_w_take_next  =  cq_rd2_credits + cq_rd_credit[2] - 1'b1;
 wire [8:0] cq_rd2_credits_wo_take_next =  cq_rd2_credits + cq_rd_credit[2];
@@ -2771,7 +2771,7 @@ wire [8:0] cq_rd2_credits_next =  rd_take2 ? cq_rd2_credits_w_take_next : cq_rd2
 assign cq_rd_take_elig[2] = (cq_rd2_prdy_d || !rd_skid2_0_vld || !rd_skid2_1_vld || (!rd_skid2_2_vld && !rd_take_n_dly[2])) && (cq_rd_credit[2] || cq_rd2_credits_ne0);
 //VCS coverage on
 
-assign rd_pre_bypassing2 = cq_wr_pvld && !cq_wr_busy_int && (cq_wr_thread_id == 3'd2) && cq_rd2_credits == 0 && !cq_rd_credit[2] && (!rd_take_n_dly[2] || rd_skid2_0_vld); 
+assign rd_pre_bypassing2 = cq_wr_pvld && !cq_wr_busy_int && (cq_wr_thread_id == 3'd2) && cq_rd2_credits == 0 && !cq_rd_credit[2] && (!rd_take_n_dly[2] || rd_skid2_0_vld); // split this up to avoid combinatorial loop when full bypass is in effect
 assign rd_bypassing2 = rd_pre_bypassing2 && (!rd_skid2_2_vld || !rd_skid2_1_vld || !(!cq_rd2_prdy_d && rd_skid2_0_vld && rd_skid2_1_vld)) && !rd_take_n_dly[2];
 always @( posedge nvdla_core_clk_mgated_skid or negedge nvdla_core_rstn ) begin
     if ( !nvdla_core_rstn ) begin
@@ -2793,14 +2793,14 @@ always @( posedge nvdla_core_clk_mgated_skid or negedge nvdla_core_rstn ) begin
     end
 end
 
-wire rd_pre_bypassing3;          
-wire rd_bypassing3;              
-reg  [2:0] rd_skid3_0;     
-reg  [2:0] rd_skid3_1;     
-reg  [2:0] rd_skid3_2;     
-reg  rd_skid3_0_vld;             
-reg  rd_skid3_1_vld;             
-reg  rd_skid3_2_vld;             
+wire rd_pre_bypassing3;          // bypassing is split up into two parts to avoid combinatorial loop
+wire rd_bypassing3;              //      between cq_rd3_pvld and cq_rd3_prdy when doing full bypass
+reg  [2:0] rd_skid3_0;     // head   skid reg
+reg  [2:0] rd_skid3_1;     // head+1 skid reg
+reg  [2:0] rd_skid3_2;     // head+2 skid reg (for -rd_take_reg)
+reg  rd_skid3_0_vld;             // head   skid reg has valid data
+reg  rd_skid3_1_vld;             // head+1 skid reg has valid data
+reg  rd_skid3_2_vld;             // head+2 skid reg has valid data (for -rd_take_reg)
 
 reg  cq_rd3_prdy_d;  
 always @( posedge nvdla_core_clk or negedge nvdla_core_rstn ) begin
@@ -2812,8 +2812,8 @@ always @( posedge nvdla_core_clk or negedge nvdla_core_rstn ) begin
     end
 end
 
-assign cq_rd3_pvld = rd_skid3_0_vld || rd_pre_bypassing3;  			
-assign cq_rd3_pd = rd_skid3_0_vld ? rd_skid3_0 : cq_wr_pd;        
+assign cq_rd3_pvld = rd_skid3_0_vld || rd_pre_bypassing3;  			// full bypass for 0-latency
+assign cq_rd3_pd = rd_skid3_0_vld ? rd_skid3_0 : cq_wr_pd;        // full bypass for 0-latency
 
 always @( posedge nvdla_core_clk_mgated_skid ) begin
     if ( (rd_bypassing3 || rd_take_n_dly[3]) && (!rd_skid3_0_vld || (cq_rd3_pvld && cq_rd3_prdy && !rd_skid3_1_vld)) ) begin
@@ -2869,7 +2869,7 @@ always @( posedge nvdla_core_clk_mgated_skid or negedge nvdla_core_rstn ) begin
 end
 
 // spyglass disable_block W164a W116 W484
-reg  [8:0] cq_rd3_credits;   
+reg  [8:0] cq_rd3_credits;   // unused credits
 reg             cq_rd3_credits_ne0; 
 wire [8:0] cq_rd3_credits_w_take_next  =  cq_rd3_credits + cq_rd_credit[3] - 1'b1;
 wire [8:0] cq_rd3_credits_wo_take_next =  cq_rd3_credits + cq_rd_credit[3];
@@ -2880,7 +2880,7 @@ wire [8:0] cq_rd3_credits_next =  rd_take3 ? cq_rd3_credits_w_take_next : cq_rd3
 assign cq_rd_take_elig[3] = (cq_rd3_prdy_d || !rd_skid3_0_vld || !rd_skid3_1_vld || (!rd_skid3_2_vld && !rd_take_n_dly[3])) && (cq_rd_credit[3] || cq_rd3_credits_ne0);
 //VCS coverage on
 
-assign rd_pre_bypassing3 = cq_wr_pvld && !cq_wr_busy_int && (cq_wr_thread_id == 3'd3) && cq_rd3_credits == 0 && !cq_rd_credit[3] && (!rd_take_n_dly[3] || rd_skid3_0_vld); 
+assign rd_pre_bypassing3 = cq_wr_pvld && !cq_wr_busy_int && (cq_wr_thread_id == 3'd3) && cq_rd3_credits == 0 && !cq_rd_credit[3] && (!rd_take_n_dly[3] || rd_skid3_0_vld); // split this up to avoid combinatorial loop when full bypass is in effect
 assign rd_bypassing3 = rd_pre_bypassing3 && (!rd_skid3_2_vld || !rd_skid3_1_vld || !(!cq_rd3_prdy_d && rd_skid3_0_vld && rd_skid3_1_vld)) && !rd_take_n_dly[3];
 always @( posedge nvdla_core_clk_mgated_skid or negedge nvdla_core_rstn ) begin
     if ( !nvdla_core_rstn ) begin
@@ -2902,14 +2902,14 @@ always @( posedge nvdla_core_clk_mgated_skid or negedge nvdla_core_rstn ) begin
     end
 end
 
-wire rd_pre_bypassing4;          
-wire rd_bypassing4;              
-reg  [2:0] rd_skid4_0;     
-reg  [2:0] rd_skid4_1;     
-reg  [2:0] rd_skid4_2;     
-reg  rd_skid4_0_vld;             
-reg  rd_skid4_1_vld;             
-reg  rd_skid4_2_vld;             
+wire rd_pre_bypassing4;          // bypassing is split up into two parts to avoid combinatorial loop
+wire rd_bypassing4;              //      between cq_rd4_pvld and cq_rd4_prdy when doing full bypass
+reg  [2:0] rd_skid4_0;     // head   skid reg
+reg  [2:0] rd_skid4_1;     // head+1 skid reg
+reg  [2:0] rd_skid4_2;     // head+2 skid reg (for -rd_take_reg)
+reg  rd_skid4_0_vld;             // head   skid reg has valid data
+reg  rd_skid4_1_vld;             // head+1 skid reg has valid data
+reg  rd_skid4_2_vld;             // head+2 skid reg has valid data (for -rd_take_reg)
 
 reg  cq_rd4_prdy_d;  
 always @( posedge nvdla_core_clk or negedge nvdla_core_rstn ) begin
@@ -2921,8 +2921,8 @@ always @( posedge nvdla_core_clk or negedge nvdla_core_rstn ) begin
     end
 end
 
-assign cq_rd4_pvld = rd_skid4_0_vld || rd_pre_bypassing4;  			
-assign cq_rd4_pd = rd_skid4_0_vld ? rd_skid4_0 : cq_wr_pd;        
+assign cq_rd4_pvld = rd_skid4_0_vld || rd_pre_bypassing4;  			// full bypass for 0-latency
+assign cq_rd4_pd = rd_skid4_0_vld ? rd_skid4_0 : cq_wr_pd;        // full bypass for 0-latency
 
 always @( posedge nvdla_core_clk_mgated_skid ) begin
     if ( (rd_bypassing4 || rd_take_n_dly[4]) && (!rd_skid4_0_vld || (cq_rd4_pvld && cq_rd4_prdy && !rd_skid4_1_vld)) ) begin
@@ -2978,7 +2978,7 @@ always @( posedge nvdla_core_clk_mgated_skid or negedge nvdla_core_rstn ) begin
 end
 
 // spyglass disable_block W164a W116 W484
-reg  [8:0] cq_rd4_credits;   
+reg  [8:0] cq_rd4_credits;   // unused credits
 reg             cq_rd4_credits_ne0; 
 wire [8:0] cq_rd4_credits_w_take_next  =  cq_rd4_credits + cq_rd_credit[4] - 1'b1;
 wire [8:0] cq_rd4_credits_wo_take_next =  cq_rd4_credits + cq_rd_credit[4];
@@ -2989,7 +2989,7 @@ wire [8:0] cq_rd4_credits_next =  rd_take4 ? cq_rd4_credits_w_take_next : cq_rd4
 assign cq_rd_take_elig[4] = (cq_rd4_prdy_d || !rd_skid4_0_vld || !rd_skid4_1_vld || (!rd_skid4_2_vld && !rd_take_n_dly[4])) && (cq_rd_credit[4] || cq_rd4_credits_ne0);
 //VCS coverage on
 
-assign rd_pre_bypassing4 = cq_wr_pvld && !cq_wr_busy_int && (cq_wr_thread_id == 3'd4) && cq_rd4_credits == 0 && !cq_rd_credit[4] && (!rd_take_n_dly[4] || rd_skid4_0_vld); 
+assign rd_pre_bypassing4 = cq_wr_pvld && !cq_wr_busy_int && (cq_wr_thread_id == 3'd4) && cq_rd4_credits == 0 && !cq_rd_credit[4] && (!rd_take_n_dly[4] || rd_skid4_0_vld); // split this up to avoid combinatorial loop when full bypass is in effect
 assign rd_bypassing4 = rd_pre_bypassing4 && (!rd_skid4_2_vld || !rd_skid4_1_vld || !(!cq_rd4_prdy_d && rd_skid4_0_vld && rd_skid4_1_vld)) && !rd_take_n_dly[4];
 always @( posedge nvdla_core_clk_mgated_skid or negedge nvdla_core_rstn ) begin
     if ( !nvdla_core_rstn ) begin
@@ -3011,9 +3011,9 @@ always @( posedge nvdla_core_clk_mgated_skid or negedge nvdla_core_rstn ) begin
     end
 end
 
-
+// rd_take round-robin arbiter (similar to arbgen output)
 //
-assign cq_rd_take = |cq_rd_take_elig;  
+assign cq_rd_take = |cq_rd_take_elig;  // any thread is eligible to take, so issue take
 
 reg [2:0] cq_rd_take_thread_id_last;
 
@@ -3071,10 +3071,10 @@ end
 assign wr_bypassing = rd_bypassing0 || rd_bypassing1 || rd_bypassing2 || rd_bypassing3 || rd_bypassing4;
 
 
-
+// Master Clock Gating (SLCG) Enables
 //
 
-
+// plusarg for disabling this stuff:
 
 // synopsys translate_off
 `ifndef SYNTH_LEVEL1_COMPILE
@@ -3126,38 +3126,38 @@ assign nvdla_core_clk_mgated_skid_enable = nvdla_core_clk_mgated_enable || ( cq_
                                ;
 
 
-
+// Simulation and Emulation Overrides of wr_limit(s)
 //
 
 `ifdef EMU
 
 `ifdef EMU_FIFO_CFG
-
+// Emulation Global Config Override
 //
 assign wr_limit_muxed = `EMU_FIFO_CFG.NV_NVDLA_MCIF_WRITE_cq_wr_limit_override ? `EMU_FIFO_CFG.NV_NVDLA_MCIF_WRITE_cq_wr_limit : 9'd0;
 `else
-
+// No Global Override for Emulation 
 //
 assign wr_limit_muxed = 9'd0;
-`endif 
+`endif // EMU_FIFO_CFG
 
-`else 
+`else // !EMU
 `ifdef SYNTH_LEVEL1_COMPILE
 
-
+// No Override for GCS Compiles
 //
 assign wr_limit_muxed = 9'd0;
 `else
 `ifdef SYNTHESIS
 
-
+// No Override for RTL Synthesis
 //
 
 assign wr_limit_muxed = 9'd0;
 
 `else  
 
-
+// RTL Simulation Plusarg Override
 
 
 // VCS coverage off
@@ -3180,7 +3180,7 @@ always @( reinit ) begin
 initial begin
 `endif
     wr_limit_override = 0;
-    wr_limit_override_value = 0;  
+    wr_limit_override_value = 0;  // to keep viva happy with dangles
     if ( $test$plusargs( "NV_NVDLA_MCIF_WRITE_cq_wr_limit" ) ) begin
         wr_limit_override = 1;
         $value$plusargs( "NV_NVDLA_MCIF_WRITE_cq_wr_limit=%d", wr_limit_override_value);
@@ -3195,7 +3195,7 @@ end
 `endif
 
 
-
+// Random Write-Side Stalling
 // synopsys translate_off
 `ifndef SYNTH_LEVEL1_COMPILE
 `ifndef SYNTHESIS
@@ -3210,16 +3210,16 @@ end
 // leda W639 OFF -- For synthesis, operands of a division or modulo operation need to be constants
 // leda DCVER_274_NV OFF -- This system task is not supported by DC
 
-integer stall_probability;      
-integer stall_cycles_min;       
-integer stall_cycles_max;       
-integer stall_cycles_left;      
+integer stall_probability;      // prob of stalling
+integer stall_cycles_min;       // min cycles to stall
+integer stall_cycles_max;       // max cycles to stall
+integer stall_cycles_left;      // stall cycles left
 `ifdef NV_ARCHPRO
 always @( reinit ) begin
 `else 
 initial begin
 `endif
-    stall_probability      = 0; 
+    stall_probability      = 0; // no stalling by default
     stall_cycles_min       = 1;
     stall_cycles_max       = 10;
 
@@ -3257,7 +3257,7 @@ end
 `ifdef NO_PLI
 `else
 
-
+// randomization globals
 `ifdef SIMTOP_RANDOMIZE_STALLS
   always @( `SIMTOP_RANDOMIZE_STALLS.global_stall_event ) begin
     if ( ! $test$plusargs( "NV_NVDLA_MCIF_WRITE_cq_fifo_stall_probability" ) ) stall_probability = `SIMTOP_RANDOMIZE_STALLS.global_stall_fifo_probability; 
@@ -3308,12 +3308,12 @@ assign wr_pause_rand = (stall_cycles_left !== 0) ;
 
 
 //
-
+// Histogram of fifo depth (from write side's perspective)
 //
-
-
-
-
+// NOTE: it will reference `SIMTOP.perfmon_enabled, so that
+//       has to at least be defined, though not initialized.
+//	 tbgen testbenches have it already and various
+//	 ways to turn it on and off.
 //
 `ifdef PERFMON_HISTOGRAM 
 // synopsys translate_off
@@ -3418,9 +3418,9 @@ end
 // spyglass enable_block W164a W164b W116 W484 W504
 
 
-
-
-
+//The NV_BLKBOX_SRC0 module is only present when the FIFOGEN_MODULE_SEARCH
+// define is set.  This is to aid fifogen team search for fifogen fifo
+// instance and module names in a given design.
 `ifdef FIFOGEN_MODULE_SEARCH
 NV_BLKBOX_SRC0 dummy_breadcrumb_fifogen_blkbox (.Y());
 `endif
@@ -3432,14 +3432,12 @@ NV_BLKBOX_SRC0 dummy_breadcrumb_fifogen_blkbox (.Y());
 // synopsys dc_script_end
 
 
-
-
 `ifdef SYNTH_LEVEL1_COMPILE
 `else
 `ifdef SYNTHESIS
 `else
 `ifdef PRAND_VERILOG
-
+// Only verilog needs any local variables
 reg [47:0] prand_local_seed0;
 reg prand_initialized0;
 reg prand_no_rollpli0;
@@ -3472,7 +3470,7 @@ function [31:0] prand_inst0;
         end else begin
             diff = max - min + 1;
             prand_inst0 = min + prand_local_seed0[47:16] % diff;
-            
+            // magic numbers taken from Java's random class (same as lrand48)
             prand_local_seed0 = prand_local_seed0 * 48'h5deece66d + 48'd11;
         end
 `else
@@ -3489,13 +3487,12 @@ function [31:0] prand_inst0;
 endfunction
 
 
-
 `ifdef SYNTH_LEVEL1_COMPILE
 `else
 `ifdef SYNTHESIS
 `else
 `ifdef PRAND_VERILOG
-
+// Only verilog needs any local variables
 reg [47:0] prand_local_seed1;
 reg prand_initialized1;
 reg prand_no_rollpli1;
@@ -3528,7 +3525,7 @@ function [31:0] prand_inst1;
         end else begin
             diff = max - min + 1;
             prand_inst1 = min + prand_local_seed1[47:16] % diff;
-            
+            // magic numbers taken from Java's random class (same as lrand48)
             prand_local_seed1 = prand_local_seed1 * 48'h5deece66d + 48'd11;
         end
 `else
@@ -3545,11 +3542,11 @@ function [31:0] prand_inst1;
 endfunction
 
 
-endmodule 
+endmodule // NV_NVDLA_MCIF_WRITE_cq
 
 
 
 //
-
+// generate free list fifo for use from read side to write side
 //
 

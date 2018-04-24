@@ -23,6 +23,7 @@ module NV_NVDLA_MCIF_WRITE_eg (
   ,cq_rd4_pd
   ,cq_rd4_pvld
   ,noc2mcif_axi_b_bid
+  ,noc2mcif_axi_b_bresp
   ,noc2mcif_axi_b_bvalid
   ,cq_rd0_prdy
   ,cq_rd1_prdy
@@ -38,66 +39,44 @@ module NV_NVDLA_MCIF_WRITE_eg (
   ,mcif2sdp_wr_rsp_complete
   ,noc2mcif_axi_b_bready
   );
-// synoff nets
 
-// monitor nets
-
-// debug nets
-
-// tie high nets
-
-// tie low nets
-
-// no connect nets
-
-// not all bits used nets
-
-// todo nets
-
-    
-//
-// NV_NVDLA_MCIF_WRITE_eg_ports.v
-//
 input  nvdla_core_clk;
 input  nvdla_core_rstn;
 
 output  mcif2sdp_wr_rsp_complete;
-
 output  mcif2cdp_wr_rsp_complete;
-
 output  mcif2pdp_wr_rsp_complete;
 
 output  mcif2bdma_wr_rsp_complete;
-
 output  mcif2rbk_wr_rsp_complete;
 
-input        cq_rd0_pvld;  /* data valid */
-output       cq_rd0_prdy;  /* data return handshake */
+input        cq_rd0_pvld;  
+output       cq_rd0_prdy;  
 input  [2:0] cq_rd0_pd;
 
-input        cq_rd1_pvld;  /* data valid */
-output       cq_rd1_prdy;  /* data return handshake */
+input        cq_rd1_pvld;  
+output       cq_rd1_prdy;  
 input  [2:0] cq_rd1_pd;
 
-input        cq_rd2_pvld;  /* data valid */
-output       cq_rd2_prdy;  /* data return handshake */
+input        cq_rd2_pvld;  
+output       cq_rd2_prdy;  
 input  [2:0] cq_rd2_pd;
 
-input        cq_rd3_pvld;  /* data valid */
-output       cq_rd3_prdy;  /* data return handshake */
+input        cq_rd3_pvld;  
+output       cq_rd3_prdy;  
 input  [2:0] cq_rd3_pd;
 
-input        cq_rd4_pvld;  /* data valid */
-output       cq_rd4_prdy;  /* data return handshake */
+input        cq_rd4_pvld;  
+output       cq_rd4_prdy;  
 input  [2:0] cq_rd4_pd;
 
-input        noc2mcif_axi_b_bvalid;  /* data valid */
-output       noc2mcif_axi_b_bready;  /* data return handshake */
+input        noc2mcif_axi_b_bvalid;  
+output       noc2mcif_axi_b_bready;  
 input  [7:0] noc2mcif_axi_b_bid;
+input  [1:0] noc2mcif_axi_b_bresp;
 
 output [1:0] eg2ig_axi_len;
 output       eg2ig_axi_vld;
-reg    [1:0] eg2ig_axi_len;
 reg    [2:0] iflop_axi_axid;
 reg          iflop_axi_vld;
 reg          mcif2bdma_wr_rsp_complete;
@@ -120,14 +99,9 @@ wire         dma1_vld;
 wire         dma2_vld;
 wire         dma3_vld;
 wire         dma4_vld;
-// spyglass disable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
-wire   [7:0] noc2mcif_axi_b_bid_NC;
-// spyglass enable_block UnloadedNet-ML UnloadedOutTerm-ML W528 W123 W287a
+
 
 // TIE-OFFs 
-//assign noc2mcif_axi_b_bresp_NC = noc2mcif_axi_b_bresp; //stepheng.
-//assign noc2mcif_axi_b_buser_NC = noc2mcif_axi_b_buser;
-assign noc2mcif_axi_b_bid_NC = noc2mcif_axi_b_bid;
 assign noc2mcif_axi_b_bready = 1'b1; // NO pushback is needed on AXI B channel;
 
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
@@ -201,7 +175,7 @@ end
 
 // EG===Contect Qeueu
 assign dma0_vld = iflop_axi_vld & (iflop_axi_axid == 0);
-assign cq_rd0_prdy = dma0_vld;
+assign cq_rd0_prdy = iflop_axi_vld; // ECO 2054481
 assign dma1_vld = iflop_axi_vld & (iflop_axi_axid == 1);
 assign cq_rd1_prdy = dma1_vld;
 assign dma2_vld = iflop_axi_vld & (iflop_axi_axid == 2);
@@ -234,69 +208,36 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
     mcif2sdp_wr_rsp_complete <= 1'b0;
   end else begin
-  mcif2sdp_wr_rsp_complete <= dma1_vld & cq_rd1_pvld & cq_rd1_require_ack;
+  mcif2sdp_wr_rsp_complete <= dma1_vld & cq_rd0_pvld & cq_rd0_require_ack;
   end
 end
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
     mcif2pdp_wr_rsp_complete <= 1'b0;
   end else begin
-  mcif2pdp_wr_rsp_complete <= dma2_vld & cq_rd2_pvld & cq_rd2_require_ack;
+  mcif2pdp_wr_rsp_complete <= dma2_vld & cq_rd0_pvld & cq_rd0_require_ack;
   end
 end
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
     mcif2cdp_wr_rsp_complete <= 1'b0;
   end else begin
-  mcif2cdp_wr_rsp_complete <= dma3_vld & cq_rd3_pvld & cq_rd3_require_ack;
+  mcif2cdp_wr_rsp_complete <= dma3_vld & cq_rd0_pvld & cq_rd0_require_ack;
   end
 end
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
     mcif2rbk_wr_rsp_complete <= 1'b0;
   end else begin
-  mcif2rbk_wr_rsp_complete <= dma4_vld & cq_rd4_pvld & cq_rd4_require_ack;
+  mcif2rbk_wr_rsp_complete <= dma4_vld & cq_rd0_pvld & cq_rd0_require_ack;
   end
 end
 
-// EG2IG outstanding Counting
-assign eg2ig_axi_vld = iflop_axi_vld;
-always @(
-  dma0_vld
-  or cq_rd0_len
-  or dma1_vld
-  or cq_rd1_len
-  or dma2_vld
-  or cq_rd2_len
-  or dma3_vld
-  or cq_rd3_len
-  or dma4_vld
-  or cq_rd4_len
-  ) begin
-//spyglass disable_block W171 W226
-    case (1'b1 )
-      dma0_vld: eg2ig_axi_len = cq_rd0_len;
-      dma1_vld: eg2ig_axi_len = cq_rd1_len;
-      dma2_vld: eg2ig_axi_len = cq_rd2_len;
-      dma3_vld: eg2ig_axi_len = cq_rd3_len;
-      dma4_vld: eg2ig_axi_len = cq_rd4_len;
-    //VCS coverage off
-    default : begin 
-                eg2ig_axi_len[1:0] = {2{`x_or_0}};
-              end  
-    //VCS coverage on
-    endcase
-//spyglass enable_block W171 W226
-end
 
-//==================================
-// OBS
-//&PerlBeg;
-//    foreach my $i (0..$wdma_num-1) {
-//        vprinti "
-//        | assign obs_bus_mcif_write_eg_dma${i}_vld = dma${i}_vld;
-//        ";
-//    }
-//&PerlEnd;
+assign eg2ig_axi_vld = iflop_axi_vld;
+assign eg2ig_axi_len = 2'b0; // ECO 2054481, Synth optimized this out except for through ram paths, which still always be written to zero.
+
+
+
 endmodule // NV_NVDLA_MCIF_WRITE_eg
 
