@@ -222,8 +222,8 @@ end
 //decode read data address to sram.
 wire sc2buf_dat_rd_en0 =  sc2buf_dat_rd_en;
 wire sc2buf_dat_rd_en1 =  sc2buf_dat_rd_en & sc2buf_dat_rd_next1_en;
-wire[CBUF_ADDR_WIDTH-1:0] sc2buf_dat_rd_addr0 = sc2buf_dat_rd_next1_en ? sc2buf_dat_rd_addr-1'b1 : sc2buf_dat_rd_addr;
-wire[CBUF_ADDR_WIDTH-1:0] sc2buf_dat_rd_addr1 = sc2buf_dat_rd_addr;
+wire[CBUF_ADDR_WIDTH-1:0] sc2buf_dat_rd_addr0 = sc2buf_dat_rd_addr;
+wire[CBUF_ADDR_WIDTH-1:0] sc2buf_dat_rd_addr1 = sc2buf_dat_rd_next1_addr;
 //: my $bank_slice= CBUF_BANK_SLICE;  #address part for select bank
 //: for(my $j=0; $j<CBUF_BANK_NUMBER ; $j++){
 //:     for(my $k=0; $k<CBUF_RAM_PER_BANK ; $k++){
