@@ -1,0 +1,4 @@
+waive -regexp -file NV_NVDLA_NOCIF_DRAM_READ_eg.v -msg "Instance u_read_eg_arb(Master: read_eg_arb) has too few ports.*" -rule W210
+waive -regexp -file NV_NVDLA_NOCIF_DRAM_WRITE_IG_arb.v -msg "Instance u_write_ig_arb(Master: write_ig_arb) has too few ports.*" -rule W210
+waive -regexp -file NV_NVDLA_NOCIF_DRAM_read.v -msg "Instance u_cq(Master: NV_NVDLA_NOCIF_DRAM_READ_cq) has too few ports.*" -rule W210
+waive -regexp -file NV_NVDLA_NOCIF_DRAM_write.v -msg "Instance u_cq(Master: NV_NVDLA_NOCIF_DRAM_WRITE_cq) has too few ports.*" -rule W210
