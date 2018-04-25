@@ -554,11 +554,11 @@ function void nvdla_cdma_resource::surface_dump(int fh);
 endfunction: surface_dump
 
 constraint nvdla_cdma_resource::c_ias_stride_alignment {
-    // 32byte alignment
-    line_stride[4:0]    == 5'h0;
-    uv_line_stride[4:0] == 5'h0;
-    surf_stride[4:0]    == 5'h0;
-    batch_stride[4:0]   == 5'h0;
+    // ATOMIC SIZE alignment
+    line_stride    % `NVDLA_MEMORY_ATOMIC_SIZE == 0;
+    uv_line_stride % `NVDLA_MEMORY_ATOMIC_SIZE == 0;
+    surf_stride    % `NVDLA_MEMORY_ATOMIC_SIZE == 0;
+    batch_stride   % `NVDLA_MEMORY_ATOMIC_SIZE == 0;
 }
 
 constraint nvdla_cdma_resource::c_ias_precision_cvt {

@@ -357,7 +357,12 @@ class cdp_cov_pool extends nvdla_coverage_base;
 `endif
         }
         cp_lut_le_start_low:        coverpoint ral.nvdla.NVDLA_CDP.S_LUT_LE_START_LOW.LUT_LE_START_LOW.value {
+`ifdef NVDLA_FEATURE_DATA_TYPE_INT8
+            bins full_pos_int8[`CDP_COV_BIN_NUM_DEFAULT]   = {['h0: 'h1F_FFFF]};
+            bins full_neg_int8[`CDP_COV_BIN_NUM_DEFAULT]   = {['hFFE0_0000: 'hFFFF_FFFF]};
+`else
             bins range[8] = {[32'h0:32'hFFFF_FFFF]};
+`endif
         }
         cp_lut_le_end_high:         coverpoint ral.nvdla.NVDLA_CDP.S_LUT_LE_END_HIGH.LUT_LE_END_HIGH.value {
 `ifdef NVDLA_FEATURE_DATA_TYPE_INT8
@@ -371,7 +376,12 @@ class cdp_cov_pool extends nvdla_coverage_base;
 `endif
         }
         cp_lut_le_end_low:          coverpoint ral.nvdla.NVDLA_CDP.S_LUT_LE_END_LOW.LUT_LE_END_LOW.value {
+`ifdef NVDLA_FEATURE_DATA_TYPE_INT8
+            bins full_pos_int8[`CDP_COV_BIN_NUM_DEFAULT]   = {['h0: 'h1F_FFFF]};
+            bins full_neg_int8[`CDP_COV_BIN_NUM_DEFAULT]   = {['hFFE0_0000: 'hFFFF_FFFF]};
+`else
             bins range[8] = {[32'h0:32'hFFFF_FFFF]};
+`endif
         }
         cp_lut_lo_start_high:       coverpoint ral.nvdla.NVDLA_CDP.S_LUT_LO_START_HIGH.LUT_LO_START_HIGH.value {
 `ifdef NVDLA_FEATURE_DATA_TYPE_INT8
@@ -385,7 +395,12 @@ class cdp_cov_pool extends nvdla_coverage_base;
 `endif
         }
         cp_lut_lo_start_low:        coverpoint ral.nvdla.NVDLA_CDP.S_LUT_LO_START_LOW.LUT_LO_START_LOW.value {
+`ifdef NVDLA_FEATURE_DATA_TYPE_INT8
+            bins full_pos_int8[`CDP_COV_BIN_NUM_DEFAULT]   = {['h0: 'h1F_FFFF]};
+            bins full_neg_int8[`CDP_COV_BIN_NUM_DEFAULT]   = {['hFFE0_0000: 'hFFFF_FFFF]};
+`else
             bins range[8] = {[32'h0:32'hFFFF_FFFF]};
+`endif
         }
         cp_lut_lo_end_high:         coverpoint ral.nvdla.NVDLA_CDP.S_LUT_LO_END_HIGH.LUT_LO_END_HIGH.value {
 `ifdef NVDLA_FEATURE_DATA_TYPE_INT8
@@ -399,7 +414,12 @@ class cdp_cov_pool extends nvdla_coverage_base;
 `endif
         }
         cp_lut_lo_end_low:          coverpoint ral.nvdla.NVDLA_CDP.S_LUT_LO_END_LOW.LUT_LO_END_LOW.value {
+`ifdef NVDLA_FEATURE_DATA_TYPE_INT8
+            bins full_pos_int8[`CDP_COV_BIN_NUM_DEFAULT]   = {['h0: 'h1F_FFFF]};
+            bins full_neg_int8[`CDP_COV_BIN_NUM_DEFAULT]   = {['hFFE0_0000: 'hFFFF_FFFF]};
+`else
             bins range[8] = {[32'h0:32'hFFFF_FFFF]};
+`endif
         }
         cp_lut_le_slope_uflow_scale:coverpoint ral.nvdla.NVDLA_CDP.S_LUT_LE_SLOPE_SCALE.LUT_LE_SLOPE_UFLOW_SCALE.value {
             bins range[8]       = {[16'h0   :16'hFFFF]};
