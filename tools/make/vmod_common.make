@@ -7,6 +7,7 @@ include $(DEPTH)/tools/make/common.make
 I_FILES := $(shell find . -name "*.vh")
 I_FILES += $(shell find . -name "*.v")
 I_FILES += $(shell find . -name "*.vlib")
+I_FILES += $(shell find . -name "*.swl")
 V_FILES  := $(I_FILES:./%=%)
 
 H_FILES := $(shell find . -name "*.h")
