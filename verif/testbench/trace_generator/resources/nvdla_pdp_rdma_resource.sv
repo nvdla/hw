@@ -203,9 +203,9 @@ function void nvdla_pdp_rdma_resource::set_mem_addr();
 endfunction : set_mem_addr
 
 constraint nvdla_pdp_rdma_resource::c_ias_stride_alignment {
-    // 32byte alignment
-    src_line_stride[4:0]    == 5'h0;
-    src_surface_stride[4:0] == 5'h0;
+    // ATOMIC SIZE alignment
+    src_line_stride    % `NVDLA_MEMORY_ATOMIC_SIZE == 0;
+    src_surface_stride % `NVDLA_MEMORY_ATOMIC_SIZE == 0;
 }
 
 constraint nvdla_pdp_rdma_resource::c_ias_cube_size {
