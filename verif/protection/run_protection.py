@@ -45,12 +45,12 @@ if __name__ == '__main__':
     config = vars( parser.parse_args() )
     #pprint (config)
     if ('nv_small' == config['project']):
-        ret=run_plan(config['project'], 'nv_small', '-atag protection -no_lsf -monitor')
+        ret=run_plan(config['project'], 'nv_small', '-atag protection -no_lsf -monitor -timeout 1200')
         if 0 == ret:
             print ("verif_protection_pass")
         sys.exit(ret)
     elif ('nv_small_256' == config['project']):
-        ret=run_plan(config['project'], 'nv_small_256', '-atag protection -no_lsf -monitor')
+        ret=run_plan(config['project'], 'nv_small_256', '-atag protection -no_lsf -monitor -timeout 1200')
         if 0 == ret:
             print ("verif_protection_pass")
         sys.exit(ret)
