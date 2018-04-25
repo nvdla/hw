@@ -1,0 +1,2 @@
+waive -regexp -file NV_NVDLA_CSC_dl.v -msg "LHS: 'dat_req_addr_minus1_wrap' width 14 is less than RHS.*" -rule W164a
+waive -regexp -file NV_NVDLA_CSC_dl.v -msg "For operator (>=), left expression: "dat_req_addr_minus1" width 14 should match right expression.*" -rule W164a
