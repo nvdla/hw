@@ -27,13 +27,15 @@ $(OUT_DIR)/project.def : $(PROJECT).spec projects.spec Makefile
 # ======================
 project.h : $(OUT_DIR)/project.def
 	$(AT)$(PYTHON) $(DEFGEN) -i $< -o $(OUT_DIR)/$@ -b c
+	@echo "" >> $(OUT_DIR)/$@
+	@echo "#define USE_DESIGNWARE ${USE_DESIGNWARE}" >> $(OUT_DIR)/$@
 
 project.vh : $(OUT_DIR)/project.def
 	$(AT)$(PYTHON) $(DEFGEN) -i $< -o $(OUT_DIR)/$@ -b v
-	@echo "" >> $(OUT_DIR)/$@
-ifeq (${DESIGNWARE_NOEXIST},1)
-	@echo "\`define DESIGNWARE_NOEXIST ${DESIGNWARE_NOEXIST}" >> $(OUT_DIR)/$@
-endif                          
+#ifeq (${USE_DESIGNWARE},0)
+#	@echo "" >> $(OUT_DIR)/$@
+#	@echo "\`define DESIGNWARE_NOEXIST 1" >> $(OUT_DIR)/$@
+#endif
 
 project.py : $(OUT_DIR)/project.def
 	$(AT)$(PYTHON) $(DEFGEN) -i $< -o $(OUT_DIR)/$@ -b py
