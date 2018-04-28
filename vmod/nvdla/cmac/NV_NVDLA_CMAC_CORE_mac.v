@@ -8,8 +8,6 @@
 
 // File Name: NV_NVDLA_CMAC_CORE_mac.v
 
-`include "project.vh"
-
 #include "NV_NVDLA_CMAC.h"
 module NV_NVDLA_CMAC_CORE_mac (
    nvdla_core_clk     //|< i
