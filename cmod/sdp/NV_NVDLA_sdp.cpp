@@ -976,7 +976,7 @@ void NV_NVDLA_sdp::SdpDataOperationDC() {
                         cslDebug((50, "NV_NVDLA_sdp::SdpDataOperationThread, after read cc2pp_fifo_\n"));
                         memcpy(hls_data_in_, cacc2sdp_data_ptr, sizeof(uint32_t)*CC2PP_PAYLOAD_SIZE);
                         cslDebug((30, "%s: SDP_DP, input data from cacc\n", __FUNCTION__));
-                        for(int i = 0; i < SDP_PARALLEL_PROC_NUM; i++) {
+                        for(int i = 0; i < CC2PP_PAYLOAD_SIZE; i++) {
                             cslDebug((30, "%08x, ", hls_data_in_[i]));
                         }
                         cslDebug((30, "\n" ));
@@ -1867,6 +1867,9 @@ void NV_NVDLA_sdp::ExtractRdmaResponsePayloadCore(te_rdma_type eRdDma, nvdla_dma
             fifos[1] = fifo_mul;
         }
         if (0 != (mask & (0x1 << payload_iter))) {
+            for(int i = 0; i < DLA_ATOM_SIZE/2; i++) {
+                cslDebug((30, "payload data:0x%x\n", payload_data_ptr_i16[i]));
+            }
             if (is_int16_to_int8 && eRdDma == SDP_RDMA_INPUT) {
                 int max_width_step = (INTERNAL_BUF_SIZE)/(element_per_atom*bytes_per_element);
                 int width_step = min(buf_limit - sdp_buf_width_iter_[eRdDma], (uint32_t)max_width_step);
@@ -1932,13 +1935,13 @@ void NV_NVDLA_sdp::ExtractRdmaResponsePayloadCore(te_rdma_type eRdDma, nvdla_dma
                                 ptr[element_iter] = static_cast<int16_t>((reinterpret_cast<int8_t*>(output_payloads[payload_iter][way_iter])[element_iter]));
                             }
                             delete [] output_payloads[payload_iter][way_iter];
+                            cslDebug((50, "write SDP_PARALLEL_PROC_NUM(%d) elements to DP:0x%x, payload_iter:%d, way_iter:%d\n", SDP_PARALLEL_PROC_NUM, ptr[0], payload_iter, way_iter));
                             fifos[way_iter]->write(ptr);
-                            cslDebug((50, "write SDP_PARALLEL_PROC_NUM(%d) elements to DP, payload_iter:%d, way_iter:%d\n", SDP_PARALLEL_PROC_NUM, payload_iter, way_iter));
                         }
                     } else {
                         for(int way_iter = 0; way_iter < ways; way_iter++) {
+                            cslDebug((50, "write SDP_PARALLEL_PROC_NUM(%d) elements to DP:0x%x, payload_iter:%d, way_iter:%d\n", SDP_PARALLEL_PROC_NUM, *((int16_t*)output_payloads[payload_iter][way_iter]), payload_iter, way_iter));
                             fifos[way_iter]->write((int16_t*)output_payloads[payload_iter][way_iter]);
-                            cslDebug((50, "write SDP_PARALLEL_PROC_NUM(%d) elements to DP, payload_iter:%d, way_iter:%d\n", SDP_PARALLEL_PROC_NUM, payload_iter, way_iter));
                         }
                     }
                 }
