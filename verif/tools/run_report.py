@@ -3,6 +3,7 @@
 import os
 import re
 import sys
+import curses
 import argparse
 import time
 import json
@@ -30,6 +31,8 @@ class RunReport(object):
     test_orgz_data = {}
     regr_sts_data = {}
     job_status = {}
+    screen  = object
+    color_e = {}
 
     def __init__(self, regress_dir, publish_dir, publish=False,
                  monitor=False, monitor_interval=30, monitor_timeout=60,
@@ -44,26 +47,61 @@ class RunReport(object):
         self.submetrics = submetrics
         self.verbose = verbose
 
+    def init_curses(self):
+        self.screen = curses.initscr()
+        curses.start_color()
+        curses.use_default_colors()
+        curses.init_pair(1, curses.COLOR_RED,     -1)
+        curses.init_pair(2, curses.COLOR_GREEN,   -1)
+        curses.init_pair(3, curses.COLOR_YELLOW,  -1)
+        curses.init_pair(4, curses.COLOR_BLUE,    -1)
+        curses.init_pair(5, curses.COLOR_MAGENTA, -1)
+        curses.init_pair(6, curses.COLOR_CYAN,    -1)
+        curses.init_pair(7, curses.COLOR_WHITE,   -1)
+        self.color_e = {}
+        self.color_e["BLACK"]   = 0
+        self.color_e["RED"]     = 1
+        self.color_e["GREEN"]   = 2
+        self.color_e["YELLOW"]  = 3
+        self.color_e["BLUE"]    = 4
+        self.color_e["MAGENTA"] = 5
+        self.color_e["CYAN"]    = 6
+        self.color_e["WHITE"]   = 7
+        
+
     def run(self):
         self.start_time = time.time()
         colorama.init(autoreset=True)
         origin_dir = os.getcwd()
         os.chdir(self.regress_dir)
+        self.init_curses()
 
         self.__load_json_file()
         while True:
             self.__parse_regress_status()
             if not self.monitor_quiet:
-                self.__print_regress_report()
+                self.screen.clear()
+                self.__print_regress_report(True)
+            else:
+                self.__time_sleep(self.monitor_interval)
             if not self.monitor:
                 break
             elif self.__is_regress_done():
+                try:
+                    curses.endwin()
+                except:
+                    pass
+                self.__print_regress_report()
                 print(colorama.Fore.GREEN + 'Regression finished ...')
                 break
             elif self.__is_monitor_timeout():
+                try:
+                    curses.endwin()
+                except:
+                    pass
+                self.__print_regress_report()
                 print(colorama.Fore.YELLOW + '[INFO] Warning: Regression monitor timeout after {:.0f} minutes later !'.format((self.end_time - self.start_time)/60))
                 break
-            self.__time_sleep(self.monitor_interval)
         if self.__is_regress_done() or self.__is_monitor_timeout():
             self.report_gen()
         os.chdir(origin_dir)
@@ -208,7 +246,9 @@ class RunReport(object):
             self.test_orgz_data[tid]['errinfo']  = errinfo
             self.test_orgz_data[tid]['syndrome'] = ''
 
-    def __print_regress_report(self):
+    def __print_regress_report(self, is_curses=False):
+        rpt_info = []
+        pos      = 0
         passed_testlist  = [v for v in self.test_orgz_data.values() if v['status'] == 'PASS']
         failed_testlist  = [v for v in self.test_orgz_data.values() if v['status'] == 'FAIL']
         killed_testlist  = [v for v in self.test_orgz_data.values() if v['status'] == 'KILLED']
@@ -216,31 +256,75 @@ class RunReport(object):
         pending_testlist = [v for v in self.test_orgz_data.values() if v['status'] == 'PENDING']
 
         farm_type = self.regr_sts_data['farm_type']
-        print('[INFO] Dir = ' + self.regress_dir)
-        print(150 * '-')
+        rpt_info.append([0,0,'BLACK','[INFO] Dir = ' + self.regress_dir])
+        rpt_info.append([1,0,'BLACK',150 * '-'])
         if farm_type == 'LSF':
-            print('%-10s %-40s %-20s %-10s %-10s %-10s %-10s %-10s %-s' % ('JobID', 'Test', 'TB', 'Status', 'CpuTime', 'MemSize', 'CpuLimit', 'MemLimit', 'Errinfo'))
+            rpt_info.append([2,0,'BLACK','%-10s %-40s %-20s %-10s %-10s %-10s %-10s %-10s %-s' % ('JobID', 'Test', 'TB', 'Status', 'CpuTime', 'MemSize', 'CpuLimit', 'MemLimit', 'Errinfo')])
         else:
-            print('%-10s %-40s %-20s %-10s %-s' % ('JobID', 'Test', 'TB', 'Status', 'Errinfo'))
-        print(150 * '-')
+            rpt_info.append([2,0,'BLACK','%-10s %-40s %-20s %-10s %-s' % ('JobID', 'Test', 'TB', 'Status', 'Errinfo')])
+        rpt_info.append([3,0,'BLACK',150 * '-'])
 
-        self.__print_testlist_status('GREEN',  passed_testlist,  farm_type)
-        self.__print_testlist_status('RED',    failed_testlist,  farm_type)
-        self.__print_testlist_status('CYAN',   killed_testlist,  farm_type)
-        self.__print_testlist_status('BLUE',   running_testlist, farm_type)
-        self.__print_testlist_status('YELLOW', pending_testlist, farm_type)
+        line_cnt = 4
+        rpt_info += self.__print_testlist_status(line_cnt, 'GREEN',  passed_testlist,  farm_type)
+        line_cnt += len(passed_testlist)
+        rpt_info += self.__print_testlist_status(line_cnt, 'RED',    failed_testlist,  farm_type)
+        line_cnt += len(failed_testlist)
+        rpt_info += self.__print_testlist_status(line_cnt, 'CYAN',   killed_testlist,  farm_type)
+        line_cnt += len(killed_testlist)
+        rpt_info += self.__print_testlist_status(line_cnt, 'BLUE',   running_testlist, farm_type)
+        line_cnt += len(running_testlist)
+        rpt_info += self.__print_testlist_status(line_cnt, 'YELLOW', pending_testlist, farm_type)
+        line_cnt += len(pending_testlist)
 
-        print(150 * '-')
-        print('TOTAL    PASS      FAILED    KILLED    RUNNING   PENDING   Passing Rate')
-        print('%-4d     ' % self.regr_sts_data['metrics_result']['running_test_number'], end='')
-        print(colorama.Fore.GREEN  + '%-10d'% len(passed_testlist), end='')
-        print(colorama.Fore.RED    + '%-10d'% len(failed_testlist), end='')
-        print(colorama.Fore.CYAN   + '%-10d'% len(killed_testlist), end='')
-        print(colorama.Fore.BLUE   + '%-10d'% len(running_testlist), end='')
-        print(colorama.Fore.YELLOW + '%-10d'% len(pending_testlist), end='')
-        print(colorama.Style.BRIGHT+colorama.Fore.MAGENTA + '%.2f%%' % float(100*self.passing_rate_calc()))
+        rpt_info.append([line_cnt,   0,  'BLACK',   150 * '-'])
+        rpt_info.append([line_cnt+1, 0,  'BLACK',   'TOTAL    PASS      FAILED    KILLED    RUNNING   PENDING   Passing Rate'])
+        rpt_info.append([line_cnt+2, 0,  'BLACK',   '%0d'    % self.regr_sts_data['metrics_result']['running_test_number']])
+        rpt_info.append([line_cnt+2, 10, 'GREEN',   '%0d'    % len(passed_testlist)])
+        rpt_info.append([line_cnt+2, 20, 'RED',     '%0d'    % len(failed_testlist)])
+        rpt_info.append([line_cnt+2, 30, 'CYAN',    '%0d'    % len(killed_testlist)])
+        rpt_info.append([line_cnt+2, 40, 'BLUE',    '%0d'    % len(running_testlist)])
+        rpt_info.append([line_cnt+2, 50, 'YELLOW',  '%0d'    % len(pending_testlist)])
+        rpt_info.append([line_cnt+2, 60, 'MAGENTA', '%.2f%%' % float(100*self.passing_rate_calc())])
 
-    def __print_testlist_status(self, color='', testlist={}, farm_type=''):
+        if is_curses:
+            h_max,w_max = self.screen.getmaxyx()
+            my_win = curses.newpad(line_cnt+4, w_max)
+            for item in rpt_info:
+                if item[2] == 'BLACK':
+                    try:
+                        my_win.addstr(item[0],item[1],item[3], curses.A_BOLD)
+                    except curses.error:
+                        pass
+                else:
+                    try:
+                        my_win.addstr(item[0],item[1],item[3], curses.color_pair(self.color_e[item[2]]))
+                    except curses.error:
+                        pass
+            for val in range(self.monitor_interval,-1,-1):
+                try:
+                    my_win.addstr(line_cnt+3,0,'[INFO] Will update regression status after %0d seconds later ...' % val, curses.color_pair(3))
+                except curses.error:
+                    pass
+                try:
+                    my_win.refresh(pos,0,0,0,h_max-1,w_max-1)
+                except curses.error:
+                    pass
+                if val % 3 == 0:
+                    if pos+h_max <= line_cnt+3:
+                        pos += (h_max//3)
+                        if pos+h_max > line_cnt+3:
+                            pos = line_cnt+3-h_max+1
+                time.sleep(1)
+        else:
+            for idx in range(len(rpt_info)):
+                if idx < (line_cnt+2):
+                    print(getattr(colorama.Fore, rpt_info[idx][2]) + rpt_info[idx][3])
+                else:
+                    print(getattr(colorama.Fore, rpt_info[idx][2]) + '%-10s' % str(rpt_info[idx][3]), end='')
+            print()
+
+    def __print_testlist_status(self, line_cnt=0, color='', testlist={}, farm_type=''):
+        sts_info = []
         if farm_type == 'LSF':
             for test in testlist:
                 msg = "%(jobid)-10s %(test)-40s %(tb)-20s %(status)-10s %(cputime)-10s %(memsize)-10s %(cpulimit)-10s %(memlimit)-10s %(errinfo)-s" % {
@@ -254,7 +338,8 @@ class RunReport(object):
                     'memlimit' : self.job_status[test['job_id']]['memlimit'],
                     'errinfo'  : self.__replace_path_sub_string(test['errinfo'])
                 }
-                print(getattr(colorama.Fore, color) + msg)
+                sts_info.append([line_cnt,0,color,msg])
+                line_cnt += 1
         else:
             for test in testlist:
                 msg = "%(test)-40s %(tb)-20s %(status)-10s %(errinfo)-s" % {
@@ -263,7 +348,9 @@ class RunReport(object):
                     'status' : test['status'],
                     'errinfo': self.__replace_path_sub_string(test['errinfo'])
                 }
-                print(getattr(colorama.Fore, color) + msg)
+                sts_info.append([line_cnt,0,color,msg])
+                line_cnt += 1
+        return sts_info
 
     def __is_regress_done(self):
         passed_testlist  = [v for v in self.test_orgz_data.values() if v['status'] == 'PASS']

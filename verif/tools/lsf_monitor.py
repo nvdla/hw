@@ -44,13 +44,17 @@ class LSFMonitor(object):
     def get_job_by_name(self, job_name=''):
         try:
             job_info = subprocess.check_output("bjobs -a -J '%0s'" % job_name, shell=True) 
-        except Exception as err1:
-            print('%0s, wait 5s and retry' % err)
-            time.sleep(5)
+            if not job_info:
+                raise(None_Job)
+        except:
+            print(' wait 15s and retry')
+            time.sleep(15)
             try:
                 job_info = subprocess.check_output("bjobs -a -J '%0s'" % job_name, shell=True) 
-            except Exception as err2:
-                raise Exception('%0s' % err2)
+                if not job_info:
+                    raise(None_Job)
+            except:
+                raise Exception('job %0s not found' % job_name)
         pattern = re.compile(r'\\n(\d+) ')
         job_id = pattern.findall(str(job_info))
         job_id = [int(k) for k in job_id]
@@ -62,12 +66,16 @@ class LSFMonitor(object):
             exec_host_info[item] = {}
             try:
                 info = subprocess.check_output('bjobs -al '+str(item), shell = True)
-            except Exception as err:
-                print('%0s, retry' % err)
-                time.sleep(1)
+                if not info:
+                    raise(None_Job)
+            except:
+                print('wait 5s and retry')
+                time.sleep(5)
                 try:
                     info = subprocess.check_output('bjobs -al '+str(item), shell = True)
-                except Exception:
+                    if not info:
+                        raise(None_Job)
+                except:
                     exec_host_info[item]['status']       = 'EXPIRE'
                     exec_host_info[item]['testdir']      = '-'
                     exec_host_info[item]['cpulimit']     = '-'
@@ -88,6 +96,7 @@ class LSFMonitor(object):
             if match is None:
                 with open('log_of_job_'+str(item), 'w') as fh:
                     fh.write(str(info))
+                #print(str(info))
                 raise Exception('Job status extraction failed')
             exec_host_info[item]['status']   = match.group(1)
             exec_host_info[item]['testdir']  = os.path.basename(match.group(2))
@@ -118,13 +127,18 @@ class LSFMonitor(object):
             if value['status'] in ('RUN','PEND'):
                 try:
                     info = subprocess.check_output('bjobs -al '+str(key), shell = True)
-                except Exception as err1:
-                    print('%0s, retry' % err1)
-                    time.sleep(1)
+                    if not info:
+                        raise(None_Job)
+                except:
+                    print('wait 5s and retry')
+                    time.sleep(5)
                     try:
                         info = subprocess.check_output('bjobs -al '+str(key), shell = True)
-                    except Exception as err2:
-                        raise Exception('%0s' % err2)
+                        if not info:
+                            raise(None_Job)
+                    except:
+                        print('[WARNING] Failed to get log info of jobID %0d' % key)
+                        continue
                 info = re.sub(r'\\n\s*','', str(info))
                 status_p   = re.compile(r'Status\s*<(\w+)>,')
                 status     = status_p.search(str(info))
