@@ -87,12 +87,18 @@ class RunReport(object):
             if not self.monitor:
                 break
             elif self.__is_regress_done():
-                curses.endwin()
+                try:
+                    curses.endwin()
+                except:
+                    pass
                 self.__print_regress_report()
                 print(colorama.Fore.GREEN + 'Regression finished ...')
                 break
             elif self.__is_monitor_timeout():
-                curses.endwin()
+                try:
+                    curses.endwin()
+                except:
+                    pass
                 self.__print_regress_report()
                 print(colorama.Fore.YELLOW + '[INFO] Warning: Regression monitor timeout after {:.0f} minutes later !'.format((self.end_time - self.start_time)/60))
                 break
