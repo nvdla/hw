@@ -44,11 +44,15 @@ class LSFMonitor(object):
     def get_job_by_name(self, job_name=''):
         try:
             job_info = subprocess.check_output("bjobs -a -J '%0s'" % job_name, shell=True) 
+            if not job_info:
+                raise(None_Job)
         except:
             print(' wait 15s and retry')
             time.sleep(15)
             try:
                 job_info = subprocess.check_output("bjobs -a -J '%0s'" % job_name, shell=True) 
+                if not job_info:
+                    raise(None_Job)
             except:
                 raise Exception('job %0s not found' % job_name)
         pattern = re.compile(r'\\n(\d+) ')
@@ -62,11 +66,15 @@ class LSFMonitor(object):
             exec_host_info[item] = {}
             try:
                 info = subprocess.check_output('bjobs -al '+str(item), shell = True)
+                if not info:
+                    raise(None_Job)
             except:
                 print('wait 5s and retry')
                 time.sleep(5)
                 try:
                     info = subprocess.check_output('bjobs -al '+str(item), shell = True)
+                    if not info:
+                        raise(None_Job)
                 except:
                     exec_host_info[item]['status']       = 'EXPIRE'
                     exec_host_info[item]['testdir']      = '-'
@@ -78,17 +86,6 @@ class LSFMonitor(object):
                     exec_host_info[item]['maxmem']       = '-'
                     exec_host_info[item]['syndrome']     = '-'
                     continue
-            if not info:
-                exec_host_info[item]['status']       = 'EXPIRE'
-                exec_host_info[item]['testdir']      = '-'
-                exec_host_info[item]['cpulimit']     = '-'
-                exec_host_info[item]['exechost']     = '-'
-                exec_host_info[item]['runlimit']     = '-'
-                exec_host_info[item]['memlimit']     = '-'
-                exec_host_info[item]['cputime_used'] = '-'
-                exec_host_info[item]['maxmem']       = '-'
-                exec_host_info[item]['syndrome']     = '-'
-                continue
             info = re.sub(r'\\n\s*','', str(info))
             cputime_p  = re.compile(r'CPU\s*time\s*used\s*is\s*([\d\.]+)')
             cputime    = cputime_p.search(str(info))
@@ -130,25 +127,18 @@ class LSFMonitor(object):
             if value['status'] in ('RUN','PEND'):
                 try:
                     info = subprocess.check_output('bjobs -al '+str(key), shell = True)
+                    if not info:
+                        raise(None_Job)
                 except:
                     print('wait 5s and retry')
                     time.sleep(5)
                     try:
                         info = subprocess.check_output('bjobs -al '+str(key), shell = True)
+                        if not info:
+                            raise(None_Job)
                     except:
                         print('[WARNING] Failed to get log info of jobID %0d' % key)
                         continue
-                if not info:
-                    exec_host_info[item]['status']       = 'EXPIRE'
-                    exec_host_info[item]['testdir']      = '-'
-                    exec_host_info[item]['cpulimit']     = '-'
-                    exec_host_info[item]['exechost']     = '-'
-                    exec_host_info[item]['runlimit']     = '-'
-                    exec_host_info[item]['memlimit']     = '-'
-                    exec_host_info[item]['cputime_used'] = '-'
-                    exec_host_info[item]['maxmem']       = '-'
-                    exec_host_info[item]['syndrome']     = '-'
-                    continue
                 info = re.sub(r'\\n\s*','', str(info))
                 status_p   = re.compile(r'Status\s*<(\w+)>,')
                 status     = status_p.search(str(info))
