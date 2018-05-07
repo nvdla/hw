@@ -1,1 +1,3 @@
-11/28/2017: initial version for clean build 
+Date:Owner:Reason
+11/28/2017:ezhang: initial version for clean build
+05/07/2018:penli: Update designware enable defines in tree.make
