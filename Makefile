@@ -26,7 +26,7 @@ NV_VCS_HOME   ?= /home/tools/vcs/mx-2016.06-SP2-4
 NV_VERILATOR  ?= verilator
 NV_CLANG      ?= /home/utils/llvm-4.0.1/bin/clang
 
-VM_USE_DESIGNWARE ?= 0
+VM_USE_DESIGNWARE ?= 1
 VM_DESIGNWARE_DIR ?= /home/tools/synopsys/syn_2011.09/dw/sim_ver
 VM_CPP  ?= /usr/local/bin/cpp
 VM_GCC  ?= /usr/local/bin/gcc
