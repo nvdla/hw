@@ -124,7 +124,7 @@ endfunction: set_sim_constraint
 constraint nvdla_cdprdma_cdp_scenario::sce_cdprdma_cdp_sim_constraint_for_user_extend {
 }
 
-// FIXME need to add lut resue case
+// precision must keep the same with previous layer if LUT_REUSE is enabled
 constraint nvdla_cdprdma_cdp_scenario::sce_cdprdma_cdp_ias_constraint {
     cdp.input_data_type    == nvdla_cdp_resource::input_data_type_t'(cdp_rdma.input_data);
     cdp.dst_line_stride / `NVDLA_MEMORY_ATOMIC_SIZE  >= (cdp_rdma.width+1);

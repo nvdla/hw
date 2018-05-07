@@ -84,7 +84,7 @@ class sdp_cov_pool extends nvdla_coverage_base;
         super.new(name, ral);
 
         sdp_cg      = new();
-`ifdef NVDLA_SDP_LUT_ENABLE
+`ifdef NVDLA_SDP_EW_ENABLE
         sdp_lut_cg  = new();
 `endif
         sdp_rdma_cg = new();
@@ -149,7 +149,7 @@ class sdp_cov_pool extends nvdla_coverage_base;
 `endif
 
         // sdp lut
-`ifdef NVDLA_SDP_LUT_ENABLE
+`ifdef NVDLA_SDP_EW_ENABLE
         sdp_lut_le_index_offset_tog_cg      = new("sdp_lut_le_index_offset_tog_cg",      ral.nvdla.NVDLA_SDP.S_LUT_INFO.LUT_LE_INDEX_OFFSET.get_n_bits());
         sdp_lut_le_index_select_tog_cg      = new("sdp_lut_le_index_select_tog_cg",      ral.nvdla.NVDLA_SDP.S_LUT_INFO.LUT_LE_INDEX_SELECT.get_n_bits());
         sdp_lut_lo_index_select_tog_cg      = new("sdp_lut_lo_index_select_tog_cg",      ral.nvdla.NVDLA_SDP.S_LUT_INFO.LUT_LO_INDEX_SELECT.get_n_bits());
@@ -174,13 +174,13 @@ class sdp_cov_pool extends nvdla_coverage_base;
         sdp_cg.sample();
     endtask : sdp_sample
 
+`ifdef NVDLA_SDP_EW_ENABLE
     task sdp_lut_sample();
-`ifdef NVDLA_SDP_LUT_ENABLE
         `uvm_info(tID, $sformatf("SDP LUT Sample Begin ..."), UVM_LOW)
         sdp_lut_toggle_sample();
         sdp_lut_cg.sample();
-`endif
     endtask : sdp_lut_sample
+`endif
 
     task sdp_rdma_sample();
         `uvm_info(tID, $sformatf("SDP_RDMA Sample Begin ..."), UVM_LOW)
@@ -269,8 +269,8 @@ class sdp_cov_pool extends nvdla_coverage_base;
 `endif
     endfunction : sdp_toggle_sample
 
+`ifdef NVDLA_SDP_EW_ENABLE
     function void sdp_lut_toggle_sample();
-`ifdef NVDLA_SDP_LUT_ENABLE
         if(ral.nvdla.NVDLA_SDP.S_LUT_CFG.LUT_LE_FUNCTION.value == 0) begin // le table && exponent function
             sdp_lut_le_index_offset_tog_cg.sample(ral.nvdla.NVDLA_SDP.S_LUT_INFO.LUT_LE_INDEX_OFFSET.value);
         end
@@ -290,8 +290,8 @@ class sdp_cov_pool extends nvdla_coverage_base;
         sdp_lut_lo_slope_oflow_scale_tog_cg.sample(ral.nvdla.NVDLA_SDP.S_LUT_LO_SLOPE_SCALE.LUT_LO_SLOPE_OFLOW_SCALE.value);
         sdp_lut_lo_slope_uflow_shift_tog_cg.sample(ral.nvdla.NVDLA_SDP.S_LUT_LO_SLOPE_SHIFT.LUT_LO_SLOPE_UFLOW_SHIFT.value);
         sdp_lut_lo_slope_oflow_shift_tog_cg.sample(ral.nvdla.NVDLA_SDP.S_LUT_LO_SLOPE_SHIFT.LUT_LO_SLOPE_OFLOW_SHIFT.value);
-`endif
     endfunction : sdp_lut_toggle_sample
+`endif
 
     function void sdp_rdma_toggle_sample();
         sdp_rdma_width_tog_cg.sample(ral.nvdla.NVDLA_SDP_RDMA.D_DATA_CUBE_WIDTH.WIDTH.value);
@@ -730,25 +730,16 @@ class sdp_cov_pool extends nvdla_coverage_base;
 `endif // NVDLA_SDP_EW_ENABLE
     endgroup : sdp_cg
 
+`ifdef NVDLA_SDP_EW_ENABLE
     covergroup sdp_lut_cg;
         cp_lut_table_id:        coverpoint ral.nvdla.NVDLA_SDP.S_LUT_ACCESS_CFG.LUT_TABLE_ID.value {
             bins le = {0};
             bins lo = {1};
         }
-        // cp_lut_addr:            coverpoint ral.nvdla.NVDLA_SDP.S_LUT_ACCESS_CFG.LUT_ADDR.value {
-        //     bins le_addr[] = {[0:64]};
-        //     bins lo_addr[] = {[65:256]};
-        // }
-        // cr_lut_table_id_lut_addr:    cross cp_lut_table_id, cp_lut_addr {
-        //     ignore_bins no_use_addr = binsof(cp_lut_table_id.le) && binsof(cp_lut_addr.lo_addr);
-        // }
         cp_lut_access_type:     coverpoint ral.nvdla.NVDLA_SDP.S_LUT_ACCESS_CFG.LUT_ACCESS_TYPE.value {
             bins read  = {0};
             bins write = {1};
         }
-        // cr_lut_table_id_lut_addr_lut_access_type:  cross cp_lut_table_id, cp_lut_addr, cp_lut_access_type {
-        //     ignore_bins no_use_addr = binsof(cp_lut_table_id.le) && binsof(cp_lut_addr.lo_addr);
-        // }
         cp_lut_le_function:     coverpoint ral.nvdla.NVDLA_SDP.S_LUT_CFG.LUT_LE_FUNCTION.value {
             bins exponent = {0};
             bins linear   = {1};
@@ -757,21 +748,33 @@ class sdp_cov_pool extends nvdla_coverage_base;
             ignore_bins lo = binsof(cp_lut_table_id.lo);
         }
         cp_lut_le_index_offset:     coverpoint signed'(ral.nvdla.NVDLA_SDP.S_LUT_INFO.LUT_LE_INDEX_OFFSET.value[7:0]) {
-            bins range[8] = {[-64:-33]};
+`ifdef NVDLA_FEATURE_DATA_TYPE_FP16
+            bins range[8] = {[-126:127]};
+`else
+            bins range[8] = {[-64:31]};
+`endif
         }
         cr_lut_table_id_lut_le_function_lut_le_index_offset: cross cp_lut_table_id, cp_lut_le_function, cp_lut_le_index_offset {
             ignore_bins lo     = binsof(cp_lut_table_id.lo);
             ignore_bins linear = binsof(cp_lut_le_function.linear);
         }
         cp_lut_le_index_select:     coverpoint signed'(ral.nvdla.NVDLA_SDP.S_LUT_INFO.LUT_LE_INDEX_SELECT.value[7:0]) {
+`ifdef NVDLA_FEATURE_DATA_TYPE_FP16
+            bins range[8] = {[$:121]};
+`else
             bins range[8] = {[-6:25]};
+`endif
         }
         cr_lut_table_id_lut_le_function_lut_le_index_select: cross cp_lut_table_id, cp_lut_le_function, cp_lut_le_index_select {
             ignore_bins lo       = binsof(cp_lut_table_id.lo);
             ignore_bins exponent = binsof(cp_lut_le_function.exponent);
         }
         cp_lut_lo_index_select:     coverpoint signed'(ral.nvdla.NVDLA_SDP.S_LUT_INFO.LUT_LO_INDEX_SELECT.value[7:0]) {
+`ifdef NVDLA_FEATURE_DATA_TYPE_FP16
+            bins range[8] = {[$:119]};
+`else
             bins range[8] = {[-8:23]};
+`endif
         }
         cr_lut_table_id_lut_le_function_lut_lo_index_select: cross cp_lut_table_id, cp_lut_le_function, cp_lut_lo_index_select {
             ignore_bins le       = binsof(cp_lut_table_id.le);
@@ -791,6 +794,7 @@ class sdp_cov_pool extends nvdla_coverage_base;
         }
 
     endgroup : sdp_lut_cg
+`endif
 
     covergroup sdp_rdma_cg;
         // feature mode

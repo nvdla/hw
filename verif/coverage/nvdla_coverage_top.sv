@@ -62,7 +62,9 @@ class nvdla_coverage_top extends uvm_subscriber#(uvm_tlm_gp);
 
         if (gp.get_address() >= ral.nvdla.NVDLA_SDP.S_LUT_ACCESS_CFG.get_address()
          && gp.get_address() <= ral.nvdla.NVDLA_SDP.S_LUT_LO_SLOPE_SHIFT.get_address()) begin // SDP LUT
+`ifdef NVDLA_SDP_EW_ENABLE
             sdp_pool.sdp_lut_sample();
+`endif
         end
         else if (gp.get_address() >= ral.nvdla.NVDLA_CDP.S_LUT_ACCESS_CFG.get_address()
               && gp.get_address() <= ral.nvdla.NVDLA_CDP.S_LUT_LO_SLOPE_SHIFT.get_address()) begin // CDP LUT

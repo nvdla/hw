@@ -11,7 +11,15 @@
 class nvdla_sdp_resource extends nvdla_base_resource;
     // singleton handle
     static local nvdla_sdp_resource        inst;
-    string  sdp_cube_size = "NORMAL";
+    string sdp_cube_size           = "NORMAL";
+
+    // LUT data pattern settings
+    string sdp_lut_lo_data_pattern = "RANDOM";
+    string sdp_lut_le_data_pattern = "RANDOM";
+
+    // IF working in lut_reuse mode, input data type must be the same with pre layer
+    int    sdp_lut_reuse           = 0;
+
 
     // enum define
     //:| import spec2constrain
@@ -251,7 +259,10 @@ class nvdla_sdp_resource extends nvdla_base_resource;
     //:) epython: generated_end (DO NOT EDIT ABOVE)
 
     `uvm_component_utils_begin(nvdla_sdp_resource)
-        `uvm_field_string(sdp_cube_size,                UVM_ALL_ON)
+        `uvm_field_string(sdp_cube_size,                               UVM_ALL_ON)
+        `uvm_field_string(sdp_lut_lo_data_pattern,                     UVM_ALL_ON)
+        `uvm_field_string(sdp_lut_le_data_pattern,                     UVM_ALL_ON)
+        `uvm_field_int   (sdp_lut_reuse,                               UVM_ALL_ON)
         //:| spec2cons.macro_gen(['NVDLA_SDP'])
         //:) epython: generated_beg (DO NOT EDIT BELOW)
         `uvm_field_int(lut_addr,                                       UVM_ALL_ON)
@@ -355,8 +366,15 @@ class nvdla_sdp_resource extends nvdla_base_resource;
     extern function void    set_lut();
     extern function void    set_mem_addr();
     extern function void    set_register();
+    extern function void    lut_config_dump(int fh);
     extern function void    post_randomize();
     extern function void    set_sim_constraint();
+
+    /*
+        phase
+    */
+    extern function void    build_phase  (uvm_phase phase);
+    extern function void    connect_phase(uvm_phase phase);
 
     /*
         constraints: 
@@ -395,6 +413,125 @@ function nvdla_sdp_resource::new(string name="nvdla_sdp_resource", uvm_component
     super.new(name, parent);
     `uvm_info(inst_name, $sformatf("Initialize resource %s ... \n",inst_name),UVM_LOW);
 endfunction: new
+
+function void nvdla_sdp_resource::build_phase(uvm_phase phase);
+    super.build_phase(phase);
+
+endfunction: build_phase
+
+function void nvdla_sdp_resource::connect_phase(uvm_phase phase);
+    super.connect_phase(phase);
+
+    if(!uvm_config_db#(string)::get(this, "", "sdp_lut_lo_data_pattern", sdp_lut_lo_data_pattern)) begin
+        `uvm_info(inst_name, "NO sdp_lut_lo_data_pattern config, using default value: RANDOM", UVM_NONE)
+    end
+    if(!uvm_config_db#(string)::get(this, "", "sdp_lut_le_data_pattern", sdp_lut_le_data_pattern)) begin
+        `uvm_info(inst_name, "NO sdp_lut_le_data_pattern config, using default value: RANDOM", UVM_NONE)
+    end
+    if(!uvm_config_db#(int)::get(this, "", "sdp_lut_reuse", sdp_lut_reuse)) begin
+        `uvm_info(inst_name, "NO sdp_lut_reuse config, using default value: 0", UVM_NONE)
+    end
+endfunction: connect_phase
+
+function void nvdla_sdp_resource::lut_config_dump(int fh);
+    uvm_reg_data_t reg_val;
+
+    // LUT is only configurable when there's no active layer running, in other case
+    // just (skip) waiting  (if not forced LUT_REUSE)
+    while(0 != sync_evt_queue.size()) begin
+        sync_wait(fh,inst_name,sync_evt_queue.pop_front());
+    end
+    // Configure LUT table
+    ral.nvdla.NVDLA_SDP.S_LUT_ACCESS_CFG.LUT_ADDR.set(0);
+    ral.nvdla.NVDLA_SDP.S_LUT_ACCESS_CFG.LUT_TABLE_ID.set(0);    // LE
+    ral.nvdla.NVDLA_SDP.S_LUT_ACCESS_CFG.LUT_ACCESS_TYPE.set(1); // WRITE
+    reg_val = ral.nvdla.NVDLA_SDP.S_LUT_ACCESS_CFG.get();
+    reg_write(fh,{inst_name.toupper(),".S_LUT_ACCESS_CFG"}, reg_val);
+
+    if ("LOAD_EXTERNAL_" == sdp_lut_le_data_pattern.toupper().substr(0,13)) begin
+        string file_name = sdp_lut_le_data_pattern.substr(14,sdp_lut_le_data_pattern.len()-1);
+        bit [15:0] le_table[65];
+        bit [15:0] lo_table[257];
+        lut_table_load(file_name, le_table, lo_table);
+        for(int i=0;i<65;i++) begin
+            reg_write(fh,{inst_name.toupper(),".S_LUT_ACCESS_DATA"}, le_table[i]);
+        end
+    end
+    else begin
+        for(int i=0;i<65;i++) begin
+            // NO FP data format
+            if ("INDEX" == sdp_lut_le_data_pattern) begin
+                reg_write(fh,{inst_name.toupper(),".S_LUT_ACCESS_DATA"}, i);
+            end else if ("CONSTANT_0X" == sdp_lut_le_data_pattern.toupper().substr(0,10)) begin
+                bit[15:0] lut_val = sdp_lut_le_data_pattern.substr(9,sdp_lut_le_data_pattern.len()-1).atohex();
+                reg_write(fh,{inst_name.toupper(),".S_LUT_ACCESS_DATA"}, lut_val);
+            end else begin
+                bit[15:0] lut_val = $urandom_range(0,16'hFFFF);
+                reg_write(fh,{inst_name.toupper(),".S_LUT_ACCESS_DATA"}, lut_val);
+            end
+        end
+    end
+    ral.nvdla.NVDLA_SDP.S_LUT_ACCESS_CFG.LUT_ADDR.set(0);
+    ral.nvdla.NVDLA_SDP.S_LUT_ACCESS_CFG.LUT_TABLE_ID.set(1);    // LO
+    ral.nvdla.NVDLA_SDP.S_LUT_ACCESS_CFG.LUT_ACCESS_TYPE.set(1); // WRITE
+    reg_val = ral.nvdla.NVDLA_SDP.S_LUT_ACCESS_CFG.get();
+    reg_write(fh,{inst_name.toupper(),".S_LUT_ACCESS_CFG"}, reg_val);
+
+    if ("LOAD_EXTERNAL_" == sdp_lut_lo_data_pattern.toupper().substr(0,13)) begin
+        string file_name = sdp_lut_lo_data_pattern.substr(14,sdp_lut_lo_data_pattern.len()-1);
+        bit [15:0] le_table[65];
+        bit [15:0] lo_table[257];
+        lut_table_load(file_name, le_table, lo_table);
+        for(int i=0;i<257;i++) begin
+            reg_write(fh,{inst_name.toupper(),".S_LUT_ACCESS_DATA"}, lo_table[i]);
+        end
+    end
+    else begin
+        for(int i=0;i<257;i++) begin
+            // NO FP data format
+            if ("INDEX" == sdp_lut_lo_data_pattern) begin
+                reg_write(fh,{inst_name.toupper(),".S_LUT_ACCESS_DATA"}, i);
+            end else if ("CONSTANT_0X" == sdp_lut_lo_data_pattern.toupper().substr(0,10)) begin
+                bit[15:0] lut_val = sdp_lut_lo_data_pattern.substr(9,sdp_lut_lo_data_pattern.len()-1).atohex();
+                reg_write(fh,{inst_name.toupper(),".S_LUT_ACCESS_DATA"}, lut_val);
+            end else begin
+                bit[15:0] lut_val = $urandom_range(0,16'hFFFF);
+                reg_write(fh,{inst_name.toupper(),".S_LUT_ACCESS_DATA"}, lut_val);
+            end
+        end
+    end
+    begin
+        reg_val = ral.nvdla.NVDLA_SDP.S_LUT_CFG.get();
+        reg_write(fh,{inst_name.toupper(),".S_LUT_CFG"}, reg_val);
+
+        reg_val = ral.nvdla.NVDLA_SDP.S_LUT_INFO.get();
+        reg_write(fh,{inst_name.toupper(),".S_LUT_INFO"}, reg_val);
+
+        reg_val = ral.nvdla.NVDLA_SDP.S_LUT_LE_START.get();
+        reg_write(fh,{inst_name.toupper(),".S_LUT_LE_START"}, reg_val);
+
+        reg_val = ral.nvdla.NVDLA_SDP.S_LUT_LE_END.get();
+        reg_write(fh,{inst_name.toupper(),".S_LUT_LE_END"}, reg_val);
+
+        reg_val = ral.nvdla.NVDLA_SDP.S_LUT_LO_START.get();
+        reg_write(fh,{inst_name.toupper(),".S_LUT_LO_START"}, reg_val);
+
+        reg_val = ral.nvdla.NVDLA_SDP.S_LUT_LO_END.get();
+        reg_write(fh,{inst_name.toupper(),".S_LUT_LO_END"}, reg_val);
+
+        reg_val = ral.nvdla.NVDLA_SDP.S_LUT_LE_SLOPE_SCALE.get();
+        reg_write(fh,{inst_name.toupper(),".S_LUT_LE_SLOPE_SCALE"}, reg_val);
+
+        reg_val = ral.nvdla.NVDLA_SDP.S_LUT_LE_SLOPE_SHIFT.get();
+        reg_write(fh,{inst_name.toupper(),".S_LUT_LE_SLOPE_SHIFT"}, reg_val);
+
+        reg_val = ral.nvdla.NVDLA_SDP.S_LUT_LO_SLOPE_SCALE.get();
+        reg_write(fh,{inst_name.toupper(),".S_LUT_LO_SLOPE_SCALE"}, reg_val);
+
+        reg_val = ral.nvdla.NVDLA_SDP.S_LUT_LO_SLOPE_SHIFT.get();
+        reg_write(fh,{inst_name.toupper(),".S_LUT_LO_SLOPE_SHIFT"}, reg_val);
+    end
+endfunction : lut_config_dump
 
 static function  nvdla_sdp_resource nvdla_sdp_resource::get_sdp(uvm_component parent);
     if (null == inst) begin
@@ -452,6 +589,15 @@ function void nvdla_sdp_resource::trace_dump(int fh);
             endcase
         end
     end
+
+    // Dump LUT config
+    // Skip if LUT_REUSE is set or EW(LUT) is disabled
+`ifdef NVDLA_SDP_EW_ENABLE 
+    if(sdp_lut_reuse == 0 && ral.nvdla.NVDLA_SDP.D_DP_EW_CFG.EW_BYPASS.get()==0 && ral.nvdla.NVDLA_SDP.D_DP_EW_CFG.EW_LUT_BYPASS.get()==0) begin
+        lut_config_dump(fh);
+    end
+`endif
+
     ral.nvdla.NVDLA_SDP.D_OP_ENABLE.set(1);
     reg_write(fh,{inst_name.toupper(),".D_OP_ENABLE"},1);
     intr_notify(fh,{"SDP_",$sformatf("%0d",group_to_use)},curr_sync_evt_name);
@@ -842,7 +988,6 @@ function void nvdla_sdp_resource::set_lut();
     // FP format value post configuration
     if(proc_precision == proc_precision_FP16) begin
         bit [31:0] data_b = 0;
-        //lut_le_start_low = gen_vld_fp32();
         set_FP32(fp32_a, lut_le_start);
         if(lut_le_function == lut_le_function_LINEAR) begin
             data_b[30:23] = (signed'(lut_le_index_select)+6) + 7'h7F;
@@ -863,7 +1008,6 @@ function void nvdla_sdp_resource::set_lut();
             lut_le_end = 32'h7F7F_FFFF;
         end
 
-        //lut_lo_start_low = gen_vld_fp32();
         set_FP32(fp32_a, lut_lo_start);
         data_b[30:23] = (signed'(lut_lo_index_select)+8) + 7'h7F;
         set_FP32(fp32_b, data_b);
