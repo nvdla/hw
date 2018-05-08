@@ -41,7 +41,7 @@ class RunCoverageReport(object):
     test_cm_dir    = 'test.vdb'
     merged_cm_dir  = 'merged.vdb'
     regress_dir    = []
-    elfile         = []
+    urg_opts       = []
     report_dir     = './urgReport'
     gen_report_only= False
     view_report    = False
@@ -51,7 +51,7 @@ class RunCoverageReport(object):
     publish_dir    = ''
 
     def __init__(self, project, tb, tb_cm_dir, test_cm_dir, merged_cm_dir, regress_dir, 
-                 report_dir, elfile, gen_report_only, view_report, dry_run, publish, publish_dir):
+                 report_dir, urg_opts, gen_report_only, view_report, dry_run, publish, publish_dir):
         self.project     = project
         self.publish     = publish
         self.publish_dir = publish_dir
@@ -70,8 +70,8 @@ class RunCoverageReport(object):
             self.gen_report_only = gen_report_only
         if view_report is not None:
             self.view_report = view_report
-        if len(elfile) > 0:
-            self.elfile = elfile
+        if len(urg_opts) > 0:
+            self.urg_opts = urg_opts
         if dry_run is not None:
             self.dry_run = dry_run
         self.tree_root = self.__get_abs_path_of_tree_root()
@@ -106,14 +106,14 @@ class RunCoverageReport(object):
         
         # merged vdb
         cmd  = '%s -dir %s -f test_vdb.list -dbname %s' % (self.urg_exe, ip_vdb, self.merged_cm_dir)
-        cmd += ' -group ratio -group merge_across_scopes -parallel -parallel_split 10 -maxjobs 100'
-        cmd += ' -show tests -nocheck -noreport'
+        cmd += ' -parallel -parallel_split 10 -maxjobs 100'
+        cmd += ' -nocheck -noreport'
         self.__run_cmd(cmd)
 
     def __gen_coverage_report(self):
-        cmd = '%s -group ratio -show ratios -format both -group merge_across_scopes -dir %s -report %s ' % (self.urg_exe, self.merged_cm_dir, self.report_dir)
-        if len(self.elfile) > 0:
-            cmd += ' '.join(list(map(lambda x: ' -elfile '+x, self.elfile)))
+        cmd = '%s -dir %s -report %s ' % (self.urg_exe, self.merged_cm_dir, self.report_dir)
+        if len(self.urg_opts) > 0:
+            cmd += ' '.join(self.urg_opts)
         self.__run_cmd(cmd)
         cmd = 'firefox %s/dashboard.html &' % self.report_dir
         if self.dry_run == False:
@@ -310,12 +310,12 @@ def main():
                         required = True,
                         action   = 'append',
                         help     = 'Specify regression result directory, can be specified multiple times')
-    parser.add_argument('--elfile', '-elfile',
-                        dest     = 'elfile',
+    parser.add_argument('--urg_opts', '-urg_opts',
+                        dest     = 'urg_opts',
                         required = False,
                         default  = [],
                         action   = 'append',
-                        help     = 'Specify exclusion file, can be specified multiple times')
+                        help     = 'Specify extra urg options')
     parser.add_argument('--report_dir', '-report_dir',
                         dest     = 'report_dir',
                         required = False,
@@ -359,7 +359,7 @@ def main():
                                             merged_cm_dir  = args['merged_cm_dir'],
                                             regress_dir    = args['regress_dir'],
                                             report_dir     = args['report_dir'],
-                                            elfile         = args['elfile'],
+                                            urg_opts       = args['urg_opts'],
                                             view_report    = args['view_report'],
                                             gen_report_only= args['gen_report_only'],
                                             dry_run        = args['dry_run'],
