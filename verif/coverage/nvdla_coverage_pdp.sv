@@ -343,14 +343,10 @@ class pdp_cov_pool extends nvdla_coverage_base;
 
         // Cross flying mode with the same configs between PDP_RDMA and PDP
         cr_flying_mode_cube_in_width: cross cp_flying_mode, cp_cube_in_width {
-            ignore_bins on_flying_large_cube = binsof(cp_flying_mode.ON_FLYING) && binsof(cp_cube_in_width.max);
+            ignore_bins large_width_on_fly = binsof(cp_flying_mode.ON_FLYING) && binsof(cp_cube_in_width)intersect{['h800:$]};
         }
-        cr_flying_mode_cube_in_height: cross cp_flying_mode, cp_cube_in_height {
-            ignore_bins on_flying_large_cube = binsof(cp_flying_mode.ON_FLYING) && binsof(cp_cube_in_height.max);
-        }
-        cr_flying_mode_cube_in_channel: cross cp_flying_mode, cp_cube_in_channel {
-            ignore_bins on_flying_large_cube = binsof(cp_flying_mode.ON_FLYING) && binsof(cp_cube_in_channel.max);
-        }
+        cr_flying_mode_cube_in_height: cross cp_flying_mode, cp_cube_in_height;
+        cr_flying_mode_cube_in_channel: cross cp_flying_mode, cp_cube_in_channel;
         cr_flying_mode_partial_width_in_first:  cross cp_flying_mode, cp_partial_width_in_first {
             ignore_bins on_flying = binsof(cp_flying_mode.ON_FLYING);
         }
