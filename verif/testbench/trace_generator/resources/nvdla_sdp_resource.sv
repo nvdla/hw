@@ -535,7 +535,7 @@ endfunction : lut_config_dump
 
 static function  nvdla_sdp_resource nvdla_sdp_resource::get_sdp(uvm_component parent);
     if (null == inst) begin
-        inst = new("NVDLA_SDP", parent);
+        inst = nvdla_sdp_resource::type_id::create("NVDLA_SDP", parent);
     end
     return inst;
 endfunction: get_sdp
