@@ -59,4 +59,6 @@ if __name__ == '__main__':
         if 0 == ret:
             print ("verif_protection_pass")
         sys.exit(ret)
+    elif (config['project'] in ['nv_small_256_full', 'nv_medium_512', 'nv_medium_1024_full']):
+        print ("verif_protection_pass")
     sys.exit('Unexpected project name')
