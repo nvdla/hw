@@ -46,32 +46,39 @@
 /*
     Coverage test list
 */
-`include "cc_max_datain_width_ctest.sv"
-`include "cc_max_datain_height_ctest.sv"
-`include "cc_max_datain_channel_ctest.sv"
+`include "cc_in_width_ctest.sv"
+`include "cc_in_height_ctest.sv"
+`include "cc_in_channel_ctest.sv"
 
-`include "cc_max_dataout_width_ctest.sv"
-`include "cc_max_dataout_height_ctest.sv"
-`include "cc_max_dataout_channel_ctest.sv"
+`include "cc_out_width_ctest.sv"
+`include "cc_out_height_ctest.sv"
+`include "cc_out_channel_ctest.sv"
 
-`include "sdp_max_cube_width_ctest.sv"
-`include "sdp_max_cube_height_ctest.sv"
-`include "sdp_max_cube_channel_ctest.sv"
+`include "sdp_width_ctest.sv"
+`include "sdp_height_ctest.sv"
+`include "sdp_channel_ctest.sv"
 
-`include "pdp_max_cube_in_width_ctest.sv"
-`include "pdp_max_cube_in_height_ctest.sv"
-`include "pdp_max_cube_in_channel_ctest.sv"
+`include "pdp_in_width_ctest.sv"
+`include "pdp_in_height_ctest.sv"
+`include "pdp_in_channel_ctest.sv"
 
-`include "pdp_max_cube_out_width_ctest.sv"
-`include "pdp_max_cube_out_height_ctest.sv"
-`include "pdp_max_cube_out_channel_ctest.sv"
+`include "pdp_out_width_ctest.sv"
+`include "pdp_out_height_ctest.sv"
+`include "pdp_out_channel_ctest.sv"
 
 `include "pdp_split_ctest.sv"
 
-`include "cdp_max_cube_width_ctest.sv"
-`include "cdp_max_cube_height_ctest.sv"
-`include "cdp_max_cube_channel_ctest.sv"
+`include "cdp_width_ctest.sv"
+`include "cdp_height_ctest.sv"
+`include "cdp_channel_ctest.sv"
 
-`include "pdp_max_partial_width_in_first_ctest.sv"
-`include "pdp_max_partial_width_in_last_ctest.sv"
-`include "pdp_zero_partial_width_in_mid_ctest.sv"
+`include "pdp_partial_width_in_first_ctest.sv"
+`include "pdp_partial_width_in_mid_ctest.sv"
+`include "pdp_partial_width_in_last_ctest.sv"
+
+`include "cc_pitch_line_stride_0_ctest.sv"
+`include "cc_pitch_line_stride_1_ctest.sv"
+`include "cc_pitch_line_stride_2_ctest.sv"
+`include "cc_pitch_line_stride_3_ctest.sv"
+
+`include "cdp_lut_max_slope_flow_scale_ctest.sv"
