@@ -497,8 +497,8 @@ constraint nvdla_cc_dp_resource::c_ias_multi_batch {
 
 constraint nvdla_cc_dp_resource::c_ias_dataout {
     if((dataout_width == 0) && (dataout_height == 0)) { // only 1x1 support pack mode
-        (line_stride*32 - (dataout_width+1)*32) == 0; // 32byte per unit
-        (surf_stride - line_stride*(dataout_height+1))  == 0;
+        (line_stride - (dataout_width+64'h1)*`NVDLA_MEMORY_ATOMIC_SIZE) == 0; // line pack
+        (surf_stride - line_stride*(dataout_height+64'h1))  == 0;
         line_packed == line_packed_TRUE;
         surf_packed == surf_packed_TRUE;
     }
