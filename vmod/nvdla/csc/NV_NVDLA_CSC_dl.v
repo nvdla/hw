@@ -1280,16 +1280,12 @@ assign dat_req_sub_h_1_addr_en = layer_st | ((dat_req_valid_d1 | dat_req_dummy_d
 assign dat_req_sub_h_2_addr_en = layer_st | ((dat_req_valid_d1 | dat_req_dummy_d1) & (dat_req_sub_h_d1 == 2'h2));
 assign dat_req_sub_h_3_addr_en = layer_st | ((dat_req_valid_d1 | dat_req_dummy_d1) & (dat_req_sub_h_d1 == 2'h3));
 
-`ifdef CBUF_BANK_RAM_CASE0
+`ifdef CBUF_NO_SUPPORT_READ_JUMPING
 wire sc2buf_dat_rd_next1_en = 1'b0;
+wire sc2buf_dat_rd_next1_en_w = 1'b0;
 `endif
-`ifdef CBUF_BANK_RAM_CASE2
-wire sc2buf_dat_rd_next1_en = 1'b0;
-`endif
-`ifdef CBUF_BANK_RAM_CASE4
-wire sc2buf_dat_rd_next1_en = 1'b0;
-`endif
-`ifdef CBUF_BANK_RAM_CASE1
+
+`ifdef CBUF_SUPPORT_READ_JUMPING
 wire [CBUF_RD_DATA_SHIFT_WIDTH-1:0] sc2buf_dat_rd_shift_w;
 wire mon_sc2buf_dat_rd_shift_w;
 wire sc2buf_dat_rd_next1_en_w;
