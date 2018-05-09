@@ -252,7 +252,6 @@ void NV_NVDLA_sdp::SdpIntrThread() {
 
 void NV_NVDLA_sdp::SdpRdmaHardwareLayerExecutionTrigger () {
     SdpConfig *cfg;
-    sdp_rdma_kickoff_.notify();
 
     cslInfo(( "%s invoked\n", __FUNCTION__));
     cfg = new SdpConfig;
@@ -261,13 +260,14 @@ void NV_NVDLA_sdp::SdpRdmaHardwareLayerExecutionTrigger () {
     cfg->sdp_rdma_erdma_data_mode_ = sdp_rdma_erdma_data_mode_;
     sdp_config_fifo_->write(cfg);
 
-
+    cslInfo(( "before sdp rdma HWL done\n"));
+    sdp_rdma_kickoff_.notify(SC_ZERO_TIME);
     wait(sdp_rdma_done_ & sdp_b_rdma_done_ & sdp_n_rdma_done_ & sdp_e_rdma_done_);
     cslInfo(( "sdp rdma HWL done\n"));
 }
 
 void NV_NVDLA_sdp::SdpHardwareLayerExecutionTrigger () {
-    sdp_kickoff_.notify();
+    sdp_kickoff_.notify(SC_ZERO_TIME);
     cslInfo(( "sdp before wait sdp_done_\n"));
     wait(sdp_done_);
     cslInfo(( "sdp after wait sdp_done_\n"));
@@ -583,15 +583,19 @@ void NV_NVDLA_sdp::SdpRdmaCore( te_rdma_type eRdDma ) {
         rdma_atom_total_[eRdDma] = 0;
         rdma_atom_recieved_[eRdDma] = 0;
         if (eRdDma == SDP_RDMA_INPUT) {
-            sdp_rdma_done_.notify();
+            sdp_rdma_done_.notify(SC_ZERO_TIME);
+            cslDebug((30, "sdp_rdma_done_.notify\n"));
         } else if (eRdDma == SDP_RDMA_X1_INPUT) {
-            sdp_b_rdma_done_.notify();
+            sdp_b_rdma_done_.notify(SC_ZERO_TIME);
+            cslDebug((30, "sdp_b_rdma_done.notify\n"));
         } else if (eRdDma == SDP_RDMA_X2_INPUT) {
-            sdp_n_rdma_done_.notify();
+            sdp_n_rdma_done_.notify(SC_ZERO_TIME);
+            cslDebug((30, "sdp_n_rdma_done.notify\n"));
 #pragma CTC SKIP
         } else if (eRdDma == SDP_RDMA_Y_INPUT) {
 #pragma CTC ENDSKIP
-            sdp_e_rdma_done_.notify();
+            sdp_e_rdma_done_.notify(SC_ZERO_TIME);
+            cslDebug((30, "sdp_e_rdma_done.notify\n"));
 #pragma CTC SKIP
         } else {
             cslAssert(false);
@@ -1428,7 +1432,7 @@ void NV_NVDLA_sdp::SdpDataOperationThread () {
             ack_info *ack = new ack_info;
             ack->is_mc = -1;
             ack->group_id = sdp_consumer_;
-            sdp_done_.notify();
+            sdp_done_.notify(SC_ZERO_TIME);
             sdp_ack_fifo_->write(ack);
         }
     }
@@ -1958,15 +1962,19 @@ void NV_NVDLA_sdp::ExtractRdmaResponsePayloadCore(te_rdma_type eRdDma, nvdla_dma
 #pragma CTC ENDSKIP
         rdma_atom_recieved_[eRdDma] = 0;
         if (eRdDma == SDP_RDMA_INPUT) {
-            sdp_rdma_done_.notify();
+            sdp_rdma_done_.notify(SC_ZERO_TIME);
+            cslDebug((30, "sdp_rdma_done_.notify\n"));
         } else if (eRdDma == SDP_RDMA_X1_INPUT) {
-            sdp_b_rdma_done_.notify();
+            sdp_b_rdma_done_.notify(SC_ZERO_TIME);
+            cslDebug((30, "sdp_b_rdma_done.notify\n"));
         } else if (eRdDma == SDP_RDMA_X2_INPUT) {
-            sdp_n_rdma_done_.notify();
+            sdp_n_rdma_done_.notify(SC_ZERO_TIME);
+            cslDebug((30, "sdp_n_rdma_done.notify\n"));
 #pragma CTC SKIP
         } else if (eRdDma == SDP_RDMA_Y_INPUT) {
 #pragma CTC ENDSKIP
-            sdp_e_rdma_done_.notify();
+            sdp_e_rdma_done_.notify(SC_ZERO_TIME);
+            cslDebug((30, "sdp_e_rdma_done.notify\n"));
 #pragma CTC SKIP
         } else {
             cslAssert(false);
@@ -2188,7 +2196,7 @@ void NV_NVDLA_sdp::SendDmaWriteRequest(uint64_t payload_addr, uint32_t payload_s
         cslDebug((30, "%s: notify write complete on group:%d, is_mc:%d\n",
                     __FUNCTION__, sdp_consumer_, ack->is_mc));
         sdp_ack_fifo_->write(ack);
-        sdp_done_.notify();
+        sdp_done_.notify(SC_ZERO_TIME);
     }
     cslDebug((70, "exit:%s\n", __FUNCTION__));
 }
@@ -2232,7 +2240,7 @@ void NV_NVDLA_sdp::WriteResponseThreadMc() {
     cslDebug((50, "NV_NVDLA_sdp::WriteResponseThreadMc is called\n"));
     if ( true == mcif2sdp_wr_rsp.read() ) {
         is_mc_ack_done_ = true;
-        sdp_mc_ack_.notify();
+        sdp_mc_ack_.notify(SC_ZERO_TIME);
         cslDebug((50, "NV_NVDLA_sdp::WriteResponseThreadMc, sent sdp_done notification\n"));
     }
 }
@@ -2240,7 +2248,7 @@ void NV_NVDLA_sdp::WriteResponseThreadMc() {
 void NV_NVDLA_sdp::WriteResponseThreadCv() {
     if ( true == cvif2sdp_wr_rsp.read() ) {
         is_cv_ack_done_ = true;
-        sdp_cv_ack_.notify();
+        sdp_cv_ack_.notify(SC_ZERO_TIME);
         cslDebug((50, "NV_NVDLA_sdp::WriteResponseThreadCv, sent sdp_done notification\n"));
     }
 }
