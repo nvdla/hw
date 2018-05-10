@@ -27,7 +27,7 @@ import argparse
 import subprocess
 import json
 import glob
-from   shutil import copy2, copytree
+from   shutil import copy2, copytree, which
 
 __DESCRIPTION__ = '''
   This tool is used to generate coverage report.
@@ -81,7 +81,7 @@ class RunCoverageReport(object):
         except KeyError as error:
             raise Exception('%s is not defined in tree.make' % error.args[0])
         os.environ['PATH'] = os.pathsep.join([os.path.join(os.environ['VCS_HOME'], 'bin'), os.environ['PATH']])
-        print('[INFO] PATH = %s' % os.environ['PATH'])
+        self.urg_exe = which('urg')
 
     def run(self):
         if not self.gen_report_only:
@@ -99,11 +99,19 @@ class RunCoverageReport(object):
             raise Exception('merge_vdb', 'directory does not exist: %s' %  ip_vdb)
             
         # test vdb
-        self.__run_cmd('echo > test_vdb.list')
+        test_vdb_list = []
         for d in self.regress_dir:
-            cmd = 'find %s -type d -name "%s" -not -empty >> test_vdb.list' % (d, self.test_cm_dir)
-            self.__run_cmd(cmd)
-        
+            with open(os.path.join(d, 'test_organization.json'), 'r') as f:
+                test_dict = json.load(f)
+                for tinfo in test_dict.values():
+                    if self.tb == 'trace_player':
+                        test_vdb_path = os.path.join(tinfo['dir'], self.test_cm_dir)
+                    else:
+                        test_vdb_path = os.path.join(tinfo['dir'], tinfo['name'], self.test_cm_dir)
+                    test_vdb_list.append(test_vdb_path)
+        with open('test_vdb.list', 'w') as f:
+            f.write('\n'.join(test_vdb_list))
+
         # merged vdb
         cmd  = '%s -dir %s -f test_vdb.list -dbname %s' % (self.urg_exe, ip_vdb, self.merged_cm_dir)
         cmd += ' -parallel -parallel_split 10 -maxjobs 100'
@@ -111,9 +119,15 @@ class RunCoverageReport(object):
         self.__run_cmd(cmd)
 
     def __gen_coverage_report(self):
-        cmd = '%s -dir %s -report %s ' % (self.urg_exe, self.merged_cm_dir, self.report_dir)
+        elfiles = glob.glob(self.tree_root + "/verif/coverage/elfiles/*.el")
+        cmd_exe   = self.urg_exe
+        cmd_args  = ' -dir %s' % self.merged_cm_dir
+        cmd_args += ' -report %s' % self.report_dir
+        cmd_args += ' -group ratio -show ratios'
+        cmd_args += ''.join(list(map(lambda x: ' -elfile %s' % x, elfiles)))
         if len(self.urg_opts) > 0:
-            cmd += ' '.join(self.urg_opts)
+            cmd_args += ' ' + ' '.join(self.urg_opts)
+        cmd = cmd_exe + ' ' + cmd_args
         self.__run_cmd(cmd)
         cmd = 'firefox %s/dashboard.html &' % self.report_dir
         if self.dry_run == False:
