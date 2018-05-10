@@ -439,7 +439,7 @@ class conv_cov_pool extends nvdla_coverage_base;
         cr_data_reuse_datain_format_surf_packed_cacc_dataout_width_dataout_height:    cross cp_data_reuse, cp_surf_packed_cacc, cp_dataout_width, cp_dataout_height {
             //ignore_bins feature    = binsof(cp_datain_format.feature);
             ignore_bins reuse      = binsof(cp_data_reuse.on);
-            ignore_bins illegle_pack   = binsof(cp_surf_packed_cacc.pack) && binsof(cp_dataout_width)intersect{[1:$]} && binsof(cp_dataout_height)intersect{[1:$]};
+            ignore_bins illegle_pack   = binsof(cp_surf_packed_cacc.pack) && (binsof(cp_dataout_width)intersect{[1:$]} || binsof(cp_dataout_height)intersect{[1:$]});
             ignore_bins illegle_unpack = binsof(cp_surf_packed_cacc.unpack) && binsof(cp_dataout_width)intersect{0} && binsof(cp_dataout_height)intersect{0};
             bins        pack       = binsof(cp_surf_packed_cacc.pack) && binsof(cp_dataout_width)intersect{0} && binsof(cp_dataout_height)intersect{0};
             bins        unpack     = binsof(cp_surf_packed_cacc.unpack) && binsof(cp_dataout_width)intersect{[1:$]} && binsof(cp_dataout_height)intersect{[1:$]};
