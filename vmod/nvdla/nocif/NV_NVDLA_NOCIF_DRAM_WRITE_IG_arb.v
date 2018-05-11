@@ -92,7 +92,7 @@ wire [NVDLA_NUM_DMA_WRITE_CLIENTS-1:0] src_dat_gnts;
 //  ,.src_cmd0_pd        (src_cmd${i}_pd[NVDLA_MEM_ADDRESS_WIDTH+12:0])      //|> w
 //  ,.src_cmd0_vld       (src_cmd${i}_vld)           //|> w
 //  );
-//&eperl::pipe(" -os -wid $w -do src_cmd${i}_pd -vo src_cmd${i}_vld -ri bpt2arb_cmd${i}_ready -di bpt2arb_cmd${i}_pd -vi bpt2arb_cmd${i}_valid -ro  src_cmd${i}_rdy");
+//&eperl::pipe(" -is -wid $w -do src_cmd${i}_pd -vo src_cmd${i}_vld -ri bpt2arb_cmd${i}_ready -di bpt2arb_cmd${i}_pd -vi bpt2arb_cmd${i}_valid -ro  src_cmd${i}_rdy");
 
 //:my $i;
 //:my $w;
