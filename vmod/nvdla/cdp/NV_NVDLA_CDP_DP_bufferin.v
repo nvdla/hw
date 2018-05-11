@@ -159,7 +159,7 @@ parameter cvt2buf_dp_bw = cvt2buf_data_bw + cvt2buf_info_bw;
 
 /////////////////////////////////////////////////////////////
 //: my $k = NVDLA_CDP_THROUGHPUT*NVDLA_CDP_ICVTO_BWPE+15;
-//: &eperl::pipe(" -os -wid $k -do nvdla_cdp_rdma2dp_pd -vo nvdla_cdp_rdma2dp_valid -ri nvdla_cdp_rdma2dp_ready -di cdp_rdma2dp_pd -vi cdp_rdma2dp_valid -ro cdp_rdma2dp_ready ");
+//: &eperl::pipe(" -is -wid $k -do nvdla_cdp_rdma2dp_pd -vo nvdla_cdp_rdma2dp_valid -ri nvdla_cdp_rdma2dp_ready -di cdp_rdma2dp_pd -vi cdp_rdma2dp_valid -ro cdp_rdma2dp_ready ");
 
 //==============
 // INPUT UNPACK: from RDMA
