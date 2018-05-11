@@ -197,7 +197,7 @@ NV_NVDLA_NOCIF_DRAM_READ_EG_pipe_p1 pipe_p1 (
   );
 
 //my $dw = eval(NVDLA_PRIMARY_MEMIF_WIDTH+4);
-//&eperl::pipe(" -os -wid $dw -do ipipe_axi_pd -vo ipipe_axi_vld -ri noc2mcif_axi_r_rready -vi noc2mcif_axi_r_rvalid -di noc2mcif_axi_r_pd -ro ipipe_axi_rdy");
+//&eperl::pipe(" -is -wid $dw -do ipipe_axi_pd -vo ipipe_axi_vld -ri noc2mcif_axi_r_rready -vi noc2mcif_axi_r_rvalid -di noc2mcif_axi_r_pd -ro ipipe_axi_rdy");
 wire   [NVDLA_PRIMARY_MEMIF_WIDTH-1:0] rq_wr_pd;
 
 assign eg2ig_axi_vld = ipipe_axi_vld & ipipe_axi_rdy;
