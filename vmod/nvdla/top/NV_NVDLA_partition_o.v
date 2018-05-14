@@ -977,6 +977,7 @@ NV_NVDLA_csb_master u_NV_NVDLA_csb_master (
 ////////////////////////////////////////////////////////////////////////
 //  NVDLA Partition O:    AXI Interface to MC                         //
 ////////////////////////////////////////////////////////////////////////
+#ifndef SCALE_MCIF
 //:my $i;
 //:my $nindex=0;
 //: my @dma_index = (INT_NVDLA_BDMA_ENABLE, 1, 1,INT_NVDLA_CDP_ENABLE, INT_NVDLA_PDP_ENABLE,INT_NVDLA_RUBIK_ENABLE, 1, INT_NVDLA_SDP_BS_ENABLE, INT_NVDLA_SDP_EW_ENABLE, INT_NVDLA_SDP_BN_ENABLE,0,0,0,0,0,0);
@@ -1000,7 +1001,6 @@ NV_NVDLA_csb_master u_NV_NVDLA_csb_master (
 //: }
 
 // just for nv_small test, can be replaced by configurable design
-#ifdef LARGE_MEMBUS
 NV_NVDLA_NOCIF_dram u_NV_NVDLA_mcif (
    .nvdla_core_clk                 (nvdla_core_clk)                 //|< i
   ,.nvdla_core_rstn                (nvdla_core_rstn)                //|< o
@@ -1075,8 +1075,8 @@ NV_NVDLA_NOCIF_dram u_NV_NVDLA_mcif (
   );
 #endif
 
-#ifdef SMALL_MEMBUS
-   NV_NVDLA_mcif_s u_NV_NVDLA_mcif (
+#ifdef SCALE_MCIF
+   NV_NVDLA_mcif   u_NV_NVDLA_mcif (
    .nvdla_core_clk                 (nvdla_core_clk)                 //|< i
   ,.nvdla_core_rstn                (nvdla_core_rstn)                //|< o
 #ifdef NVDLA_BDMA_ENABLE
@@ -1093,6 +1093,8 @@ NV_NVDLA_NOCIF_dram u_NV_NVDLA_mcif (
   ,.mcif2bdma_wr_rsp_complete      (mcif2bdma_wr_rsp_complete)      //|> w
 #else
 #endif
+  ,.cdma_dat2mcif_rd_cdt_lat_fifo_pop (1'b0)      
+  ,.cdma_wt2mcif_rd_cdt_lat_fifo_pop  (1'b0)      
   ,.cdma_dat2mcif_rd_req_valid     (cdma_dat2mcif_rd_req_valid)     //|< i
   ,.cdma_dat2mcif_rd_req_ready     (cdma_dat2mcif_rd_req_ready)     //|> o
   ,.cdma_dat2mcif_rd_req_pd        (cdma_dat2mcif_rd_req_pd      )  //|< i

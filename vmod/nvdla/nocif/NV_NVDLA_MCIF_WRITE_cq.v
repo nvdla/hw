@@ -190,7 +190,7 @@ wire [31 : 0] pwrbus_ram_pd;
 // Fifogen handles this by ignoring the data on the ram data out for that cycle.
 
 
-nv_ram_rws_256x3_dlarr #(`FORCE_CONTENTION_ASSERTION_RESET_ACTIVE) ram (
+nv_ram_rws_256x3  #(`FORCE_CONTENTION_ASSERTION_RESET_ACTIVE) ram (
       .clk		 ( nvdla_core_clk )
     , .pwrbus_ram_pd ( pwrbus_ram_pd )
     , .wa        ( cq_wr_adr )

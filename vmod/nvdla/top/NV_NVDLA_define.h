@@ -19,10 +19,11 @@
 #define NVDLA_MEM_RD_REQ  ( NVDLA_MEM_ADDRESS_WIDTH + 15 )
 ///////////////////////////////////////////////////
 //
-#if ( NVDLA_PRIMARY_MEMIF_WIDTH  ==  512 )
-    #define LARGE_MEMBUS
-#endif
-#if ( NVDLA_PRIMARY_MEMIF_WIDTH  ==  64 )
-    #define LARGE_MEMBUS
-#endif
+//#if ( NVDLA_PRIMARY_MEMIF_WIDTH  ==  512 )
+//    #define LARGE_MEMBUS
+//#endif
+//#if ( NVDLA_PRIMARY_MEMIF_WIDTH  ==  64 )
+//    #define LARGE_MEMBUS
+//#endif
 
+#define SCALE_MCIF 

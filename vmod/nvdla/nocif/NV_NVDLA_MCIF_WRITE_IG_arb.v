@@ -56,32 +56,27 @@ output [NVDLA_DMA_WR_REQ-2:0] arb2spt_dat_pd;
 //:}
 
 reg    [NVDLA_DMA_WR_IG_PW-1:0] arb_cmd_pd;
-reg    [NVDLA_MEMIF_WIDTH+1:0]  arb_dat_pd;
+reg    [NVDLA_DMA_WR_REQ-2:0]   arb_dat_pd;
 reg            sticky;
 wire           any_arb_gnt;
-reg      [1:0] gnt_count;
 reg      [4:0] stick_gnts;
 wire     [4:0] all_gnts;
-wire     [1:0] arb_cmd_beats;
-wire           arb_cmd_inc;
-wire     [2:0] arb_cmd_size;
 wire     [4:0] arb_gnts;
 wire     [4:0] arb_reqs;
 wire           gnt_busy;
 wire           spt_is_busy;
 wire           is_last_beat;
-wire           mon_arb_cmd_beats_c;
+reg      [2:0] gnt_count;
+wire     [2:0] arb_cmd_size;
 //:for(my $i=0;$i<WDMA_NUM;$i++) {
 //: print qq(
-//: wire     [1:0] src_cmd${i}_beats;
+//: wire     [2:0] src_cmd${i}_beats;
 //: wire           src_cmd${i}_camp_vld;
-//: wire           src_cmd${i}_beats_c;
-//: wire           src_cmd${i}_inc;
 //: wire    [NVDLA_DMA_WR_IG_PW-1:0] src_cmd${i}_pd;
 //: wire           src_cmd${i}_rdy;
 //: wire     [2:0] src_cmd${i}_size;
 //: wire           src_cmd${i}_vld;
-//: wire   [NVDLA_DMA_RD_RSP-1:0] src_dat${i}_pd;
+//: wire   [NVDLA_DMA_WR_REQ-2:0] src_dat${i}_pd;
 //: wire           src_dat${i}_rdy;
 //: wire           src_dat${i}_vld;
 //: wire     [2:0] dfifo${i}_wr_count;
@@ -96,7 +91,6 @@ wire     [7:0] wt1;
 wire     [7:0] wt2;
 wire     [7:0] wt3;
 wire     [7:0] wt4;
-
 
 
 //:for(my $i=0;$i<WDMA_NUM;$i++) {
@@ -136,66 +130,14 @@ wire     [7:0] wt4;
 //:}
 //:for(my $i=WDMA_NUM;$i<5;$i++) {
 //:  print "wire   src_cmd${i}_camp_vld = 1'b0;\n"; 
-//:  print "wire   src_data${i}_vld = 1'b0;\n"; 
+//:  print "wire   src_dat${i}_vld = 1'b0;\n"; 
 //:  print qq(wire [NVDLA_DMA_WR_IG_PW-1:0]  src_cmd${i}_pd = 1'b0;\n); 
-//:  print qq(wire [NVDLA_DMA_RD_RSP-1:0]  src_data${i}_pd = 1'b0;\n); 
+//:  print qq(wire [NVDLA_DMA_WR_REQ-2:0]  src_dat${i}_pd = 1'b0;\n); 
 //:} 
 
 
 assign src_cmd_vlds = {src_cmd4_camp_vld , src_cmd3_camp_vld , src_cmd2_camp_vld , src_cmd1_camp_vld , src_cmd0_camp_vld};
 assign src_dat_vlds = {src_dat4_vld , src_dat3_vld , src_dat2_vld , src_dat1_vld , src_dat0_vld};
-
-
-// MUX out based on GNT
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-  if (!nvdla_core_rstn) begin
-    stick_gnts <= {5{1'b0}};
-  end else begin
-  if ((any_arb_gnt) == 1'b1) begin
-    stick_gnts <= arb_gnts;
-  end else if ((any_arb_gnt) == 1'b0) begin
-  end else begin
-    stick_gnts <= 'bx;  
-  end
-  end
-end
-
-assign src_dat_gnts = all_gnts & src_dat_vlds;
-wire   src_dat_vld = |src_dat_gnts;
-
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-  if (!nvdla_core_rstn) begin
-    gnt_count <= {2{1'b0}};
-  end else begin
-    if (src_dat_vld) begin
-        if (is_last_beat) begin
-            gnt_count <= 0;
-        end else begin
-            gnt_count <= gnt_count + 1;
-        end
-    end
-  end
-end
-assign is_last_beat = (gnt_count==arb_cmd_size);
-
-always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
-  if (!nvdla_core_rstn) begin
-    sticky <= 1'b0;
-  end else begin
-    if (any_arb_gnt) begin
-        if (src_dat_vld & is_last_beat) begin
-            sticky <= 0;
-        end else begin
-            sticky <= 1;
-        end
-    end else if (src_dat_vld & is_last_beat) begin
-        sticky <= 0;
-    end
-  end
-end
-
-assign all_gnts = (sticky) ? (stick_gnts) : arb_gnts;
-assign gnt_busy = sticky || spt_is_busy;
 assign arb_reqs = src_cmd_vlds;
 
 //:for(my $i=WDMA_NUM;$i<5;$i++) {
@@ -223,7 +165,60 @@ write_ig_arb u_write_ig_arb (
   ,.gnt4               (arb_gnts[4])            //|> w
   );
 
+
 assign any_arb_gnt = |arb_gnts;
+assign all_gnts = (sticky) ? (stick_gnts) : arb_gnts;
+assign gnt_busy = sticky || spt_is_busy;
+
+// MUX out based on GNT
+always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
+  if (!nvdla_core_rstn) begin
+    stick_gnts <= {5{1'b0}};
+  end else begin
+  if ((any_arb_gnt) == 1'b1) begin
+    stick_gnts <= arb_gnts;
+  end //else if ((any_arb_gnt) == 1'b0) begin
+  //end else begin
+  //  stick_gnts <= 'bx;  
+  //end
+  end
+end
+
+//keep grant not change until all data accept
+always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
+  if (!nvdla_core_rstn) begin
+    sticky <= 1'b0;
+  end else begin
+    if (any_arb_gnt) begin
+        if (src_dat_vld & is_last_beat) begin
+            sticky <= 0;
+        end else begin
+            sticky <= 1;
+        end
+    end else if (src_dat_vld & is_last_beat) begin
+        sticky <= 0;
+    end
+  end
+end
+
+
+assign  src_dat_gnts = all_gnts & src_dat_vlds;
+assign  src_dat_vld = |src_dat_gnts;
+
+always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
+  if (!nvdla_core_rstn) begin
+    gnt_count <= {3{1'b0}};
+  end else begin
+    if (src_dat_vld) begin
+        if (is_last_beat) begin
+            gnt_count <= 0;
+        end else begin
+            gnt_count <= gnt_count + 1;
+        end
+    end
+  end
+end
+assign is_last_beat = (gnt_count==arb_cmd_size);
 
 // ARB MUX
 always @(
@@ -234,6 +229,7 @@ always @(
   or src_cmd3_pd
   or src_cmd4_pd
   ) begin
+//spyglass disable_block W171 W226
     case (1'b1 )
       all_gnts[0]: arb_cmd_pd = src_cmd0_pd;
       all_gnts[1]: arb_cmd_pd = src_cmd1_pd;
@@ -244,10 +240,11 @@ always @(
                 arb_cmd_pd[NVDLA_DMA_WR_IG_PW-1:0] = {(NVDLA_DMA_WR_IG_PW){`x_or_0}};
               end  
     endcase
+//spyglass enable_block W171 W226
 end
 
-assign arb_cmd_size = arb_cmd_pd[47:45];
-assign arb_cmd_inc = arb_cmd_pd[50:50];
+assign arb_cmd_size = arb_cmd_pd[NVDLA_MEM_ADDRESS_WIDTH+7:NVDLA_MEM_ADDRESS_WIDTH+5];
+//assign arb_cmd_inc = arb_cmd_pd[50:50];
 
 always @(
   all_gnts
@@ -257,6 +254,7 @@ always @(
   or src_dat3_pd
   or src_dat4_pd
   ) begin
+//spyglass disable_block W171 W226
     case (1'b1 )
       all_gnts[0]: arb_dat_pd = src_dat0_pd;
       all_gnts[1]: arb_dat_pd = src_dat1_pd;
@@ -264,11 +262,11 @@ always @(
       all_gnts[3]: arb_dat_pd = src_dat3_pd;
       all_gnts[4]: arb_dat_pd = src_dat4_pd;
     default : begin 
-                arb_dat_pd[NVDLA_DMA_RD_RSP-1:0] = {NVDLA_DMA_RD_RSP{`x_or_0}};
+                arb_dat_pd[NVDLA_DMA_WR_REQ-2:0] = {(NVDLA_DMA_WR_REQ-1){`x_or_0}};
               end  
     endcase
+//spyglass enable_block W171 W226
 end
-
 
 
 assign arb2spt_cmd_pd = arb_cmd_pd;
@@ -277,14 +275,15 @@ assign arb2spt_dat_pd = arb_dat_pd;
 assign arb2spt_cmd_valid = any_arb_gnt;
 assign arb2spt_dat_valid = src_dat_vld;
 
-assign spt_is_busy = !(arb2spt_cmd_ready & arb2spt_dat_ready);
+assign spt_is_busy = !(arb2spt_cmd_ready & arb2spt_dat_ready);   //fixme
+
 
 
 endmodule // NV_NVDLA_MCIF_WRITE_IG_arb
 
 
 // **************************************************************************************************************
-// Generated by ::pipe -m -rand none -bc -os src_cmd_pd (src_cmd_vld,src_cmd_rdy) <= bpt2arb_cmd_pd[NVDLA_DMA_WR_IG_PW-1:0] (bpt2arb_cmd_valid,bpt2arb_cmd_ready)
+// Generated by ::pipe -m -rand none -bc -is src_cmd_pd (src_cmd_vld,src_cmd_rdy) <= bpt2arb_cmd_pd[NVDLA_DMA_WR_IG_PW-1:0] (bpt2arb_cmd_valid,bpt2arb_cmd_ready)
 // **************************************************************************************************************
 module NV_NVDLA_MCIF_WRITE_IG_ARB_pipe (
    nvdla_core_clk
@@ -316,7 +315,7 @@ endmodule
 
 
 
-#if (NVDLA_DMA_RD_RSP==514)
+#if (NVDLA_DMA_WR_REQ-1==514)
 
 `define FORCE_CONTENTION_ASSERTION_RESET_ACTIVE 1'b1
 `include "simulate_x_tick.vh"
@@ -928,7 +927,7 @@ endmodule // vmw_NV_NVDLA_MCIF_WRITE_IG_ARB_dfifo_flopram_rwsa_4x514
 
 
 
-#elif (NVDLA_DMA_RD_RSP==65)
+#elif (NVDLA_DMA_WR_REQ-1==65)
 
 `define FORCE_CONTENTION_ASSERTION_RESET_ACTIVE 1'b1
 `include "simulate_x_tick.vh"

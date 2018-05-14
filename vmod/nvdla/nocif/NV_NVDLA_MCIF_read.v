@@ -94,6 +94,9 @@ NV_NVDLA_MCIF_READ_ig u_ig (
   ,.reg2dp_rd_os_cnt               (reg2dp_rd_os_cnt)
   //: my @rdma_name = RDMA_NAME; 
   //: foreach my $client (@rdma_name) {
+  //: print("  ,.reg2dp_rd_weight_${client} (reg2dp_rd_weight_${client})\n");
+  //: }
+  //: foreach my $client (@rdma_name) {
   //: print (" ,.${client}2mcif_rd_cdt_lat_fifo_pop (${client}2mcif_rd_cdt_lat_fifo_pop)\n");
   //: print (" ,.${client}2mcif_rd_req_valid (${client}2mcif_rd_req_valid)\n");
   //: print (" ,.${client}2mcif_rd_req_ready (${client}2mcif_rd_req_ready)\n");

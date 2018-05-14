@@ -9,7 +9,7 @@
 // File Name: NV_NVDLA_MCIF_WRITE_ig.v
 
 #include "NV_NVDLA_MCIF_define.h"
-
+`include "NV_NVDLA_MCIF_define.vh"
 module NV_NVDLA_MCIF_WRITE_ig (
    nvdla_core_clk          //|< i
   ,nvdla_core_rstn         //|< i
@@ -52,7 +52,7 @@ input  [1:0]  eg2ig_axi_len;
 input         eg2ig_axi_vld;
 output        cq_wr_pvld;       
 input         cq_wr_prdy;       
-output [3:0]  cq_wr_thread_id;
+output [2:0]  cq_wr_thread_id;
 output [2:0]  cq_wr_pd;
 
 output         mcif2noc_axi_aw_awvalid;  
@@ -64,7 +64,7 @@ output [NVDLA_MEM_ADDRESS_WIDTH-1:0] mcif2noc_axi_aw_awaddr;
 output         mcif2noc_axi_w_wvalid;  
 input          mcif2noc_axi_w_wready;  
 output [NVDLA_PRIMARY_MEMIF_WIDTH-1:0]  mcif2noc_axi_w_wdata;
-output [NVDLA_PRIMARY_MEMIF_STROB-1:0]  mcif2noc_axi_w_wstrb;
+output [NVDLA_PRIMARY_MEMIF_STRB-1:0]   mcif2noc_axi_w_wstrb;
 output         mcif2noc_axi_w_wlast;
 
 //: my @wdma_name = WDMA_NAME; 
@@ -81,26 +81,27 @@ output         mcif2noc_axi_w_wlast;
 
 wire           arb2spt_cmd_ready;
 wire           arb2spt_cmd_valid;
-wire [NVDLA_MEM_ADDRESS_WIDTH+12:0]    arb2spt_cmd_pd;
+wire [NVDLA_DMA_WR_IG_PW-1:0]    arb2spt_cmd_pd;
 wire           arb2spt_dat_ready;
 wire           arb2spt_dat_valid;
-wire [NVDLA_MEMIF_WIDTH+1:0]    arb2spt_dat_pd;
+wire [NVDLA_DMA_WR_REQ-2:0]    arb2spt_dat_pd;
+/*
 wire           spt2cvt_cmd_ready;
 wire           spt2cvt_cmd_valid;
 wire [NVDLA_MEM_ADDRESS_WIDTH+12:0] spt2cvt_cmd_pd;
 wire           spt2cvt_dat_ready;
 wire           spt2cvt_dat_valid;
 wire [NVDLA_MEMIF_WIDTH+1:0] spt2cvt_dat_pd;
-
+*/
 
 //: for (my $i=0;$i<WDMA_NUM;$i++) {
 //: print qq(
 //: wire bpt2arb_cmd${i}_valid;
 //: wire bpt2arb_cmd${i}_ready;
-//: wire [NVDLA_MEM_ADDRESS_WIDTH+12:0] bpt2arb_cmd${i}_pd;
+//: wire [NVDLA_DMA_WR_IG_PW-1:0] bpt2arb_cmd${i}_pd;
 //: wire  bpt2arb_dat${i}_valid;
 //: wire  bpt2arb_dat${i}_ready;
-//: wire [NVDLA_MEMIF_WIDTH+1:0] bpt2arb_dat${i}_pd;
+//: wire [NVDLA_DMA_WR_REQ-2:0] bpt2arb_dat${i}_pd;
 //: );
 //: }
 
@@ -154,7 +155,7 @@ NV_NVDLA_MCIF_WRITE_IG_arb u_arb (
 );
 
 
-
+/*
 NV_NVDLA_MCIF_WRITE_IG_spt u_spt (
    .nvdla_core_clk          (nvdla_core_clk)               //|< i
   ,.nvdla_core_rstn         (nvdla_core_rstn)              //|< i
@@ -172,7 +173,7 @@ NV_NVDLA_MCIF_WRITE_IG_spt u_spt (
   ,.spt2cvt_dat_ready       (spt2cvt_dat_ready)            //|< w
   ,.spt2cvt_dat_pd          (spt2cvt_dat_pd)
 );
-
+*/
 
 
 NV_NVDLA_MCIF_WRITE_IG_cvt u_cvt (
@@ -182,15 +183,15 @@ NV_NVDLA_MCIF_WRITE_IG_cvt u_cvt (
   ,.cq_wr_pvld              (cq_wr_pvld)                   //|> o
   ,.cq_wr_prdy              (cq_wr_prdy)                   //|< i
   ,.cq_wr_pd                (cq_wr_pd[2:0])                //|> o
-  ,.cq_wr_thread_id         (cq_wr_thread_id[3:0])         //|> o
+  ,.cq_wr_thread_id         (cq_wr_thread_id[2:0])         //|> o
   ,.eg2ig_axi_len           (eg2ig_axi_len[1:0])           //|< i
   ,.eg2ig_axi_vld           (eg2ig_axi_vld)                //|< i
-  ,.spt2cvt_cmd_valid       (spt2cvt_cmd_valid)            //|< w
-  ,.spt2cvt_cmd_ready       (spt2cvt_cmd_ready)            //|> w
-  ,.spt2cvt_cmd_pd          (spt2cvt_cmd_pd)
-  ,.spt2cvt_dat_valid       (spt2cvt_dat_valid)            //|< w
-  ,.spt2cvt_dat_ready       (spt2cvt_dat_ready)            //|> w
-  ,.spt2cvt_dat_pd          (spt2cvt_dat_pd)
+  ,.spt2cvt_cmd_valid       (arb2spt_cmd_valid)            //|< w
+  ,.spt2cvt_cmd_ready       (arb2spt_cmd_ready)            //|> w
+  ,.spt2cvt_cmd_pd          (arb2spt_cmd_pd)
+  ,.spt2cvt_dat_valid       (arb2spt_dat_valid)            //|< w
+  ,.spt2cvt_dat_ready       (arb2spt_dat_ready)            //|> w
+  ,.spt2cvt_dat_pd          (arb2spt_dat_pd)
   ,.mcif2noc_axi_aw_awvalid (mcif2noc_axi_aw_awvalid)      //|> o
   ,.mcif2noc_axi_aw_awready (mcif2noc_axi_aw_awready)      //|< i
   ,.mcif2noc_axi_aw_awid    (mcif2noc_axi_aw_awid[7:0])    //|> o

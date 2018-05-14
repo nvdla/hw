@@ -40,7 +40,7 @@ output        mcif2noc_axi_ar_arvalid;
 input         mcif2noc_axi_ar_arready;   
 output [NVDLA_MEM_ADDRESS_WIDTH-1:0] mcif2noc_axi_ar_araddr;
 output  [7:0] mcif2noc_axi_ar_arid;
-output  [7:0] mcif2noc_axi_ar_arlen;
+output  [3:0] mcif2noc_axi_ar_arlen;
 
 input         spt2cvt_req_valid;  
 output        spt2cvt_req_ready;  
@@ -233,10 +233,10 @@ assign   cmd_rdy = axi_cmd_rdy & cq_wr_prdy & !os_cnt_full;
 assign   axi_cmd_vld = cmd_vld & !os_cnt_full; 
 assign   cmd_rdy = axi_cmd_rdy & !os_cnt_full;
 
-assign   axi_len  = cmd_size;   //fixmefixme
+assign   axi_len  = cmd_size[1:0];   //fixmefixme
 #endif
 assign   axi_axid = cmd_axid;
-assign   axi_addr = {cmd_addr[NVDLA_MEM_ADDRESS_WIDTH-1:NVDLA_MEMORY_ATOMIC_LOG2],NVDLA_MEMORY_ATOMIC_LOG2{1'b0}}; 
+assign   axi_addr = {cmd_addr[NVDLA_MEM_ADDRESS_WIDTH-1:NVDLA_MEMORY_ATOMIC_LOG2],{NVDLA_MEMORY_ATOMIC_LOG2{1'b0}}}; 
 
 
 assign os_inp_add_nxt[2:0] = cmd_vld ? (axi_len + 1) : 3'd0;
@@ -277,7 +277,7 @@ always @(
   or os_adv
   ) begin
   os_cnt_ext[10:0] = {1'b0, 1'b0, os_cnt_cur};
-  os_cnt_mod[10:0] = os_cnt_cur + os_cnt_add[2:0] - os_cnt_sub[0:0]; 
+  os_cnt_mod[10:0] = os_cnt_cur + os_cnt_add[2:0] - os_cnt_sub[0:0]; // spyglass disable W164b 
   os_cnt_new[10:0] = (os_adv)? os_cnt_mod[10:0] : os_cnt_ext[10:0];
   os_cnt_nxt[10:0] = os_cnt_new[10:0];
 end
@@ -367,6 +367,9 @@ assign {opipe_axi_axid,opipe_axi_addr,opipe_axi_len} = opipe_axi_pd;
 assign mcif2noc_axi_ar_arid     = {{4{1'b0}}, opipe_axi_axid};
 assign mcif2noc_axi_ar_araddr   = opipe_axi_addr;
 assign mcif2noc_axi_ar_arlen    = {{2{1'b0}}, opipe_axi_len};
+assign mcif2noc_axi_ar_arvalid  = opipe_axi_vld;
+assign opipe_axi_rdy            = mcif2noc_axi_ar_arready;
+
  
 
 endmodule // NV_NVDLA_MCIF_READ_IG_cvt

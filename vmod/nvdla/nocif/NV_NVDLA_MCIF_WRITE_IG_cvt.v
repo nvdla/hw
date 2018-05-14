@@ -116,7 +116,7 @@ wire    [NVDLA_DMA_WR_IG_PW-1:0] cmd_vld_pd;
 wire     [1:0] cq_wr_len;
 wire           cq_wr_require_ack;
 wire   [NVDLA_PRIMARY_MEMIF_WIDTH-1:0] dat_data;
-wire     [1:0] dat_mask;
+wire   [NVDLA_DMA_MASK_BIT-1:0]   dat_mask;
 wire   [NVDLA_PRIMARY_MEMIF_WIDTH+NVDLA_DMA_MASK_BIT-1:0] dat_pd;
 wire           dat_rdy;
 wire           dat_vld;
@@ -128,8 +128,13 @@ wire           is_end_addr_64_align;
 wire           is_start_addr_32_align;
 wire           mon_axi_len_c;
 wire           mon_end_pos_c;
-wire     [0:0] mon_thread_id_c;
 #endif
+wire     [0:0] mon_thread_id_c;
+
+wire           is_first_beat;
+wire           is_single_beat;
+wire           is_last_beat;
+reg    [1:0]   beat_count;
 wire           is_first_cmd_dat_vld;
 wire    [NVDLA_MEM_ADDRESS_WIDTH-1:0] opipe_axi_addr;
 wire     [3:0] opipe_axi_axid;
@@ -174,15 +179,15 @@ NV_NVDLA_MCIF_WRITE_IG_CVT_pipe_p2 pipe_p2 (
   );
 
 
-assign os_cmd_vld = cmd_vld & !os_cnt_full;
+assign  os_cmd_vld = cmd_vld & !os_cnt_full;
 
 //IG_cvt=== push into the cq on first beat of data
-assign dat_rdy = (os_cmd_vld & all_downs_rdy);
+assign  dat_rdy = is_first_beat ? (os_cmd_vld & all_downs_rdy) : axi_dat_rdy;
 //IG_cvt=== will release cmd on the acception of last beat of data
-assign cmd_rdy = dat_vld & all_downs_rdy & !os_cnt_full;
+assign  cmd_rdy = is_first_beat & dat_vld & all_downs_rdy & !os_cnt_full;
 
 //IG_cvt===UNPACK after ipipe
-assign cmd_vld_pd = {NVDLA_DMA_WR_IG_PW{cmd_vld}} & cmd_pd;
+assign  cmd_vld_pd = {NVDLA_DMA_WR_IG_PW{cmd_vld}} & cmd_pd;
 
 assign  cmd_axid =    cmd_vld_pd[3:0];
 assign  cmd_require_ack  = cmd_vld_pd[4];
@@ -314,7 +319,22 @@ assign axi_len[1:0] = cmd_size[1:0];
 
 #endif
 
-assign is_first_cmd_dat_vld = os_cmd_vld & dat_vld;
+assign is_first_cmd_dat_vld = os_cmd_vld & dat_vld && is_first_beat;
+always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
+  if (!nvdla_core_rstn) begin
+    beat_count <= {2{1'b0}};
+  end else begin
+    if (is_first_cmd_dat_vld & all_downs_rdy) begin
+        beat_count <= axi_len;
+    end else if ((beat_count!=0) & dat_vld & axi_dat_rdy) begin   //fixme
+        beat_count <= beat_count - 1;
+    end
+  end
+end
+assign is_first_beat = (beat_count==0);
+assign is_single_beat = (axi_len==0);
+assign is_last_beat  = (beat_count==1 || (beat_count==0 && is_single_beat));
+
 
 assign axi_axid = cmd_axid[3:0];
 
@@ -322,9 +342,9 @@ assign axi_addr = cmd_addr;
 
 assign axi_data = dat_data;
 
-assign axi_last = is_first_cmd_dat_vld;
+assign axi_last = is_last_beat; 
 
-assign axi_strb = {NVDLA_MEMORY_ATOMIC_SIZE{data_mask}}; //{{32{dat_mask[1]}},{32{dat_mask[0]}}};
+assign axi_strb = {NVDLA_MEMORY_ATOMIC_SIZE{dat_mask}}; //{{32{dat_mask[1]}},{32{dat_mask[0]}}};
 
 //=====================================
 assign os_inp_add_nxt[2:0] = cmd_vld ? (axi_len + 1) : 3'd0;
@@ -521,7 +541,8 @@ NV_NVDLA_MCIF_WRITE_IG_CVT_pipe_p3 pipe_p3 (
 
 //IG_cvt=== PIPE for $NOC DATA Channel
 // first beat of data also need cq and cmd rdy, this is because we also need push ack/cmd into cq fifo and cmd pipe on first beat of data
-assign axi_dat_vld = dat_vld & (os_cmd_vld & cq_wr_prdy & axi_cmd_rdy);
+assign axi_dat_vld = dat_vld & (!is_first_beat || (os_cmd_vld & cq_wr_prdy & axi_cmd_rdy));
+//assign axi_dat_vld = dat_vld & (os_cmd_vld & cq_wr_prdy & axi_cmd_rdy);
 NV_NVDLA_MCIF_WRITE_IG_CVT_pipe_p4 pipe_p4 (
    .nvdla_core_clk          (nvdla_core_clk)          //|< i
   ,.nvdla_core_rstn         (nvdla_core_rstn)         //|< i
@@ -568,9 +589,8 @@ assign cq_wr_len = axi_len;
 
 // PKT_PACK_WIRE( mcif_write_ig2eg ,  cq_wr_ , cq_wr_pd )
 assign cq_wr_pd[0] =     cq_wr_require_ack ;
-assign cq_wr_pd[2:1] =     cq_wr_len[1:0];
-assign {mon_thread_id_c[0:0],cq_wr_thread_id[2:0]} = 4'd0; // ECO 2054481
-
+assign cq_wr_pd[2:1] =   cq_wr_len[1:0];
+assign {mon_thread_id_c,cq_wr_thread_id[2:0]} = cmd_axid;
 
 `ifdef NVDLA_PRINT_AXI
 reg [NVDLA_MEM_ADDRESS_WIDTH+5:0] mon_axi_count;
@@ -598,21 +618,21 @@ endmodule // NV_NVDLA_MCIF_WRITE_IG_cvt
 module NV_NVDLA_MCIF_WRITE_IG_CVT_pipe_p1 (
    nvdla_core_clk
   ,nvdla_core_rstn
-  ,cmd_rdy
   ,spt2cvt_cmd_pd
   ,spt2cvt_cmd_valid
+  ,spt2cvt_cmd_ready
   ,cmd_pd
   ,cmd_vld
-  ,spt2cvt_cmd_ready
+  ,cmd_rdy
   );
 input         nvdla_core_clk;
 input         nvdla_core_rstn;
-input         cmd_rdy;
 input  [NVDLA_DMA_WR_IG_PW-1:0] spt2cvt_cmd_pd;
 input         spt2cvt_cmd_valid;
+output        spt2cvt_cmd_ready;
 output [NVDLA_DMA_WR_IG_PW-1:0] cmd_pd;
 output        cmd_vld;
-output        spt2cvt_cmd_ready;
+input         cmd_rdy;
 
 
 //: my $k = NVDLA_DMA_WR_IG_PW;
@@ -629,20 +649,21 @@ endmodule // NV_NVDLA_MCIF_WRITE_IG_CVT_pipe_p1
 module NV_NVDLA_MCIF_WRITE_IG_CVT_pipe_p2 (
    nvdla_core_clk
   ,nvdla_core_rstn
-  ,dat_rdy
   ,spt2cvt_dat_pd
   ,spt2cvt_dat_valid
+  ,spt2cvt_dat_ready
   ,dat_pd
   ,dat_vld
-  ,spt2cvt_dat_ready
+  ,dat_rdy
   );
 input          nvdla_core_clk;
 input          nvdla_core_rstn;
-input          dat_rdy;
 input  [NVDLA_PRIMARY_MEMIF_WIDTH+NVDLA_DMA_MASK_BIT-1:0] spt2cvt_dat_pd;
 input          spt2cvt_dat_valid;
+output         spt2cvt_dat_ready;
 output [NVDLA_PRIMARY_MEMIF_WIDTH+NVDLA_DMA_MASK_BIT-1:0] dat_pd;
 output         dat_vld;
+input          dat_rdy;
 
 //: my $k = NVDLA_PRIMARY_MEMIF_WIDTH+NVDLA_DMA_MASK_BIT;
 //: &eperl::pipe(" -wid  $k -do dat_pd -vo dat_vld -ri dat_rdy -di  spt2cvt_dat_pd -vi spt2cvt_dat_valid -ro spt2cvt_dat_ready ");
@@ -660,22 +681,23 @@ module NV_NVDLA_MCIF_WRITE_IG_CVT_pipe_p3 (
   ,nvdla_core_rstn
   ,axi_cmd_pd
   ,axi_cmd_vld
-  ,mcif2noc_axi_aw_awready
-  ,axi_aw_pd
   ,axi_cmd_rdy
+  ,axi_aw_pd
   ,mcif2noc_axi_aw_awvalid
+  ,mcif2noc_axi_aw_awready
   );
 input         nvdla_core_clk;
 input         nvdla_core_rstn;
 input  [NVDLA_MEM_ADDRESS_WIDTH+5:0] axi_cmd_pd;
 input         axi_cmd_vld;
-input         mcif2noc_axi_aw_awready;
-output [NVDLA_MEM_ADDRESS_WIDTH+5:0] axi_aw_pd;
 output        axi_cmd_rdy;
+output [NVDLA_MEM_ADDRESS_WIDTH+5:0] axi_aw_pd;
 output        mcif2noc_axi_aw_awvalid;
+input         mcif2noc_axi_aw_awready;
 
 //: my $k = NVDLA_MEM_ADDRESS_WIDTH+6;
 //: &eperl::pipe(" -wid $k -is -do axi_aw_pd -vo mcif2noc_axi_aw_awvalid -ri mcif2noc_axi_aw_awready -di axi_cmd_pd -vi axi_cmd_vld -ro axi_cmd_rdy ");
+
 
 endmodule // NV_NVDLA_MCIF_WRITE_IG_CVT_pipe_p3
 
@@ -690,22 +712,23 @@ module NV_NVDLA_MCIF_WRITE_IG_CVT_pipe_p4 (
   ,nvdla_core_rstn
   ,axi_dat_pd
   ,axi_dat_vld
-  ,mcif2noc_axi_w_wready
   ,axi_dat_rdy
   ,axi_w_pd
   ,mcif2noc_axi_w_wvalid
+  ,mcif2noc_axi_w_wready
   );
 input          nvdla_core_clk;
 input          nvdla_core_rstn;
 input  [NVDLA_PRIMARY_MEMIF_WIDTH+NVDLA_PRIMARY_MEMIF_STRB:0] axi_dat_pd;
 input          axi_dat_vld;
-input          mcif2noc_axi_w_wready;
 output         axi_dat_rdy;
 output [NVDLA_PRIMARY_MEMIF_WIDTH+NVDLA_PRIMARY_MEMIF_STRB:0] axi_w_pd;
 output         mcif2noc_axi_w_wvalid;
+input          mcif2noc_axi_w_wready;
 
 //: my $k = NVDLA_PRIMARY_MEMIF_WIDTH+NVDLA_PRIMARY_MEMIF_STRB+1;
 //: &eperl::pipe(" -wid $k -is -do axi_w_pd -vo mcif2noc_axi_w_wvalid -ri mcif2noc_axi_w_wready -di axi_dat_pd -vi axi_dat_vld -ro axi_dat_rdy ");
+
 
 endmodule // NV_NVDLA_MCIF_WRITE_IG_CVT_pipe_p4
 

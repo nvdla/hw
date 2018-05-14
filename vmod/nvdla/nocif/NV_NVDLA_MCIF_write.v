@@ -52,8 +52,8 @@ output [NVDLA_MEM_ADDRESS_WIDTH-1:0] mcif2noc_axi_aw_awaddr;
 
 output         mcif2noc_axi_w_wvalid;  
 input          mcif2noc_axi_w_wready;  
-output [NVDLA_PRIMARY_MEMIF_WIDTH-1:0]   mcif2noc_axi_w_wdata;
-output [NVDLA_PRIMARY_MEMIF_STROB-1:0]   mcif2noc_axi_w_wstrb;
+output [NVDLA_PRIMARY_MEMIF_WIDTH-1:0]  mcif2noc_axi_w_wdata;
+output [NVDLA_PRIMARY_MEMIF_STRB-1:0]   mcif2noc_axi_w_wstrb;
 output         mcif2noc_axi_w_wlast;
 input          noc2mcif_axi_b_bvalid;  
 output         noc2mcif_axi_b_bready;  
@@ -73,12 +73,13 @@ input  [7:0]   noc2mcif_axi_b_bid;
 //: }
 input [7:0] reg2dp_wr_os_cnt;
 
+wire       eg2ig_axi_vld;
 wire [1:0] eg2ig_axi_len;
-wire [3:0] cq_wr_thread_id;
+wire [2:0] cq_wr_thread_id;
 wire [2:0] cq_wr_pd;
 wire       cq_wr_prdy;
 wire       cq_wr_pvld;
-//:for(my $i=0;$i<WDMA_NUM;$i++) {
+//:for(my $i=0;$i<WDMA_MAX_NUM;$i++) {
 //:print qq(
 //:wire [2:0] cq_rd${i}_pd;
 //:wire       cq_rd${i}_pvld;
@@ -114,7 +115,7 @@ NV_NVDLA_MCIF_WRITE_ig u_ig (
   ,.cq_wr_pvld                (cq_wr_pvld)                   //|> w
   ,.cq_wr_prdy                (cq_wr_prdy)                   //|< w
   ,.cq_wr_pd                  (cq_wr_pd[2:0])                //|> w
-  ,.cq_wr_thread_id           (cq_wr_thread_id[3:0])         //|> w
+  ,.cq_wr_thread_id           (cq_wr_thread_id[2:0])         //|> w
   ,.eg2ig_axi_len             (eg2ig_axi_len[1:0])           //|< w
   ,.eg2ig_axi_vld             (eg2ig_axi_vld)                //|< w
 );
@@ -127,8 +128,8 @@ NV_NVDLA_MCIF_WRITE_cq u_cq (
   ,.cq_wr_prdy                (cq_wr_prdy)                   //|> w
   ,.cq_wr_pvld                (cq_wr_pvld)                   //|< w
   ,.cq_wr_pd                  (cq_wr_pd[2:0])                //|< w
-  ,.cq_wr_thread_id           (cq_wr_thread_id[3:0])         //|< w
-  //:for(my $i=0;$i<WDMA_NUM;$i++) {
+  ,.cq_wr_thread_id           (cq_wr_thread_id[2:0])         //|< w
+  //:for(my $i=0;$i<WDMA_MAX_NUM;$i++) {
   //:print"  ,.cq_rd${i}_pd     (cq_rd${i}_pd)\n";               
   //:print"  ,.cq_rd${i}_pvld   (cq_rd${i}_pvld)\n";             
   //:print"  ,.cq_rd${i}_prdy   (cq_rd${i}_prdy)\n";             
@@ -141,12 +142,12 @@ NV_NVDLA_MCIF_WRITE_eg u_eg (
   ,.nvdla_core_rstn           (nvdla_core_rstn)              //|< i
   ,.eg2ig_axi_len             (eg2ig_axi_len[1:0])           //|> w
   ,.eg2ig_axi_vld             (eg2ig_axi_vld)                //|> w
-  //: my @wdma_name = WDMA_NAME; 
-  //:for(my $i=0;$i<WDMA_NUM;$i++) {
+  //:for(my $i=0;$i<WDMA_MAX_NUM;$i++) {
   //:print"  ,.cq_rd${i}_pd     (cq_rd${i}_pd)\n";               
   //:print"  ,.cq_rd${i}_pvld   (cq_rd${i}_pvld)\n";             
   //:print"  ,.cq_rd${i}_prdy   (cq_rd${i}_prdy)\n";             
   //:}
+  //: my @wdma_name = WDMA_NAME; 
   //: foreach my $client (@wdma_name) {
   //: print "  ,.mcif2${client}_wr_rsp_complete (mcif2${client}_wr_rsp_complete)\n";
   //:}
