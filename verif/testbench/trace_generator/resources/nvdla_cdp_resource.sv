@@ -14,9 +14,6 @@ class nvdla_cdp_resource extends nvdla_base_resource;
     string cdp_lut_lo_data_pattern = "RANDOM";
     string cdp_lut_le_data_pattern = "RANDOM";
 
-    // IF working in lut_reuse mode, input data type must be the same with pre layer
-    int cdp_lut_reuse              = 0;
-
     // enum define
     //:| import spec2constrain
     //:| global spec2cons
@@ -69,6 +66,14 @@ class nvdla_cdp_resource extends nvdla_base_resource;
                  ,lut_en_ENABLE                    = 'h1
                 } lut_en_t;
     //:) epython: generated_end (DO NOT EDIT ABOVE)
+
+    /*
+        LUT_REUSE config: IF working in lut_reuse mode, input data type must be the same with pre layer, 
+        set pre_input_data_type(default) to INT8
+    */
+    rand bit          cdp_lut_reuse        = 0;
+    input_data_type_t pre_input_data_type  = input_data_type_INT8;
+
 
     // field variables
     //:| spec2cons.state_gen(['NVDLA_CDP'])
@@ -185,6 +190,7 @@ class nvdla_cdp_resource extends nvdla_base_resource;
 //  extern function void    set_mem_addr();
     extern function void    set_register();
     extern function void    lut_config_dump(int fh);
+    extern function void    pre_randomize();
     extern function void    post_randomize();
 
     /*
@@ -233,14 +239,15 @@ function void nvdla_cdp_resource::connect_phase(uvm_phase phase);
         `uvm_info(inst_name, "NO cdp_lut_le_data_pattern config, using default value: RANDOM", UVM_NONE)
     end
     if(!uvm_config_db#(int)::get(this, "", "cdp_lut_reuse", cdp_lut_reuse)) begin
-        `uvm_info(inst_name, "NO cdp_lut_reuse config, using default value: 0", UVM_NONE)
+        `uvm_info(inst_name, $sformatf("NO cdp_lut_reuse config, using random value"), UVM_NONE)
     end
 endfunction: connect_phase
 
 function void nvdla_cdp_resource::lut_config_dump(int fh);
     uvm_reg_data_t reg_val;
 
-    if(cdp_lut_reuse == 0) begin  // NO LUT reuse
+    if(cdp_lut_reuse == 0 || active_cnt < 1) begin  // NO LUT reuse
+        $display("lut_reuse:%0d, active_cnt=%0d", cdp_lut_reuse, active_cnt);
         // LUT is only configurable when there's no active layer running, in other case
         // just (skip) waiting  (if not forced LUT_REUSE)
         // foreach(sync_evt_queue[i]) begin
@@ -737,11 +744,20 @@ constraint nvdla_cdp_resource::c_sim_cvt_weight_dist {
     `weight_dist_6bit(datout_shifter)
 }
 
+function void nvdla_cdp_resource::pre_randomize();
+    if(cdp_lut_reuse == 1 && active_cnt >= 1) begin
+        input_data_type = pre_input_data_type;
+        input_data_type.rand_mode(0);
+    end
+endfunction : pre_randomize
 
 function void nvdla_cdp_resource::post_randomize();
     set_lut();
 //  set_mem_addr();
     set_register();
+    // For LUT_REUSE usage
+    pre_input_data_type = input_data_type;
+    input_data_type.rand_mode(1);
 
     `uvm_info(inst_name, {"\n", sprint()}, UVM_HIGH)
 endfunction : post_randomize
