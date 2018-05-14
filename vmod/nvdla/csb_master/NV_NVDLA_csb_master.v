@@ -1511,7 +1511,8 @@ assign core_resp_pd = ( ({34 {cfgrom_resp_valid}} & cfgrom_resp_pd)
 #endif
                       | ({34 {dummy_resp_valid}} & dummy_resp_pd));
 
-assign core_resp_pvld = glb_resp_valid |
+assign core_resp_pvld = cfgrom_resp_valid |
+                        glb_resp_valid |
                         mcif_resp_valid |
 #ifdef NVDLA_SECONDARY_MEMIF_ENABLE
                         cvif_resp_valid |
