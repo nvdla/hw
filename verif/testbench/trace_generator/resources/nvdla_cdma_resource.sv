@@ -686,11 +686,11 @@ constraint nvdla_cdma_resource::c_ias_stride_size {
     else if(pixel_mapping==pixel_mapping_PITCH_LINEAR) {
         // semi-planar, line_stride is used to address Y planar
         if((pixel_format >= pixel_format_T_A2B10G10R10) && (pixel_format <= pixel_format_T_V10U10Y10A2) ) {
-            (line_stride - (pixel_x_offset+datain_width+64'h1)*(datain_channel+1))/32 dist { 0:=48, ['h1:'hF]:=48, ['h10:'h7F]:=2, ['h80:'hFF]:=2};
+            (line_stride - (pixel_x_offset+datain_width+64'h1)*(datain_channel+1))/`NVDLA_MEMORY_ATOMIC_SIZE dist { 0:=48, ['h1:'hF]:=48, ['h10:'h7F]:=2, ['h80:'hFF]:=2};
             (line_stride >= (pixel_x_offset+datain_width+64'h1)*(datain_channel+1));
         }
         else if(pixel_format >= pixel_format_T_Y8___U8V8_N444) { // semi-planar
-            (line_stride - (pixel_x_offset+datain_width+64'h1)*((in_precision == in_precision_INT8)?1:2))/32 dist { 0:=48, ['h1:'hF]:=48, ['h10:'h7F]:=2, ['h80:'hFF]:=2};
+            (line_stride - (pixel_x_offset+datain_width+64'h1)*((in_precision == in_precision_INT8)?1:2))/`NVDLA_MEMORY_ATOMIC_SIZE dist { 0:=48, ['h1:'hF]:=48, ['h10:'h7F]:=2, ['h80:'hFF]:=2};
             (line_stride >= (pixel_x_offset+datain_width+64'h1)*((in_precision == in_precision_INT8)?1:2));
             // Semi-planar, add contraint to the second surface
             // line_uv_stride only valide in semi-planar mode && pitch linear
@@ -698,7 +698,7 @@ constraint nvdla_cdma_resource::c_ias_stride_size {
             uv_line_stride == (line_stride * 2);
         }
         else {
-            (line_stride - (pixel_x_offset+datain_width+64'h1)*((in_precision == in_precision_INT8)?1:2)*(datain_channel+1))/32 dist { 0:=48, ['h1:'hF]:=48, ['h10:'h7F]:=2, ['h80:'hFF]:=2};
+            (line_stride - (pixel_x_offset+datain_width+64'h1)*((in_precision == in_precision_INT8)?1:2)*(datain_channel+1))/`NVDLA_MEMORY_ATOMIC_SIZE dist { 0:=48, ['h1:'hF]:=48, ['h10:'h7F]:=2, ['h80:'hFF]:=2};
             (line_stride >= (pixel_x_offset+datain_width+64'h1)*((in_precision == in_precision_INT8)?1:2)*(datain_channel+1));
         }
         line_stride * (datain_height + 1) / `NVDLA_MEMORY_ATOMIC_SIZE <= 64'h800_0000;
@@ -765,8 +765,6 @@ constraint nvdla_cdma_resource::c_ias_entries {
             }
         }
         else { // winograd
-            //c_a = (((datain_channel+1)*((in_precision==INT8)?1:2) + 31) / 32);
-            //c_a_e = (((datain_channel+1)*((in_precision==INT8)?1:2) + 31) / 32)*(conv_x_stride+1)*(conv_y_stride+1);
             (entries+1) == (((datain_width+1+pad_left+pad_right) / (4*(conv_x_stride+1)))*((((datain_channel+1)*((proc_precision==proc_precision_INT8)?1:2) + 31) / 32)*(conv_x_stride+1)*(conv_y_stride+1)));
         }
     }
@@ -873,9 +871,9 @@ constraint nvdla_cdma_resource::c_ias_reuse_mode {
         weight_reuse == weight_reuse_DISABLE;
     }
 
-    if(skip_data_rls == skip_data_rls_DISABLE) {
-        (datain_height+1 + pad_top + pad_bottom)*(entries+1) <= (data_bank+1) * 256;
-    }
+    // if(skip_data_rls == skip_data_rls_DISABLE) {
+    //     (datain_height+1 + pad_top + pad_bottom)*(entries+1) <= (data_bank+1) * 256;
+    // }
 }
 
 constraint nvdla_cdma_resource::c_ias_conv_stride {
