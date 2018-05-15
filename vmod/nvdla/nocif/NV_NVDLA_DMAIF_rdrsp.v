@@ -117,7 +117,7 @@ assign dma_rd_rsp_vld = mcif_rd_rsp_valid_d0;
 //: my $maskbw;
 //:        $maskbw = $mask; 
 //: my $dmabw = ( $dmaif + $maskbw );
-//: &eperl::pipe(" -wid $dmabw -os -do dmaif_rd_rsp_pd -vo dmaif_rd_rsp_pvld -ri dmaif_rd_rsp_prdy -di dma_rd_rsp_pd -vi dma_rd_rsp_vld -ro dma_rd_rsp_rdy_f  ");
+//: &eperl::pipe(" -wid $dmabw -is -do dmaif_rd_rsp_pd -vo dmaif_rd_rsp_pvld -ri dmaif_rd_rsp_prdy -di dma_rd_rsp_pd -vi dma_rd_rsp_vld -ro dma_rd_rsp_rdy_f  ");
 assign dma_rd_rsp_rdy = dma_rd_rsp_rdy_f;
 
 

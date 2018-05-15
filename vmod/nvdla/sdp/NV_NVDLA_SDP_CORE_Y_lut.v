@@ -22200,7 +22200,7 @@ assign lut_out_pvld = dat_fifo_rd_pvld;
 //: print "assign       lut_out_pd[${i}+${bfw}]     = out_flow${i}; \n"; 
 //: }
 
-//viva_pipe -bc -os lut2inp_pd (lut2inp_pvld,lut2inp_prdy) <= lut_out_pd (lut_out_pvld,lut_out_prdy);
+
 NV_NVDLA_SDP_CORE_Y_lut_pipe_p2  pipe_p2 (
    .nvdla_core_clk  (nvdla_core_clk)              
   ,.nvdla_core_rstn (nvdla_core_rstn)             
@@ -22408,7 +22408,7 @@ output [EW_LUT_OUT_DW-1:0] lut2inp_pd;
 
 
 //: my $dw = EW_LUT_OUT_DW;
-//: &eperl::pipe("-os -wid $dw -do lut2inp_pd -vo lut2inp_pvld -ri lut2inp_prdy -di lut_out_pd -vi lut_out_pvld -ro lut_out_prdy");
+//: &eperl::pipe("-is -wid $dw -do lut2inp_pd -vo lut2inp_pvld -ri lut2inp_prdy -di lut_out_pd -vi lut_out_pvld -ro lut_out_prdy");
 
 
 endmodule
