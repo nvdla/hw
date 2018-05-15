@@ -2214,9 +2214,9 @@ always @(*) begin
 //: my $dmaif=NVDLA_CDMA_DMAIF_BW/NVDLA_CDMA_BPE/NVDLA_MEMORY_ATOMIC_SIZE;
 //: my $atmc=NVDLA_MAC_ATOMIC_C_SIZE/NVDLA_MEMORY_ATOMIC_SIZE;
 //: my $m = int($dmaif/$atmc+0.99);
-//: foreach my $k (0..$m-1){
-//:     print " p${k}_rd_addr_w = 8'd0; \n";
-//: }
+//: ##foreach my $k (0..$m-1){
+//: ##    print " p${k}_rd_addr_w = 8'd0; \n";
+//: ##}
 //: ##if(($dmaif==1) && ($atmc==1)) {
 //: if($dmaif==1) {
 //:     print qq(
