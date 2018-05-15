@@ -847,7 +847,9 @@ constraint nvdla_sdp_resource::c_ias_feature {
     (flying_mode == flying_mode_ON) -> { !((batch_number!=0) && (winograd==winograd_ON)); }
     (flying_mode == flying_mode_OFF) -> { !((batch_number!=0) && (winograd==winograd_ON)); }
 
+`ifdef PRECISION_CONVERSION_ENABLE
     (proc_precision == proc_precision_INT8)  -> out_precision inside {out_precision_INT8, out_precision_INT16};
+`endif
     (proc_precision == proc_precision_INT16) -> out_precision inside {out_precision_INT16, out_precision_FP16};
     (proc_precision == proc_precision_FP16)  -> out_precision inside {out_precision_INT16, out_precision_FP16};
 

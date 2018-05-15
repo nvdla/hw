@@ -131,9 +131,14 @@ constraint nvdla_sdprdma_sdp_scenario::sce_sdprdma_sdp_ias_constraint {
     sdp_rdma.out_precision == int'(sdp.out_precision);
     sdp_rdma.batch_number  == sdp.batch_number;
     if(sdp.proc_precision==nvdla_sdp_resource::proc_precision_INT8  && sdp.out_precision==nvdla_sdp_resource::out_precision_INT8)  { sdp_rdma.in_precision != nvdla_sdp_rdma_resource::in_precision_FP16; }
+
+`ifdef FEATURE_DATA_TYPE_INT16_FP16
+`ifdef PRECISION_CONVERSION_ENABLE
     if(sdp.proc_precision==nvdla_sdp_resource::proc_precision_INT8  && sdp.out_precision==nvdla_sdp_resource::out_precision_INT16) { sdp_rdma.in_precision == nvdla_sdp_rdma_resource::in_precision_INT8; }
+`endif
     if(sdp.proc_precision==nvdla_sdp_resource::proc_precision_INT16) { sdp_rdma.in_precision==nvdla_sdp_rdma_resource::in_precision_INT16; }
     if(sdp.proc_precision==nvdla_sdp_resource::proc_precision_FP16)  { sdp_rdma.in_precision==nvdla_sdp_rdma_resource::in_precision_FP16;  }
+`endif
     if((sdp.bs_bypass==nvdla_sdp_resource::bs_bypass_NO) && ((sdp.bs_alu_bypass==nvdla_sdp_resource::bs_alu_bypass_NO && sdp.bs_alu_src==nvdla_sdp_resource::bs_alu_src_MEM) || (sdp.bs_mul_bypass==nvdla_sdp_resource::bs_mul_bypass_NO && sdp.bs_mul_src==nvdla_sdp_resource::bs_mul_src_MEM))) { sdp_rdma.brdma_disable==nvdla_sdp_rdma_resource::brdma_disable_NO; }
     else { sdp_rdma.brdma_disable==nvdla_sdp_rdma_resource::brdma_disable_YES; }
     if(sdp.bs_bypass==nvdla_sdp_resource::bs_bypass_NO && sdp.bs_mul_bypass==nvdla_sdp_resource::bs_mul_bypass_NO  && sdp.bs_alu_bypass==nvdla_sdp_resource::bs_alu_bypass_YES) { sdp_rdma.brdma_data_use==nvdla_sdp_rdma_resource::brdma_data_use_MUL;  }

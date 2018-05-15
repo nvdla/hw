@@ -790,9 +790,11 @@ constraint nvdla_cdma_resource::c_ias_weight_data {
 
 constraint nvdla_cdma_resource::c_ias_cvt {
     if(datain_format == datain_format_PIXEL) {
+`ifdef PRECISION_CONVERSION_ENABLE
         if(in_precision != in_precision_t'(proc_precision)) {
             cvt_en == cvt_en_ENABLE;
         }
+`endif
         if(pixel_sign_override == pixel_sign_override_UNSIGNED_INT) {
             cvt_en == cvt_en_ENABLE;
         }
