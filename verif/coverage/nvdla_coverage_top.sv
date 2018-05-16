@@ -11,11 +11,15 @@ class nvdla_coverage_top extends uvm_subscriber#(uvm_tlm_gp);
     ral_sys_top             ral;
 
     conv_cov_pool           conv_pool;
-//  bdma_cov_pool           bdma_pool;
+`ifdef NVDLA_BDMA_ENABLE
+    bdma_cov_pool           bdma_pool;
+`endif
     sdp_cov_pool            sdp_pool;
     cdp_cov_pool            cdp_pool;
     pdp_cov_pool            pdp_pool;
-//  rubik_cov_pool          rubik_pool;
+`ifdef NVDLA_RUBIK_ENABLE
+    rubik_cov_pool          rubik_pool;
+`endif
 
     uvm_tlm_gp              txn_queue[$];
 
@@ -36,11 +40,15 @@ class nvdla_coverage_top extends uvm_subscriber#(uvm_tlm_gp);
         end
 
         conv_pool  = new("conv_pool" , ral);
-//      bdma_pool  = new("bdma_pool" , ral);
+`ifdef NVDLA_BDMA_ENABLE
+        bdma_pool  = new("bdma_pool" , ral);
+`endif
         sdp_pool   = new("sdp_pool"  , ral);
         cdp_pool   = new("cdp_pool"  , ral);
         pdp_pool   = new("pdp_pool"  , ral);
-//      rubik_pool = new("rubik_pool", ral);
+`ifdef NVDLA_RUBIK_ENABLE
+        rubik_pool = new("rubik_pool", ral);
+`endif
     endfunction : build_phase
 
     function void write(uvm_tlm_gp t);
@@ -73,16 +81,20 @@ class nvdla_coverage_top extends uvm_subscriber#(uvm_tlm_gp);
         else begin
             case(gp.get_address())
                 ral.nvdla.NVDLA_CDMA.D_OP_ENABLE.get_address():       conv_pool.sample();
-//              ral.nvdla.NVDLA_BDMA.CFG_OP.get_address():            bdma_pool.sample();
-//              ral.nvdla.NVDLA_BDMA.CFG_LAUNCH0.get_address():       bdma_pool.sample();
-//              ral.nvdla.NVDLA_BDMA.CFG_LAUNCH1.get_address():       bdma_pool.sample();
+`ifdef NVDLA_BDMA_ENABLE
+                ral.nvdla.NVDLA_BDMA.CFG_OP.get_address():            bdma_pool.sample();
+                ral.nvdla.NVDLA_BDMA.CFG_LAUNCH0.get_address():       bdma_pool.sample();
+                ral.nvdla.NVDLA_BDMA.CFG_LAUNCH1.get_address():       bdma_pool.sample();
+`endif
                 ral.nvdla.NVDLA_SDP_RDMA.D_OP_ENABLE.get_address():   sdp_pool.sdp_rdma_sample();
                 ral.nvdla.NVDLA_SDP.D_OP_ENABLE.get_address():        sdp_pool.sdp_sample();
                 ral.nvdla.NVDLA_CDP_RDMA.D_OP_ENABLE.get_address():   cdp_pool.sample();
                 ral.nvdla.NVDLA_CDP.D_OP_ENABLE.get_address():        cdp_pool.sample();
                 ral.nvdla.NVDLA_PDP_RDMA.D_OP_ENABLE.get_address():   pdp_pool.sample();
                 ral.nvdla.NVDLA_PDP.D_OP_ENABLE.get_address():        pdp_pool.sample();
-//              ral.nvdla.NVDLA_RBK.D_OP_ENABLE.get_address():        rubik_pool.sample();
+`ifdef NVDLA_RUBIK_ENABLE
+                ral.nvdla.NVDLA_RBK.D_OP_ENABLE.get_address():        rubik_pool.sample();
+`endif
                 default: `uvm_info(tID, $sformatf("Common Reg, No Coverage Sample"), UVM_HIGH)
             endcase
         end
