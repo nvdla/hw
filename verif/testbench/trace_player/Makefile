@@ -239,6 +239,7 @@ VCS_ARGS += -cm line+tgl+cond+fsm+branch+assert
 VCS_ARGS += -cm_tgl portsonly -cm_cond allops -cm_line contassign
 VCS_ARGS += -cm_libs yv
 VCS_ARGS += -cm_hier ${COVERAGE_DIR}/nvdla.hier
+VCS_ARGS += -cm_glitch 0
 #VCS_ARGS += -cm_dir simv.cm
 endif
 
