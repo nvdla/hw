@@ -10,7 +10,7 @@ class nvdla_coverage_base;
     ral_sys_top     ral;
 
     function new(string name, ral_sys_top ral);
-        tID = name.toupper();
+        tID      = name.toupper();
         this.ral = ral;
 
 `ifdef NVDLA_MEM_ADDRESS_WIDTH

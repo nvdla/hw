@@ -2,38 +2,31 @@
 
 class bdma_cov_pool extends nvdla_coverage_base;
 
-    bit_toggle_cg           cfg_src_addr_low_tog_cg;
-    bit_toggle_cg           cfg_dst_addr_low_tog_cg;
-`ifdef MEM_ADDR_WIDTH_GT_32
-    bit_toggle_cg           cfg_src_addr_high_tog_cg;
-    bit_toggle_cg           cfg_dst_addr_high_tog_cg;
-`endif
-    bit_toggle_cg           cfg_line_tog_cg;
-    bit_toggle_cg           cfg_line_repeat_tog_cg;
-    bit_toggle_cg           cfg_surf_repeat_tog_cg;
-    bit_toggle_cg           cfg_src_line_tog_cg;
-    bit_toggle_cg           cfg_dst_line_tog_cg;
-    bit_toggle_cg           cfg_src_surf_tog_cg;
-    bit_toggle_cg           cfg_dst_surf_tog_cg;
+    bit_toggle_cg    tg_bdma_flds[string];
 
     function new(string name, ral_sys_top ral);
+        uvm_reg       regs[$];
+        uvm_reg_field flds[$];
         super.new(name, ral);
 
         bdma_cg = new();
-
-        cfg_src_addr_low_tog_cg  = new("cfg_src_addr_low",  ral.nvdla.NVDLA_BDMA.CFG_SRC_ADDR_LOW.V32.get_n_bits());
-        cfg_dst_addr_low_tog_cg  = new("cfg_dst_addr_low",  ral.nvdla.NVDLA_BDMA.CFG_DST_ADDR_LOW.V32.get_n_bits());
-`ifdef MEM_ADDR_WIDTH_GT_32
-        cfg_src_addr_high_tog_cg = new("cfg_src_addr_high", ral.nvdla.NVDLA_BDMA.CFG_SRC_ADDR_HIGH.V8.get_n_bits());
-        cfg_dst_addr_high_tog_cg = new("cfg_dst_addr_high", ral.nvdla.NVDLA_BDMA.CFG_DST_ADDR_HIGH.V8.get_n_bits());
+        ral.nvdla.NVDLA_BDMA.get_registers(regs);
+        foreach(regs[i]) begin
+            if(regs[i].get_rights() == "RW") begin
+                regs[i].get_fields(flds);
+                foreach(flds[j]) begin
+                    name                   = flds[j].get_name();
+`ifndef MEM_ADDR_WIDTH_GT_32
+                    // Need to update field name in spec
+                    if(name == "V8") continue;
 `endif
-        cfg_line_tog_cg          = new("cfg_line",          ral.nvdla.NVDLA_BDMA.CFG_LINE.SIZE.get_n_bits());
-        cfg_line_repeat_tog_cg   = new("cfg_line_repeat",   ral.nvdla.NVDLA_BDMA.CFG_LINE_REPEAT.NUMBER.get_n_bits());
-        cfg_surf_repeat_tog_cg   = new("cfg_surf_repeat",   ral.nvdla.NVDLA_BDMA.CFG_SURF_REPEAT.NUMBER.get_n_bits());
-        cfg_src_line_tog_cg      = new("cfg_src_line",      ral.nvdla.NVDLA_BDMA.CFG_SRC_LINE.STRIDE.get_n_bits());
-        cfg_dst_line_tog_cg      = new("cfg_dst_line",      ral.nvdla.NVDLA_BDMA.CFG_DST_LINE.STRIDE.get_n_bits());
-        cfg_src_surf_tog_cg      = new("cfg_src_surf",      ral.nvdla.NVDLA_BDMA.CFG_SRC_SURF.STRIDE.get_n_bits());
-        cfg_dst_surf_tog_cg      = new("cfg_dst_surf",      ral.nvdla.NVDLA_BDMA.CFG_DST_SURF.STRIDE.get_n_bits());
+                    tg_bdma_flds[name] = new({"tg_bdma_",name.tolower()}, flds[j].get_n_bits());
+                end
+                flds.delete();
+            end
+        end
+        regs.delete();
+
     endfunction : new
 
     covergroup bdma_cg;
@@ -103,19 +96,12 @@ class bdma_cov_pool extends nvdla_coverage_base;
     endtask : sample
 
     function void bdma_toggle_sample();
-        cfg_src_addr_low_tog_cg.sample(ral.nvdla.NVDLA_BDMA.CFG_SRC_ADDR_LOW.V32.value);
-        cfg_dst_addr_low_tog_cg.sample(ral.nvdla.NVDLA_BDMA.CFG_DST_ADDR_LOW.V32.value);
-`ifdef MEM_ADDR_WIDTH_GT_32
-        cfg_src_addr_high_tog_cg.sample(ral.nvdla.NVDLA_BDMA.CFG_SRC_ADDR_HIGH.V8.value);
-        cfg_dst_addr_high_tog_cg.sample(ral.nvdla.NVDLA_BDMA.CFG_DST_ADDR_HIGH.V8.value);
-`endif
-        cfg_line_tog_cg.sample(ral.nvdla.NVDLA_BDMA.CFG_LINE.SIZE.value);
-        cfg_line_repeat_tog_cg.sample(ral.nvdla.NVDLA_BDMA.CFG_LINE_REPEAT.NUMBER.value);
-        cfg_src_line_tog_cg.sample(ral.nvdla.NVDLA_BDMA.CFG_SRC_LINE.STRIDE.value);
-        cfg_dst_line_tog_cg.sample(ral.nvdla.NVDLA_BDMA.CFG_DST_LINE.STRIDE.value);
-        cfg_surf_repeat_tog_cg.sample(ral.nvdla.NVDLA_BDMA.CFG_SURF_REPEAT.NUMBER.value);
-        cfg_src_surf_tog_cg.sample(ral.nvdla.NVDLA_BDMA.CFG_SRC_SURF.STRIDE.value);
-        cfg_dst_surf_tog_cg.sample(ral.nvdla.NVDLA_BDMA.CFG_DST_SURF.STRIDE.value);
+        uvm_reg_field fld;
+        foreach(tg_bdma_flds[i]) begin
+            fld = ral.nvdla.NVDLA_BDMA.get_field_by_name(i);
+            tg_bdma_flds[i].sample(fld.value);
+        end
+
     endfunction : bdma_toggle_sample
 
 endclass : bdma_cov_pool

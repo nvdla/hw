@@ -2,170 +2,92 @@
 
 class sdp_cov_pool extends nvdla_coverage_base;
 
-    // sdp
-    bit_toggle_cg    sdp_width_tog_cg;
-    bit_toggle_cg    sdp_height_tog_cg;
-    bit_toggle_cg    sdp_channel_tog_cg;
-    bit_toggle_cg    sdp_dst_base_addr_low_tog_cg;
-`ifdef MEM_ADDR_WIDTH_GT_32
-    bit_toggle_cg    sdp_dst_base_addr_high_tog_cg;
-`endif
-`ifdef NVDLA_BATCH_ENABLE
-    bit_toggle_cg    sdp_dst_batch_stride_tog_cg;
-`endif
-    bit_toggle_cg    sdp_cvt_offset_tog_cg;
-    bit_toggle_cg    sdp_cvt_scale_tog_cg;
-    bit_toggle_cg    sdp_cvt_shift_tog_cg;
-`ifdef NVDLA_SDP_BS_ENABLE
-    bit_toggle_cg    sdp_bs_alu_operand_tog_cg;
-    bit_toggle_cg    sdp_bs_alu_shift_value_tog_cg;
-    bit_toggle_cg    sdp_bs_mul_operand_tog_cg;
-    bit_toggle_cg    sdp_bs_mul_shift_value_tog_cg;
-`endif
-`ifdef NVDLA_SDP_BN_ENABLE
-    bit_toggle_cg    sdp_bn_alu_operand_tog_cg;
-    bit_toggle_cg    sdp_bn_alu_shift_value_tog_cg;
-    bit_toggle_cg    sdp_bn_mul_operand_tog_cg;
-    bit_toggle_cg    sdp_bn_mul_shift_value_tog_cg;
-`endif
-`ifdef NVDLA_SDP_EW_ENABLE
-    bit_toggle_cg    sdp_ew_alu_operand_tog_cg;
-    bit_toggle_cg    sdp_ew_alu_cvt_offset_tog_cg;
-    bit_toggle_cg    sdp_ew_alu_cvt_scale_tog_cg;
-    bit_toggle_cg    sdp_ew_alu_cvt_truncate_tog_cg;
-    bit_toggle_cg    sdp_ew_mul_operand_tog_cg;
-    bit_toggle_cg    sdp_ew_mul_cvt_offset_tog_cg;
-    bit_toggle_cg    sdp_ew_mul_cvt_scale_tog_cg;
-    bit_toggle_cg    sdp_ew_mul_cvt_truncate_tog_cg;
-    bit_toggle_cg    sdp_ew_truncate_tog_cg;
-`endif
 
-    // sdp rdma
-    bit_toggle_cg    sdp_rdma_width_tog_cg;
-    bit_toggle_cg    sdp_rdma_height_tog_cg;
-    bit_toggle_cg    sdp_rdma_channel_tog_cg;
-    bit_toggle_cg    sdp_rdma_src_base_addr_low_tog_cg;
-`ifdef MEM_ADDR_WIDTH_GT_32
-    bit_toggle_cg    sdp_rdma_src_base_addr_high_tog_cg;
-`endif
-`ifdef NVDLA_SDP_BS_ENABLE
-    bit_toggle_cg    sdp_rdma_bs_base_addr_low_tog_cg;
-  `ifdef MEM_ADDR_WIDTH_GT_32
-    bit_toggle_cg    sdp_rdma_bs_base_addr_high_tog_cg;
-  `endif
-`endif
-`ifdef NVDLA_SDP_BN_ENABLE
-    bit_toggle_cg    sdp_rdma_bn_base_addr_low_tog_cg;
-  `ifdef MEM_ADDR_WIDTH_GT_32
-    bit_toggle_cg    sdp_rdma_bn_base_addr_high_tog_cg;
-  `endif
-`endif
-
-    // lut
+    bit_toggle_cg    tg_sdp_flds[string];
+    bit_toggle_cg    tg_sdp_rdma_flds[string];
 `ifdef NVDLA_SDP_LUT_ENABLE
-    bit_toggle_cg    sdp_lut_le_index_offset_tog_cg;
-    bit_toggle_cg    sdp_lut_le_index_select_tog_cg;
-    bit_toggle_cg    sdp_lut_lo_index_select_tog_cg;
-    bit_toggle_cg    sdp_lut_le_start_tog_cg;
-    bit_toggle_cg    sdp_lut_le_end_tog_cg;
-    bit_toggle_cg    sdp_lut_lo_start_tog_cg;
-    bit_toggle_cg    sdp_lut_lo_end_tog_cg;
-    bit_toggle_cg    sdp_lut_le_slope_uflow_scale_tog_cg;
-    bit_toggle_cg    sdp_lut_le_slope_oflow_scale_tog_cg;
-    bit_toggle_cg    sdp_lut_le_slope_uflow_shift_tog_cg;
-    bit_toggle_cg    sdp_lut_le_slope_oflow_shift_tog_cg;
-    bit_toggle_cg    sdp_lut_lo_slope_uflow_scale_tog_cg;
-    bit_toggle_cg    sdp_lut_lo_slope_oflow_scale_tog_cg;
-    bit_toggle_cg    sdp_lut_lo_slope_uflow_shift_tog_cg;
-    bit_toggle_cg    sdp_lut_lo_slope_oflow_shift_tog_cg;
+    bit_toggle_cg    tg_sdp_lut_flds[string];
 `endif
 
     function new(string name, ral_sys_top ral);
+        uvm_reg       regs[$];
+        uvm_reg_field flds[$];
+        string        reg_name;
         super.new(name, ral);
 
         sdp_cg      = new();
-`ifdef NVDLA_SDP_EW_ENABLE
+`ifdef NVDLA_SDP_LUT_ENABLE
         sdp_lut_cg  = new();
 `endif
         sdp_rdma_cg = new();
 
-        // sdp
-        sdp_width_tog_cg                    = new("sdp_width_tog_cg",                   ral.nvdla.NVDLA_SDP.D_DATA_CUBE_WIDTH.WIDTH.get_n_bits());
-        sdp_height_tog_cg                   = new("sdp_height_tog_cg",                  ral.nvdla.NVDLA_SDP.D_DATA_CUBE_HEIGHT.HEIGHT.get_n_bits());
-        sdp_channel_tog_cg                  = new("sdp_channel_tog_cg",                 ral.nvdla.NVDLA_SDP.D_DATA_CUBE_CHANNEL.CHANNEL.get_n_bits());
-        sdp_dst_base_addr_low_tog_cg        = new("sdp_dst_base_addr_low_tog_cg",       ral.nvdla.NVDLA_SDP.D_DST_BASE_ADDR_LOW.DST_BASE_ADDR_LOW.get_n_bits());
-`ifdef MEM_ADDR_WIDTH_GT_32
-        sdp_dst_base_addr_high_tog_cg       = new("sdp_dst_base_addr_high_tog_cg",      ral.nvdla.NVDLA_SDP.D_DST_BASE_ADDR_HIGH.DST_BASE_ADDR_HIGH.get_n_bits());
-`endif
-`ifdef NVDLA_BATCH_ENABLE
-        sdp_dst_batch_stride_tog_cg         = new("sdp_dst_batch_stride_tog_cg",        ral.nvdla.NVDLA_SDP.D_DST_BATCH_STRIDE.DST_BATCH_STRIDE.get_n_bits());
-`endif
-        sdp_cvt_offset_tog_cg               = new("sdp_cvt_offset_tog_cg",              ral.nvdla.NVDLA_SDP.D_CVT_OFFSET.CVT_OFFSET.get_n_bits());
-        sdp_cvt_scale_tog_cg                = new("sdp_cvt_scale_tog_cg",               ral.nvdla.NVDLA_SDP.D_CVT_SCALE.CVT_SCALE.get_n_bits());
-        sdp_cvt_shift_tog_cg                = new("sdp_cvt_shift_tog_cg",               ral.nvdla.NVDLA_SDP.D_CVT_SHIFT.CVT_SHIFT.get_n_bits());
-`ifdef NVDLA_SDP_BS_ENABLE
-        sdp_bs_alu_operand_tog_cg           = new("sdp_bs_alu_operand_tog_cg",          ral.nvdla.NVDLA_SDP.D_DP_BS_ALU_SRC_VALUE.BS_ALU_OPERAND.get_n_bits());
-        sdp_bs_alu_shift_value_tog_cg       = new("sdp_bs_alu_shift_value_tog_cg",      ral.nvdla.NVDLA_SDP.D_DP_BS_ALU_CFG.BS_ALU_SHIFT_VALUE.get_n_bits());
-        sdp_bs_mul_operand_tog_cg           = new("sdp_bs_mul_operand_tog_cg",          ral.nvdla.NVDLA_SDP.D_DP_BS_MUL_SRC_VALUE.BS_MUL_OPERAND.get_n_bits());
-        sdp_bs_mul_shift_value_tog_cg       = new("sdp_bs_mul_shift_value_tog_cg",      ral.nvdla.NVDLA_SDP.D_DP_BN_MUL_CFG.BN_MUL_SHIFT_VALUE.get_n_bits());
-`endif
-`ifdef NVDLA_SDP_BN_ENABLE
-        sdp_bn_alu_operand_tog_cg           = new("sdp_bn_alu_operand_tog_cg",          ral.nvdla.NVDLA_SDP.D_DP_BN_ALU_SRC_VALUE.BN_ALU_OPERAND.get_n_bits());
-        sdp_bn_alu_shift_value_tog_cg       = new("sdp_bn_alu_shift_value_tog_cg",      ral.nvdla.NVDLA_SDP.D_DP_BN_ALU_CFG.BN_ALU_SHIFT_VALUE.get_n_bits());
-        sdp_bn_mul_operand_tog_cg           = new("sdp_bn_mul_operand_tog_cg",          ral.nvdla.NVDLA_SDP.D_DP_BN_MUL_SRC_VALUE.BN_MUL_OPERAND.get_n_bits());
-        sdp_bn_mul_shift_value_tog_cg       = new("sdp_bn_mul_shift_value_tog_cg",      ral.nvdla.NVDLA_SDP.D_DP_BN_MUL_CFG.BN_MUL_SHIFT_VALUE.get_n_bits());
-`endif
-`ifdef NVDLA_SDP_EW_ENABLE
-        sdp_ew_alu_operand_tog_cg           = new("sdp_ew_alu_operand_tog_cg",          ral.nvdla.NVDLA_SDP.D_DP_EW_ALU_SRC_VALUE.EW_ALU_OPERAND.get_n_bits());
-        sdp_ew_alu_cvt_offset_tog_cg        = new("sdp_ew_alu_cvt_offset_tog_cg",       ral.nvdla.NVDLA_SDP.D_DP_EW_ALU_CVT_OFFSET_VALUE.EW_ALU_CVT_OFFSET.get_n_bits());
-        sdp_ew_alu_cvt_scale_tog_cg         = new("sdp_ew_alu_cvt_scale_tog_cg",        ral.nvdla.NVDLA_SDP.D_DP_EW_ALU_CVT_SCALE_VALUE.EW_ALU_CVT_SCALE.get_n_bits());
-        sdp_ew_alu_cvt_truncate_tog_cg      = new("sdp_ew_alu_cvt_truncate_tog_cg",     ral.nvdla.NVDLA_SDP.D_DP_EW_ALU_CVT_TRUNCATE_VALUE.EW_ALU_CVT_TRUNCATE.get_n_bits());
-        sdp_ew_mul_operand_tog_cg           = new("sdp_ew_mul_operand_tog_cg",          ral.nvdla.NVDLA_SDP.D_DP_EW_MUL_SRC_VALUE.EW_MUL_OPERAND.get_n_bits());
-        sdp_ew_mul_cvt_offset_tog_cg        = new("sdp_ew_mul_cvt_offset_tog_cg",       ral.nvdla.NVDLA_SDP.D_DP_EW_MUL_CVT_OFFSET_VALUE.EW_MUL_CVT_OFFSET.get_n_bits());
-        sdp_ew_mul_cvt_scale_tog_cg         = new("sdp_ew_mul_cvt_scale_tog_cg",        ral.nvdla.NVDLA_SDP.D_DP_EW_MUL_CVT_SCALE_VALUE.EW_MUL_CVT_SCALE.get_n_bits());
-        sdp_ew_mul_cvt_truncate_tog_cg      = new("sdp_ew_mul_cvt_truncate_tog_cg",     ral.nvdla.NVDLA_SDP.D_DP_EW_MUL_CVT_TRUNCATE_VALUE.EW_MUL_CVT_TRUNCATE.get_n_bits());
-        sdp_ew_truncate_tog_cg              = new("sdp_ew_truncate_tog_cg",             ral.nvdla.NVDLA_SDP.D_DP_EW_TRUNCATE_VALUE.EW_TRUNCATE.get_n_bits());
-`endif
-
-        // sdp_rdma
-        sdp_rdma_width_tog_cg               = new("sdp_rdma_width_tog_cg",              ral.nvdla.NVDLA_SDP_RDMA.D_DATA_CUBE_WIDTH.WIDTH.get_n_bits());
-        sdp_rdma_height_tog_cg              = new("sdp_rdma_height_tog_cg",             ral.nvdla.NVDLA_SDP_RDMA.D_DATA_CUBE_HEIGHT.HEIGHT.get_n_bits());
-        sdp_rdma_channel_tog_cg             = new("sdp_rdma_channel_tog_cg",            ral.nvdla.NVDLA_SDP_RDMA.D_DATA_CUBE_CHANNEL.CHANNEL.get_n_bits());
-        sdp_rdma_src_base_addr_low_tog_cg   = new("sdp_rdma_src_base_addr_low_tog_cg",  ral.nvdla.NVDLA_SDP_RDMA.D_SRC_BASE_ADDR_LOW.SRC_BASE_ADDR_LOW.get_n_bits());
-`ifdef MEM_ADDR_WIDTH_GT_32
-        sdp_rdma_src_base_addr_high_tog_cg  = new("sdp_rdma_src_base_addr_high_tog_cg", ral.nvdla.NVDLA_SDP_RDMA.D_SRC_BASE_ADDR_HIGH.SRC_BASE_ADDR_HIGH.get_n_bits());
-`endif
-`ifdef NVDLA_SDP_BS_ENABLE
-        sdp_rdma_bs_base_addr_low_tog_cg    = new("sdp_rdma_bs_base_addr_low_tog_cg",   ral.nvdla.NVDLA_SDP_RDMA.D_BS_BASE_ADDR_LOW.BS_BASE_ADDR_LOW.get_n_bits());
-    `ifdef MEM_ADDR_WIDTH_GT_32
-        sdp_rdma_bs_base_addr_high_tog_cg   = new("sdp_rdma_bs_base_addr_high_tog_cg",  ral.nvdla.NVDLA_SDP_RDMA.D_BS_BASE_ADDR_HIGH.BS_BASE_ADDR_HIGH.get_n_bits());
+        ral.nvdla.NVDLA_SDP_RDMA.get_registers(regs);
+        foreach(regs[i]) begin
+            if(regs[i].get_rights() == "RW") begin
+                regs[i].get_fields(flds);
+                foreach(flds[j]) begin
+                    name                   = flds[j].get_name();
+`ifndef MEM_ADDR_WIDTH_GT_32
+                    if(name == "SRC_BASE_ADDR_HIGH"  || 
+                       name == "BS_BASE_ADDR_HIGH"   || 
+                       name == "BN_BASE_ADDR_HIGH"   || 
+                       name == "EW_BASE_ADDR_HIGH") continue;
+    `ifndef NVDLA_SDP_BS_ENABLE
+                    if(name == "BS_BASE_ADDR_LOW") continue;
+    `endif
+    `ifndef NVDLA_SDP_BN_ENABLE
+                    if(name == "BN_BASE_ADDR_LOW") continue;
+    `endif
+    `ifndef NVDLA_SDP_EW_ENABLE
+                    if(name == "EW_BASE_ADDR_LOW") continue;
     `endif
 `endif
-`ifdef NVDLA_SDP_BN_ENABLE
-        sdp_rdma_bn_base_addr_low_tog_cg    = new("sdp_rdma_bn_base_addr_low_tog_cg",   ral.nvdla.NVDLA_SDP_RDMA.D_BN_BASE_ADDR_LOW.BN_BASE_ADDR_LOW.get_n_bits());
-    `ifdef MEM_ADDR_WIDTH_GT_32
-        sdp_rdma_bn_base_addr_high_tog_cg   = new("sdp_rdma_bn_base_addr_high_tog_cg",  ral.nvdla.NVDLA_SDP_RDMA.D_BN_BASE_ADDR_HIGH.BN_BASE_ADDR_HIGH.get_n_bits());
-    `endif
-`endif
+                    tg_sdp_rdma_flds[name] = new({"tg_sdp_rdma_",name.tolower()}, flds[j].get_n_bits());
+                end
+                flds.delete();
+            end
+        end
+        regs.delete();
 
-        // sdp lut
-`ifdef NVDLA_SDP_EW_ENABLE
-        sdp_lut_le_index_offset_tog_cg      = new("sdp_lut_le_index_offset_tog_cg",      ral.nvdla.NVDLA_SDP.S_LUT_INFO.LUT_LE_INDEX_OFFSET.get_n_bits());
-        sdp_lut_le_index_select_tog_cg      = new("sdp_lut_le_index_select_tog_cg",      ral.nvdla.NVDLA_SDP.S_LUT_INFO.LUT_LE_INDEX_SELECT.get_n_bits());
-        sdp_lut_lo_index_select_tog_cg      = new("sdp_lut_lo_index_select_tog_cg",      ral.nvdla.NVDLA_SDP.S_LUT_INFO.LUT_LO_INDEX_SELECT.get_n_bits());
-        sdp_lut_le_start_tog_cg             = new("sdp_lut_le_start_tog_cg",             ral.nvdla.NVDLA_SDP.S_LUT_LE_START.LUT_LE_START.get_n_bits());
-        sdp_lut_le_end_tog_cg               = new("sdp_lut_le_end_tog_cg",               ral.nvdla.NVDLA_SDP.S_LUT_LE_END.LUT_LE_END.get_n_bits());
-        sdp_lut_lo_start_tog_cg             = new("sdp_lut_lo_start_tog_cg",             ral.nvdla.NVDLA_SDP.S_LUT_LO_START.LUT_LO_START.get_n_bits());
-        sdp_lut_lo_end_tog_cg               = new("sdp_lut_lo_end_tog_cg",               ral.nvdla.NVDLA_SDP.S_LUT_LO_END.LUT_LO_END.get_n_bits());
-        sdp_lut_le_slope_uflow_scale_tog_cg = new("sdp_lut_le_slope_uflow_scale_tog_cg", ral.nvdla.NVDLA_SDP.S_LUT_LE_SLOPE_SCALE.LUT_LE_SLOPE_UFLOW_SCALE.get_n_bits());
-        sdp_lut_le_slope_oflow_scale_tog_cg = new("sdp_lut_le_slope_oflow_scale_tog_cg", ral.nvdla.NVDLA_SDP.S_LUT_LE_SLOPE_SCALE.LUT_LE_SLOPE_OFLOW_SCALE.get_n_bits());
-        sdp_lut_le_slope_uflow_shift_tog_cg = new("sdp_lut_le_slope_uflow_shift_tog_cg", ral.nvdla.NVDLA_SDP.S_LUT_LE_SLOPE_SHIFT.LUT_LE_SLOPE_UFLOW_SHIFT.get_n_bits());
-        sdp_lut_le_slope_oflow_shift_tog_cg = new("sdp_lut_le_slope_oflow_shift_tog_cg", ral.nvdla.NVDLA_SDP.S_LUT_LE_SLOPE_SHIFT.LUT_LE_SLOPE_OFLOW_SHIFT.get_n_bits());
-        sdp_lut_lo_slope_uflow_scale_tog_cg = new("sdp_lut_lo_slope_uflow_scale_tog_cg", ral.nvdla.NVDLA_SDP.S_LUT_LO_SLOPE_SCALE.LUT_LO_SLOPE_UFLOW_SCALE.get_n_bits());
-        sdp_lut_lo_slope_oflow_scale_tog_cg = new("sdp_lut_lo_slope_oflow_scale_tog_cg", ral.nvdla.NVDLA_SDP.S_LUT_LO_SLOPE_SCALE.LUT_LO_SLOPE_OFLOW_SCALE.get_n_bits());
-        sdp_lut_lo_slope_uflow_shift_tog_cg = new("sdp_lut_lo_slope_uflow_shift_tog_cg", ral.nvdla.NVDLA_SDP.S_LUT_LO_SLOPE_SHIFT.LUT_LO_SLOPE_UFLOW_SHIFT.get_n_bits());
-        sdp_lut_lo_slope_oflow_shift_tog_cg = new("sdp_lut_lo_slope_oflow_shift_tog_cg", ral.nvdla.NVDLA_SDP.S_LUT_LO_SLOPE_SHIFT.LUT_LO_SLOPE_OFLOW_SHIFT.get_n_bits());
+        ral.nvdla.NVDLA_SDP.get_registers(regs);
+        foreach(regs[i]) begin
+            if(regs[i].get_rights() == "RW") begin
+                reg_name = regs[i].get_name();
+                if(reg_name.substr(0,4) == "S_LUT") begin
+`ifdef NVDLA_SDP_LUT_ENABLE
+                    regs[i].get_fields(flds);
+                    foreach(flds[j]) begin
+                        name                  = flds[j].get_name();
+                        tg_sdp_lut_flds[name] = new({"tg_sdp_",name.tolower()}, flds[j].get_n_bits());
+                    end
 `endif
+                end
+                else begin
+`ifndef NVDLA_SDP_BS_ENABLE
+                    if(reg_name.substr(0,6) == "D_DP_BS") continue;
+`endif
+`ifndef NVDLA_SDP_BN_ENABLE
+                    if(reg_name.substr(0,6) == "D_DP_BN") continue;
+`endif
+`ifndef NVDLA_SDP_BN_ENABLE
+                    if(reg_name.substr(0,6) == "D_DP_EW") continue;
+`endif
+                    regs[i].get_fields(flds);
+                    foreach(flds[j]) begin
+                        name              = flds[j].get_name();
+`ifndef MEM_ADDR_WIDTH_GT_32
+                        if(name == "DST_BASE_ADDR_HIGH") continue;
+`endif
+`ifndef NVDLA_BATCH_ENABLE
+                        if(name == "DST_BATCH_STRIDE") continue;
+`endif
+                        tg_sdp_flds[name] = new({"tg_sdp_",name.tolower()}, flds[j].get_n_bits());
+                    end
+                end
+                flds.delete();
+            end
+        end
+        regs.delete();
     endfunction : new
 
     task sdp_sample();
@@ -174,7 +96,7 @@ class sdp_cov_pool extends nvdla_coverage_base;
         sdp_cg.sample();
     endtask : sdp_sample
 
-`ifdef NVDLA_SDP_EW_ENABLE
+`ifdef NVDLA_SDP_LUT_ENABLE
     task sdp_lut_sample();
         `uvm_info(tID, $sformatf("SDP LUT Sample Begin ..."), UVM_LOW)
         sdp_lut_toggle_sample();
@@ -189,142 +111,29 @@ class sdp_cov_pool extends nvdla_coverage_base;
     endtask : sdp_rdma_sample
 
     function void sdp_toggle_sample();
-        //cfg_src_addr_low_tog_cg.sample(ral.nvdla.NVDLA_BDMA.CFG_SRC_ADDR_LOW.V32.value);
-        sdp_width_tog_cg.sample(ral.nvdla.NVDLA_SDP.D_DATA_CUBE_WIDTH.WIDTH.value);
-        sdp_height_tog_cg.sample(ral.nvdla.NVDLA_SDP.D_DATA_CUBE_HEIGHT.HEIGHT.value);
-        sdp_channel_tog_cg.sample(ral.nvdla.NVDLA_SDP.D_DATA_CUBE_CHANNEL.CHANNEL.value);
-        if(ral.nvdla.NVDLA_SDP.D_FEATURE_MODE_CFG.OUTPUT_DST.value == 0) begin //  memory
-            sdp_dst_base_addr_low_tog_cg.sample(ral.nvdla.NVDLA_SDP.D_DST_BASE_ADDR_LOW.DST_BASE_ADDR_LOW.value);
-`ifdef MEM_ADDR_WIDTH_GT_32
-            sdp_dst_base_addr_high_tog_cg.sample(ral.nvdla.NVDLA_SDP.D_DST_BASE_ADDR_HIGH.DST_BASE_ADDR_HIGH.value);
-`endif
+        uvm_reg_field fld;
+        foreach(tg_sdp_flds[i]) begin
+            fld = ral.nvdla.NVDLA_SDP.get_field_by_name(i);
+            tg_sdp_flds[i].sample(fld.value);
         end
-`ifdef NVDLA_BATCH_ENABLE
-        if(ral.nvdla.NVDLA_SDP.D_FEATURE_MODE_CFG.FLYING_MODE.value == 0 && ral.nvdla.NVDLA_SDP.D_FEATURE_MODE_CFG.BATCH_NUMBER.value > 0) begin
-            // off-fly && multi-batch
-            sdp_dst_batch_stride_tog_cg.sample(ral.nvdla.NVDLA_SDP.D_DST_BATCH_STRIDE.DST_BATCH_STRIDE.value);
-        end
-`endif
-        sdp_cvt_offset_tog_cg.sample(ral.nvdla.NVDLA_SDP.D_CVT_OFFSET.CVT_OFFSET.value);
-        sdp_cvt_scale_tog_cg.sample(ral.nvdla.NVDLA_SDP.D_CVT_SCALE.CVT_SCALE.value);
-        if(ral.nvdla.NVDLA_SDP.D_DATA_FORMAT.PROC_PRECISION.value != 2) begin  // != FP16
-            sdp_cvt_shift_tog_cg.sample(ral.nvdla.NVDLA_SDP.D_CVT_SHIFT.CVT_SHIFT.value);
-        end
-`ifdef NVDLA_SDP_BS_ENABLE
-        if(ral.nvdla.NVDLA_SDP.D_DP_BS_CFG.BS_BYPASS.value == 0 && ral.nvdla.NVDLA_SDP.D_DP_BS_CFG.BS_ALU_BYPASS.value == 0) begin
-            if(ral.nvdla.NVDLA_SDP.D_DP_BS_ALU_CFG.BS_ALU_SRC.value == 0) begin
-                sdp_bs_alu_operand_tog_cg.sample(ral.nvdla.NVDLA_SDP.D_DP_BS_ALU_SRC_VALUE.BS_ALU_OPERAND.value);
-            end
-            sdp_bs_alu_shift_value_tog_cg.sample(ral.nvdla.NVDLA_SDP.D_DP_BS_ALU_CFG.BS_ALU_SHIFT_VALUE.value);
-        end
-        if(ral.nvdla.NVDLA_SDP.D_DP_BS_CFG.BS_BYPASS.value == 0 && ral.nvdla.NVDLA_SDP.D_DP_BS_CFG.BS_MUL_BYPASS.value == 0) begin
-            if(ral.nvdla.NVDLA_SDP.D_DP_BS_MUL_CFG.BS_MUL_SRC.value == 0) begin
-                sdp_bs_mul_operand_tog_cg.sample(ral.nvdla.NVDLA_SDP.D_DP_BS_MUL_SRC_VALUE.BS_MUL_OPERAND.value);
-            end
-            sdp_bs_mul_shift_value_tog_cg.sample(ral.nvdla.NVDLA_SDP.D_DP_BS_MUL_CFG.BS_MUL_SHIFT_VALUE.value);
-        end
-`endif
-`ifdef NVDLA_SDP_BN_ENABLE
-        if(ral.nvdla.NVDLA_SDP.D_DP_BN_CFG.BN_BYPASS.value == 0 && ral.nvdla.NVDLA_SDP.D_DP_BN_CFG.BN_ALU_BYPASS.value == 0) begin
-            if(ral.nvdla.NVDLA_SDP.D_DP_BN_ALU_CFG.BN_ALU_SRC.value == 0) begin
-                sdp_bn_alu_operand_tog_cg.sample(ral.nvdla.NVDLA_SDP.D_DP_BN_ALU_SRC_VALUE.BN_ALU_OPERAND.value);
-            end
-            sdp_bn_alu_shift_value_tog_cg.sample(ral.nvdla.NVDLA_SDP.D_DP_BN_ALU_CFG.BN_ALU_SHIFT_VALUE.value);
-        end
-        if(ral.nvdla.NVDLA_SDP.D_DP_BN_CFG.BN_BYPASS.value == 0 && ral.nvdla.NVDLA_SDP.D_DP_BN_CFG.BN_MUL_BYPASS.value == 0) begin
-            if(ral.nvdla.NVDLA_SDP.D_DP_BN_MUL_CFG.BN_MUL_SRC.value == 0) begin
-                sdp_bn_mul_operand_tog_cg.sample(ral.nvdla.NVDLA_SDP.D_DP_BN_MUL_SRC_VALUE.BN_MUL_OPERAND.value);
-            end
-            sdp_bn_mul_shift_value_tog_cg.sample(ral.nvdla.NVDLA_SDP.D_DP_BN_MUL_CFG.BN_MUL_SHIFT_VALUE.value);
-        end
-`endif
-`ifdef NVDLA_SDP_EW_ENABLE
-        if(ral.nvdla.NVDLA_SDP.D_DP_EW_CFG.EW_BYPASS.value == 0 && ral.nvdla.NVDLA_SDP.D_DP_EW_CFG.EW_ALU_BYPASS.value == 0) begin
-            if(ral.nvdla.NVDLA_SDP.D_DP_EW_ALU_CFG.EW_ALU_SRC.value == 0) begin
-                sdp_ew_alu_operand_tog_cg.sample(ral.nvdla.NVDLA_SDP.D_DP_EW_ALU_SRC_VALUE.EW_ALU_OPERAND.value);
-            end
-            if(ral.nvdla.NVDLA_SDP.D_DP_EW_ALU_CFG.EW_ALU_CVT_BYPASS.value == 0) begin
-                sdp_ew_alu_cvt_offset_tog_cg.sample(ral.nvdla.NVDLA_SDP.D_DP_EW_ALU_CVT_OFFSET_VALUE.EW_ALU_CVT_OFFSET.value);
-                sdp_ew_alu_cvt_scale_tog_cg.sample(ral.nvdla.NVDLA_SDP.D_DP_EW_ALU_CVT_SCALE_VALUE.EW_ALU_CVT_SCALE.value);
-                if(ral.nvdla.NVDLA_SDP.D_DATA_FORMAT.PROC_PRECISION.value != 2) begin  // != FP16
-                    sdp_ew_alu_cvt_truncate_tog_cg.sample(ral.nvdla.NVDLA_SDP.D_DP_EW_ALU_CVT_TRUNCATE_VALUE.EW_ALU_CVT_TRUNCATE.value);
-                end
-            end
-        end
-        if(ral.nvdla.NVDLA_SDP.D_DP_EW_CFG.EW_BYPASS.value == 0 && ral.nvdla.NVDLA_SDP.D_DP_EW_CFG.EW_MUL_BYPASS.value == 0) begin
-            if(ral.nvdla.NVDLA_SDP.D_DP_EW_MUL_CFG.EW_MUL_SRC.value == 0) begin
-                sdp_ew_mul_operand_tog_cg.sample(ral.nvdla.NVDLA_SDP.D_DP_EW_MUL_SRC_VALUE.EW_MUL_OPERAND.value);
-            end
-            if(ral.nvdla.NVDLA_SDP.D_DP_EW_MUL_CFG.EW_MUL_CVT_BYPASS.value == 0) begin
-                sdp_ew_mul_cvt_offset_tog_cg.sample(ral.nvdla.NVDLA_SDP.D_DP_EW_MUL_CVT_OFFSET_VALUE.EW_MUL_CVT_OFFSET.value);
-                sdp_ew_mul_cvt_scale_tog_cg.sample(ral.nvdla.NVDLA_SDP.D_DP_EW_MUL_CVT_SCALE_VALUE.EW_MUL_CVT_SCALE.value);
-                if(ral.nvdla.NVDLA_SDP.D_DATA_FORMAT.PROC_PRECISION.value != 2) begin  // != FP16
-                    sdp_ew_mul_cvt_truncate_tog_cg.sample(ral.nvdla.NVDLA_SDP.D_DP_EW_MUL_CVT_TRUNCATE_VALUE.EW_MUL_CVT_TRUNCATE.value);
-                end
-            end
-        end
-        if(ral.nvdla.NVDLA_SDP.D_DP_EW_CFG.EW_BYPASS.value == 0) begin
-            sdp_ew_truncate_tog_cg.sample(ral.nvdla.NVDLA_SDP.D_DP_EW_TRUNCATE_VALUE.EW_TRUNCATE.value);
-        end
-`endif
     endfunction : sdp_toggle_sample
 
-`ifdef NVDLA_SDP_EW_ENABLE
+`ifdef NVDLA_SDP_LUT_ENABLE
     function void sdp_lut_toggle_sample();
-        if(ral.nvdla.NVDLA_SDP.S_LUT_CFG.LUT_LE_FUNCTION.value == 0) begin // le table && exponent function
-            sdp_lut_le_index_offset_tog_cg.sample(ral.nvdla.NVDLA_SDP.S_LUT_INFO.LUT_LE_INDEX_OFFSET.value);
+        uvm_reg_field fld;
+        foreach(tg_sdp_lut_flds[i]) begin
+            fld = ral.nvdla.NVDLA_SDP.get_field_by_name(i);
+            tg_sdp_lut_flds[i].sample(fld.value);
         end
-        if(ral.nvdla.NVDLA_SDP.S_LUT_CFG.LUT_LE_FUNCTION.value == 1) begin // le table && linear function
-            sdp_lut_le_index_select_tog_cg.sample(ral.nvdla.NVDLA_SDP.S_LUT_INFO.LUT_LE_INDEX_SELECT.value);
-        end
-        sdp_lut_lo_index_select_tog_cg.sample(ral.nvdla.NVDLA_SDP.S_LUT_INFO.LUT_LO_INDEX_SELECT.value);
-        sdp_lut_le_start_tog_cg.sample(ral.nvdla.NVDLA_SDP.S_LUT_LE_START.LUT_LE_START.value);
-        sdp_lut_le_end_tog_cg.sample(ral.nvdla.NVDLA_SDP.S_LUT_LE_END.LUT_LE_END.value);
-        sdp_lut_lo_start_tog_cg.sample(ral.nvdla.NVDLA_SDP.S_LUT_LO_START.LUT_LO_START.value);
-        sdp_lut_lo_end_tog_cg.sample(ral.nvdla.NVDLA_SDP.S_LUT_LO_END.LUT_LO_END.value);
-        sdp_lut_le_slope_uflow_scale_tog_cg.sample(ral.nvdla.NVDLA_SDP.S_LUT_LE_SLOPE_SCALE.LUT_LE_SLOPE_UFLOW_SCALE.value);
-        sdp_lut_le_slope_oflow_scale_tog_cg.sample(ral.nvdla.NVDLA_SDP.S_LUT_LE_SLOPE_SCALE.LUT_LE_SLOPE_OFLOW_SCALE.value);
-        sdp_lut_le_slope_uflow_shift_tog_cg.sample(ral.nvdla.NVDLA_SDP.S_LUT_LE_SLOPE_SHIFT.LUT_LE_SLOPE_UFLOW_SHIFT.value);
-        sdp_lut_le_slope_oflow_shift_tog_cg.sample(ral.nvdla.NVDLA_SDP.S_LUT_LE_SLOPE_SHIFT.LUT_LE_SLOPE_OFLOW_SHIFT.value);
-        sdp_lut_lo_slope_uflow_scale_tog_cg.sample(ral.nvdla.NVDLA_SDP.S_LUT_LO_SLOPE_SCALE.LUT_LO_SLOPE_UFLOW_SCALE.value);
-        sdp_lut_lo_slope_oflow_scale_tog_cg.sample(ral.nvdla.NVDLA_SDP.S_LUT_LO_SLOPE_SCALE.LUT_LO_SLOPE_OFLOW_SCALE.value);
-        sdp_lut_lo_slope_uflow_shift_tog_cg.sample(ral.nvdla.NVDLA_SDP.S_LUT_LO_SLOPE_SHIFT.LUT_LO_SLOPE_UFLOW_SHIFT.value);
-        sdp_lut_lo_slope_oflow_shift_tog_cg.sample(ral.nvdla.NVDLA_SDP.S_LUT_LO_SLOPE_SHIFT.LUT_LO_SLOPE_OFLOW_SHIFT.value);
     endfunction : sdp_lut_toggle_sample
 `endif
 
     function void sdp_rdma_toggle_sample();
-        sdp_rdma_width_tog_cg.sample(ral.nvdla.NVDLA_SDP_RDMA.D_DATA_CUBE_WIDTH.WIDTH.value);
-        sdp_rdma_height_tog_cg.sample(ral.nvdla.NVDLA_SDP_RDMA.D_DATA_CUBE_HEIGHT.HEIGHT.value);
-        sdp_rdma_channel_tog_cg.sample(ral.nvdla.NVDLA_SDP_RDMA.D_DATA_CUBE_CHANNEL.CHANNEL.value);
-        if(ral.nvdla.NVDLA_SDP_RDMA.D_FEATURE_MODE_CFG.FLYING_MODE.value == 0) begin // off-fly
-            sdp_rdma_src_base_addr_low_tog_cg.sample(ral.nvdla.NVDLA_SDP_RDMA.D_SRC_BASE_ADDR_LOW.SRC_BASE_ADDR_LOW.value);
-`ifdef MEM_ADDR_WIDTH_GT_32
-            sdp_rdma_src_base_addr_high_tog_cg.sample(ral.nvdla.NVDLA_SDP_RDMA.D_SRC_BASE_ADDR_HIGH.SRC_BASE_ADDR_HIGH.value);
-`endif
+        uvm_reg_field fld;
+        foreach(tg_sdp_rdma_flds[i]) begin
+            fld = ral.nvdla.NVDLA_SDP_RDMA.get_field_by_name(i);
+            tg_sdp_rdma_flds[i].sample(fld.value);
         end
-        if(ral.nvdla.NVDLA_SDP_RDMA.D_FEATURE_MODE_CFG.FLYING_MODE.value == 0) begin // off-fly
-            sdp_rdma_src_base_addr_low_tog_cg.sample(ral.nvdla.NVDLA_SDP_RDMA.D_SRC_BASE_ADDR_LOW.SRC_BASE_ADDR_LOW.value);
-`ifdef MEM_ADDR_WIDTH_GT_32
-            sdp_rdma_src_base_addr_high_tog_cg.sample(ral.nvdla.NVDLA_SDP_RDMA.D_SRC_BASE_ADDR_HIGH.SRC_BASE_ADDR_HIGH.value);
-`endif
-        end
-`ifdef NVDLA_SDP_BS_ENABLE
-        if(ral.nvdla.NVDLA_SDP_RDMA.D_BRDMA_CFG.BRDMA_DISABLE.value == 0) begin
-            sdp_rdma_bs_base_addr_low_tog_cg.sample(ral.nvdla.NVDLA_SDP_RDMA.D_BS_BASE_ADDR_LOW.BS_BASE_ADDR_LOW.value);
-    `ifdef MEM_ADDR_WIDTH_GT_32
-            sdp_rdma_bs_base_addr_high_tog_cg.sample(ral.nvdla.NVDLA_SDP_RDMA.D_BS_BASE_ADDR_HIGH.BS_BASE_ADDR_HIGH.value);
-    `endif
-        end
-`endif
-`ifdef NVDLA_SDP_BN_ENABLE
-        if(ral.nvdla.NVDLA_SDP_RDMA.D_NRDMA_CFG.NRDMA_DISABLE.value == 0) begin
-            sdp_rdma_bn_base_addr_low_tog_cg.sample(ral.nvdla.NVDLA_SDP_RDMA.D_BN_BASE_ADDR_LOW.BN_BASE_ADDR_LOW.value);
-    `ifdef MEM_ADDR_WIDTH_GT_32
-            sdp_rdma_bn_base_addr_high_tog_cg.sample(ral.nvdla.NVDLA_SDP_RDMA.D_BN_BASE_ADDR_HIGH.BN_BASE_ADDR_HIGH.value);
-    `endif
-        end
-`endif
     endfunction : sdp_rdma_toggle_sample
 
     covergroup sdp_cg;
@@ -730,7 +539,7 @@ class sdp_cov_pool extends nvdla_coverage_base;
 `endif // NVDLA_SDP_EW_ENABLE
     endgroup : sdp_cg
 
-`ifdef NVDLA_SDP_EW_ENABLE
+`ifdef NVDLA_SDP_LUT_ENABLE
     covergroup sdp_lut_cg;
         cp_lut_table_id:        coverpoint ral.nvdla.NVDLA_SDP.S_LUT_ACCESS_CFG.LUT_TABLE_ID.value {
             bins le = {0};

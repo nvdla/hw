@@ -2,90 +2,47 @@
 
 class conv_cov_pool extends nvdla_coverage_base;
 
-    bit_toggle_cg    cc_datain_width_tog_cg;
-    bit_toggle_cg    cc_datain_height_tog_cg;
-    bit_toggle_cg    cc_datain_channel_tog_cg;
-    bit_toggle_cg    cc_datain_width_ext_tog_cg;
-    bit_toggle_cg    cc_datain_height_ext_tog_cg;
-    bit_toggle_cg    cc_datain_channel_ext_tog_cg;
-    bit_toggle_cg    cc_datain_addr_low_0_tog_cg;
-    bit_toggle_cg    cc_weight_addr_low_tog_cg;
-    bit_toggle_cg    cc_wgs_addr_low_tog_cg;
-    bit_toggle_cg    cc_wmb_addr_low_tog_cg;
-`ifdef MEM_ADDR_WIDTH_GT_32
-    bit_toggle_cg    cc_datain_addr_high_0_tog_cg;
-    bit_toggle_cg    cc_weight_addr_high_tog_cg;
-    bit_toggle_cg    cc_wgs_addr_high_tog_cg;
-    bit_toggle_cg    cc_wmb_addr_high_tog_cg;
-`endif
-    bit_toggle_cg    cc_batch_stride_tog_cg;
-    bit_toggle_cg    cc_wmb_bytes_tog_cg;
-    bit_toggle_cg    cc_weight_width_ext_tog_cg;
-    bit_toggle_cg    cc_weight_height_ext_tog_cg;
-    bit_toggle_cg    cc_weight_channel_ext_tog_cg;
-    bit_toggle_cg    cc_weight_kernel_tog_cg;
-    bit_toggle_cg    cc_weight_bytes_tog_cg;
-    bit_toggle_cg    cc_byte_per_kernel_tog_cg;
-    bit_toggle_cg    cc_mean_ry_tog_cg;
-    bit_toggle_cg    cc_mean_gu_tog_cg;
-    bit_toggle_cg    cc_mean_bv_tog_cg;
-    bit_toggle_cg    cc_mean_ax_tog_cg;
-    bit_toggle_cg    cc_pad_value_tog_cg;
-    bit_toggle_cg    cc_entries_tog_cg;
-    bit_toggle_cg    cc_grains_tog_cg;
-    bit_toggle_cg    cc_rls_slices_tog_cg;
-    bit_toggle_cg    cc_dataout_width_tog_cg;
-    bit_toggle_cg    cc_dataout_height_tog_cg;
-    bit_toggle_cg    cc_dataout_channel_tog_cg;
-    bit_toggle_cg    cc_atomics_tog_cg;
-    bit_toggle_cg    cc_cvt_truncate_tog_cg;
-    bit_toggle_cg    cc_cvt_offset_tog_cg;
-    bit_toggle_cg    cc_cvt_scale_tog_cg;
+    bit_toggle_cg    tg_cdma_flds[string];
+    bit_toggle_cg    tg_csc_flds[string];
 
     function new(string name, ral_sys_top ral);
+        uvm_reg       regs[$];
+        uvm_reg_field flds[$];
         super.new(name, ral);
 
         conv_cg  = new();
-
-        cc_datain_width_tog_cg       = new("cc_datain_width_tog_cg",       ral.nvdla.NVDLA_CDMA.D_DATAIN_SIZE_0.DATAIN_WIDTH.get_n_bits());
-        cc_datain_height_tog_cg      = new("cc_datain_height_tog_cg",      ral.nvdla.NVDLA_CDMA.D_DATAIN_SIZE_0.DATAIN_HEIGHT.get_n_bits());
-        cc_datain_channel_tog_cg     = new("cc_datain_channel_tog_cg",     ral.nvdla.NVDLA_CDMA.D_DATAIN_SIZE_1.DATAIN_CHANNEL.get_n_bits());
-        cc_datain_width_ext_tog_cg   = new("cc_datain_width_ext_tog_cg",   ral.nvdla.NVDLA_CSC.D_DATAIN_SIZE_EXT_0.DATAIN_WIDTH_EXT.get_n_bits());
-        cc_datain_height_ext_tog_cg  = new("cc_datain_height_ext_tog_cg",  ral.nvdla.NVDLA_CSC.D_DATAIN_SIZE_EXT_0.DATAIN_HEIGHT_EXT.get_n_bits());
-        cc_datain_channel_ext_tog_cg = new("cc_datain_channel_ext_tog_cg", ral.nvdla.NVDLA_CSC.D_DATAIN_SIZE_EXT_1.DATAIN_CHANNEL_EXT.get_n_bits());
-        cc_datain_addr_low_0_tog_cg  = new("cc_datain_addr_low_0_tog_cg",  ral.nvdla.NVDLA_CDMA.D_DAIN_ADDR_LOW_0.DATAIN_ADDR_LOW_0.get_n_bits());
-        cc_weight_addr_low_tog_cg    = new("cc_weight_addr_low_tog_cg",    ral.nvdla.NVDLA_CDMA.D_WEIGHT_ADDR_LOW.WEIGHT_ADDR_LOW.get_n_bits());
-        cc_wgs_addr_low_tog_cg       = new("cc_wgs_addr_low_tog_cg",       ral.nvdla.NVDLA_CDMA.D_WGS_ADDR_LOW.WGS_ADDR_LOW.get_n_bits());
-        cc_wmb_addr_low_tog_cg       = new("cc_wmb_addr_low_tog_cg",       ral.nvdla.NVDLA_CDMA.D_WMB_ADDR_LOW.WMB_ADDR_LOW.get_n_bits());
-`ifdef MEM_ADDR_WIDTH_GT_32
-        cc_datain_addr_high_0_tog_cg = new("cc_datain_addr_high_0_tog_cg", ral.nvdla.NVDLA_CDMA.D_DAIN_ADDR_HIGH_0.DATAIN_ADDR_HIGH_0.get_n_bits());
-        cc_weight_addr_high_tog_cg   = new("cc_weight_addr_high_tog_cg",   ral.nvdla.NVDLA_CDMA.D_WEIGHT_ADDR_HIGH.WEIGHT_ADDR_HIGH.get_n_bits());
-        cc_wgs_addr_high_tog_cg      = new("cc_wgs_addr_high_tog_cg",      ral.nvdla.NVDLA_CDMA.D_WGS_ADDR_HIGH.WGS_ADDR_HIGH.get_n_bits());
-        cc_wmb_addr_high_tog_cg      = new("cc_wmb_addr_high_tog_cg",      ral.nvdla.NVDLA_CDMA.D_WMB_ADDR_HIGH.WMB_ADDR_HIGH.get_n_bits());
+        ral.nvdla.NVDLA_CDMA.get_registers(regs);
+        foreach(regs[i]) begin
+            if(regs[i].get_rights() == "RW") begin
+                regs[i].get_fields(flds);
+                foreach(flds[j]) begin
+                    name               = flds[j].get_name();
+`ifndef MEM_ADDR_WIDTH_GT_32
+                    if(name == "DATAIN_ADDR_HIGH_0" || 
+                       name == "WEIGHT_ADDR_HIGH"   || 
+                       name == "WGS_ADDR_HIGH"      || 
+                       name == "WMB_ADDR_HIGH") continue;
 `endif
-        cc_batch_stride_tog_cg       = new("cc_batch_stride_tog_cg",       ral.nvdla.NVDLA_CDMA.D_BATCH_STRIDE.BATCH_STRIDE.get_n_bits());
-        cc_wmb_bytes_tog_cg          = new("cc_wmb_bytes_tog_cg",          ral.nvdla.NVDLA_CDMA.D_WMB_BYTES.WMB_BYTES.get_n_bits());
-        cc_weight_width_ext_tog_cg   = new("cc_weight_width_ext_tog_cg",   ral.nvdla.NVDLA_CSC.D_WEIGHT_SIZE_EXT_0.WEIGHT_WIDTH_EXT.get_n_bits());
-        cc_weight_height_ext_tog_cg  = new("cc_weight_height_ext_tog_cg",  ral.nvdla.NVDLA_CSC.D_WEIGHT_SIZE_EXT_0.WEIGHT_HEIGHT_EXT.get_n_bits());
-        cc_weight_channel_ext_tog_cg = new("cc_weight_channel_ext_tog_cg", ral.nvdla.NVDLA_CSC.D_WEIGHT_SIZE_EXT_1.WEIGHT_CHANNEL_EXT.get_n_bits());
-        cc_weight_kernel_tog_cg      = new("cc_weight_kernel_tog_cg",      ral.nvdla.NVDLA_CSC.D_WEIGHT_SIZE_EXT_1.WEIGHT_KERNEL.get_n_bits());
-        cc_weight_bytes_tog_cg       = new("cc_weight_bytes_tog_cg",       ral.nvdla.NVDLA_CSC.D_WEIGHT_BYTES.WEIGHT_BYTES.get_n_bits());
-        cc_byte_per_kernel_tog_cg    = new("cc_byte_per_kernel_tog_cg",    ral.nvdla.NVDLA_CDMA.D_WEIGHT_SIZE_0.BYTE_PER_KERNEL.get_n_bits());
-        cc_mean_ry_tog_cg            = new("cc_mean_ry_tog_cg",            ral.nvdla.NVDLA_CDMA.D_MEAN_GLOBAL_0.MEAN_RY.get_n_bits());
-        cc_mean_gu_tog_cg            = new("cc_mean_gu_tog_cg",            ral.nvdla.NVDLA_CDMA.D_MEAN_GLOBAL_0.MEAN_GU.get_n_bits());
-        cc_mean_bv_tog_cg            = new("cc_mean_bv_tog_cg",            ral.nvdla.NVDLA_CDMA.D_MEAN_GLOBAL_1.MEAN_BV.get_n_bits());
-        cc_mean_ax_tog_cg            = new("cc_mean_ax_tog_cg",            ral.nvdla.NVDLA_CDMA.D_MEAN_GLOBAL_1.MEAN_BV.get_n_bits());
-        cc_pad_value_tog_cg          = new("cc_pad_value_tog_cg",          ral.nvdla.NVDLA_CDMA.D_ZERO_PADDING_VALUE.PAD_VALUE.get_n_bits());
-        cc_entries_tog_cg            = new("cc_entries_tog_cg",            ral.nvdla.NVDLA_CDMA.D_ENTRY_PER_SLICE.ENTRIES.get_n_bits());
-        cc_grains_tog_cg             = new("cc_grains_tog_cg",             ral.nvdla.NVDLA_CDMA.D_FETCH_GRAIN.GRAINS.get_n_bits());
-        cc_rls_slices_tog_cg         = new("cc_rls_slices_tog_cg",         ral.nvdla.NVDLA_CSC.D_RELEASE.RLS_SLICES.get_n_bits());
-        cc_dataout_width_tog_cg      = new("cc_dataout_width_tog_cg",      ral.nvdla.NVDLA_CSC.D_DATAOUT_SIZE_0.DATAOUT_WIDTH.get_n_bits());
-        cc_dataout_height_tog_cg     = new("cc_dataout_height_tog_cg",     ral.nvdla.NVDLA_CSC.D_DATAOUT_SIZE_0.DATAOUT_HEIGHT.get_n_bits());
-        cc_dataout_channel_tog_cg    = new("cc_dataout_channel_tog_cg",    ral.nvdla.NVDLA_CSC.D_DATAOUT_SIZE_1.DATAOUT_CHANNEL.get_n_bits());
-        cc_atomics_tog_cg            = new("cc_atomics_tog_cg",            ral.nvdla.NVDLA_CSC.D_ATOMICS.ATOMICS.get_n_bits());
-        cc_cvt_truncate_tog_cg       = new("cc_cvt_truncate_tog_cg",       ral.nvdla.NVDLA_CDMA.D_CVT_CFG.CVT_TRUNCATE.get_n_bits());
-        cc_cvt_offset_tog_cg         = new("cc_cvt_offset_tog_cg",         ral.nvdla.NVDLA_CDMA.D_CVT_OFFSET.CVT_OFFSET.get_n_bits());
-        cc_cvt_scale_tog_cg          = new("cc_cvt_scale_tog_cg",          ral.nvdla.NVDLA_CDMA.D_CVT_SCALE.CVT_SCALE.get_n_bits());
+                    tg_cdma_flds[name] = new({"tg_cdma_",name.tolower()}, flds[j].get_n_bits());
+                end
+                flds.delete();
+            end
+        end
+        regs.delete();
+
+        ral.nvdla.NVDLA_CSC.get_registers(regs);
+        foreach(regs[i]) begin
+            if(regs[i].get_rights() == "RW") begin
+                regs[i].get_fields(flds);
+                foreach(flds[j]) begin
+                    name              = flds[j].get_name();
+                    tg_csc_flds[name] = new({"tg_csc_",name.tolower()}, flds[j].get_n_bits());
+                end
+                flds.delete();
+            end
+        end
+        regs.delete();
+
     endfunction : new
 
     task sample();
@@ -95,45 +52,15 @@ class conv_cov_pool extends nvdla_coverage_base;
     endtask : sample
 
     function void conv_toggle_sample();
-        cc_datain_width_tog_cg.sample(ral.nvdla.NVDLA_CDMA.D_DATAIN_SIZE_0.DATAIN_WIDTH.value);
-        cc_datain_height_tog_cg.sample(ral.nvdla.NVDLA_CDMA.D_DATAIN_SIZE_0.DATAIN_HEIGHT.value);
-        cc_datain_channel_tog_cg.sample(ral.nvdla.NVDLA_CDMA.D_DATAIN_SIZE_1.DATAIN_CHANNEL.value);
-        cc_datain_width_ext_tog_cg.sample(ral.nvdla.NVDLA_CSC.D_DATAIN_SIZE_EXT_0.DATAIN_WIDTH_EXT.value);
-        cc_datain_height_ext_tog_cg.sample(ral.nvdla.NVDLA_CSC.D_DATAIN_SIZE_EXT_0.DATAIN_HEIGHT_EXT.value);
-        cc_datain_channel_ext_tog_cg.sample(ral.nvdla.NVDLA_CSC.D_DATAIN_SIZE_EXT_1.DATAIN_CHANNEL_EXT.value);
-        cc_datain_addr_low_0_tog_cg.sample(ral.nvdla.NVDLA_CDMA.D_DAIN_ADDR_LOW_0.DATAIN_ADDR_LOW_0.value);
-        cc_weight_addr_low_tog_cg.sample(ral.nvdla.NVDLA_CDMA.D_WEIGHT_ADDR_LOW.WEIGHT_ADDR_LOW.value);
-        cc_wgs_addr_low_tog_cg.sample(ral.nvdla.NVDLA_CDMA.D_WGS_ADDR_LOW.WGS_ADDR_LOW.value);
-        cc_wmb_addr_low_tog_cg.sample(ral.nvdla.NVDLA_CDMA.D_WMB_ADDR_LOW.WMB_ADDR_LOW.value);
-`ifdef MEM_ADDR_WIDTH_GT_32
-        cc_datain_addr_high_0_tog_cg.sample(ral.nvdla.NVDLA_CDMA.D_DAIN_ADDR_HIGH_0.DATAIN_ADDR_HIGH_0.value);
-        cc_weight_addr_high_tog_cg.sample(ral.nvdla.NVDLA_CDMA.D_WEIGHT_ADDR_HIGH.WEIGHT_ADDR_HIGH.value);
-        cc_wgs_addr_high_tog_cg.sample(ral.nvdla.NVDLA_CDMA.D_WGS_ADDR_HIGH.WGS_ADDR_HIGH.value);
-        cc_wmb_addr_high_tog_cg.sample(ral.nvdla.NVDLA_CDMA.D_WMB_ADDR_HIGH.WMB_ADDR_HIGH.value);
-`endif
-        cc_batch_stride_tog_cg.sample(ral.nvdla.NVDLA_CDMA.D_BATCH_STRIDE.BATCH_STRIDE.value);
-        cc_wmb_bytes_tog_cg.sample(ral.nvdla.NVDLA_CDMA.D_WMB_BYTES.WMB_BYTES.value);
-        cc_weight_width_ext_tog_cg.sample(ral.nvdla.NVDLA_CSC.D_WEIGHT_SIZE_EXT_0.WEIGHT_WIDTH_EXT.value);
-        cc_weight_height_ext_tog_cg.sample(ral.nvdla.NVDLA_CSC.D_WEIGHT_SIZE_EXT_0.WEIGHT_HEIGHT_EXT.value);
-        cc_weight_channel_ext_tog_cg.sample(ral.nvdla.NVDLA_CSC.D_WEIGHT_SIZE_EXT_1.WEIGHT_CHANNEL_EXT.value);
-        cc_weight_kernel_tog_cg.sample(ral.nvdla.NVDLA_CSC.D_WEIGHT_SIZE_EXT_1.WEIGHT_KERNEL.value);
-        cc_weight_bytes_tog_cg.sample(ral.nvdla.NVDLA_CSC.D_WEIGHT_BYTES.WEIGHT_BYTES.value);
-        cc_byte_per_kernel_tog_cg.sample(ral.nvdla.NVDLA_CDMA.D_WEIGHT_SIZE_0.BYTE_PER_KERNEL.value);
-        cc_mean_ry_tog_cg.sample(ral.nvdla.NVDLA_CDMA.D_MEAN_GLOBAL_0.MEAN_RY.value);
-        cc_mean_gu_tog_cg.sample(ral.nvdla.NVDLA_CDMA.D_MEAN_GLOBAL_0.MEAN_GU.value);
-        cc_mean_bv_tog_cg.sample(ral.nvdla.NVDLA_CDMA.D_MEAN_GLOBAL_1.MEAN_BV.value);
-        cc_mean_ax_tog_cg.sample(ral.nvdla.NVDLA_CDMA.D_MEAN_GLOBAL_1.MEAN_BV.value);
-        cc_pad_value_tog_cg.sample(ral.nvdla.NVDLA_CDMA.D_ZERO_PADDING_VALUE.PAD_VALUE.value);
-        cc_entries_tog_cg.sample(ral.nvdla.NVDLA_CDMA.D_ENTRY_PER_SLICE.ENTRIES.value);
-        cc_grains_tog_cg.sample(ral.nvdla.NVDLA_CDMA.D_FETCH_GRAIN.GRAINS.value);
-        cc_rls_slices_tog_cg.sample(ral.nvdla.NVDLA_CSC.D_RELEASE.RLS_SLICES.value);
-        cc_dataout_width_tog_cg.sample(ral.nvdla.NVDLA_CSC.D_DATAOUT_SIZE_0.DATAOUT_WIDTH.value);
-        cc_dataout_height_tog_cg.sample(ral.nvdla.NVDLA_CSC.D_DATAOUT_SIZE_0.DATAOUT_HEIGHT.value);
-        cc_dataout_channel_tog_cg.sample(ral.nvdla.NVDLA_CSC.D_DATAOUT_SIZE_1.DATAOUT_CHANNEL.value);
-        cc_atomics_tog_cg.sample(ral.nvdla.NVDLA_CSC.D_ATOMICS.ATOMICS.value);
-        cc_cvt_truncate_tog_cg.sample(ral.nvdla.NVDLA_CDMA.D_CVT_CFG.CVT_TRUNCATE.value);
-        cc_cvt_offset_tog_cg.sample(ral.nvdla.NVDLA_CDMA.D_CVT_OFFSET.CVT_OFFSET.value);
-        cc_cvt_scale_tog_cg.sample(ral.nvdla.NVDLA_CDMA.D_CVT_SCALE.CVT_SCALE.value);
+        uvm_reg_field fld;
+        foreach(tg_cdma_flds[i]) begin
+            fld = ral.nvdla.NVDLA_CDMA.get_field_by_name(i);
+            tg_cdma_flds[i].sample(fld.value);
+        end
+        foreach(tg_csc_flds[i]) begin
+            fld = ral.nvdla.NVDLA_CSC.get_field_by_name(i);
+            tg_csc_flds[i].sample(fld.value);
+        end
     endfunction : conv_toggle_sample
 
 

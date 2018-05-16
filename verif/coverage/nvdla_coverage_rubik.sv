@@ -8,12 +8,7 @@ class rubik_cov_pool extends nvdla_coverage_base;
     //:| spec2cons = spec2constrain.Spec2Cons()
     //:| spec2cons.enum_gen(['NVDLA_RBK'])
 
-    bit_toggle_cg datain_width_tog_cg;
-    bit_toggle_cg datain_height_tog_cg;
-    bit_toggle_cg datain_channel_tog_cg;
-    bit_toggle_cg dataout_channel_tog_cg;
-    bit_toggle_cg contract_stride_0_tog_cg;
-    bit_toggle_cg contract_stride_1_tog_cg;
+    bit_toggle_cg    tg_rbk_flds[string];
 
     int dain_line_stride_diff;
     int dain_surf_stride_diff;
@@ -24,28 +19,30 @@ class rubik_cov_pool extends nvdla_coverage_base;
     int daout_planar_stride_diff;
 
     function new(string name, ral_sys_top ral);
+        uvm_reg       regs[$];
+        uvm_reg_field flds[$];
         super.new(name, ral);
 
         rubik_cg = new();
-
-        datain_width_tog_cg  = new("datain_width_tog_cg", ral.nvdla.NVDLA_RBK.D_DATAIN_SIZE_0.DATAIN_WIDTH.get_n_bits());
-        datain_height_tog_cg  = new("datain_height_tog_cg", ral.nvdla.NVDLA_RBK.D_DATAIN_SIZE_0.DATAIN_HEIGHT.get_n_bits());
-        datain_channel_tog_cg  = new("datain_channel_tog_cg", ral.nvdla.NVDLA_RBK.D_DATAIN_SIZE_1.DATAIN_CHANNEL.get_n_bits());
-        dataout_channel_tog_cg  = new("dataout_channel_tog_cg", ral.nvdla.NVDLA_RBK.D_DATAOUT_SIZE_1.DATAOUT_CHANNEL.get_n_bits());
-        contract_stride_0_tog_cg = new("contract_stride_0_tog_cg", ral.nvdla.NVDLA_RBK.D_CONTRACT_STRIDE_0.CONTRACT_STRIDE_0.get_n_bits());
-        contract_stride_1_tog_cg = new("contract_stride_1_tog_cg", ral.nvdla.NVDLA_RBK.D_CONTRACT_STRIDE_1.CONTRACT_STRIDE_1.get_n_bits());
+        ral.nvdla.NVDLA_RBK.get_registers(regs);
+        foreach(regs[i]) begin
+            if(regs[i].get_rights() == "RW") begin
+                regs[i].get_fields(flds);
+                foreach(flds[j]) begin
+                    name              = flds[j].get_name();
+                    tg_rbk_flds[name] = new({"tg_rbk_",name.tolower()}, flds[j].get_n_bits());
+                end
+                flds.delete();
+            end
+        end
+        regs.delete();
     endfunction: new
 
     function void rubik_toggle_sampel();
-        datain_width_tog_cg.sample(ral.nvdla.NVDLA_RBK.D_DATAIN_SIZE_0.DATAIN_WIDTH.value);
-        datain_height_tog_cg.sample(ral.nvdla.NVDLA_RBK.D_DATAIN_SIZE_0.DATAIN_HEIGHT.value);
-        datain_channel_tog_cg.sample(ral.nvdla.NVDLA_RBK.D_DATAIN_SIZE_1.DATAIN_CHANNEL.value);
-
-        dataout_channel_tog_cg.sample(ral.nvdla.NVDLA_RBK.D_DATAOUT_SIZE_1.DATAOUT_CHANNEL.value);
-
-        if (rubik_mode_CONTRACT == ral.nvdla.NVDLA_RBK.D_MISC_CFG.RUBIK_MODE.value) begin
-            contract_stride_0_tog_cg.sample(ral.nvdla.NVDLA_RBK.D_CONTRACT_STRIDE_0.CONTRACT_STRIDE_0.value);
-            contract_stride_1_tog_cg.sample(ral.nvdla.NVDLA_RBK.D_CONTRACT_STRIDE_1.CONTRACT_STRIDE_1.value);
+        uvm_reg_field fld;
+        foreach(tg_rbk_flds[i]) begin
+            fld = ral.nvdla.NVDLA_RBK.get_field_by_name(i);
+            tg_rbk_flds[i].sample(fld.value);
         end
     endfunction: rubik_toggle_sampel
 
