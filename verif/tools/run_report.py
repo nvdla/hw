@@ -245,6 +245,10 @@ class RunReport(object):
             self.test_orgz_data[tid]['status']   = status
             self.test_orgz_data[tid]['errinfo']  = errinfo
             self.test_orgz_data[tid]['syndrome'] = ''
+            if self.regr_sts_data['farm_type'] == "LSF":
+                self.test_orgz_data[tid]['cputime'] = self.job_status[info['job_id']]['cputime_used']
+                self.test_orgz_data[tid]['memsize'] = self.job_status[info['job_id']]['maxmem']
+                
 
     def __print_regress_report(self, is_curses=False):
         rpt_info = []
