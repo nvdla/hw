@@ -119,7 +119,7 @@ class RunCoverageReport(object):
         self.__run_cmd(cmd)
 
     def __gen_coverage_report(self):
-        elfiles = glob.glob(self.tree_root + "/verif/coverage/elfiles/*.el")
+        elfiles = glob.glob(os.path.join(self.tree_root, 'verif', 'coverage', 'elfiles', self.project, '*.el'))
         cmd_exe   = self.urg_exe
         cmd_args  = ' -dir %s' % self.merged_cm_dir
         cmd_args += ' -report %s' % self.report_dir
