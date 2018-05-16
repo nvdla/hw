@@ -266,8 +266,9 @@ always @(
   src0_gnt
   or ctt0_cnt
 //: for(my $i=1;$i<RDMA_NUM;$i++) {
-//: print"  or src${i}_gnt \n"
-//: print"  or ctt${i}_cnt \n"
+//: print"  or src${i}_gnt \n";
+//: print"  or ctt${i}_cnt \n";
+//: }
   ) begin
     case (1'b1 )
 //: for(my $i=1;$i<RDMA_NUM;$i++) {

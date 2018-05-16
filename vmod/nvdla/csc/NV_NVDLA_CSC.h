@@ -114,6 +114,15 @@
     //atomK*2
     #define CSC_ATOMK_MUL2_HEX                                  7'h40
     #define CSC_ATOMK_MUL2_HEX_STR                              "\"7'h40\""
+#elif (NVDLA_MAC_ATOMIC_K_SIZE==16) 
+    //atomK
+    #define CSC_MIN_STRIPE                                      7'd16
+    //atomK
+    #define CSC_ATOMK_HEX                                       7'h10
+    #define CSC_ATOMK_HEX_STR                                   "\"7'h10\""
+    //atomK*2
+    #define CSC_ATOMK_MUL2_HEX                                  7'h20
+    #define CSC_ATOMK_MUL2_HEX_STR                              "\"7'h20\""
 #elif (NVDLA_MAC_ATOMIC_K_SIZE==8) 
     //atomK
     #define CSC_MIN_STRIPE                                      7'd8

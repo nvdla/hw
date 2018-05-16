@@ -369,6 +369,11 @@
     %define NVDLA_NUM_DMA_READ_CLIENTS 10
 #endif
 
+#if defined(NUM_DMA_READ_CLIENTS_8)
+    %define NVDLA_NUM_DMA_READ_CLIENTS 8
+#endif
+
+
 #if defined(NUM_DMA_WRITE_CLIENTS_5)
     %define NVDLA_NUM_DMA_WRITE_CLIENTS 5
 #endif
