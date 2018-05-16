@@ -136,6 +136,8 @@
     %define NVDLA_MAC_ATOMIC_K_SIZE 32
 #elif defined(MAC_ATOMIC_K_SIZE_8)
     %define NVDLA_MAC_ATOMIC_K_SIZE 8
+#elif defined(MAC_ATOMIC_K_SIZE_16)
+    %define NVDLA_MAC_ATOMIC_K_SIZE 16
 #else
     #error "one of NVDLA_MAC_ATOMIC_K_SIZE_{32,8} must be set"
 #endif
@@ -144,6 +146,8 @@
     %define NVDLA_MEMORY_ATOMIC_SIZE 32
 #elif defined(MEMORY_ATOMIC_SIZE_8)
     %define NVDLA_MEMORY_ATOMIC_SIZE 8
+#elif defined(MEMORY_ATOMIC_SIZE_16)
+    %define NVDLA_MEMORY_ATOMIC_SIZE 16
 #else
     #error "one of NVDLA_MEMORY_ATOMIC_SIZE_{32,8} must be set"
 #endif
@@ -186,6 +190,13 @@
      %define NVDLA_SDP_BS_THROUGHPUT 16
  #elif defined(SDP_BS_THROUGHPUT_1)
      %define NVDLA_SDP_BS_THROUGHPUT 1
+ #elif defined(SDP_BS_THROUGHPUT_4)
+     %define NVDLA_SDP_BS_THROUGHPUT 4
+ #elif defined(SDP_BS_THROUGHPUT_2)
+     %define NVDLA_SDP_BS_THROUGHPUT 2
+ #elif defined(SDP_BS_THROUGHPUT_8)
+     %define NVDLA_SDP_BS_THROUGHPUT 8
+
  #else
      #error "one of NVDLA_SDP_BS_THROUGHPUT_{16,1} must be set"
  #endif
@@ -197,7 +208,14 @@
  #if defined(SDP_BN_THROUGHPUT_16)
      %define NVDLA_SDP_BN_THROUGHPUT 16 
  #elif defined(SDP_BN_THROUGHPUT_1)
-     %define NVDLA_SDP_BN_THROUGHPUT 1 
+     %define NVDLA_SDP_BN_THROUGHPUT 1
+ #elif defined(SDP_BN_THROUGHPUT_4)
+     %define NVDLA_SDP_BN_THROUGHPUT 4
+ #elif defined(SDP_BN_THROUGHPUT_2)
+     %define NVDLA_SDP_BN_THROUGHPUT 2
+ #elif defined(SDP_BN_THROUGHPUT_8)
+     %define NVDLA_SDP_BN_THROUGHPUT 8
+
  #else
      #error "one of NVDLA_SDP_BN_THROUGHPUT_{16,1} must be set"
  #endif
@@ -210,6 +228,10 @@
      %define NVDLA_SDP_EW_THROUGHPUT 4
  #elif defined(SDP_EW_THROUGHPUT_x)
      %define NVDLA_SDP_EW_THROUGHPUT 1
+ #elif defined(SDP_EW_THROUGHPUT_1)
+     %define NVDLA_SDP_EW_THROUGHPUT 1
+ #elif defined(SDP_EW_THROUGHPUT_2)
+     %define NVDLA_SDP_EW_THROUGHPUT 2
  #else
      #error "one of NVDLA_SDP_EW_THROUGHPUT_{4,x} must be set"
  #endif
@@ -224,6 +246,11 @@
     %define NVDLA_PDP_THROUGHPUT 8
 #elif defined(PDP_THROUGHPUT_1)
     %define NVDLA_PDP_THROUGHPUT 1
+#elif defined(PDP_THROUGHPUT_2)
+    %define NVDLA_PDP_THROUGHPUT 2
+#elif defined(PDP_THROUGHPUT_4)
+    %define NVDLA_PDP_THROUGHPUT 4
+
 #else
     #error "one of NVDLA_PDP_THROUGHPUT_{8,1} must be set"
 #endif
@@ -232,6 +259,10 @@
     %define NVDLA_CDP_THROUGHPUT 8
 #elif defined(CDP_THROUGHPUT_1)
     %define NVDLA_CDP_THROUGHPUT 1
+#elif defined(CDP_THROUGHPUT_2)
+    %define NVDLA_CDP_THROUGHPUT 2
+#elif defined(CDP_THROUGHPUT_4)
+    %define NVDLA_CDP_THROUGHPUT 4
 #else
     #error "one of NVDLA_CDP_THROUGHPUT_{8,1} must be set"
 #endif
@@ -240,12 +271,24 @@
     %define NVDLA_PRIMARY_MEMIF_LATENCY 1200
 #elif defined(PRIMARY_MEMIF_LATENCY_50)
     %define NVDLA_PRIMARY_MEMIF_LATENCY 50
+#elif defined(PRIMARY_MEMIF_LATENCY_128)
+    %define NVDLA_PRIMARY_MEMIF_LATENCY 128
+#elif defined(PRIMARY_MEMIF_LATENCY_64)
+    %define NVDLA_PRIMARY_MEMIF_LATENCY 64
+#elif defined(PRIMARY_MEMIF_LATENCY_512)
+    %define NVDLA_PRIMARY_MEMIF_LATENCY 512
+#elif defined(PRIMARY_MEMIF_LATENCY_1024)
+    %define NVDLA_PRIMARY_MEMIF_LATENCY 1024
 #else
     #error "one of NVDLA_PRIMARY_MEMIF_LATENCY_{1200,50} must be set"
 #endif
 
 #if defined(SECONDARY_MEMIF_LATENCY_128)
     %define NVDLA_SECONDARY_MEMIF_LATENCY 128
+#elif defined(SECONDARY_MEMIF_LATENCY_16)
+    %define SECONDARY_MEMIF_LATENCY   16
+#elif defined(SECONDARY_MEMIF_LATENCY_32)
+    %define SECONDARY_MEMIF_LATENCY   32
 #elif defined(SECONDARY_MEMIF_LATENCY_x)
 #else
     #error "one of NVDLA_SECONDARY_MEMIF_LATENCY_{128,x} must be set"
@@ -263,6 +306,10 @@
     %define NVDLA_PRIMARY_MEMIF_WIDTH 512
 #elif defined(PRIMARY_MEMIF_WIDTH_64)
     %define NVDLA_PRIMARY_MEMIF_WIDTH 64
+#elif defined(PRIMARY_MEMIF_WIDTH_256)
+    %define NVDLA_PRIMARY_MEMIF_WIDTH 256
+#elif defined(PRIMARY_MEMIF_WIDTH_128)
+    %define NVDLA_PRIMARY_MEMIF_WIDTH 128
 #else
     #error "one of NVDLA_PRIMARY_MEMIF_WIDTH_{512,64} must be set"
 #endif
@@ -276,6 +323,10 @@
 
 #if defined(SECONDARY_MEMIF_WIDTH_512)
     %define NVDLA_SECONDARY_MEMIF_WIDTH 512
+#elif defined(SECONDARY_MEMIF_WIDTH_128)
+    %define NVDLA_SECONDARY_MEMIF_WIDTH 128
+#elif defined(SECONDARY_MEMIF_WIDTH_256)
+    %define NVDLA_SECONDARY_MEMIF_WIDTH 256
 #elif defined(SECONDARY_MEMIF_WIDTH_x)
 #else
     #error "one of NVDLA_SECONDARY_MEMIF_WIDTH_{512,x} must be set"
