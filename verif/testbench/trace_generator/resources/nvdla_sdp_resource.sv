@@ -167,8 +167,6 @@ class nvdla_sdp_resource extends nvdla_base_resource;
     rand bit          sdp_lut_reuse        = 0;
     int               pre_proc_precision   = -1;
 
-
-
     // field variables
     //:| spec2cons.state_gen(['NVDLA_SDP'])
     //:) epython: generated_beg (DO NOT EDIT BELOW)
@@ -558,14 +556,14 @@ function void nvdla_sdp_resource::trace_dump(int fh);
     if(sync_evt_queue.size()==2) begin
         sync_wait(fh,inst_name,sync_evt_queue.pop_front());
     end
-    
+
     reg_write(fh,"NVDLA_SDP.S_POINTER",group_to_use);
-    
+
     begin
         uvm_reg        reg_q[$];
         uvm_reg_data_t val;
         uvm_status_e   status;
-        
+
         ral.nvdla.NVDLA_SDP.get_registers(reg_q);
         reg_q.shuffle();
         foreach(reg_q[i]) begin
@@ -589,7 +587,7 @@ function void nvdla_sdp_resource::trace_dump(int fh);
 `endif
             else if(reg_q[i].get_name().substr(0,5) == "S_LUT_") begin
                 continue;
-            end            
+            end
             case(reg_q[i].get_name())
                 "D_OP_ENABLE",
                 "S_POINTER": ;
@@ -621,6 +619,7 @@ constraint nvdla_sdp_resource::c_ias_stride_alignment {
 
 // NONE NAN value in FP format
 constraint nvdla_sdp_resource::c_ias_fp_no_nan_value {
+`ifdef NVDLA_FEATURE_DATA_TYPE_INT16_FP16
     if(proc_precision == proc_precision_FP16) {
         if(ew_bypass == ew_bypass_NO && ew_lut_bypass == ew_lut_bypass_NO) {
             !((lut_data[9:0]                 != 0) && (lut_data[14:10]                 == 5'h1F));
@@ -640,10 +639,12 @@ constraint nvdla_sdp_resource::c_ias_fp_no_nan_value {
         !((ew_alu_operand[22:0] != 0) && (ew_alu_operand[30:23] == 8'hFF));
         !((ew_mul_operand[22:0] != 0) && (ew_mul_operand[30:23] == 8'hFF));
     }
+`endif
 }
 
 // NONE INF value in FP format
 constraint nvdla_sdp_resource::c_ias_fp_no_inf_value {
+`ifdef NVDLA_FEATURE_DATA_TYPE_INT16_FP16
     if(proc_precision == proc_precision_FP16) {
         if(ew_bypass == ew_bypass_NO && ew_lut_bypass == ew_lut_bypass_NO) {
             !((lut_data[9:0]                 == 0) && (lut_data[14:10]                 == 5'h1F));
@@ -663,10 +664,12 @@ constraint nvdla_sdp_resource::c_ias_fp_no_inf_value {
         !((ew_alu_operand[22:0] == 0) && (ew_alu_operand[30:23] == 8'hFF));
         !((ew_mul_operand[22:0] == 0) && (ew_mul_operand[30:23] == 8'hFF));
     }
+`endif
 }
 
 // NONE DENORM value in FP format
 constraint nvdla_sdp_resource::c_ias_fp_no_denorm_value {
+`ifdef NVDLA_FEATURE_DATA_TYPE_INT16_FP16
     if(proc_precision == proc_precision_FP16) {
         if(ew_bypass == ew_bypass_NO && ew_lut_bypass == ew_lut_bypass_NO) {
             !((lut_le_start[22:0] != 0) && (lut_le_start[30:23] == 0));
@@ -677,10 +680,11 @@ constraint nvdla_sdp_resource::c_ias_fp_no_denorm_value {
         !((ew_alu_operand[22:0] != 0) && (ew_alu_operand[30:23] == 0));
         !((ew_mul_operand[22:0] != 0) && (ew_mul_operand[30:23] == 0));
     }
+`endif
 }
 
 // --------------------------------------------------
-// lUT Constraint Setup 
+// lUT Constraint Setup
 // --------------------------------------------------
 constraint nvdla_sdp_resource::c_ias_lut {
     if(proc_precision != proc_precision_FP16) {
@@ -703,6 +707,7 @@ constraint nvdla_sdp_resource::c_ias_lut {
         (signed'(lut_lo_end) - signed'(lut_lo_start)) == (1 << (signed'(lut_lo_index_select)+8));
         signed'(lut_lo_index_select) inside {[-8:23]};
     }
+`ifdef NVDLA_FEATURE_DATA_TYPE_INT16_FP16
     else { // FP16
         if(lut_le_function == lut_le_function_LINEAR) {
             signed'({1'b0,lut_le_start[30:23]}) <= (signed'(lut_le_index_select)+6) + 127 + 23;
@@ -716,15 +721,18 @@ constraint nvdla_sdp_resource::c_ias_lut {
         signed'({1'b0,lut_lo_start[30:23]}) <= (signed'(lut_lo_index_select)+8) + 127 + 21;
         signed'(lut_lo_index_select) <= 119;
     }
+`endif
 }
 
 constraint nvdla_sdp_resource::c_ias_winograd {
+`ifdef NVDLA_WINOGRAD_ENABLE
     if (winograd == winograd_ON) {
         (width+1)  % 4 == 0;
         (height+1) % 4 == 0;
         proc_precision == proc_precision_t'(out_precision);  // bug 1921999
         ew_alu_algo    != ew_alu_algo_EQL;
     }
+`endif
 }
 
 constraint nvdla_sdp_resource::c_ias_dst_mem {
@@ -737,19 +745,22 @@ constraint nvdla_sdp_resource::c_ias_dst_mem {
             (dst_line_stride / `NVDLA_MEMORY_ATOMIC_SIZE) >= (width+1);
             (dst_line_stride / `NVDLA_MEMORY_ATOMIC_SIZE - (width+1)) dist { [0:4]:=10, [5:8]:=50, [9:12]:=30, [13:16]:=10};
             64'(dst_surface_stride) >= 64'(dst_line_stride*(height+64'h1));
-            (dst_surface_stride - dst_line_stride*(height+64'h1)) / `NVDLA_MEMORY_ATOMIC_SIZE dist { [0:4]:=10, [5:8]:=50, [9:12]:=30, [13:16]:=10}; 
+            (dst_surface_stride - dst_line_stride*(height+64'h1)) / `NVDLA_MEMORY_ATOMIC_SIZE dist { [0:4]:=10, [5:8]:=50, [9:12]:=30, [13:16]:=10};
         }
         if(out_precision == out_precision_INT8) {
             (dst_surface_stride*((channel+`NVDLA_MEMORY_ATOMIC_SIZE)/`NVDLA_MEMORY_ATOMIC_SIZE)) <= 64'h400_0000;
         }
+`ifdef NVDLA_FEATURE_DATA_TYPE_INT16_FP16
         else {
             (dst_surface_stride*((channel+`NVDLA_MEMORY_ATOMIC_SIZE/2)/(`NVDLA_MEMORY_ATOMIC_SIZE/2))) <= 64'h400_0000;
         }
+`endif
     }
 }
 
 constraint nvdla_sdp_resource::c_ias_multi_batch {
     if(output_dst == output_dst_MEM) {
+`ifdef NVDLA_BATCH_ENABLE
         if((batch_number > 0)) {
             if(!((width==0) && (height==0))) {
                 (dst_line_stride / `NVDLA_MEMORY_ATOMIC_SIZE) % 2 == 0;
@@ -767,6 +778,7 @@ constraint nvdla_sdp_resource::c_ias_multi_batch {
             proc_precision == proc_precision_t'(out_precision); // bug 200314538
             ew_alu_algo != ew_alu_algo_EQL;
         }
+`endif
     }
 }
 
@@ -849,12 +861,14 @@ constraint nvdla_sdp_resource::c_ias_feature {
 
 `ifdef PRECISION_CONVERSION_ENABLE
     (proc_precision == proc_precision_INT8)  -> out_precision inside {out_precision_INT8, out_precision_INT16};
-`endif
+`ifdef NVDLA_FEATURE_DATA_TYPE_INT16_FP16
     (proc_precision == proc_precision_INT16) -> out_precision inside {out_precision_INT16, out_precision_FP16};
     (proc_precision == proc_precision_FP16)  -> out_precision inside {out_precision_INT16, out_precision_FP16};
+`endif
+`endif
 
-    if(flying_mode == flying_mode_ON) { 
-        proc_precision == proc_precision_t'(out_precision); 
+    if(flying_mode == flying_mode_ON) {
+        proc_precision == proc_precision_t'(out_precision);
         !(ew_bypass == ew_bypass_NO && ew_alu_bypass == ew_alu_bypass_NO && ew_alu_algo == ew_alu_algo_EQL);
     }
 }
@@ -862,14 +876,14 @@ constraint nvdla_sdp_resource::c_ias_feature {
 constraint nvdla_sdp_resource::c_ias_dut_por_requirement {
     ew_bypass      == ew_bypass_YES      ;
     winograd       == winograd_OFF       ;
-    dst_ram_type   == dst_ram_type_MC    ;            
+    dst_ram_type   == dst_ram_type_MC    ;
     proc_precision == proc_precision_INT8;
     out_precision  == out_precision_INT8 ;
     batch_number   == 0                  ;
 }
 
 // ----------------------------------
-// Weight Distribution Control 
+// Weight Distribution Control
 // ----------------------------------
 constraint nvdla_sdp_resource::c_sim_dst_mem_weight_dist {
     `weight_dist_32bit(dst_base_addr_high)
@@ -912,34 +926,42 @@ constraint nvdla_sdp_resource::c_sim_batch_num_dist {
 
 constraint nvdla_sdp_resource::c_sim_cube_size_small {
     batch_number inside {[0:'h3]};
-    if (batch_number!=0) {
-        width   inside {[0:'h0F]};
-        height  inside {[0:'h0F]};
-        channel inside {[0:'h3F]};
-        (width+1)*(height+1)*(channel+1)    <= 64'h4000;
-    } else {
+
+    if (batch_number == 0) {
         width   inside {[0:'h18]};
         height  inside {[0:'h18]};
         channel inside {[0:'h3F]};
         (width+1)*(height+1)*(channel+1)    <= 64'h8000;
     }
+`ifdef NVDLA_BATCH_ENABLE
+    else {
+        width   inside {[0:'h0F]};
+        height  inside {[0:'h0F]};
+        channel inside {[0:'h3F]};
+        (width+1)*(height+1)*(channel+1)    <= 64'h4000;
+    }
+`endif
 }
 
 constraint nvdla_sdp_resource::c_sim_cube_size_medium {
     batch_number inside {[0:'h7]};
-    if (batch_number!=0) {
-        width   inside {[0:'h2F]};
-        height  inside {[0:'h2F]};
-        channel inside {[0:'h5F]};
-        (width+1)*(height+1)*(channel+1)    >  64'h4000;
-        (width+1)*(height+1)*(channel+1)    <= 64'h1_0000;
-    } else {
+
+    if (batch_number == 0) {
         width   inside {[0:'h7F]};
         height  inside {[0:'h7F]};
         channel inside {[0:'h7F]};
         (width+1)*(height+1)*(channel+1)    >  64'h8000;
         (width+1)*(height+1)*(channel+1)    <= 64'h2_0000;
     }
+`ifdef NVDLA_BATCH_ENABLE
+    else {
+        width   inside {[0:'h2F]};
+        height  inside {[0:'h2F]};
+        channel inside {[0:'h5F]};
+        (width+1)*(height+1)*(channel+1)    >  64'h4000;
+        (width+1)*(height+1)*(channel+1)    <= 64'h1_0000;
+    }
+`endif
 }
 
 constraint nvdla_sdp_resource::c_sim_cube_size_large {

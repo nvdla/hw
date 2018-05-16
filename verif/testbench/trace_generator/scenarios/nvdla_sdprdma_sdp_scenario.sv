@@ -17,7 +17,7 @@ class nvdla_sdprdma_sdp_scenario extends nvdla_base_scenario;
     rand nvdla_sdp_resource          sdp;
 
     /*
-        constraints: 
+        constraints:
             * ias_constraint: mandatory constraints from architecture requirement
             * sim_constraint: optional constraints for simulation only
     */
@@ -64,10 +64,10 @@ function void nvdla_sdprdma_sdp_scenario::trace_dump(int fh);
         `uvm_fatal(inst_name, "Null handle of trace file ...")
     end
     `uvm_info(inst_name, "Start trace dumping ...", UVM_HIGH)
-    
+
     set_sync_evt_name();
     // Get surface setting fro resource register
-    // feature_cfg.width = 
+    // feature_cfg.width =
     // surface_generator.generate_memory_surface_feature(feature_cfg)
     sdp.trace_dump(fh);
     sdp_rdma.trace_dump(fh);
@@ -100,7 +100,7 @@ function void nvdla_sdprdma_sdp_scenario::set_sync_evt_name();
     sync_evt_name = {inst_name.tolower(),"_act",$sformatf("%0d",active_cnt)};
     sync_evt_name = {sync_evt_name, "_",sdp.get_resource_name(),"_act",$sformatf("%0d",sdp.get_active_cnt())};
     sync_evt_name = {sync_evt_name, "_",sdp_rdma.get_resource_name(),"_act",$sformatf("%0d",sdp_rdma.get_active_cnt())};
-    
+
     /*
         SDP_RDMA relies on SDP interrupt to show status, so always provide same sync evt to both resources
     */
@@ -130,6 +130,7 @@ constraint nvdla_sdprdma_sdp_scenario::sce_sdprdma_sdp_ias_constraint {
     sdp_rdma.proc_precision == int'(sdp.proc_precision);
     sdp_rdma.out_precision == int'(sdp.out_precision);
     sdp_rdma.batch_number  == sdp.batch_number;
+
     if(sdp.proc_precision==nvdla_sdp_resource::proc_precision_INT8  && sdp.out_precision==nvdla_sdp_resource::out_precision_INT8)  { sdp_rdma.in_precision != nvdla_sdp_rdma_resource::in_precision_FP16; }
 
 `ifdef FEATURE_DATA_TYPE_INT16_FP16
@@ -139,6 +140,7 @@ constraint nvdla_sdprdma_sdp_scenario::sce_sdprdma_sdp_ias_constraint {
     if(sdp.proc_precision==nvdla_sdp_resource::proc_precision_INT16) { sdp_rdma.in_precision==nvdla_sdp_rdma_resource::in_precision_INT16; }
     if(sdp.proc_precision==nvdla_sdp_resource::proc_precision_FP16)  { sdp_rdma.in_precision==nvdla_sdp_rdma_resource::in_precision_FP16;  }
 `endif
+
     if((sdp.bs_bypass==nvdla_sdp_resource::bs_bypass_NO) && ((sdp.bs_alu_bypass==nvdla_sdp_resource::bs_alu_bypass_NO && sdp.bs_alu_src==nvdla_sdp_resource::bs_alu_src_MEM) || (sdp.bs_mul_bypass==nvdla_sdp_resource::bs_mul_bypass_NO && sdp.bs_mul_src==nvdla_sdp_resource::bs_mul_src_MEM))) { sdp_rdma.brdma_disable==nvdla_sdp_rdma_resource::brdma_disable_NO; }
     else { sdp_rdma.brdma_disable==nvdla_sdp_rdma_resource::brdma_disable_YES; }
     if(sdp.bs_bypass==nvdla_sdp_resource::bs_bypass_NO && sdp.bs_mul_bypass==nvdla_sdp_resource::bs_mul_bypass_NO  && sdp.bs_alu_bypass==nvdla_sdp_resource::bs_alu_bypass_YES) { sdp_rdma.brdma_data_use==nvdla_sdp_rdma_resource::brdma_data_use_MUL;  }
@@ -157,10 +159,10 @@ constraint nvdla_sdprdma_sdp_scenario::sce_sdprdma_sdp_ias_constraint {
     if(sdp.ew_alu_algo == nvdla_sdp_resource::ew_alu_algo_EQL && sdp.ew_bypass == nvdla_sdp_resource::ew_bypass_NO && sdp.ew_alu_bypass == nvdla_sdp_resource::ew_alu_bypass_NO) {
         sdp_rdma.erdma_data_use!=nvdla_sdp_rdma_resource::erdma_data_use_BOTH;
         !((sdp_rdma.erdma_data_size == nvdla_sdp_rdma_resource::erdma_data_size_TWO_BYTE) && (sdp_rdma.proc_precision == nvdla_sdp_rdma_resource::proc_precision_INT8));
-        sdp_rdma.src_line_stride / `NVDLA_MEMORY_ATOMIC_SIZE == (sdp_rdma.width+1); 
+        sdp_rdma.src_line_stride / `NVDLA_MEMORY_ATOMIC_SIZE == (sdp_rdma.width+1);
         sdp_rdma.src_surface_stride == sdp_rdma.src_line_stride*(sdp_rdma.height+64'h1);
-        sdp_rdma.ew_line_stride / `NVDLA_MEMORY_ATOMIC_SIZE == (sdp_rdma.width+1); 
-        sdp_rdma.ew_surface_stride == sdp_rdma.ew_line_stride*(sdp_rdma.height+64'h1); 
+        sdp_rdma.ew_line_stride / `NVDLA_MEMORY_ATOMIC_SIZE == (sdp_rdma.width+1);
+        sdp_rdma.ew_surface_stride == sdp_rdma.ew_line_stride*(sdp_rdma.height+64'h1);
         sdp_rdma.in_precision   == int'(sdp.proc_precision);
     }
 }

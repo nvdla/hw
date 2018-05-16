@@ -153,6 +153,7 @@ constraint nvdla_sdprdma_sdp_pdp_scenario::c_ias_sdp_rdma {
         sdp_rdma.in_precision == nvdla_sdp_rdma_resource::in_precision_INT8;
     }
 
+`ifdef FEATURE_DATA_TYPE_INT16_FP16
     (sdp.proc_precision == nvdla_sdp_resource::proc_precision_INT16) -> {
         sdp_rdma.in_precision == nvdla_sdp_rdma_resource::in_precision_INT16;
     }
@@ -160,6 +161,7 @@ constraint nvdla_sdprdma_sdp_pdp_scenario::c_ias_sdp_rdma {
     (sdp.proc_precision == nvdla_sdp_resource::proc_precision_FP16) -> {
         sdp_rdma.in_precision == nvdla_sdp_rdma_resource::in_precision_FP16;
     }
+`endif
 
     if (   (sdp.bs_bypass == nvdla_sdp_resource::bs_bypass_NO)
         && (   (   sdp.bs_alu_bypass == nvdla_sdp_resource::bs_alu_bypass_NO

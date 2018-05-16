@@ -18,7 +18,7 @@ class nvdla_cc_sdp_scenario extends nvdla_base_scenario;
     rand nvdla_sdp_resource          sdp;
 
     /*
-        constraints: 
+        constraints:
             * ias_constraint: mandatory constraints from architecture requirement
             * sim_constraint: optional constraints for simulation only
     */
@@ -73,7 +73,7 @@ function void nvdla_cc_sdp_scenario::trace_dump(int fh);
 
     set_sync_evt_name();
     // Get surface setting fro resource register
-    // feature_cfg.width = 
+    // feature_cfg.width =
     // surface_generator.generate_memory_surface_feature(feature_cfg)
     cdma.trace_dump(fh);
     cc_dp.trace_dump(fh);
@@ -157,7 +157,7 @@ function void nvdla_cc_sdp_scenario::set_sync_evt_name();
     cdma_sync_evt_name  = sync_evt_name;
     cc_dp_sync_evt_name = sync_evt_name;
     sdp_sync_evt_name   = {sync_evt_name, "_",sdp.get_resource_name(),"_act",$sformatf("%0d",sdp.get_active_cnt())};
-    
+
     /*
         // set individual sync evt for each resource
     */
@@ -179,27 +179,27 @@ constraint nvdla_cc_sdp_scenario::sce_cc_sdp_sim_constraint_for_user_extend {
 // FIXME cc reuse mode remains to be done
 constraint nvdla_cc_sdp_scenario::sce_cc_sdp_ias_constraint {
 
-    cdma.conv_mode          == int'(cc_dp.conv_mode);                     
-    cdma.in_precision       == int'(cc_dp.in_precision);                  
-    cdma.proc_precision     == int'(cc_dp.proc_precision);                
-    cdma.data_reuse         == int'(cc_dp.data_reuse);                    
-    cdma.weight_reuse       == int'(cc_dp.weight_reuse);                  
-    cdma.skip_data_rls      == int'(cc_dp.skip_data_rls);                 
-    cdma.skip_weight_rls    == int'(cc_dp.skip_weight_rls);               
-    cdma.datain_format      == int'(cc_dp.datain_format);                 
-    cdma.datain_width_ext   == cc_dp.datain_width_ext;              
-    cdma.datain_height_ext  == cc_dp.datain_height_ext;             
-    cdma.batches            == cc_dp.batches;                       
-    cdma.entries            == cc_dp.entries;                       
-    cdma.weight_format      == int'(cc_dp.weight_format);                 
-    cdma.weight_kernel      == cc_dp.weight_kernel;                 
-    cdma.weight_bytes       == cc_dp.weight_bytes;                  
-    cdma.wmb_bytes          == cc_dp.wmb_bytes;                     
-    cdma.pad_left           == cc_dp.pad_left;                      
-    cdma.pad_top            == cc_dp.pad_top;                       
-    cdma.data_bank          == cc_dp.data_bank;                     
-    cdma.weight_bank        == cc_dp.weight_bank;                   
-    cdma.cya                == cc_dp.cya;                           
+    cdma.conv_mode          == int'(cc_dp.conv_mode);
+    cdma.in_precision       == int'(cc_dp.in_precision);
+    cdma.proc_precision     == int'(cc_dp.proc_precision);
+    cdma.data_reuse         == int'(cc_dp.data_reuse);
+    cdma.weight_reuse       == int'(cc_dp.weight_reuse);
+    cdma.skip_data_rls      == int'(cc_dp.skip_data_rls);
+    cdma.skip_weight_rls    == int'(cc_dp.skip_weight_rls);
+    cdma.datain_format      == int'(cc_dp.datain_format);
+    cdma.datain_width_ext   == cc_dp.datain_width_ext;
+    cdma.datain_height_ext  == cc_dp.datain_height_ext;
+    cdma.batches            == cc_dp.batches;
+    cdma.entries            == cc_dp.entries;
+    cdma.weight_format      == int'(cc_dp.weight_format);
+    cdma.weight_kernel      == cc_dp.weight_kernel;
+    cdma.weight_bytes       == cc_dp.weight_bytes;
+    cdma.wmb_bytes          == cc_dp.wmb_bytes;
+    cdma.pad_left           == cc_dp.pad_left;
+    cdma.pad_top            == cc_dp.pad_top;
+    cdma.data_bank          == cc_dp.data_bank;
+    cdma.weight_bank        == cc_dp.weight_bank;
+    cdma.cya                == cc_dp.cya;
 
     // cdma && cc_dp constraints
     // pad size
@@ -223,12 +223,13 @@ constraint nvdla_cc_sdp_scenario::sce_cc_sdp_ias_constraint {
         else if(((cc_dp.weight_channel_ext+1) > `NVDLA_MAC_ATOMIC_C_SIZE/2) || ((cdma.conv_x_stride+1)*(cdma.datain_channel+1) > `NVDLA_MAC_ATOMIC_C_SIZE/2)) {
             cc_dp.y_extension == 0;
         }
-        else { 
-            cc_dp.y_extension inside {[0:1]}; 
+        else {
+            cc_dp.y_extension inside {[0:1]};
         }
     }
     else { cc_dp.y_extension == 0; }
 
+`ifdef NVDLA_WINOGRAD_ENABLE
     if (cc_dp.conv_mode == nvdla_cc_dp_resource::conv_mode_WINOGRAD) {
         (cc_dp.datain_width_ext  +1) == (cdma.pad_left + cdma.pad_right  + cdma.datain_width +1) / (cdma.conv_x_stride+1);
         (cc_dp.datain_height_ext +1) == (cdma.pad_top  + cdma.pad_bottom + cdma.datain_height+1) / (cdma.conv_y_stride+1);
@@ -244,7 +245,9 @@ constraint nvdla_cc_sdp_scenario::sce_cc_sdp_ias_constraint {
 
         ((cdma.datain_channel+1) * ((cdma.in_precision==nvdla_cdma_resource::in_precision_INT8)?1:2)) % 32 == 0;
     }
-    else if (cdma.conv_mode == nvdla_cdma_resource::conv_mode_DIRECT && cdma.datain_format == nvdla_cdma_resource::datain_format_FEATURE) {
+`endif
+
+    if (cdma.conv_mode == nvdla_cdma_resource::conv_mode_DIRECT && cdma.datain_format == nvdla_cdma_resource::datain_format_FEATURE) {
         // direct feature datain size
         (cdma.datain_width+1 +  cdma.pad_left + cdma.pad_right -  ((cc_dp.weight_width_ext+1-1) *(cc_dp.x_dilation_ext+1)+1))   >= 0;
         (cdma.datain_height+1 + cdma.pad_top +  cdma.pad_bottom - ((cc_dp.weight_height_ext+1-1)*(cc_dp.y_dilation_ext+1)+1)) >= 0;
@@ -262,7 +265,8 @@ constraint nvdla_cc_sdp_scenario::sce_cc_sdp_ias_constraint {
         // direct feature weight size
         cc_dp.weight_channel_ext == cdma.datain_channel;
     }
-    else if(cdma.conv_mode == nvdla_cdma_resource::conv_mode_DIRECT && cdma.datain_format == nvdla_cdma_resource::datain_format_PIXEL){ 
+
+    if (cdma.conv_mode == nvdla_cdma_resource::conv_mode_DIRECT && cdma.datain_format == nvdla_cdma_resource::datain_format_PIXEL){
         // direct image datain size
         (cdma.datain_width+1 +  cdma.pad_left + cdma.pad_right - ((cc_dp.weight_channel_ext+1)/(cdma.datain_channel+1))) >= 0;
         (cdma.datain_height+1 + cdma.pad_top +  cdma.pad_bottom - (cc_dp.weight_height_ext+1)) >= 0;
@@ -306,10 +310,13 @@ constraint nvdla_cc_sdp_scenario::sce_cc_sdp_ias_constraint {
     sdp.batch_number    == cc_dp.batches;
     // Destination is MEM
     sdp.output_dst      == nvdla_sdp_resource::output_dst_MEM;
+
+`ifdef NVDLA_BATCH_ENABLE
     if(sdp.batch_number > 0) {
         sdp.dst_line_stride==cc_dp.line_stride;
         sdp.dst_surface_stride==cc_dp.surf_stride;
     }
+`endif
 
     // This sequence doesn't use RDMA, needs to make sure here
     if(sdp.bs_bypass == nvdla_sdp_resource::bs_bypass_NO) {

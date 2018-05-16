@@ -230,12 +230,13 @@ constraint nvdla_cc_sdprdma_sdp_scenario::c_ias_cc {
         else if(((cc_dp.weight_channel_ext+1) > `NVDLA_MAC_ATOMIC_C_SIZE/2) || ((cdma.conv_x_stride+1)*(cdma.datain_channel+1) > `NVDLA_MAC_ATOMIC_C_SIZE/2)) {
             cc_dp.y_extension == 0;
         }
-        else { 
-            cc_dp.y_extension inside {[0:1]}; 
+        else {
+            cc_dp.y_extension inside {[0:1]};
         }
     }
     else { cc_dp.y_extension == 0; }
 
+`ifdef NVDLA_WINOGRAD_ENABLE
     if (cc_dp.conv_mode == nvdla_cc_dp_resource::conv_mode_WINOGRAD) {
         (cc_dp.datain_width_ext  +1) == (cdma.pad_left + cdma.pad_right  + cdma.datain_width +1) / (cdma.conv_x_stride+1);
         (cc_dp.datain_height_ext +1) == (cdma.pad_top  + cdma.pad_bottom + cdma.datain_height+1) / (cdma.conv_y_stride+1);
@@ -251,7 +252,9 @@ constraint nvdla_cc_sdprdma_sdp_scenario::c_ias_cc {
 
         ((cdma.datain_channel+1) * ((cdma.in_precision==nvdla_cdma_resource::in_precision_INT8)?1:2)) % 32 == 0;
     }
-    else if (cdma.conv_mode == nvdla_cdma_resource::conv_mode_DIRECT && cdma.datain_format == nvdla_cdma_resource::datain_format_FEATURE) {
+`endif
+
+    if (cdma.conv_mode == nvdla_cdma_resource::conv_mode_DIRECT && cdma.datain_format == nvdla_cdma_resource::datain_format_FEATURE) {
         // direct feature datain size
         (cdma.datain_width+1 +  cdma.pad_left + cdma.pad_right -  ((cc_dp.weight_width_ext+1-1) *(cc_dp.x_dilation_ext+1)+1))   >= 0;
         (cdma.datain_height+1 + cdma.pad_top +  cdma.pad_bottom - ((cc_dp.weight_height_ext+1-1)*(cc_dp.y_dilation_ext+1)+1)) >= 0;
@@ -269,7 +272,8 @@ constraint nvdla_cc_sdprdma_sdp_scenario::c_ias_cc {
         // direct feature weight size
         cc_dp.weight_channel_ext == cdma.datain_channel;
     }
-    else if(cdma.conv_mode == nvdla_cdma_resource::conv_mode_DIRECT && cdma.datain_format == nvdla_cdma_resource::datain_format_PIXEL){ 
+
+    if (cdma.conv_mode == nvdla_cdma_resource::conv_mode_DIRECT && cdma.datain_format == nvdla_cdma_resource::datain_format_PIXEL){
         // direct image datain size
         (cdma.datain_width+1 +  cdma.pad_left + cdma.pad_right - ((cc_dp.weight_channel_ext+1)/(cdma.datain_channel+1))) >= 0;
         (cdma.datain_height+1 + cdma.pad_top +  cdma.pad_bottom - (cc_dp.weight_height_ext+1)) >= 0;
@@ -305,16 +309,23 @@ constraint nvdla_cc_sdprdma_sdp_scenario::c_ias_sdp {
     sdp.height          == cc_dp.dataout_height;
     sdp.channel         == cc_dp.dataout_channel;
     sdp.proc_precision  == int'(cc_dp.proc_precision);
+
+`ifdef NVDLA_WINOGRAD_ENABLE
     if (cc_dp.conv_mode == nvdla_cc_dp_resource::conv_mode_WINOGRAD) {
         sdp.winograd    == nvdla_sdp_resource::winograd_ON;
     }
+`endif
+
     sdp.flying_mode     == nvdla_sdp_resource::flying_mode_ON;
     sdp.batch_number    == cc_dp.batches;
     sdp.output_dst      == nvdla_sdp_resource::output_dst_MEM;
+
+`ifdef NVDLA_BATCH_ENABLE
     if (sdp.batch_number > 0) {
         sdp.dst_line_stride    == cc_dp.line_stride;
         sdp.dst_surface_stride == cc_dp.surf_stride;
     }
+`endif
 
     // Make sure at least one of B/N/E RDMA shall be enabled
         (   (sdp.bs_bypass == nvdla_sdp_resource::bs_bypass_NO)
@@ -352,6 +363,7 @@ constraint nvdla_cc_sdprdma_sdp_scenario::c_ias_sdp_rdma {
         };
     }
 
+`ifdef FEATURE_DATA_TYPE_INT16_FP16
     (   sdp.proc_precision == nvdla_sdp_resource::proc_precision_INT8
      && sdp.out_precision  == nvdla_sdp_resource::out_precision_INT16) -> {
         sdp_rdma.in_precision == nvdla_sdp_rdma_resource::in_precision_INT8;
@@ -364,6 +376,7 @@ constraint nvdla_cc_sdprdma_sdp_scenario::c_ias_sdp_rdma {
     (sdp.proc_precision == nvdla_sdp_resource::proc_precision_FP16) -> {
         sdp_rdma.in_precision == nvdla_sdp_rdma_resource::in_precision_FP16;
     }
+`endif
 
     if (   (sdp.bs_bypass == nvdla_sdp_resource::bs_bypass_NO)
         && (   (   sdp.bs_alu_bypass == nvdla_sdp_resource::bs_alu_bypass_NO

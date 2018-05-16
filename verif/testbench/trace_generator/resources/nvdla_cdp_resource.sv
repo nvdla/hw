@@ -467,6 +467,7 @@ constraint nvdla_cdp_resource::c_ias_stride_alignment {
 
 constraint nvdla_cdp_resource::c_ias_fp_no_nan_value {
     // NONE NAN value in FP format
+`ifdef NVDLA_FEATURE_DATA_TYPE_INT16_FP16
     if(input_data_type == input_data_type_FP16) {
         !((lut_data[9:0]                 != 0) && (lut_data[14:10]                 == 5'h1F));
         !((lut_le_start_low[22:0]        != 0) && (lut_le_start_low[30:23]         == 8'hFF));
@@ -478,10 +479,12 @@ constraint nvdla_cdp_resource::c_ias_fp_no_nan_value {
         !((lut_lo_slope_uflow_scale[9:0] != 0) && (lut_lo_slope_uflow_scale[14:10] == 5'h1F));
         !((lut_lo_slope_oflow_scale[9:0] != 0) && (lut_lo_slope_oflow_scale[14:10] == 5'h1F));
     }
+`endif
 }
 
 constraint nvdla_cdp_resource::c_ias_fp_no_inf_value {
     // NONE INF
+`ifdef NVDLA_FEATURE_DATA_TYPE_INT16_FP16
     if(input_data_type == input_data_type_FP16) {
         !((lut_data[9:0]                 == 0) && (lut_data[14:10]                 == 5'h1F));
         !((lut_le_start_low[22:0]        == 0) && (lut_le_start_low[30:23]         == 8'hFF));
@@ -493,16 +496,19 @@ constraint nvdla_cdp_resource::c_ias_fp_no_inf_value {
         !((lut_lo_slope_uflow_scale[9:0] == 0) && (lut_lo_slope_uflow_scale[14:10] == 5'h1F));
         !((lut_lo_slope_oflow_scale[9:0] == 0) && (lut_lo_slope_oflow_scale[14:10] == 5'h1F));
     }
+`endif
 }
 
 constraint nvdla_cdp_resource::c_ias_fp_no_denorm_value {
     // NONE DENORM
+`ifdef NVDLA_FEATURE_DATA_TYPE_INT16_FP16
     if(input_data_type == input_data_type_FP16) {
         !((lut_le_start_low[22:0] != 0) && (lut_le_start_low[30:23] == 0));
         !((lut_le_end_low[22:0]   != 0) && (lut_le_end_low[30:23]   == 0));
         !((lut_lo_start_low[22:0] != 0) && (lut_lo_start_low[30:23] == 0));
         !((lut_lo_end_low[22:0]   != 0) && (lut_lo_end_low[30:23]   == 0));
     }
+`endif
 }
 
 constraint nvdla_cdp_resource::c_ias_lut {
@@ -537,17 +543,19 @@ constraint nvdla_cdp_resource::c_ias_lut {
             lut_lo_index_select[7:5]          inside {3'h0, 3'h7};
             signed'(lut_lo_index_select[5:0]) inside {[-8:13]};
     }
+`ifdef NVDLA_FEATURE_DATA_TYPE_INT16_FP16
     else if(input_data_type == input_data_type_INT16) {
             lut_lo_index_select[7:6]          inside {2'h0, 2'h3};
             signed'(lut_lo_index_select[6:0]) inside {[-8:29]};
     }
-
+`endif
     // Add solve before
     if(lut_le_function == lut_le_function_LINEAR) {
         if(input_data_type == input_data_type_INT8) {
             (signed'(lut_le_end_low[21:0]) > signed'(lut_le_start_low[21:0]));
             (signed'(lut_le_end_low[21:0]) - signed'(lut_le_start_low[21:0])) == (1<<(signed'(lut_le_index_select[5:0])+6));
         }
+`ifdef NVDLA_FEATURE_DATA_TYPE_INT16_FP16
         else if(input_data_type == input_data_type_INT16){
             (signed'({lut_le_end_high, lut_le_end_low}) > signed'({lut_le_start_high, lut_le_start_low}));
             (signed'({lut_le_end_high, lut_le_end_low}) - signed'({lut_le_start_high, lut_le_start_low})) == (1<<(signed'(lut_le_index_select[6:0])+6));
@@ -556,6 +564,7 @@ constraint nvdla_cdp_resource::c_ias_lut {
             signed'({1'b0,lut_le_start_low[30:23]}) <= (signed'(lut_le_index_select)+6) + 127 + 23; // constrains for diffrence between le_low and le_index_select
             signed'(lut_le_index_select)            <= 121;
         }
+`endif
     }
     else {
         signed'(lut_le_index_offset) != -128;
@@ -569,6 +578,7 @@ constraint nvdla_cdp_resource::c_ias_lut {
                 lut_le_end_low[21:0] == 22'h1F_FFFF;
             }
         }
+`ifdef NVDLA_FEATURE_DATA_TYPE_INT16_FP16
         else if(input_data_type == input_data_type_INT16){
             (signed'({lut_le_end_high, lut_le_end_low}) > signed'({lut_le_start_high, lut_le_start_low}));
             signed'(lut_le_index_offset) dist {[-64:-27]:=80, [-26:36]:=20};
@@ -584,12 +594,14 @@ constraint nvdla_cdp_resource::c_ias_lut {
             signed'(lut_le_index_offset)            <= 127;
             signed'(lut_le_index_offset)            >= -126;
         }
+`endif
     }
 
     if(input_data_type == input_data_type_INT8) {
         (signed'(lut_lo_end_low[21:0]) > signed'(lut_lo_start_low[21:0]));
         (signed'(lut_lo_end_low[21:0]) - signed'(lut_lo_start_low[21:0])) == (1<<(signed'(lut_lo_index_select[5:0])+8));
     }
+`ifdef NVDLA_FEATURE_DATA_TYPE_INT16_FP16
     else if(input_data_type == input_data_type_INT16){
         (signed'({lut_lo_end_high, lut_lo_end_low}) > signed'({lut_lo_start_high, lut_lo_start_low}));
         (signed'({lut_lo_end_high, lut_lo_end_low}) - signed'({lut_lo_start_high, lut_lo_start_low})) == (1<<(signed'(lut_lo_index_select[6:0])+8));
@@ -598,6 +610,7 @@ constraint nvdla_cdp_resource::c_ias_lut {
         signed'({1'b0,lut_lo_start_low[30:23]}) <= (signed'(lut_lo_index_select)+8) + 127 + 21;
         signed'(lut_lo_index_select)            <= 119;
     }
+`endif
 
     solve input_data_type before lut_le_start_low;
     solve input_data_type before lut_le_start_high;
@@ -611,6 +624,7 @@ constraint nvdla_cdp_resource::c_ias_lut {
             lut_le_start_low[31:22] == 10'h3FF;
         }
     }
+`ifdef NVDLA_FEATURE_DATA_TYPE_INT16_FP16
     else if(input_data_type == input_data_type_FP16) {
         if(lut_le_start_low[31] == 0) {
             lut_le_start_high == 6'h0;
@@ -622,6 +636,8 @@ constraint nvdla_cdp_resource::c_ias_lut {
         !(lut_le_start_low[30:23] == 8'hFF);
         !((lut_le_start_low[22:0] != 0) && (lut_le_start_low[30:23] == 0));
     }
+`endif
+
     solve input_data_type before lut_le_end_low;
     solve input_data_type before lut_le_end_high;
     if(input_data_type == input_data_type_INT8) {
@@ -634,6 +650,7 @@ constraint nvdla_cdp_resource::c_ias_lut {
             lut_le_end_low[31:22] == 10'h3FF;
         }
     }
+`ifdef NVDLA_FEATURE_DATA_TYPE_INT16_FP16
     else if(input_data_type == input_data_type_FP16) {
         if(lut_le_end_low[31] == 0) {
             lut_le_end_high == 6'h0;
@@ -642,6 +659,8 @@ constraint nvdla_cdp_resource::c_ias_lut {
             lut_le_end_high == 6'h3F;
         }
     }
+`endif
+
     solve input_data_type before lut_lo_start_low;
     solve input_data_type before lut_lo_start_high;
     if(input_data_type == input_data_type_INT8) {
@@ -654,6 +673,7 @@ constraint nvdla_cdp_resource::c_ias_lut {
             lut_lo_start_low[31:22] == 10'h3FF;
         }
     }
+`ifdef NVDLA_FEATURE_DATA_TYPE_INT16_FP16
     else if(input_data_type == input_data_type_FP16) {
         if(lut_lo_start_low[31] == 0) {
             lut_lo_start_high == 6'h0;
@@ -665,6 +685,8 @@ constraint nvdla_cdp_resource::c_ias_lut {
         !(lut_lo_start_low[30:23] == 8'hFF);
         !((lut_lo_start_low[22:0] != 0) && (lut_lo_start_low[30:23] == 0));
     }
+`endif
+
     solve input_data_type before lut_lo_end_low;
     solve input_data_type before lut_lo_end_high;
     if(input_data_type == input_data_type_INT8) {
@@ -677,6 +699,7 @@ constraint nvdla_cdp_resource::c_ias_lut {
             lut_lo_end_low[31:22] == 10'h3FF;
         }
     }
+`ifdef NVDLA_FEATURE_DATA_TYPE_INT16_FP16
     else if(input_data_type == input_data_type_FP16) {
         if(lut_lo_end_low[31] == 0) {
             lut_lo_end_high == 6'h0;
@@ -685,7 +708,7 @@ constraint nvdla_cdp_resource::c_ias_lut {
             lut_lo_end_high == 6'h3F;
         }
     }
-
+`endif
 }
 
 constraint nvdla_cdp_resource::c_ias_cvt {
@@ -695,9 +718,11 @@ constraint nvdla_cdp_resource::c_ias_cvt {
         datin_offset[15:7]   inside {9'h0, 9'h1FF};
         datout_offset[31:24] inside {8'h0, 8'hFF};
     }
+`ifdef NVDLA_FEATURE_DATA_TYPE_INT16_FP16
     else if(input_data_type == input_data_type_FP16) {
         datout_offset[31:15] inside {17'h0, 17'h1_FFFF};
     }
+`endif
 }
 
 constraint nvdla_cdp_resource::c_ias_dut_por_requirement {

@@ -386,11 +386,13 @@ endfunction : trace_dump
 
 // ias constraint
 constraint nvdla_cc_dp_resource::c_ias_datain_ext {
+`ifdef NVDLA_WINOGRAD_ENABLE
     if(conv_mode == conv_mode_WINOGRAD && datain_format == datain_format_FEATURE) {
         (weight_width_ext+1)   == 4;
         (weight_height_ext+1)  == 4;
         (weight_channel_ext+1) == (datain_channel_ext+1);
     }
+`endif
     if(conv_mode == conv_mode_DIRECT && datain_format == datain_format_PIXEL){
         (weight_width_ext+1) == 1;
     }
@@ -408,6 +410,7 @@ constraint nvdla_cc_dp_resource::c_ias_weight_data {
     // one bit of wmb for one element of kernel
     // wmb size <= one bank
     // bug 200312556, weiht bank must be able to hold one max kernel group + NVDLA_CBUF_ENTRY_BYTE_WIDTH bytes
+`ifdef NVDLA_WEIGHT_COMPRESSION_ENABLE
     (weight_format == weight_format_COMPRESSED) -> {
         wmb_bytes == (((weight_width_ext+1)*(weight_height_ext+1)*(weight_channel_ext+1)*(weight_kernel+1)+`BIT_PER_BYTE-1)/`BIT_PER_BYTE + NVDLA_CBUF_ENTRY_BYTE_WIDTH-1)/NVDLA_CBUF_ENTRY_BYTE_WIDTH*NVDLA_CBUF_ENTRY_BYTE_WIDTH;
         if(wmb_bytes > `NVDLA_CBUF_BANK_DEPTH) {  // can't work on full weight mode
@@ -420,6 +423,7 @@ constraint nvdla_cc_dp_resource::c_ias_weight_data {
             }
         }
     }
+`endif
 }
 
 constraint nvdla_cc_dp_resource::c_ias_pad_size {
@@ -465,6 +469,7 @@ constraint nvdla_cc_dp_resource::c_ias_reuse_mode {
             }
         }
     }
+`ifdef NVDLA_WINOGRAD_ENABLE
     else {
         if( wmb_bytes > `NVDLA_CBUF_BANK_DEPTH) { // can't work in full weight mode
             skip_weight_rls == skip_weight_rls_DISABLE;
@@ -483,16 +488,19 @@ constraint nvdla_cc_dp_resource::c_ias_reuse_mode {
             }
         }
     }
+`endif
 }
 
 constraint nvdla_cc_dp_resource::c_ias_multi_batch {
     if(conv_mode == conv_mode_DIRECT && datain_format == datain_format_FEATURE) {
+`ifdef NVDLA_BATCH_ENABLE
         if(batches > 0) {
             if(!((dataout_width == 0) && (dataout_height == 0))) {
                 line_stride % 2 == 0;
                 surf_stride % 2 == 0;
             }
         }
+`endif
     }
 }
 
@@ -510,24 +518,25 @@ constraint nvdla_cc_dp_resource::c_ias_dataout {
         (surf_stride - line_stride*(dataout_height+1)) dist { [1:4]:=10, [5:8]:=50, [9:12]:=30, [13:16]:=10}; // 0~256byte
     }
     (surf_stride*(dataout_channel+1)) <= 64'h4_0000;
-
+`ifdef NVDLA_WINOGRAD_ENABLE
     if(conv_mode == conv_mode_WINOGRAD && datain_format == datain_format_FEATURE) {
         (dataout_width+1)  == (datain_width_ext+1-4);
         (dataout_height+1) == (datain_height_ext+1-4);
         (dataout_width+1)  % 4 == 0;
         (dataout_height+1) % 4 == 0;
     }
-
+`endif
     dataout_channel == weight_kernel;
     atomics == (dataout_width+1) * (dataout_height+1) - 1;
 }
 
 constraint nvdla_cc_dp_resource::c_ias_conv_stride {
+`ifdef NVDLA_WINOGRAD_ENABLE
     if(conv_mode == conv_mode_WINOGRAD) {
         conv_x_stride_ext == 0;
         conv_y_stride_ext == 0;
-
     }
+`endif
 }
 
 constraint nvdla_cc_dp_resource::c_ias_dilation {
@@ -544,34 +553,34 @@ constraint nvdla_cc_dp_resource::c_ias_clip_setting {
 
 constraint nvdla_cc_dp_resource::c_ias_reuse_keep_previouse_setting {
     if(data_reuse == data_reuse_ENABLE) {
-        conv_mode           == prev_conv_mode; 
-        in_precision        == prev_in_precision;        
-        proc_precision      == prev_proc_precision;      
-        // datain_format       == prev_datain_format;      
-        // pixel_format        == prev_pixel_format;       
-        // pixel_mapping       == prev_pixel_mapping;       
-        // pixel_sign_override == prev_pixel_sign_override; 
-        // datain_width        == prev_datain_width; 
-        // datain_height       == prev_datain_height;       
-        // datain_channel      == prev_datain_channel;      
-        datain_width_ext    == prev_datain_width_ext;    
-        datain_height_ext   == prev_datain_height_ext;   
-        // pixel_x_offset      == prev_pixel_x_offset;   
-        // pixel_y_offset      == prev_pixel_y_offset;      
-        // datain_ram_type     == prev_datain_ram_type;     
-        // datain_addr_high_0  == prev_datain_addr_high_0;  
-        // datain_addr_low_0   == prev_datain_addr_low_0;  
-        // datain_addr_high_1  == prev_datain_addr_high_1;  
-        // datain_addr_low_1   == prev_datain_addr_low_1;  
-        line_stride         == prev_line_stride;   
-        // uv_line_stride      == prev_uv_line_stride;      
-        surf_stride         == prev_surf_stride;      
-        line_packed         == prev_line_packed;         
-        surf_packed         == prev_surf_packed;         
-        batches             == prev_batches;         
-        // batch_stride        == prev_batch_stride;        
-        entries             == prev_entries;        
-        //grains            == 
+        conv_mode           == prev_conv_mode;
+        in_precision        == prev_in_precision;
+        proc_precision      == prev_proc_precision;
+        // datain_format       == prev_datain_format;
+        // pixel_format        == prev_pixel_format;
+        // pixel_mapping       == prev_pixel_mapping;
+        // pixel_sign_override == prev_pixel_sign_override;
+        // datain_width        == prev_datain_width;
+        // datain_height       == prev_datain_height;
+        // datain_channel      == prev_datain_channel;
+        datain_width_ext    == prev_datain_width_ext;
+        datain_height_ext   == prev_datain_height_ext;
+        // pixel_x_offset      == prev_pixel_x_offset;
+        // pixel_y_offset      == prev_pixel_y_offset;
+        // datain_ram_type     == prev_datain_ram_type;
+        // datain_addr_high_0  == prev_datain_addr_high_0;
+        // datain_addr_low_0   == prev_datain_addr_low_0;
+        // datain_addr_high_1  == prev_datain_addr_high_1;
+        // datain_addr_low_1   == prev_datain_addr_low_1;
+        line_stride         == prev_line_stride;
+        // uv_line_stride      == prev_uv_line_stride;
+        surf_stride         == prev_surf_stride;
+        line_packed         == prev_line_packed;
+        surf_packed         == prev_surf_packed;
+        batches             == prev_batches;
+        // batch_stride        == prev_batch_stride;
+        entries             == prev_entries;
+        //grains            ==
         weight_format       == prev_weight_format;
         // byte_per_kernel     == prev_byte_per_kernel;
         //weight_kernel     ==
@@ -589,76 +598,76 @@ constraint nvdla_cc_dp_resource::c_ias_reuse_keep_previouse_setting {
         //mean_gu           ==
         //mean_bv           ==
         //mean_ax           ==
-        // cvt_en              == prev_cvt_en;         
-        // cvt_truncate        == prev_cvt_truncate;     
-        // cvt_offset          == prev_cvt_offset;      
-        // cvt_scale           == prev_cvt_scale;        
-        // conv_x_stride       == prev_conv_x_stride;   
-        // conv_y_stride       == prev_conv_y_stride;     
-        pad_left            == prev_pad_left;     
-        // pad_right           == prev_pad_right;         
-        pad_top             == prev_pad_top;         
-        // pad_bottom          == prev_pad_bottom;        
-        pad_value           == prev_pad_value;        
-        data_bank           == prev_data_bank;         
-        weight_bank         == prev_weight_bank;      
-        // nan_to_zero         == prev_nan_to_zero;       
-        //cya               ==        
+        // cvt_en              == prev_cvt_en;
+        // cvt_truncate        == prev_cvt_truncate;
+        // cvt_offset          == prev_cvt_offset;
+        // cvt_scale           == prev_cvt_scale;
+        // conv_x_stride       == prev_conv_x_stride;
+        // conv_y_stride       == prev_conv_y_stride;
+        pad_left            == prev_pad_left;
+        // pad_right           == prev_pad_right;
+        pad_top             == prev_pad_top;
+        // pad_bottom          == prev_pad_bottom;
+        pad_value           == prev_pad_value;
+        data_bank           == prev_data_bank;
+        weight_bank         == prev_weight_bank;
+        // nan_to_zero         == prev_nan_to_zero;
+        //cya               ==
         datain_channel_ext  == prev_datain_channel_ext;
-        y_extension         == prev_y_extension; 
-        weight_width_ext    == prev_weight_width_ext;  
-        weight_height_ext   == prev_weight_height_ext; 
+        y_extension         == prev_y_extension;
+        weight_width_ext    == prev_weight_width_ext;
+        weight_height_ext   == prev_weight_height_ext;
         weight_channel_ext  == prev_weight_channel_ext;
-        //dataout_width     == 
-        //dataout_height    == 
-        //dataout_channel   == 
-        //atomics           == 
-        //rls_slices        == 
+        //dataout_width     ==
+        //dataout_height    ==
+        //dataout_channel   ==
+        //atomics           ==
+        //rls_slices        ==
         conv_x_stride_ext   == prev_conv_x_stride_ext;
         conv_y_stride_ext   == prev_conv_y_stride_ext;
         x_dilation_ext      == prev_x_dilation_ext;
-        y_dilation_ext      == prev_y_dilation_ext; 
-        //pad_value_csc     == 
+        y_dilation_ext      == prev_y_dilation_ext;
+        //pad_value_csc     ==
         pra_truncate        == prev_pra_truncate;
-        //dataout_addr      == 
-        //line_stride_cacc  == 
-        //surf_stride_cacc  == 
+        //dataout_addr      ==
+        //line_stride_cacc  ==
+        //surf_stride_cacc  ==
         clip_truncate       == prev_clip_truncate;
     }
     if(weight_reuse == weight_reuse_ENABLE) {
         weight_none_zero_rate == prev_weight_none_zero_rate;
-        conv_mode           == prev_conv_mode; 
-        in_precision        == prev_in_precision;        
-        proc_precision      == prev_proc_precision;      
-        datain_format       == prev_datain_format;      
-        // pixel_format        == prev_pixel_format;       
-        // pixel_mapping       == prev_pixel_mapping;       
-        // pixel_sign_override == prev_pixel_sign_override; 
-        //datain_width        == prev_datain_width; 
-        //datain_height       == prev_datain_height;       
-        // datain_channel      == prev_datain_channel;      
-        //datain_width_ext    == prev_datain_width_ext;    
-        //datain_height_ext   == prev_datain_height_ext;   
-        // pixel_x_offset      == prev_pixel_x_offset;   
-        // pixel_y_offset      == prev_pixel_y_offset;      
-        // datain_ram_type     == prev_datain_ram_type;     
-        //datain_addr_high_0  == prev_datain_addr_high_0;  
-        //datain_addr_low_0   == prev_datain_addr_low_0;  
-        //datain_addr_high_1  == prev_datain_addr_high_1;  
-        //datain_addr_low_1   == prev_datain_addr_low_1;  
-        //line_stride         == prev_line_stride;   
-        //uv_line_stride      == prev_uv_line_stride;      
-        //surf_stride         == prev_surf_stride;      
-        //line_packed         == prev_line_packed;         
-        //surf_packed         == prev_surf_packed;         
-        //gob_per_line        == prev_gob_per_line;        
-        //gob_per_uv_line     == prev_gob_per_uv_line;     
-        //gob_height          == prev_gob_height;     
-        //gob_y_index         == prev_gob_y_index;         
-        //batches             == prev_batches;         
-        //batch_stride        == prev_batch_stride;        
-        //entries             == prev_entries;        
-        //grains            == 
+        conv_mode           == prev_conv_mode;
+        in_precision        == prev_in_precision;
+        proc_precision      == prev_proc_precision;
+        datain_format       == prev_datain_format;
+        // pixel_format        == prev_pixel_format;
+        // pixel_mapping       == prev_pixel_mapping;
+        // pixel_sign_override == prev_pixel_sign_override;
+        //datain_width        == prev_datain_width;
+        //datain_height       == prev_datain_height;
+        // datain_channel      == prev_datain_channel;
+        //datain_width_ext    == prev_datain_width_ext;
+        //datain_height_ext   == prev_datain_height_ext;
+        // pixel_x_offset      == prev_pixel_x_offset;
+        // pixel_y_offset      == prev_pixel_y_offset;
+        // datain_ram_type     == prev_datain_ram_type;
+        //datain_addr_high_0  == prev_datain_addr_high_0;
+        //datain_addr_low_0   == prev_datain_addr_low_0;
+        //datain_addr_high_1  == prev_datain_addr_high_1;
+        //datain_addr_low_1   == prev_datain_addr_low_1;
+        //line_stride         == prev_line_stride;
+        //uv_line_stride      == prev_uv_line_stride;
+        //surf_stride         == prev_surf_stride;
+        //line_packed         == prev_line_packed;
+        //surf_packed         == prev_surf_packed;
+        //gob_per_line        == prev_gob_per_line;
+        //gob_per_uv_line     == prev_gob_per_uv_line;
+        //gob_height          == prev_gob_height;
+        //gob_y_index         == prev_gob_y_index;
+        //batches             == prev_batches;
+        //batch_stride        == prev_batch_stride;
+        //entries             == prev_entries;
+        //grains            ==
         weight_format       == prev_weight_format;
         // byte_per_kernel     == prev_byte_per_kernel;
         weight_kernel       == prev_weight_kernel;
@@ -676,40 +685,40 @@ constraint nvdla_cc_dp_resource::c_ias_reuse_keep_previouse_setting {
         //mean_gu           ==
         //mean_bv           ==
         //mean_ax           ==
-        // cvt_en              == prev_cvt_en;         
-        // cvt_truncate        == prev_cvt_truncate;     
-        // cvt_offset          == prev_cvt_offset;      
-        // cvt_scale           == prev_cvt_scale;        
-        // conv_x_stride       == prev_conv_x_stride;   
-        // conv_y_stride       == prev_conv_y_stride;     
-        //pad_left            == prev_pad_left;     
-        //pad_right           == prev_pad_right;         
-        //pad_top             == prev_pad_top;         
-        //pad_bottom          == prev_pad_bottom;        
-        pad_value           == prev_pad_value;        
-        data_bank           == prev_data_bank;         
-        weight_bank         == prev_weight_bank;      
-        //nan_to_zero         == prev_nan_to_zero;       
-        //cya               ==        
+        // cvt_en              == prev_cvt_en;
+        // cvt_truncate        == prev_cvt_truncate;
+        // cvt_offset          == prev_cvt_offset;
+        // cvt_scale           == prev_cvt_scale;
+        // conv_x_stride       == prev_conv_x_stride;
+        // conv_y_stride       == prev_conv_y_stride;
+        //pad_left            == prev_pad_left;
+        //pad_right           == prev_pad_right;
+        //pad_top             == prev_pad_top;
+        //pad_bottom          == prev_pad_bottom;
+        pad_value           == prev_pad_value;
+        data_bank           == prev_data_bank;
+        weight_bank         == prev_weight_bank;
+        //nan_to_zero         == prev_nan_to_zero;
+        //cya               ==
         datain_channel_ext  == prev_datain_channel_ext;
-        //y_extension         == prev_y_extension; 
-        weight_width_ext    == prev_weight_width_ext;  
-        weight_height_ext   == prev_weight_height_ext; 
+        //y_extension         == prev_y_extension;
+        weight_width_ext    == prev_weight_width_ext;
+        weight_height_ext   == prev_weight_height_ext;
         weight_channel_ext  == prev_weight_channel_ext;
-        //dataout_width     == 
-        //dataout_height    == 
-        //dataout_channel   == 
-        //atomics           == 
-        //rls_slices        == 
+        //dataout_width     ==
+        //dataout_height    ==
+        //dataout_channel   ==
+        //atomics           ==
+        //rls_slices        ==
         conv_x_stride_ext   == prev_conv_x_stride_ext;
         conv_y_stride_ext   == prev_conv_y_stride_ext;
         x_dilation_ext      == prev_x_dilation_ext;
-        y_dilation_ext      == prev_y_dilation_ext; 
-        //pad_value_csc     == 
+        y_dilation_ext      == prev_y_dilation_ext;
+        //pad_value_csc     ==
         //pra_truncate        == prev_pra_truncate;
-        //dataout_addr      == 
-        //line_stride_cacc  == 
-        //surf_stride_cacc  == 
+        //dataout_addr      ==
+        //line_stride_cacc  ==
+        //surf_stride_cacc  ==
         //clip_truncate       == prev_clip_truncate;
     }
 }
@@ -834,36 +843,36 @@ function void nvdla_cc_dp_resource::record_rand_variable();
     is_weight_bank_changed  = (weight_bank != prev_weight_bank);
     is_weight_format_changed= (weight_format != prev_weight_format);
 
-    prev_conv_mode           = conv_mode; 
-    prev_in_precision        = in_precision;        
-    prev_proc_precision      = proc_precision;      
+    prev_conv_mode           = conv_mode;
+    prev_in_precision        = in_precision;
+    prev_proc_precision      = proc_precision;
     prev_skip_data_rls       = skip_data_rls;
     prev_skip_weight_rls     = skip_weight_rls;
-    // datain_format       = datain_format;      
-    // pixel_format        = pixel_format;       
-    // pixel_mapping       = pixel_mapping;       
-    // pixel_sign_override = pixel_sign_override; 
-    // datain_width        = datain_width; 
-    // datain_height       = datain_height;       
-    // datain_channel      = datain_channel;      
-    prev_datain_width_ext    = datain_width_ext;    
-    prev_datain_height_ext   = datain_height_ext;   
-    // pixel_x_offset      = pixel_x_offset;   
-    // pixel_y_offset      = pixel_y_offset;      
-    // datain_ram_type     = datain_ram_type;     
-    // datain_addr_high_0  = datain_addr_high_0;  
-    // datain_addr_low_0   = datain_addr_low_0;  
-    // datain_addr_high_1  = datain_addr_high_1;  
-    // datain_addr_low_1   = datain_addr_low_1;  
-    prev_line_stride         = line_stride;   
-    // uv_line_stride      = uv_line_stride;      
-    prev_surf_stride         = surf_stride;      
-    prev_line_packed         = line_packed;         
-    prev_surf_packed         = surf_packed;         
-    prev_batches             = batches;         
-    // batch_stride        = batch_stride;        
-    prev_entries             = entries;        
-    //grains            = 
+    // datain_format       = datain_format;
+    // pixel_format        = pixel_format;
+    // pixel_mapping       = pixel_mapping;
+    // pixel_sign_override = pixel_sign_override;
+    // datain_width        = datain_width;
+    // datain_height       = datain_height;
+    // datain_channel      = datain_channel;
+    prev_datain_width_ext    = datain_width_ext;
+    prev_datain_height_ext   = datain_height_ext;
+    // pixel_x_offset      = pixel_x_offset;
+    // pixel_y_offset      = pixel_y_offset;
+    // datain_ram_type     = datain_ram_type;
+    // datain_addr_high_0  = datain_addr_high_0;
+    // datain_addr_low_0   = datain_addr_low_0;
+    // datain_addr_high_1  = datain_addr_high_1;
+    // datain_addr_low_1   = datain_addr_low_1;
+    prev_line_stride         = line_stride;
+    // uv_line_stride      = uv_line_stride;
+    prev_surf_stride         = surf_stride;
+    prev_line_packed         = line_packed;
+    prev_surf_packed         = surf_packed;
+    prev_batches             = batches;
+    // batch_stride        = batch_stride;
+    prev_entries             = entries;
+    //grains            =
     prev_weight_format       = weight_format;
     // byte_per_kernel     = byte_per_kernel;
     //weight_kernel     =
@@ -881,74 +890,74 @@ function void nvdla_cc_dp_resource::record_rand_variable();
     //mean_gu           =
     //mean_bv           =
     //mean_ax           =
-    // cvt_en              = cvt_en;         
-    // cvt_truncate        = cvt_truncate;     
-    // cvt_offset          = cvt_offset;      
-    // cvt_scale           = cvt_scale;        
-    // conv_x_stride       = conv_x_stride;   
-    // conv_y_stride       = conv_y_stride;     
-    prev_pad_left            = pad_left;     
-    // pad_right           = pad_right;         
-    prev_pad_top             = pad_top;         
-    // pad_bottom          = pad_bottom;        
-    prev_pad_value           = pad_value;        
-    prev_data_bank           = data_bank;         
-    prev_weight_bank         = weight_bank;      
-    // nan_to_zero         = nan_to_zero;       
-    //cya               =        
+    // cvt_en              = cvt_en;
+    // cvt_truncate        = cvt_truncate;
+    // cvt_offset          = cvt_offset;
+    // cvt_scale           = cvt_scale;
+    // conv_x_stride       = conv_x_stride;
+    // conv_y_stride       = conv_y_stride;
+    prev_pad_left            = pad_left;
+    // pad_right           = pad_right;
+    prev_pad_top             = pad_top;
+    // pad_bottom          = pad_bottom;
+    prev_pad_value           = pad_value;
+    prev_data_bank           = data_bank;
+    prev_weight_bank         = weight_bank;
+    // nan_to_zero         = nan_to_zero;
+    //cya               =
     prev_datain_channel_ext  = datain_channel_ext;
-    prev_y_extension         = y_extension; 
-    prev_weight_width_ext    = weight_width_ext;  
-    prev_weight_height_ext   = weight_height_ext; 
+    prev_y_extension         = y_extension;
+    prev_weight_width_ext    = weight_width_ext;
+    prev_weight_height_ext   = weight_height_ext;
     prev_weight_channel_ext  = weight_channel_ext;
-    //dataout_width     = 
-    //dataout_height    = 
-    //dataout_channel   = 
-    //atomics           = 
-    //rls_slices        = 
+    //dataout_width     =
+    //dataout_height    =
+    //dataout_channel   =
+    //atomics           =
+    //rls_slices        =
     prev_conv_x_stride_ext   = conv_x_stride_ext;
     prev_conv_y_stride_ext   = conv_y_stride_ext;
     prev_x_dilation_ext      = x_dilation_ext;
-    prev_y_dilation_ext      = y_dilation_ext; 
-    //pad_value_csc     = 
+    prev_y_dilation_ext      = y_dilation_ext;
+    //pad_value_csc     =
     prev_pra_truncate        = pra_truncate;
-    //dataout_addr      = 
-    //line_stride_cacc  = 
-    //surf_stride_cacc  = 
+    //dataout_addr      =
+    //line_stride_cacc  =
+    //surf_stride_cacc  =
     prev_clip_truncate       = clip_truncate;
     prev_weight_none_zero_rate = weight_none_zero_rate;
-    prev_conv_mode           = conv_mode; 
-    prev_in_precision        = in_precision;        
-    prev_proc_precision      = proc_precision;      
-    prev_datain_format       = datain_format;      
-    // pixel_format        = pixel_format;       
-    // pixel_mapping       = pixel_mapping;       
-    // pixel_sign_override = pixel_sign_override; 
-    //datain_width        = datain_width; 
-    //datain_height       = datain_height;       
-    // datain_channel      = datain_channel;      
-    //datain_width_ext    = datain_width_ext;    
-    //datain_height_ext   = datain_height_ext;   
-    // pixel_x_offset      = pixel_x_offset;   
-    // pixel_y_offset      = pixel_y_offset;      
-    // datain_ram_type     = datain_ram_type;     
-    //datain_addr_high_0  = datain_addr_high_0;  
-    //datain_addr_low_0   = datain_addr_low_0;  
-    //datain_addr_high_1  = datain_addr_high_1;  
-    //datain_addr_low_1   = datain_addr_low_1;  
-    //line_stride         = line_stride;   
-    //uv_line_stride      = uv_line_stride;      
-    //surf_stride         = surf_stride;      
-    //line_packed         = line_packed;         
-    //surf_packed         = surf_packed;         
-    //gob_per_line        = gob_per_line;        
-    //gob_per_uv_line     = gob_per_uv_line;     
-    //gob_height          = gob_height;     
-    //gob_y_index         = gob_y_index;         
-    //batches             = batches;         
-    //batch_stride        = batch_stride;        
-    //entries             = entries;        
-    //grains            = 
+    prev_conv_mode           = conv_mode;
+    prev_in_precision        = in_precision;
+    prev_proc_precision      = proc_precision;
+    prev_datain_format       = datain_format;
+    // pixel_format        = pixel_format;
+    // pixel_mapping       = pixel_mapping;
+    // pixel_sign_override = pixel_sign_override;
+    //datain_width        = datain_width;
+    //datain_height       = datain_height;
+    // datain_channel      = datain_channel;
+    //datain_width_ext    = datain_width_ext;
+    //datain_height_ext   = datain_height_ext;
+    // pixel_x_offset      = pixel_x_offset;
+    // pixel_y_offset      = pixel_y_offset;
+    // datain_ram_type     = datain_ram_type;
+    //datain_addr_high_0  = datain_addr_high_0;
+    //datain_addr_low_0   = datain_addr_low_0;
+    //datain_addr_high_1  = datain_addr_high_1;
+    //datain_addr_low_1   = datain_addr_low_1;
+    //line_stride         = line_stride;
+    //uv_line_stride      = uv_line_stride;
+    //surf_stride         = surf_stride;
+    //line_packed         = line_packed;
+    //surf_packed         = surf_packed;
+    //gob_per_line        = gob_per_line;
+    //gob_per_uv_line     = gob_per_uv_line;
+    //gob_height          = gob_height;
+    //gob_y_index         = gob_y_index;
+    //batches             = batches;
+    //batch_stride        = batch_stride;
+    //entries             = entries;
+    //grains            =
     prev_weight_format       = weight_format;
     // byte_per_kernel     = byte_per_kernel;
     prev_weight_kernel       = weight_kernel;
@@ -966,40 +975,40 @@ function void nvdla_cc_dp_resource::record_rand_variable();
     //mean_gu           =
     //mean_bv           =
     //mean_ax           =
-    // cvt_en              = cvt_en;         
-    // cvt_truncate        = cvt_truncate;     
-    // cvt_offset          = cvt_offset;      
-    // cvt_scale           = cvt_scale;        
-    // conv_x_stride       = conv_x_stride;   
-    // conv_y_stride       = conv_y_stride;     
-    //pad_left            = pad_left;     
-    //pad_right           = pad_right;         
-    //pad_top             = pad_top;         
-    //pad_bottom          = pad_bottom;        
-    prev_pad_value           = pad_value;        
-    prev_data_bank           = data_bank;         
-    prev_weight_bank         = weight_bank;      
-    //nan_to_zero         = nan_to_zero;       
-    //cya               =        
+    // cvt_en              = cvt_en;
+    // cvt_truncate        = cvt_truncate;
+    // cvt_offset          = cvt_offset;
+    // cvt_scale           = cvt_scale;
+    // conv_x_stride       = conv_x_stride;
+    // conv_y_stride       = conv_y_stride;
+    //pad_left            = pad_left;
+    //pad_right           = pad_right;
+    //pad_top             = pad_top;
+    //pad_bottom          = pad_bottom;
+    prev_pad_value           = pad_value;
+    prev_data_bank           = data_bank;
+    prev_weight_bank         = weight_bank;
+    //nan_to_zero         = nan_to_zero;
+    //cya               =
     prev_datain_channel_ext  = datain_channel_ext;
-    //y_extension         = y_extension; 
-    prev_weight_width_ext    = weight_width_ext;  
-    prev_weight_height_ext   = weight_height_ext; 
+    //y_extension         = y_extension;
+    prev_weight_width_ext    = weight_width_ext;
+    prev_weight_height_ext   = weight_height_ext;
     prev_weight_channel_ext  = weight_channel_ext;
-    //dataout_width     = 
-    //dataout_height    = 
-    //dataout_channel   = 
-    //atomics           = 
-    //rls_slices        = 
+    //dataout_width     =
+    //dataout_height    =
+    //dataout_channel   =
+    //atomics           =
+    //rls_slices        =
     prev_conv_x_stride_ext   = conv_x_stride_ext;
     prev_conv_y_stride_ext   = conv_y_stride_ext;
     prev_x_dilation_ext      = x_dilation_ext;
-    prev_y_dilation_ext      = y_dilation_ext; 
-    //pad_value_csc     = 
+    prev_y_dilation_ext      = y_dilation_ext;
+    //pad_value_csc     =
     //pra_truncate        = pra_truncate;
-    //dataout_addr      = 
-    //line_stride_cacc  = 
-    //surf_stride_cacc  = 
+    //dataout_addr      =
+    //line_stride_cacc  =
+    //surf_stride_cacc  =
     //clip_truncate       = clip_truncate;
 endfunction : record_rand_variable
 

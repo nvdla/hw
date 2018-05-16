@@ -562,10 +562,12 @@ constraint nvdla_cdma_resource::c_ias_stride_alignment {
 }
 
 constraint nvdla_cdma_resource::c_ias_precision_cvt {
+`ifdef NVDLA_FEATURE_DATA_TYPE_INT16_FP16
     if(datain_format == datain_format_PIXEL) {
         !(in_precision == in_precision_FP16 && (proc_precision == proc_precision_INT8 || proc_precision == proc_precision_INT16));
     }
-    else if(datain_format == datain_format_FEATURE) {
+`endif
+    if(datain_format == datain_format_FEATURE) {
         in_precision == in_precision_t'(proc_precision);
     }
 }
@@ -575,17 +577,22 @@ constraint nvdla_cdma_resource::c_ias_atomic_setting {
         atomic_m == `NVDLA_MEMORY_ATOMIC_SIZE;
         atomic_c == `NVDLA_MAC_ATOMIC_C_SIZE;
         atomic_e == NVDLA_CBUF_ENTRY_BYTE_WIDTH;
-    } else if(in_precision == in_precision_INT16) {
-        // TODO, current NVDLA_MEMORY_ATOMIC_SIZE and NVDLA_MAC_ATOMIC_C_SIZE are for INT8 only
-        atomic_m == `NVDLA_MEMORY_ATOMIC_SIZE/2;
-        atomic_c == `NVDLA_MAC_ATOMIC_C_SIZE/2;
-        atomic_e == NVDLA_CBUF_ENTRY_BYTE_WIDTH/2;
-    } else if(in_precision == in_precision_FP16) {
+    }
+`ifdef NVDLA_FEATURE_DATA_TYPE_INT16_FP16
+    if(in_precision == in_precision_INT16) {
         // TODO, current NVDLA_MEMORY_ATOMIC_SIZE and NVDLA_MAC_ATOMIC_C_SIZE are for INT8 only
         atomic_m == `NVDLA_MEMORY_ATOMIC_SIZE/2;
         atomic_c == `NVDLA_MAC_ATOMIC_C_SIZE/2;
         atomic_e == NVDLA_CBUF_ENTRY_BYTE_WIDTH/2;
     }
+
+    if(in_precision == in_precision_FP16) {
+        // TODO, current NVDLA_MEMORY_ATOMIC_SIZE and NVDLA_MAC_ATOMIC_C_SIZE are for INT8 only
+        atomic_m == `NVDLA_MEMORY_ATOMIC_SIZE/2;
+        atomic_c == `NVDLA_MAC_ATOMIC_C_SIZE/2;
+        atomic_e == NVDLA_CBUF_ENTRY_BYTE_WIDTH/2;
+    }
+`endif
     (atomic_e2m == atomic_e/atomic_m);
     (n_atomic_m == (datain_channel + atomic_m)/atomic_m);
 }
@@ -595,8 +602,27 @@ constraint nvdla_cdma_resource::c_ias_work_mode {
 }
 
 constraint nvdla_cdma_resource::c_ias_pixel {
+`ifdef NVDLA_FEATURE_DATA_TYPE_INT8
+    pixel_format inside {
+        pixel_format_T_R8
+       ,pixel_format_T_A8B8G8R8
+       ,pixel_format_T_A8R8G8B8
+       ,pixel_format_T_B8G8R8A8
+       ,pixel_format_T_R8G8B8A8
+       ,pixel_format_T_X8B8G8R8
+       ,pixel_format_T_X8R8G8B8
+       ,pixel_format_T_B8G8R8X8
+       ,pixel_format_T_R8G8B8X8
+       ,pixel_format_T_A8Y8U8V8
+       ,pixel_format_T_V8U8Y8A8
+       ,pixel_format_T_Y8___U8V8_N444
+       ,pixel_format_T_Y8___V8U8_N444
+    };
+`endif
+
     if(conv_mode == conv_mode_DIRECT && datain_format == datain_format_PIXEL){
         (pixel_format == pixel_format_T_R8)                -> {(datain_channel+1) == 1; in_precision == in_precision_INT8;  element_byte_size_plane_0 == 1; element_byte_size_plane_1 == 0; plane_number == 1; pixel_x_offset < `NVDLA_MEMORY_ATOMIC_SIZE/element_byte_size_plane_0;}
+`ifdef NVDLA_FEATURE_DATA_TYPE_INT16_FP16
         (pixel_format == pixel_format_T_R10)               -> {(datain_channel+1) == 1; in_precision == in_precision_INT16; element_byte_size_plane_0 == 2; element_byte_size_plane_1 == 0; plane_number == 1; pixel_x_offset < `NVDLA_MEMORY_ATOMIC_SIZE/element_byte_size_plane_0;}
         (pixel_format == pixel_format_T_R12)               -> {(datain_channel+1) == 1; in_precision == in_precision_INT16; element_byte_size_plane_0 == 2; element_byte_size_plane_1 == 0; plane_number == 1; pixel_x_offset < `NVDLA_MEMORY_ATOMIC_SIZE/element_byte_size_plane_0;}
         (pixel_format == pixel_format_T_R16)               -> {(datain_channel+1) == 1; in_precision == in_precision_INT16; element_byte_size_plane_0 == 2; element_byte_size_plane_1 == 0; plane_number == 1; pixel_x_offset < `NVDLA_MEMORY_ATOMIC_SIZE/element_byte_size_plane_0;}
@@ -608,6 +634,7 @@ constraint nvdla_cdma_resource::c_ias_pixel {
         (pixel_format == pixel_format_T_A16Y16U16V16)      -> {(datain_channel+1) == 4; in_precision == in_precision_INT16; element_byte_size_plane_0 == 8; element_byte_size_plane_1 == 0; plane_number == 1; pixel_x_offset < `NVDLA_MEMORY_ATOMIC_SIZE/element_byte_size_plane_0;}
         (pixel_format == pixel_format_T_V16U16Y16A16)      -> {(datain_channel+1) == 4; in_precision == in_precision_INT16; element_byte_size_plane_0 == 8; element_byte_size_plane_1 == 0; plane_number == 1; pixel_x_offset < `NVDLA_MEMORY_ATOMIC_SIZE/element_byte_size_plane_0;}
         (pixel_format == pixel_format_T_A16Y16U16V16_F)    -> {(datain_channel+1) == 4; in_precision == in_precision_FP16;  element_byte_size_plane_0 == 8; element_byte_size_plane_1 == 0; plane_number == 1; pixel_x_offset < `NVDLA_MEMORY_ATOMIC_SIZE/element_byte_size_plane_0;}
+`endif
         (pixel_format == pixel_format_T_A8B8G8R8)          -> {(datain_channel+1) == 4; in_precision == in_precision_INT8;  element_byte_size_plane_0 == 4; element_byte_size_plane_1 == 0; plane_number == 1; pixel_x_offset < `NVDLA_MEMORY_ATOMIC_SIZE/element_byte_size_plane_0;}
         (pixel_format == pixel_format_T_A8R8G8B8)          -> {(datain_channel+1) == 4; in_precision == in_precision_INT8;  element_byte_size_plane_0 == 4; element_byte_size_plane_1 == 0; plane_number == 1; pixel_x_offset < `NVDLA_MEMORY_ATOMIC_SIZE/element_byte_size_plane_0;}
         (pixel_format == pixel_format_T_B8G8R8A8)          -> {(datain_channel+1) == 4; in_precision == in_precision_INT8;  element_byte_size_plane_0 == 4; element_byte_size_plane_1 == 0; plane_number == 1; pixel_x_offset < `NVDLA_MEMORY_ATOMIC_SIZE/element_byte_size_plane_0;}
@@ -616,22 +643,26 @@ constraint nvdla_cdma_resource::c_ias_pixel {
         (pixel_format == pixel_format_T_X8R8G8B8)          -> {(datain_channel+1) == 4; in_precision == in_precision_INT8;  element_byte_size_plane_0 == 4; element_byte_size_plane_1 == 0; plane_number == 1; pixel_x_offset < `NVDLA_MEMORY_ATOMIC_SIZE/element_byte_size_plane_0;}
         (pixel_format == pixel_format_T_B8G8R8X8)          -> {(datain_channel+1) == 4; in_precision == in_precision_INT8;  element_byte_size_plane_0 == 4; element_byte_size_plane_1 == 0; plane_number == 1; pixel_x_offset < `NVDLA_MEMORY_ATOMIC_SIZE/element_byte_size_plane_0;}
         (pixel_format == pixel_format_T_R8G8B8X8)          -> {(datain_channel+1) == 4; in_precision == in_precision_INT8;  element_byte_size_plane_0 == 4; element_byte_size_plane_1 == 0; plane_number == 1; pixel_x_offset < `NVDLA_MEMORY_ATOMIC_SIZE/element_byte_size_plane_0;}
+`ifdef NVDLA_FEATURE_DATA_TYPE_INT16_FP16
         (pixel_format == pixel_format_T_A2B10G10R10)       -> {(datain_channel+1) == 4; in_precision == in_precision_INT16; element_byte_size_plane_0 == 4; element_byte_size_plane_1 == 0; plane_number == 1; pixel_x_offset < `NVDLA_MEMORY_ATOMIC_SIZE/element_byte_size_plane_0;}
         (pixel_format == pixel_format_T_A2R10G10B10)       -> {(datain_channel+1) == 4; in_precision == in_precision_INT16; element_byte_size_plane_0 == 4; element_byte_size_plane_1 == 0; plane_number == 1; pixel_x_offset < `NVDLA_MEMORY_ATOMIC_SIZE/element_byte_size_plane_0;}
         (pixel_format == pixel_format_T_B10G10R10A2)       -> {(datain_channel+1) == 4; in_precision == in_precision_INT16; element_byte_size_plane_0 == 4; element_byte_size_plane_1 == 0; plane_number == 1; pixel_x_offset < `NVDLA_MEMORY_ATOMIC_SIZE/element_byte_size_plane_0;}
         (pixel_format == pixel_format_T_R10G10B10A2)       -> {(datain_channel+1) == 4; in_precision == in_precision_INT16; element_byte_size_plane_0 == 4; element_byte_size_plane_1 == 0; plane_number == 1; pixel_x_offset < `NVDLA_MEMORY_ATOMIC_SIZE/element_byte_size_plane_0;}
         (pixel_format == pixel_format_T_A2Y10U10V10)       -> {(datain_channel+1) == 4; in_precision == in_precision_INT16; element_byte_size_plane_0 == 4; element_byte_size_plane_1 == 0; plane_number == 1; pixel_x_offset < `NVDLA_MEMORY_ATOMIC_SIZE/element_byte_size_plane_0;}
         (pixel_format == pixel_format_T_V10U10Y10A2)       -> {(datain_channel+1) == 4; in_precision == in_precision_INT16; element_byte_size_plane_0 == 4; element_byte_size_plane_1 == 0; plane_number == 1; pixel_x_offset < `NVDLA_MEMORY_ATOMIC_SIZE/element_byte_size_plane_0;}
+`endif
         (pixel_format == pixel_format_T_A8Y8U8V8)          -> {(datain_channel+1) == 4; in_precision == in_precision_INT8;  element_byte_size_plane_0 == 4; element_byte_size_plane_1 == 0; plane_number == 1; pixel_x_offset < `NVDLA_MEMORY_ATOMIC_SIZE/element_byte_size_plane_0;}
         (pixel_format == pixel_format_T_V8U8Y8A8)          -> {(datain_channel+1) == 4; in_precision == in_precision_INT8;  element_byte_size_plane_0 == 4; element_byte_size_plane_1 == 0; plane_number == 1; pixel_x_offset < `NVDLA_MEMORY_ATOMIC_SIZE/element_byte_size_plane_0;}
         (pixel_format == pixel_format_T_Y8___U8V8_N444)    -> {(datain_channel+1) == 3; in_precision == in_precision_INT8;  element_byte_size_plane_0 == 1; element_byte_size_plane_1 == 2; plane_number == 2; pixel_x_offset < `NVDLA_MEMORY_ATOMIC_SIZE/element_byte_size_plane_0;}
         (pixel_format == pixel_format_T_Y8___V8U8_N444)    -> {(datain_channel+1) == 3; in_precision == in_precision_INT8;  element_byte_size_plane_0 == 1; element_byte_size_plane_1 == 2; plane_number == 2; pixel_x_offset < `NVDLA_MEMORY_ATOMIC_SIZE/element_byte_size_plane_0;}
+`ifdef NVDLA_FEATURE_DATA_TYPE_INT16_FP16
         (pixel_format == pixel_format_T_Y10___U10V10_N444) -> {(datain_channel+1) == 3; in_precision == in_precision_INT16; element_byte_size_plane_0 == 2; element_byte_size_plane_1 == 4; plane_number == 2; pixel_x_offset < `NVDLA_MEMORY_ATOMIC_SIZE/element_byte_size_plane_0;}
         (pixel_format == pixel_format_T_Y10___V10U10_N444) -> {(datain_channel+1) == 3; in_precision == in_precision_INT16; element_byte_size_plane_0 == 2; element_byte_size_plane_1 == 4; plane_number == 2; pixel_x_offset < `NVDLA_MEMORY_ATOMIC_SIZE/element_byte_size_plane_0;}
         (pixel_format == pixel_format_T_Y12___U12V12_N444) -> {(datain_channel+1) == 3; in_precision == in_precision_INT16; element_byte_size_plane_0 == 2; element_byte_size_plane_1 == 4; plane_number == 2; pixel_x_offset < `NVDLA_MEMORY_ATOMIC_SIZE/element_byte_size_plane_0;}
         (pixel_format == pixel_format_T_Y12___V12U12_N444) -> {(datain_channel+1) == 3; in_precision == in_precision_INT16; element_byte_size_plane_0 == 2; element_byte_size_plane_1 == 4; plane_number == 2; pixel_x_offset < `NVDLA_MEMORY_ATOMIC_SIZE/element_byte_size_plane_0;}
         (pixel_format == pixel_format_T_Y16___U16V16_N444) -> {(datain_channel+1) == 3; in_precision == in_precision_INT16; element_byte_size_plane_0 == 2; element_byte_size_plane_1 == 4; plane_number == 2; pixel_x_offset < `NVDLA_MEMORY_ATOMIC_SIZE/element_byte_size_plane_0;}
         (pixel_format == pixel_format_T_Y16___V16U16_N444) -> {(datain_channel+1) == 3; in_precision == in_precision_INT16; element_byte_size_plane_0 == 2; element_byte_size_plane_1 == 4; plane_number == 2; pixel_x_offset < `NVDLA_MEMORY_ATOMIC_SIZE/element_byte_size_plane_0;}
+`endif
     }
     if(datain_format == datain_format_PIXEL && pixel_mapping == pixel_mapping_PITCH_LINEAR) {
         pixel_y_offset == 0;
@@ -639,6 +670,7 @@ constraint nvdla_cdma_resource::c_ias_pixel {
 }
 
 constraint nvdla_cdma_resource::c_ias_datain_winograd {
+`ifdef NVDLA_WINOGRAD_ENABLE
     if(conv_mode == conv_mode_WINOGRAD) {
         (datain_width_ext+1)   == (pad_left + pad_right + datain_width+1)  / (conv_x_stride+1);
         (datain_height_ext+1)  == (pad_top + pad_bottom + datain_height+1) / (conv_y_stride+1);
@@ -653,6 +685,7 @@ constraint nvdla_cdma_resource::c_ias_datain_winograd {
 
         ((datain_channel+1) * ((in_precision==in_precision_INT8)?1:2)) % 32 == 0;
     }
+`endif
 }
 constraint nvdla_cdma_resource::c_ias_datain_direct {
     if(conv_mode == conv_mode_DIRECT && datain_format == datain_format_FEATURE){
@@ -675,9 +708,11 @@ constraint nvdla_cdma_resource::c_ias_stride_size {
             if(in_precision==in_precision_INT8) {
                 surf_stride * ((datain_channel+`NVDLA_MEMORY_ATOMIC_SIZE) /`NVDLA_MEMORY_ATOMIC_SIZE) <= 64'h800_0000;
             }
+`ifdef NVDLA_FEATURE_DATA_TYPE_INT16_FP16
             else {
                 surf_stride * ((datain_channel+1+15) /16) <= 64'h800_0000;
             }
+`endif
         }
     }
     else if(pixel_mapping==pixel_mapping_RESERVED_LINEAR) {
@@ -724,11 +759,13 @@ constraint nvdla_cdma_resource::c_ias_pack_mode {
 
 constraint nvdla_cdma_resource::c_ias_multi_batch {
     if(conv_mode == conv_mode_DIRECT && datain_format == datain_format_FEATURE) {
+`ifdef NVDLA_BATCH_ENABLE
         if(batches > 0) {
             batch_stride * batches <= 64'h100_0000;
             (batch_stride >= surf_stride*((datain_channel+1-1)/((in_precision==in_precision_INT8)?32:16) + 64'h1));
             (batch_stride - surf_stride*((datain_channel+1-1)/((in_precision==in_precision_INT8)?32:16) + 64'h1))/32 dist { 24'h0:=40, [24'h1:24'hF]:=50, [24'h10:24'hFF]:=10, [24'h100:24'hFF_FFFF]:=0 };
         }
+`endif
     }
     else { batches == 0; }
 }
@@ -804,7 +841,7 @@ constraint nvdla_cdma_resource::c_ias_cvt {
     }
 
     // pad_value, [7:0] for int8, [15:8] don't care in int8, [15:0] for int16/fp16
-
+`ifdef NVDLA_FEATURE_DATA_TYPE_INT16_FP16
     if((in_precision == in_precision_FP16) && (proc_precision == proc_precision_FP16)) {
         pad_value     == 0;
         cvt_en        == cvt_en_DISABLE;
@@ -814,10 +851,12 @@ constraint nvdla_cdma_resource::c_ias_cvt {
         cvt_offset    == 0;
         pad_value     == 0;
     }
-
+`endif
+`ifdef NVDLA_WINOGRAD_ENABLE
     if(conv_mode == conv_mode_WINOGRAD) {
         cvt_en   == cvt_en_DISABLE;
     }
+`endif
 }
 
 constraint nvdla_cdma_resource::c_ias_pad_size {
@@ -831,12 +870,14 @@ constraint nvdla_cdma_resource::c_ias_pad_size {
             // move to sce layer
         }
     }
+`ifdef NVDLA_WINOGRAD_ENABLE
     else { // Winograd
         pad_left < 3*(conv_x_stride+1);
         pad_top  < 3*(conv_y_stride+1);
         ((conv_x_stride+1) == 1) -> { pad_left <= 1;}
         ((conv_y_stride+1) == 1) -> { pad_top  <= 1;}
     }
+`endif
 }
 
 constraint nvdla_cdma_resource::c_ias_bank_size {
@@ -884,34 +925,34 @@ constraint nvdla_cdma_resource::c_ias_conv_stride {
 
 constraint nvdla_cdma_resource::c_ias_reuse_keep_previouse_setting {
     if(data_reuse == data_reuse_ENABLE) {
-        conv_mode           == prev_conv_mode; 
-        in_precision        == prev_in_precision;        
-        proc_precision      == prev_proc_precision;      
-        datain_format       == prev_datain_format;      
-        pixel_format        == prev_pixel_format;       
-        pixel_mapping       == prev_pixel_mapping;       
-        pixel_sign_override == prev_pixel_sign_override; 
-        datain_width        == prev_datain_width; 
-        datain_height       == prev_datain_height;       
-        datain_channel      == prev_datain_channel;      
-        datain_width_ext    == prev_datain_width_ext;    
-        datain_height_ext   == prev_datain_height_ext;   
-        pixel_x_offset      == prev_pixel_x_offset;   
-        pixel_y_offset      == prev_pixel_y_offset;      
-        datain_ram_type     == prev_datain_ram_type;     
-        datain_addr_high_0  == prev_datain_addr_high_0;  
-        datain_addr_low_0   == prev_datain_addr_low_0;  
-        datain_addr_high_1  == prev_datain_addr_high_1;  
-        datain_addr_low_1   == prev_datain_addr_low_1;  
-        line_stride         == prev_line_stride;   
-        uv_line_stride      == prev_uv_line_stride;      
-        surf_stride         == prev_surf_stride;      
-        line_packed         == prev_line_packed;         
-        surf_packed         == prev_surf_packed;         
-        batches             == prev_batches;         
-        batch_stride        == prev_batch_stride;        
-        entries             == prev_entries;        
-        //grains            == 
+        conv_mode           == prev_conv_mode;
+        in_precision        == prev_in_precision;
+        proc_precision      == prev_proc_precision;
+        datain_format       == prev_datain_format;
+        pixel_format        == prev_pixel_format;
+        pixel_mapping       == prev_pixel_mapping;
+        pixel_sign_override == prev_pixel_sign_override;
+        datain_width        == prev_datain_width;
+        datain_height       == prev_datain_height;
+        datain_channel      == prev_datain_channel;
+        datain_width_ext    == prev_datain_width_ext;
+        datain_height_ext   == prev_datain_height_ext;
+        pixel_x_offset      == prev_pixel_x_offset;
+        pixel_y_offset      == prev_pixel_y_offset;
+        datain_ram_type     == prev_datain_ram_type;
+        datain_addr_high_0  == prev_datain_addr_high_0;
+        datain_addr_low_0   == prev_datain_addr_low_0;
+        datain_addr_high_1  == prev_datain_addr_high_1;
+        datain_addr_low_1   == prev_datain_addr_low_1;
+        line_stride         == prev_line_stride;
+        uv_line_stride      == prev_uv_line_stride;
+        surf_stride         == prev_surf_stride;
+        line_packed         == prev_line_packed;
+        surf_packed         == prev_surf_packed;
+        batches             == prev_batches;
+        batch_stride        == prev_batch_stride;
+        entries             == prev_entries;
+        //grains            ==
         weight_format       == prev_weight_format;
         byte_per_kernel     == prev_byte_per_kernel;
         //weight_kernel     ==
@@ -929,76 +970,76 @@ constraint nvdla_cdma_resource::c_ias_reuse_keep_previouse_setting {
         //mean_gu           ==
         //mean_bv           ==
         //mean_ax           ==
-        cvt_en              == prev_cvt_en;         
-        cvt_truncate        == prev_cvt_truncate;     
-        cvt_offset          == prev_cvt_offset;      
-        cvt_scale           == prev_cvt_scale;        
-        conv_x_stride       == prev_conv_x_stride;   
-        conv_y_stride       == prev_conv_y_stride;     
-        pad_left            == prev_pad_left;     
-        pad_right           == prev_pad_right;         
-        pad_top             == prev_pad_top;         
-        pad_bottom          == prev_pad_bottom;        
-        pad_value           == prev_pad_value;        
-        data_bank           == prev_data_bank;         
-        weight_bank         == prev_weight_bank;      
-        nan_to_zero         == prev_nan_to_zero;       
-        //cya               ==        
+        cvt_en              == prev_cvt_en;
+        cvt_truncate        == prev_cvt_truncate;
+        cvt_offset          == prev_cvt_offset;
+        cvt_scale           == prev_cvt_scale;
+        conv_x_stride       == prev_conv_x_stride;
+        conv_y_stride       == prev_conv_y_stride;
+        pad_left            == prev_pad_left;
+        pad_right           == prev_pad_right;
+        pad_top             == prev_pad_top;
+        pad_bottom          == prev_pad_bottom;
+        pad_value           == prev_pad_value;
+        data_bank           == prev_data_bank;
+        weight_bank         == prev_weight_bank;
+        nan_to_zero         == prev_nan_to_zero;
+        //cya               ==
         // datain_channel_ext  == prev_datain_channel_ext;
-        // y_extension         == prev_y_extension; 
-        // weight_width_ext    == prev_weight_width_ext;  
-        // weight_height_ext   == prev_weight_height_ext; 
+        // y_extension         == prev_y_extension;
+        // weight_width_ext    == prev_weight_width_ext;
+        // weight_height_ext   == prev_weight_height_ext;
         // weight_channel_ext  == prev_weight_channel_ext;
-        //dataout_width     == 
-        //dataout_height    == 
-        //dataout_channel   == 
-        //atomics           == 
-        //rls_slices        == 
+        //dataout_width     ==
+        //dataout_height    ==
+        //dataout_channel   ==
+        //atomics           ==
+        //rls_slices        ==
         // conv_x_stride_ext   == prev_conv_x_stride_ext;
         // conv_y_stride_ext   == prev_conv_y_stride_ext;
         // x_dilation_ext      == prev_x_dilation_ext;
-        // y_dilation_ext      == prev_y_dilation_ext; 
-        //pad_value_csc     == 
+        // y_dilation_ext      == prev_y_dilation_ext;
+        //pad_value_csc     ==
         // pra_truncate        == prev_pra_truncate;
-        //dataout_addr      == 
-        //line_stride_cacc  == 
-        //surf_stride_cacc  == 
+        //dataout_addr      ==
+        //line_stride_cacc  ==
+        //surf_stride_cacc  ==
         // clip_truncate       == prev_clip_truncate;
     }
     if(weight_reuse == weight_reuse_ENABLE) {
         // weight_none_zero_rate == prev_weight_none_zero_rate;
-        conv_mode           == prev_conv_mode; 
-        in_precision        == prev_in_precision;        
-        proc_precision      == prev_proc_precision;      
-        datain_format       == prev_datain_format;      
-        pixel_format        == prev_pixel_format;       
-        pixel_mapping       == prev_pixel_mapping;       
-        pixel_sign_override == prev_pixel_sign_override; 
-        //datain_width        == prev_datain_width; 
-        //datain_height       == prev_datain_height;       
-        datain_channel      == prev_datain_channel;      
-        //datain_width_ext    == prev_datain_width_ext;    
-        //datain_height_ext   == prev_datain_height_ext;   
-        pixel_x_offset      == prev_pixel_x_offset;   
-        pixel_y_offset      == prev_pixel_y_offset;      
-        datain_ram_type     == prev_datain_ram_type;     
-        //datain_addr_high_0  == prev_datain_addr_high_0;  
-        //datain_addr_low_0   == prev_datain_addr_low_0;  
-        //datain_addr_high_1  == prev_datain_addr_high_1;  
-        //datain_addr_low_1   == prev_datain_addr_low_1;  
-        //line_stride         == prev_line_stride;   
-        //uv_line_stride      == prev_uv_line_stride;      
-        //surf_stride         == prev_surf_stride;      
-        //line_packed         == prev_line_packed;         
-        //surf_packed         == prev_surf_packed;         
-        //gob_per_line        == prev_gob_per_line;        
-        //gob_per_uv_line     == prev_gob_per_uv_line;     
-        //gob_height          == prev_gob_height;     
-        //gob_y_index         == prev_gob_y_index;         
-        //batches             == prev_batches;         
-        //batch_stride        == prev_batch_stride;        
-        //entries             == prev_entries;        
-        //grains            == 
+        conv_mode           == prev_conv_mode;
+        in_precision        == prev_in_precision;
+        proc_precision      == prev_proc_precision;
+        datain_format       == prev_datain_format;
+        pixel_format        == prev_pixel_format;
+        pixel_mapping       == prev_pixel_mapping;
+        pixel_sign_override == prev_pixel_sign_override;
+        //datain_width        == prev_datain_width;
+        //datain_height       == prev_datain_height;
+        datain_channel      == prev_datain_channel;
+        //datain_width_ext    == prev_datain_width_ext;
+        //datain_height_ext   == prev_datain_height_ext;
+        pixel_x_offset      == prev_pixel_x_offset;
+        pixel_y_offset      == prev_pixel_y_offset;
+        datain_ram_type     == prev_datain_ram_type;
+        //datain_addr_high_0  == prev_datain_addr_high_0;
+        //datain_addr_low_0   == prev_datain_addr_low_0;
+        //datain_addr_high_1  == prev_datain_addr_high_1;
+        //datain_addr_low_1   == prev_datain_addr_low_1;
+        //line_stride         == prev_line_stride;
+        //uv_line_stride      == prev_uv_line_stride;
+        //surf_stride         == prev_surf_stride;
+        //line_packed         == prev_line_packed;
+        //surf_packed         == prev_surf_packed;
+        //gob_per_line        == prev_gob_per_line;
+        //gob_per_uv_line     == prev_gob_per_uv_line;
+        //gob_height          == prev_gob_height;
+        //gob_y_index         == prev_gob_y_index;
+        //batches             == prev_batches;
+        //batch_stride        == prev_batch_stride;
+        //entries             == prev_entries;
+        //grains            ==
         weight_format       == prev_weight_format;
         byte_per_kernel     == prev_byte_per_kernel;
         weight_kernel       == prev_weight_kernel;
@@ -1016,40 +1057,40 @@ constraint nvdla_cdma_resource::c_ias_reuse_keep_previouse_setting {
         //mean_gu           ==
         //mean_bv           ==
         //mean_ax           ==
-        cvt_en              == prev_cvt_en;         
-        cvt_truncate        == prev_cvt_truncate;     
-        cvt_offset          == prev_cvt_offset;      
-        cvt_scale           == prev_cvt_scale;        
-        conv_x_stride       == prev_conv_x_stride;   
-        conv_y_stride       == prev_conv_y_stride;     
-        //pad_left            == prev_pad_left;     
-        //pad_right           == prev_pad_right;         
-        //pad_top             == prev_pad_top;         
-        //pad_bottom          == prev_pad_bottom;        
-        pad_value           == prev_pad_value;        
-        data_bank           == prev_data_bank;         
-        weight_bank         == prev_weight_bank;      
-        //nan_to_zero         == prev_nan_to_zero;       
-        //cya               ==        
+        cvt_en              == prev_cvt_en;
+        cvt_truncate        == prev_cvt_truncate;
+        cvt_offset          == prev_cvt_offset;
+        cvt_scale           == prev_cvt_scale;
+        conv_x_stride       == prev_conv_x_stride;
+        conv_y_stride       == prev_conv_y_stride;
+        //pad_left            == prev_pad_left;
+        //pad_right           == prev_pad_right;
+        //pad_top             == prev_pad_top;
+        //pad_bottom          == prev_pad_bottom;
+        pad_value           == prev_pad_value;
+        data_bank           == prev_data_bank;
+        weight_bank         == prev_weight_bank;
+        //nan_to_zero         == prev_nan_to_zero;
+        //cya               ==
         // datain_channel_ext  == prev_datain_channel_ext;
-        //y_extension         == prev_y_extension; 
-        // weight_width_ext    == prev_weight_width_ext;  
-        // weight_height_ext   == prev_weight_height_ext; 
+        //y_extension         == prev_y_extension;
+        // weight_width_ext    == prev_weight_width_ext;
+        // weight_height_ext   == prev_weight_height_ext;
         // weight_channel_ext  == prev_weight_channel_ext;
-        //dataout_width     == 
-        //dataout_height    == 
-        //dataout_channel   == 
-        //atomics           == 
-        //rls_slices        == 
+        //dataout_width     ==
+        //dataout_height    ==
+        //dataout_channel   ==
+        //atomics           ==
+        //rls_slices        ==
         // conv_x_stride_ext   == prev_conv_x_stride_ext;
         // conv_y_stride_ext   == prev_conv_y_stride_ext;
         // x_dilation_ext      == prev_x_dilation_ext;
-        // y_dilation_ext      == prev_y_dilation_ext; 
-        //pad_value_csc     == 
+        // y_dilation_ext      == prev_y_dilation_ext;
+        //pad_value_csc     ==
         //pra_truncate        == prev_pra_truncate;
-        //dataout_addr      == 
-        //line_stride_cacc  == 
-        //surf_stride_cacc  == 
+        //dataout_addr      ==
+        //line_stride_cacc  ==
+        //surf_stride_cacc  ==
         //clip_truncate       == prev_clip_truncate;
     }
 }
@@ -1065,7 +1106,7 @@ constraint nvdla_cdma_resource::c_ias_dut_por_requirement {
     batches         == 0;
 }
 constraint nvdla_cdma_resource::c_ias_cbuf_size_limit_por_requirement {
-    // input cube size must be no greater than 31 cbuffer bank size 
+    // input cube size must be no greater than 31 cbuffer bank size
     (datain_width+1)*(datain_height+1)*(datain_channel+1) <= 64'h1f000;
 }
 
@@ -1162,36 +1203,36 @@ function void nvdla_cdma_resource::record_rand_variable();
     is_weight_bank_changed  = (weight_bank != prev_weight_bank);
     is_weight_format_changed= (weight_format != prev_weight_format);
 
-    prev_conv_mode           = conv_mode; 
-    prev_in_precision        = in_precision;        
-    prev_proc_precision      = proc_precision;      
+    prev_conv_mode           = conv_mode;
+    prev_in_precision        = in_precision;
+    prev_proc_precision      = proc_precision;
     prev_skip_data_rls       = skip_data_rls;
     prev_skip_weight_rls     = skip_weight_rls;
-    prev_datain_format       = datain_format;      
-    prev_pixel_format        = pixel_format;       
-    prev_pixel_mapping       = pixel_mapping;       
-    prev_pixel_sign_override = pixel_sign_override; 
-    prev_datain_width        = datain_width; 
-    prev_datain_height       = datain_height;       
-    prev_datain_channel      = datain_channel;      
-    prev_datain_width_ext    = datain_width_ext;    
-    prev_datain_height_ext   = datain_height_ext;   
-    prev_pixel_x_offset      = pixel_x_offset;   
-    prev_pixel_y_offset      = pixel_y_offset;      
-    prev_datain_ram_type     = datain_ram_type;     
-    prev_datain_addr_high_0  = datain_addr_high_0;  
-    prev_datain_addr_low_0   = datain_addr_low_0;  
-    prev_datain_addr_high_1  = datain_addr_high_1;  
-    prev_datain_addr_low_1   = datain_addr_low_1;  
-    prev_line_stride         = line_stride;   
-    prev_uv_line_stride      = uv_line_stride;      
-    prev_surf_stride         = surf_stride;      
-    prev_line_packed         = line_packed;         
-    prev_surf_packed         = surf_packed;         
-    prev_batches             = batches;         
-    prev_batch_stride        = batch_stride;        
-    prev_entries             = entries;        
-    //grains            = 
+    prev_datain_format       = datain_format;
+    prev_pixel_format        = pixel_format;
+    prev_pixel_mapping       = pixel_mapping;
+    prev_pixel_sign_override = pixel_sign_override;
+    prev_datain_width        = datain_width;
+    prev_datain_height       = datain_height;
+    prev_datain_channel      = datain_channel;
+    prev_datain_width_ext    = datain_width_ext;
+    prev_datain_height_ext   = datain_height_ext;
+    prev_pixel_x_offset      = pixel_x_offset;
+    prev_pixel_y_offset      = pixel_y_offset;
+    prev_datain_ram_type     = datain_ram_type;
+    prev_datain_addr_high_0  = datain_addr_high_0;
+    prev_datain_addr_low_0   = datain_addr_low_0;
+    prev_datain_addr_high_1  = datain_addr_high_1;
+    prev_datain_addr_low_1   = datain_addr_low_1;
+    prev_line_stride         = line_stride;
+    prev_uv_line_stride      = uv_line_stride;
+    prev_surf_stride         = surf_stride;
+    prev_line_packed         = line_packed;
+    prev_surf_packed         = surf_packed;
+    prev_batches             = batches;
+    prev_batch_stride        = batch_stride;
+    prev_entries             = entries;
+    //grains            =
     prev_weight_format       = weight_format;
     prev_byte_per_kernel     = byte_per_kernel;
     //weight_kernel     =
@@ -1209,74 +1250,74 @@ function void nvdla_cdma_resource::record_rand_variable();
     //mean_gu           =
     //mean_bv           =
     //mean_ax           =
-    prev_cvt_en              = cvt_en;         
-    prev_cvt_truncate        = cvt_truncate;     
-    prev_cvt_offset          = cvt_offset;      
-    prev_cvt_scale           = cvt_scale;        
-    prev_conv_x_stride       = conv_x_stride;   
-    prev_conv_y_stride       = conv_y_stride;     
-    prev_pad_left            = pad_left;     
-    prev_pad_right           = pad_right;         
-    prev_pad_top             = pad_top;         
-    prev_pad_bottom          = pad_bottom;        
-    prev_pad_value           = pad_value;        
-    prev_data_bank           = data_bank;         
-    prev_weight_bank         = weight_bank;      
-    prev_nan_to_zero         = nan_to_zero;       
-    //cya               =        
+    prev_cvt_en              = cvt_en;
+    prev_cvt_truncate        = cvt_truncate;
+    prev_cvt_offset          = cvt_offset;
+    prev_cvt_scale           = cvt_scale;
+    prev_conv_x_stride       = conv_x_stride;
+    prev_conv_y_stride       = conv_y_stride;
+    prev_pad_left            = pad_left;
+    prev_pad_right           = pad_right;
+    prev_pad_top             = pad_top;
+    prev_pad_bottom          = pad_bottom;
+    prev_pad_value           = pad_value;
+    prev_data_bank           = data_bank;
+    prev_weight_bank         = weight_bank;
+    prev_nan_to_zero         = nan_to_zero;
+    //cya               =
     // datain_channel_ext  = datain_channel_ext;
-    // y_extension         = y_extension; 
-    // weight_width_ext    = weight_width_ext;  
-    // weight_height_ext   = weight_height_ext; 
+    // y_extension         = y_extension;
+    // weight_width_ext    = weight_width_ext;
+    // weight_height_ext   = weight_height_ext;
     // weight_channel_ext  = weight_channel_ext;
-    //dataout_width     = 
-    //dataout_height    = 
-    //dataout_channel   = 
-    //atomics           = 
-    //rls_slices        = 
+    //dataout_width     =
+    //dataout_height    =
+    //dataout_channel   =
+    //atomics           =
+    //rls_slices        =
     // conv_x_stride_ext   = conv_x_stride_ext;
     // conv_y_stride_ext   = conv_y_stride_ext;
     // x_dilation_ext      = x_dilation_ext;
-    // y_dilation_ext      = y_dilation_ext; 
-    //pad_value_csc     = 
+    // y_dilation_ext      = y_dilation_ext;
+    //pad_value_csc     =
     // pra_truncate        = pra_truncate;
-    //dataout_addr      = 
-    //line_stride_cacc  = 
-    //surf_stride_cacc  = 
+    //dataout_addr      =
+    //line_stride_cacc  =
+    //surf_stride_cacc  =
     // clip_truncate       = clip_truncate;
     // weight_none_zero_rate = weight_none_zero_rate;
-    prev_conv_mode           = conv_mode; 
-    prev_in_precision        = in_precision;        
-    prev_proc_precision      = proc_precision;      
-    prev_datain_format       = datain_format;      
-    prev_pixel_format        = pixel_format;       
-    prev_pixel_mapping       = pixel_mapping;       
-    prev_pixel_sign_override = pixel_sign_override; 
-    //datain_width        = datain_width; 
-    //datain_height       = datain_height;       
-    prev_datain_channel      = datain_channel;      
-    //datain_width_ext    = datain_width_ext;    
-    //datain_height_ext   = datain_height_ext;   
-    prev_pixel_x_offset      = pixel_x_offset;   
-    prev_pixel_y_offset      = pixel_y_offset;      
-    prev_datain_ram_type     = datain_ram_type;     
-    //datain_addr_high_0  = datain_addr_high_0;  
-    //datain_addr_low_0   = datain_addr_low_0;  
-    //datain_addr_high_1  = datain_addr_high_1;  
-    //datain_addr_low_1   = datain_addr_low_1;  
-    //line_stride         = line_stride;   
-    //uv_line_stride      = uv_line_stride;      
-    //surf_stride         = surf_stride;      
-    //line_packed         = line_packed;         
-    //surf_packed         = surf_packed;         
-    //gob_per_line        = gob_per_line;        
-    //gob_per_uv_line     = gob_per_uv_line;     
-    //gob_height          = gob_height;     
-    //gob_y_index         = gob_y_index;         
-    //batches             = batches;         
-    //batch_stride        = batch_stride;        
-    //entries             = entries;        
-    //grains            = 
+    prev_conv_mode           = conv_mode;
+    prev_in_precision        = in_precision;
+    prev_proc_precision      = proc_precision;
+    prev_datain_format       = datain_format;
+    prev_pixel_format        = pixel_format;
+    prev_pixel_mapping       = pixel_mapping;
+    prev_pixel_sign_override = pixel_sign_override;
+    //datain_width        = datain_width;
+    //datain_height       = datain_height;
+    prev_datain_channel      = datain_channel;
+    //datain_width_ext    = datain_width_ext;
+    //datain_height_ext   = datain_height_ext;
+    prev_pixel_x_offset      = pixel_x_offset;
+    prev_pixel_y_offset      = pixel_y_offset;
+    prev_datain_ram_type     = datain_ram_type;
+    //datain_addr_high_0  = datain_addr_high_0;
+    //datain_addr_low_0   = datain_addr_low_0;
+    //datain_addr_high_1  = datain_addr_high_1;
+    //datain_addr_low_1   = datain_addr_low_1;
+    //line_stride         = line_stride;
+    //uv_line_stride      = uv_line_stride;
+    //surf_stride         = surf_stride;
+    //line_packed         = line_packed;
+    //surf_packed         = surf_packed;
+    //gob_per_line        = gob_per_line;
+    //gob_per_uv_line     = gob_per_uv_line;
+    //gob_height          = gob_height;
+    //gob_y_index         = gob_y_index;
+    //batches             = batches;
+    //batch_stride        = batch_stride;
+    //entries             = entries;
+    //grains            =
     prev_weight_format       = weight_format;
     prev_byte_per_kernel     = byte_per_kernel;
     prev_weight_kernel       = weight_kernel;
@@ -1294,40 +1335,40 @@ function void nvdla_cdma_resource::record_rand_variable();
     //mean_gu           =
     //mean_bv           =
     //mean_ax           =
-    prev_cvt_en              = cvt_en;         
-    prev_cvt_truncate        = cvt_truncate;     
-    prev_cvt_offset          = cvt_offset;      
-    prev_cvt_scale           = cvt_scale;        
-    prev_conv_x_stride       = conv_x_stride;   
-    prev_conv_y_stride       = conv_y_stride;     
-    //pad_left            = pad_left;     
-    //pad_right           = pad_right;         
-    //pad_top             = pad_top;         
-    //pad_bottom          = pad_bottom;        
-    prev_pad_value           = pad_value;        
-    prev_data_bank           = data_bank;         
-    prev_weight_bank         = weight_bank;      
-    //nan_to_zero         = nan_to_zero;       
-    //cya               =        
+    prev_cvt_en              = cvt_en;
+    prev_cvt_truncate        = cvt_truncate;
+    prev_cvt_offset          = cvt_offset;
+    prev_cvt_scale           = cvt_scale;
+    prev_conv_x_stride       = conv_x_stride;
+    prev_conv_y_stride       = conv_y_stride;
+    //pad_left            = pad_left;
+    //pad_right           = pad_right;
+    //pad_top             = pad_top;
+    //pad_bottom          = pad_bottom;
+    prev_pad_value           = pad_value;
+    prev_data_bank           = data_bank;
+    prev_weight_bank         = weight_bank;
+    //nan_to_zero         = nan_to_zero;
+    //cya               =
     // datain_channel_ext  = datain_channel_ext;
-    //y_extension         = y_extension; 
-    // weight_width_ext    = weight_width_ext;  
-    // weight_height_ext   = weight_height_ext; 
+    //y_extension         = y_extension;
+    // weight_width_ext    = weight_width_ext;
+    // weight_height_ext   = weight_height_ext;
     // weight_channel_ext  = weight_channel_ext;
-    //dataout_width     = 
-    //dataout_height    = 
-    //dataout_channel   = 
-    //atomics           = 
-    //rls_slices        = 
+    //dataout_width     =
+    //dataout_height    =
+    //dataout_channel   =
+    //atomics           =
+    //rls_slices        =
     // conv_x_stride_ext   = conv_x_stride_ext;
     // conv_y_stride_ext   = conv_y_stride_ext;
     // x_dilation_ext      = x_dilation_ext;
-    // y_dilation_ext      = y_dilation_ext; 
-    //pad_value_csc     = 
+    // y_dilation_ext      = y_dilation_ext;
+    //pad_value_csc     =
     //pra_truncate        = pra_truncate;
-    //dataout_addr      = 
-    //line_stride_cacc  = 
-    //surf_stride_cacc  = 
+    //dataout_addr      =
+    //line_stride_cacc  =
+    //surf_stride_cacc  =
     //clip_truncate       = clip_truncate;
 endfunction : record_rand_variable
 

@@ -474,15 +474,19 @@ constraint nvdla_sdp_rdma_resource::c_ias_src_mem {
         if(in_precision == in_precision_INT8) {
             (src_surface_stride*((channel+1+`NVDLA_MEMORY_ATOMIC_SIZE-1)/`NVDLA_MEMORY_ATOMIC_SIZE))    <= 64'h200_0000;
         }
+`ifdef NVDLA_FEATURE_DATA_TYPE_INT16_FP16
         else {
             (src_surface_stride*((channel+1+`NVDLA_MEMORY_ATOMIC_SIZE-1)/(`NVDLA_MEMORY_ATOMIC_SIZE/2))) <= 64'h200_0000;
         }
+`endif
     }
 }
 constraint nvdla_sdp_rdma_resource::c_ias_bs_mem {
     (brdma_disable == brdma_disable_NO) -> {
         // int8 can be one_byte or two_byte
+`ifdef NVDLA_FEATURE_DATA_TYPE_INT16_FP16
         ((proc_precision == proc_precision_INT16) || (proc_precision == proc_precision_FP16))-> { brdma_data_size == brdma_data_size_TWO_BYTE; }
+`endif
         if((width==0) && (height==0)) {  // 1x1 Mode requirement
             brdma_data_mode == brdma_data_mode_PER_KERNEL;
         }
@@ -518,14 +522,18 @@ constraint nvdla_sdp_rdma_resource::c_ias_bs_mem {
     if(proc_precision == proc_precision_INT8) {
         (bs_surface_stride*((channel+1+`NVDLA_MEMORY_ATOMIC_SIZE-1)/`NVDLA_MEMORY_ATOMIC_SIZE)) <= 64'h200_0000;
     }
+`ifdef NVDLA_FEATURE_DATA_TYPE_INT16_FP16
     else {
         (bs_surface_stride*((channel+1+`NVDLA_MEMORY_ATOMIC_SIZE/2-1)/(`NVDLA_MEMORY_ATOMIC_SIZE/2))) <= 64'h200_0000;
     }
+`endif
 }
 
 constraint nvdla_sdp_rdma_resource::c_ias_bn_mem {
     (nrdma_disable == nrdma_disable_NO) -> {
+`ifdef NVDLA_FEATURE_DATA_TYPE_INT16_FP16
         ((proc_precision == proc_precision_INT16) || (proc_precision == proc_precision_FP16))-> { nrdma_data_size == nrdma_data_size_TWO_BYTE; }
+`endif
         if((width==0) && (height==0)) {  // 1x1 Mode requirement
             nrdma_data_mode == nrdma_data_mode_PER_KERNEL;
         }
@@ -559,13 +567,17 @@ constraint nvdla_sdp_rdma_resource::c_ias_bn_mem {
     if(proc_precision == proc_precision_INT8) {
         (bn_surface_stride*((channel+1+`NVDLA_MEMORY_ATOMIC_SIZE-1)/`NVDLA_MEMORY_ATOMIC_SIZE)) <= 64'h200_0000;
     }
+`ifdef NVDLA_FEATURE_DATA_TYPE_INT16_FP16
     else {
         (bn_surface_stride*((channel+1+`NVDLA_MEMORY_ATOMIC_SIZE/2-1)/(`NVDLA_MEMORY_ATOMIC_SIZE/2))) <= 64'h200_0000;
     }
+`endif
 }
 constraint nvdla_sdp_rdma_resource::c_ias_ew_mem {
     (erdma_disable == erdma_disable_NO) -> {
+`ifdef NVDLA_FEATURE_DATA_TYPE_INT16_FP16
         ((proc_precision == proc_precision_INT16) || (proc_precision == proc_precision_FP16))-> { erdma_data_size == erdma_data_size_TWO_BYTE; }
+`endif
         if((width==0) && (height==0)) {  // 1x1 Mode requirement
             erdma_data_mode == erdma_data_mode_PER_KERNEL;
         }
@@ -599,9 +611,11 @@ constraint nvdla_sdp_rdma_resource::c_ias_ew_mem {
     if(proc_precision == proc_precision_INT8) {
         (ew_surface_stride*((channel+1+`NVDLA_MEMORY_ATOMIC_SIZE-1)/`NVDLA_MEMORY_ATOMIC_SIZE)) <= 64'h200_0000;
     }
+`ifdef NVDLA_FEATURE_DATA_TYPE_INT16_FP16
     else {
         (ew_surface_stride*((channel+1+`NVDLA_MEMORY_ATOMIC_SIZE/2-1)/(`NVDLA_MEMORY_ATOMIC_SIZE/2))) <= 64'h200_0000;
     }
+`endif
 }
 constraint nvdla_sdp_rdma_resource::c_ias_precision {
     if((winograd == winograd_ON) || (batch_number > 0)) {  // bug 1921999 bug 200314538
