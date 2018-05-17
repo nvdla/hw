@@ -73,6 +73,7 @@ class nvdla_cdp_rdma_resource extends nvdla_base_resource;
     extern function void    set_mem_addr();
     extern function void    surface_dump(int fh);
     extern function void    set_register();
+    extern function void    pre_randomize();
     extern function void    post_randomize();
     extern function void    set_sim_constraint();
 
@@ -92,6 +93,8 @@ class nvdla_cdp_rdma_resource extends nvdla_base_resource;
     extern constraint c_sim_cube_size_medium;
     extern constraint c_sim_cube_size_large;
     extern constraint c_sim_cube_size_normal;
+    extern constraint c_sim_solve_height_before_width;
+    extern constraint c_sim_solve_channel_before_width;
 
 endclass : nvdla_cdp_rdma_resource
 
@@ -230,6 +233,20 @@ constraint nvdla_cdp_rdma_resource::c_sim_cube_size_large {
 constraint nvdla_cdp_rdma_resource::c_sim_cube_size_normal {
     (width+1)*(height+1)*(channel+1) <= 64'h4_0000;
 }
+
+constraint nvdla_cdp_rdma_resource::c_sim_solve_height_before_width {
+    solve height before width;
+}
+
+constraint nvdla_cdp_rdma_resource::c_sim_solve_channel_before_width {
+    solve channel before width;
+}
+
+function void nvdla_cdp_rdma_resource::pre_randomize();
+    super.pre_randomize();
+    c_sim_solve_height_before_width.constraint_mode($urandom_range(0, 1));
+    c_sim_solve_channel_before_width.constraint_mode($urandom_range(0, 1));
+endfunction : pre_randomize
 
 function void nvdla_cdp_rdma_resource::post_randomize();
     set_mem_addr();

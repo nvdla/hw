@@ -27,6 +27,7 @@ module NV_NVDLA_cbuf (
   ,sc2buf_dat_rd_en     //|< i
   ,sc2buf_dat_rd_shift  //|< i
   ,sc2buf_dat_rd_next1_en //< i
+  ,sc2buf_dat_rd_next1_addr //< i
   ,sc2buf_dat_rd_data   //|> o
   ,sc2buf_dat_rd_valid  //|> o
   ,sc2buf_wt_rd_addr    //|< i
@@ -58,6 +59,7 @@ input                       sc2buf_dat_rd_en;    /* data valid */
 input [CBUF_ADDR_WIDTH-1:0] sc2buf_dat_rd_addr;
 input [CBUF_RD_DATA_SHIFT_WIDTH-1:0] sc2buf_dat_rd_shift;  //|< i
 input                       sc2buf_dat_rd_next1_en; //< i
+input [CBUF_ADDR_WIDTH-1:0] sc2buf_dat_rd_next1_addr; //< i
 output                      sc2buf_dat_rd_valid;  /* data valid */
 output [CBUF_RD_PORT_WIDTH-1:0] sc2buf_dat_rd_data;
 
@@ -73,6 +75,7 @@ output                      sc2buf_wmb_rd_valid;  /* data valid */
 output [CBUF_RD_PORT_WIDTH-1:0] sc2buf_wmb_rd_data;
 `endif
 
+`ifndef SYNTHESIS
 `ifdef CDMA2CBUF_DEBUG_PRINT
 `ifdef VERILATOR
 `else
@@ -98,7 +101,7 @@ initial begin
 end
 `endif
 `endif
-
+`endif // SYNTHESIS
 
 
 //////////step1:write handle
@@ -213,8 +216,8 @@ end
 //decode read data address to sram.
 wire sc2buf_dat_rd_en0 =  sc2buf_dat_rd_en;
 wire sc2buf_dat_rd_en1 =  sc2buf_dat_rd_en & sc2buf_dat_rd_next1_en;
-wire[CBUF_ADDR_WIDTH-1:0] sc2buf_dat_rd_addr0 = sc2buf_dat_rd_next1_en ? sc2buf_dat_rd_addr-1'b1 : sc2buf_dat_rd_addr;
-wire[CBUF_ADDR_WIDTH-1:0] sc2buf_dat_rd_addr1 = sc2buf_dat_rd_addr;
+wire[CBUF_ADDR_WIDTH-1:0] sc2buf_dat_rd_addr0 = sc2buf_dat_rd_addr;
+wire[CBUF_ADDR_WIDTH-1:0] sc2buf_dat_rd_addr1 = sc2buf_dat_rd_next1_addr;
 //: my $bank_slice= CBUF_BANK_SLICE;  #address part for select bank
 //: for(my $j=0; $j<CBUF_BANK_NUMBER ; $j++){
 //:     for(my $k=0; $k<CBUF_RAM_PER_BANK ; $k++){

@@ -61,7 +61,7 @@ SCSIM_NAMESPACE_END()
 SCSIM_NAMESPACE_START(cmod)
 // Register class forward declaration
 
-#define CC2PP_PAYLOAD_SIZE              (SDP_MAX_THROUGHPUT*sizeof(uint32_t))
+#define CC2PP_PAYLOAD_SIZE              (SDP_MAX_THROUGHPUT)
 #define LOW_ADDRESS_SHIFT               (NVDLA_SDP_RDMA_D_SRC_BASE_ADDR_LOW_0_SRC_BASE_ADDR_LOW_SHIFT)
 
 typedef enum {

@@ -42,7 +42,7 @@ module NV_NVDLA_NOCIF_DRAM_WRITE_IG_arb (
 //:input [NVDLA_MEM_ADDRESS_WIDTH+12:0] bpt2arb_cmd${i}_pd;
 //:input bpt2arb_dat${i}_valid;
 //:output bpt2arb_dat${i}_ready;
-//:input [NVDLA_PRIMARY_MEMIF_WIDTH+1:0] bpt2arb_dat${i}_pd;
+//:input [NVDLA_MEMIF_WIDTH:0] bpt2arb_dat${i}_pd;
 //:input [7:0] client${i}2mcif_wr_wt;
 //:);
 //:}
@@ -55,13 +55,13 @@ output [NVDLA_MEM_ADDRESS_WIDTH+12:0] arb2spt_cmd_pd;
 
 output         arb2spt_dat_valid;  /* data valid */
 input          arb2spt_dat_ready;  /* data return handshake */
-output [NVDLA_MEMIF_WIDTH+1:0] arb2spt_dat_pd;
+output [NVDLA_MEMIF_WIDTH:0] arb2spt_dat_pd;
 
 input [31:0] pwrbus_ram_pd;
 
 
 reg    [NVDLA_MEM_ADDRESS_WIDTH+12:0] arb_cmd_pd;
-reg   [NVDLA_MEMIF_WIDTH+1:0] arb_dat_pd;
+reg   [NVDLA_MEMIF_WIDTH:0] arb_dat_pd;
 reg     [1:0] gnt_count;
 reg     [NVDLA_NUM_DMA_WRITE_CLIENTS-1:0] stick_gnts;
 reg           sticky;
@@ -72,7 +72,7 @@ wire          arb_cmd_inc;
 wire    [2:0] arb_cmd_size;
 wire          arb_cmd_size_bit0_NC;
 wire    [NVDLA_NUM_DMA_WRITE_CLIENTS-1:0] arb_gnts;
-wire    [NVDLA_NUM_DMA_WRITE_CLIENTS-1:0] arb_reqs;
+wire    [4:0] arb_reqs;
 
 wire          gnt_busy;
 wire          is_last_beat;
@@ -92,11 +92,11 @@ wire [NVDLA_NUM_DMA_WRITE_CLIENTS-1:0] src_dat_gnts;
 //  ,.src_cmd0_pd        (src_cmd${i}_pd[NVDLA_MEM_ADDRESS_WIDTH+12:0])      //|> w
 //  ,.src_cmd0_vld       (src_cmd${i}_vld)           //|> w
 //  );
-//&eperl::pipe(" -os -wid $w -do src_cmd${i}_pd -vo src_cmd${i}_vld -ri bpt2arb_cmd${i}_ready -di bpt2arb_cmd${i}_pd -vi bpt2arb_cmd${i}_valid -ro  src_cmd${i}_rdy");
+//&eperl::pipe(" -is -wid $w -do src_cmd${i}_pd -vo src_cmd${i}_vld -ri bpt2arb_cmd${i}_ready -di bpt2arb_cmd${i}_pd -vi bpt2arb_cmd${i}_valid -ro  src_cmd${i}_rdy");
 
 //:my $i;
 //:my $w;
-//:my $dbus_wid=NVDLA_PRIMARY_MEMIF_WIDTH+1;
+//:my $dbus_wid=NVDLA_MEMIF_WIDTH;
 //:for($i=0;$i<NVDLA_NUM_DMA_WRITE_CLIENTS;$i++) {
 //:print qq(
 //:wire [2:0] dfifo${i}_wr_count;
@@ -177,7 +177,7 @@ assign src_dat_vlds = {
 
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
-    stick_gnts <= {5{1'b0}};
+    stick_gnts <= {3{1'b0}};
   end else begin
   if ((any_arb_gnt) == 1'b1) begin
     stick_gnts <= arb_gnts;
@@ -227,28 +227,38 @@ assign {mon_arb_cmd_beats_c,arb_cmd_beats} = arb_cmd_size[2:1] + arb_cmd_inc;
 assign arb_cmd_size_bit0_NC = arb_cmd_size[0];
 assign all_gnts = (sticky) ? (stick_gnts) : arb_gnts;
 assign gnt_busy = sticky || spt_is_busy;
-assign arb_reqs = src_cmd_vlds;
+assign arb_reqs = {2'b0,src_cmd_vlds};
 
-//:my $i;
-//:for($i=0;$i<NVDLA_NUM_DMA_WRITE_CLIENTS;$i++) {
-//:print qq(
-//:wire [7:0] wt${i} = client${i}2mcif_wr_wt;
-//:);
+//:for(my $i=0;$i<NVDLA_NUM_DMA_WRITE_CLIENTS;$i++) {
+//:print "wire [7:0] wt${i} = client${i}2mcif_wr_wt;\n";
 //:}
+
+//:for(my $i=NVDLA_NUM_DMA_WRITE_CLIENTS;$i<5; $i++) {
+//:  print("wire [7:0] wt${i} = 0;\n");
+//:}
+
 
 write_ig_arb u_write_ig_arb (
-  .clk                (nvdla_core_clk)         //|< i
-  ,.reset_             (nvdla_core_rstn)        //|< i
-//:my $i;
-//:for($i=0;$i<NVDLA_NUM_DMA_WRITE_CLIENTS;$i++) {
-//:print qq(
-//:  ,.req${i}               (arb_reqs[${i}])            //|< w
-//:  ,.wt${i}                (wt${i}[7:0])               //|< w
-//:  ,.gnt${i}               (arb_gnts[${i}])            //|> w
-//:);
-//:}
+   .req0               (arb_reqs[0])            //|< w
+  ,.req1               (arb_reqs[1])            //|< w
+  ,.req2               (arb_reqs[2])            //|< w
+  ,.req3               (arb_reqs[3])            //|< w
+  ,.req4               (arb_reqs[4])            //|< w
+  ,.wt0                (wt0[7:0])               //|< w
+  ,.wt1                (wt1[7:0])               //|< w
+  ,.wt2                (wt2[7:0])               //|< w
+  ,.wt3                (wt3[7:0])               //|< w
+  ,.wt4                (wt4[7:0])               //|< w
   ,.gnt_busy           (gnt_busy)               //|< w
+  ,.clk                (nvdla_core_clk)         //|< i
+  ,.reset_             (nvdla_core_rstn)        //|< i
+  ,.gnt0               (arb_gnts[0])            //|> w
+  ,.gnt1               (arb_gnts[1])            //|> w
+  ,.gnt2               (arb_gnts[2])            //|> w
+  //,.gnt3               (arb_gnts[3])            //|> w
+  //,.gnt4               (arb_gnts[4])            //|> w
   );
+
 
 
 assign any_arb_gnt = |arb_gnts;
@@ -306,7 +316,7 @@ always @(
     //VCS coverage off
     default : begin 
 		//:print qq(
-                //:arb_dat_pd[NVDLA_MEMIF_WIDTH+1:0] = 0;
+                //:arb_dat_pd[NVDLA_MEMIF_WIDTH:0] = 0;
                 //:);
               end  
     //VCS coverage on
@@ -367,10 +377,10 @@ input         nvdla_core_rstn;
 output [2:0] dfifo_wr_count;
 output        dfifo_wr_prdy;
 input         dfifo_wr_pvld;
-input  [NVDLA_MEMIF_WIDTH+1:0] dfifo_wr_pd;
+input  [NVDLA_MEMIF_WIDTH:0] dfifo_wr_pd;
 input         dfifo_rd_prdy;
 output        dfifo_rd_pvld;
-output [NVDLA_MEMIF_WIDTH+1:0] dfifo_rd_pd;
+output [NVDLA_MEMIF_WIDTH:0] dfifo_rd_pd;
 input  [31:0] pwrbus_ram_pd;
 
 // Master Clock Gating (SLCG)
@@ -458,7 +468,7 @@ end
 
 reg [1:0] dfifo_rd_adr;          // read address this cycle
 wire ram_we = wr_pushing;   // note: write occurs next cycle
-wire [NVDLA_MEMIF_WIDTH+1:0] dfifo_rd_pd;                    // read data out of ram
+wire [NVDLA_MEMIF_WIDTH:0] dfifo_rd_pd;                    // read data out of ram
 
 wire [31 : 0] pwrbus_ram_pd;
 
@@ -777,11 +787,11 @@ endmodule // NV_NVDLA_NOCIF_DRAM_WRITE_IG_ARB_dfifo
 
 input  clk;  // write clock
 input [31 : 0] pwrbus_ram_pd;
-input  [NVDLA_MEMIF_WIDTH+1:0] di;
+input  [NVDLA_MEMIF_WIDTH:0] di;
 input  we;
 input  [1:0] wa;
 input  [1:0] ra;
-output [NVDLA_MEMIF_WIDTH+1:0] dout;
+output [NVDLA_MEMIF_WIDTH:0] dout;
 
 `ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_0 (.A(pwrbus_ram_pd[0]));
@@ -880,10 +890,10 @@ NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_30 (.A(pwrbus_ram_pd[30]));
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_31 (.A(pwrbus_ram_pd[31]));
 `endif 
 
-reg [NVDLA_MEMIF_WIDTH+1:0] ram_ff0;
-reg [NVDLA_MEMIF_WIDTH+1:0] ram_ff1;
-reg [NVDLA_MEMIF_WIDTH+1:0] ram_ff2;
-reg [NVDLA_MEMIF_WIDTH+1:0] ram_ff3;
+reg [NVDLA_MEMIF_WIDTH:0] ram_ff0;
+reg [NVDLA_MEMIF_WIDTH:0] ram_ff1;
+reg [NVDLA_MEMIF_WIDTH:0] ram_ff2;
+reg [NVDLA_MEMIF_WIDTH:0] ram_ff3;
 
 always @( posedge clk ) begin
     if ( we && wa == 2'd0 ) begin
@@ -900,7 +910,7 @@ always @( posedge clk ) begin
     end
 end
 
-reg [NVDLA_MEMIF_WIDTH+1:0] dout;
+reg [NVDLA_MEMIF_WIDTH:0] dout;
 
 always @(*) begin
     case( ra ) 

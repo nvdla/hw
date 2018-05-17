@@ -71,6 +71,7 @@ input  [7:0] noc2mcif_axi_b_bid;
 input [7:0] reg2dp_wr_os_cnt;
 input [31:0] pwrbus_ram_pd;
 
+wire       eg2ig_axi_vld;
 wire [1:0] eg2ig_axi_len;
 wire [3:0] cq_wr_thread_id;
 
@@ -152,7 +153,7 @@ NV_NVDLA_NOCIF_DRAM_WRITE_cq u_cq (
   ,.pwrbus_ram_pd             (pwrbus_ram_pd[31:0])
   ,.cq_wr_prdy                (cq_wr_prdy)                   //|> w
   ,.cq_wr_pvld                (cq_wr_pvld)                   //|< w
-  ,.cq_wr_thread_id           (cq_wr_thread_id[3:0])         //|< w
+  ,.cq_wr_thread_id           (cq_wr_thread_id[2:0])         //|< w
   ,.cq_wr_pd                  (cq_wr_pd[2:0])                //|< w
   //:my $i;
   //:for($i=0;$i<NVDLA_NUM_DMA_WRITE_CLIENTS;$i++) {
@@ -162,9 +163,8 @@ NV_NVDLA_NOCIF_DRAM_WRITE_cq u_cq (
   //:,.cq_rd${i}_prdy               (cq_rd${i}_prdy)                  //|> w
   //:);
   //:}
-
   //:my $i;
-  //:for($i=NVDLA_NUM_DMA_WRITE_CLIENTS;$i<16;$i++) {
+  //:for($i=NVDLA_NUM_DMA_WRITE_CLIENTS;$i<5;$i++) {
   //:print qq(
   //:,.cq_rd${i}_prdy               (1'b1)                  //|< w
   //:);

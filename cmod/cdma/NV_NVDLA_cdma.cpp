@@ -1887,12 +1887,13 @@ void NV_NVDLA_cdma::DirectConvWeightRequestSequencerCommon(){
         dma_wt_rd_req_payload_->pd.dma_read_cmd.addr = payload_addr;
         dma_wt_rd_req_payload_->pd.dma_read_cmd.size = payload_atom_num-1;
         weight_bytes_fetched  += payload_size;
+#if 0
         weight_byte_idx_planed_ += payload_size;
         weight_entry_idx_planed_ = (weight_byte_idx_planed_ - 1) / NVDLA_CBUF_BANK_WIDTH;
         cslDebug((50, "WaitUntilCBufferHasEnoughFreeWeightEntry start. weight_bytes_fetched=0x%x weight_byte_idx_planed_=0x%x\n", weight_bytes_fetched, weight_byte_idx_planed_));
         WaitUntilCBufferHasEnoughFreeWeightEntry();
         cslDebug((50, "WaitUntilCBufferHasEnoughFreeWeightEntry end\n"));
-
+#endif
         // Send read request to RDMA
         cslDebug((50, "SendWeightDmaReadRequest payload_addr=0x%16lx payload_size=0x%x\n", payload_addr, payload_size));;
         if (cdma_wt_dma_arbiter_override_enable)
@@ -2000,7 +2001,13 @@ void NV_NVDLA_cdma::DirectConvWeightResponseSequencerCommon() {
 
         // Store a half entry(64B) to Convolution Buffer (CBUF)
         weight_bytes_fetched += atom_size;
-        cslDebug((50, "NV_NVDLA_cdma::DirectConvWeightResponseSequencerCommon. weight_bytes_fetched=0x%lx\n", weight_bytes_fetched));
+        //cslDebug((50, "NV_NVDLA_cdma::DirectConvWeightResponseSequencerCommon. weight_bytes_fetched=0x%lx\n", weight_bytes_fetched));
+        weight_byte_idx_planed_ += atom_size;
+        weight_entry_idx_planed_ = (weight_byte_idx_planed_ - 1) / NVDLA_CBUF_BANK_WIDTH;
+        cslDebug((50, "WaitUntilCBufferHasEnoughFreeWeightEntry start. weight_bytes_fetched=0x%x weight_byte_idx_planed_=0x%x\n", weight_bytes_fetched, weight_byte_idx_planed_));
+        WaitUntilCBufferHasEnoughFreeWeightEntry();
+        cslDebug((50, "WaitUntilCBufferHasEnoughFreeWeightEntry end\n"));
+
         if (0 == (weight_bytes_fetched % super_atom_size)) {
             cdma2buf_wt_wr_payload.addr = ((weight_bytes_fetched - 1) / NVDLA_CBUF_BANK_WIDTH + weight_entry_idx_working_) % weight_entry_addr_aperture + weight_entry_addr_start;
             cdma2buf_wt_wr_payload.hsel = (cdma2buf_wt_wr_payload.hsel + 1) % super_atom_per_cbuf_entry;

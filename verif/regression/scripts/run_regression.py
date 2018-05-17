@@ -80,12 +80,12 @@ def run_report(run_dir, db_dir, arguments, sub_metrics='', dry_run=False):
     else:
         return 0
 
-def run_coverage_report(project, run_dir, db_dir, report_dir, publish_dir, waver_path='', dry_run=False):
+def run_coverage_report(urg_opts, project, run_dir, db_dir, report_dir, publish_dir, waver_path='', dry_run=False):
     python_interpreter = sys.executable
     cmd_exe = os.path.join(_get_abs_path_to_tree_root(), 'verif/tools/run_coverage_report.py')
     #cmd_args = "-regress_dir %(run_dir)s -merged_cm_dir %(db_dir)s -report_dir %(report_dir)s -waver_path %(waver_path)s" % {'regress_dir':regress_dir, 'db_dir':db_dir, 'report_dir':report_dir, 'waver_path':waver_path}
-    cmd_args = "-P %(project)s -regress_dir %(run_dir)s -merged_cm_dir %(db_dir)s -report_dir %(report_dir)s -publish -publish_dir %(publish_dir)s" \
-                % {'project':project, 'run_dir':run_dir, 'db_dir':db_dir, 'report_dir':report_dir, 'publish_dir':publish_dir}
+    cmd_args = "-urg_opts '%(urg_opts)s' -P %(project)s -regress_dir %(run_dir)s -merged_cm_dir %(db_dir)s -report_dir %(report_dir)s -publish -publish_dir %(publish_dir)s" \
+                % {'urg_opts':urg_opts, 'project':project, 'run_dir':run_dir, 'db_dir':db_dir, 'report_dir':report_dir, 'publish_dir':publish_dir}
     cmd_str = ' '.join([python_interpreter, cmd_exe, cmd_args])
     print ("Status monitor command:%s"%cmd_str)
     if not dry_run:
@@ -212,7 +212,7 @@ if __name__ == '__main__':
                     regr_db = json.load(fh)
                 cov_vdb_dir = 'merged_'+regr_db['start_time']+'.vdb'
                 cov_report_dir = 'report_'+regr_db['start_time']
-                ret=run_coverage_report(config['project'], run_dir, cov_vdb_dir, cov_report_dir, publish_dir, dry_run)
+                ret=run_coverage_report('-format both', config['project'], run_dir, cov_vdb_dir, cov_report_dir, publish_dir, dry_run)
                 shutil.move(cov_vdb_dir, run_dir)
                 shutil.move(cov_report_dir, run_dir)
             elif 'all' == config['kind']:

@@ -52,6 +52,7 @@ class nvdla_base_scenario extends uvm_component;
     extern function void pre_randomize();
     extern function void post_randomize();
     
+    extern function void print_comment(int fh, string comment);
     extern function void mem_load(int fh, string mem_domain, longint unsigned base_addr, string file_name);
 
     extern function void check_nothing(int fh, string event_name);
@@ -91,6 +92,10 @@ endfunction: pre_randomize
 
 function void nvdla_base_scenario::post_randomize();
 endfunction: post_randomize
+
+function void nvdla_base_scenario::print_comment(int fh, string comment);
+    $fwrite(fh,"// %s\n", comment);
+endfunction: print_comment
 
 function void nvdla_base_scenario::mem_load(int fh, string mem_domain, longint unsigned base_addr, string file_name);
     $fwrite(fh,"mem_load(%s,0x%0h,\"%s\");\n",mem_domain,base_addr,file_name);

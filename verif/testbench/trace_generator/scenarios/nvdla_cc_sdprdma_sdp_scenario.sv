@@ -44,6 +44,10 @@ class nvdla_cc_sdprdma_sdp_scenario extends nvdla_base_scenario;
 
     `uvm_component_utils_begin(nvdla_cc_sdprdma_sdp_scenario)
         `uvm_field_string(cdma_weight_surface_pattern,  UVM_ALL_ON)
+        `uvm_field_object(cdma                       ,  UVM_DEFAULT)
+        `uvm_field_object(cc_dp                      ,  UVM_DEFAULT)
+        `uvm_field_object(sdp_rdma                   ,  UVM_DEFAULT)
+        `uvm_field_object(sdp                        ,  UVM_DEFAULT)
     `uvm_component_utils_end
 
 endclass : nvdla_cc_sdprdma_sdp_scenario
@@ -72,6 +76,7 @@ function void nvdla_cc_sdprdma_sdp_scenario::trace_dump(int fh);
         `uvm_fatal(inst_name, "Null handle of trace file ...")
     end
     `uvm_info(inst_name, "Start trace dumping ...", UVM_HIGH)
+    print_comment(fh, $sformatf("Scenario CC_SDPRDMA_SDP:%0d start",active_cnt));
 
     surface_dump(fh);
 
@@ -96,6 +101,7 @@ function void nvdla_cc_sdprdma_sdp_scenario::trace_dump(int fh);
 `endif
         cov.sdp_pool.sdp_sample();
     end
+    print_comment(fh, $sformatf("Scenario CC_SDPRDMA_SDP:%0d end",active_cnt));
 endfunction: trace_dump
 
 function void nvdla_cc_sdprdma_sdp_scenario::surface_dump(int fh);

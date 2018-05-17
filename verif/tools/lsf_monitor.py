@@ -38,28 +38,68 @@ class LSFMonitor(object):
             self.print_job_report(jobs_sts)
             if self.no_running_jobs(jobs_sts):
                 break
+            self.update_job_exec_status(jobs_sts)
             self.time_sleep(self._interval)
-            jobs_sts = self.get_job_exec_status(jobs_sts)
 
     def get_job_by_name(self, job_name=''):
-        job_info = subprocess.check_output("bjobs -a -J '%0s'" % job_name, shell=True) 
+        try:
+            job_info = subprocess.check_output("bjobs -a -J '%0s'" % job_name, shell=True) 
+            if not job_info:
+                raise(None_Job)
+        except:
+            print(' wait 15s and retry')
+            time.sleep(15)
+            try:
+                job_info = subprocess.check_output("bjobs -a -J '%0s'" % job_name, shell=True) 
+                if not job_info:
+                    raise(None_Job)
+            except:
+                raise Exception('job %0s not found' % job_name)
         pattern = re.compile(r'\\n(\d+) ')
         job_id = pattern.findall(str(job_info))
+        job_id = [int(k) for k in job_id]
         return job_id
 
     def get_job_init_status(self, job_id=[]):
         exec_host_info = {}
         for item in job_id:
             exec_host_info[item] = {}
-            info       = subprocess.check_output('bjobs -l '+item, shell = True)
-            cputime_p  = re.compile(r'CPU time used is ([\d\.]+)')
+            try:
+                info = subprocess.check_output('bjobs -al '+str(item), shell = True)
+                if not info:
+                    raise(None_Job)
+            except:
+                print('wait 5s and retry')
+                time.sleep(5)
+                try:
+                    info = subprocess.check_output('bjobs -al '+str(item), shell = True)
+                    if not info:
+                        raise(None_Job)
+                except:
+                    exec_host_info[item]['status']       = 'EXPIRE'
+                    exec_host_info[item]['testdir']      = '-'
+                    exec_host_info[item]['cpulimit']     = '-'
+                    exec_host_info[item]['exechost']     = '-'
+                    exec_host_info[item]['runlimit']     = '-'
+                    exec_host_info[item]['memlimit']     = '-'
+                    exec_host_info[item]['cputime_used'] = '-'
+                    exec_host_info[item]['maxmem']       = '-'
+                    exec_host_info[item]['syndrome']     = '-'
+                    continue
+            info = re.sub(r'\\n\s*','', str(info))
+            cputime_p  = re.compile(r'CPU\s*time\s*used\s*is\s*([\d\.]+)')
             cputime    = cputime_p.search(str(info))
-            maxmem_p   = re.compile(r'MAX MEM:\s+(\d+.*)Mbytes;')
+            maxmem_p   = re.compile(r'MAX\s*MEM:\s*(\d+.*)Mbytes;')
             maxmem     = maxmem_p.search(str(info))
 
-            match = re.search(r'.*Status\s+<(\w+)>,.*CWD <(.*)>, Requested.*CPULIMIT\s*\\n\s*([\d\.]+\s*min) of\s+([a-zA-Z0-9-]+)\s*\\n.*RUNLIMIT\s*\\n\s*([\d\.]+\s*min)\s.*MEMLIMIT\s*\\n\s*(\d+\s*)K\s', str(info))
+            match = re.search(r'.*Status\s*<(\w+)>,.*CWD\s*<(.*)>,.*CPULIMIT\s*([\d\.]+\s*min)\s*of\s*([a-zA-Z0-9-]+)\s*.*RUNLIMIT\s*([\d\.]+\s*min)\s*.*MEMLIMIT\s*(\d+\s*)K\s*', str(info))
+            if match is None:
+                with open('log_of_job_'+str(item), 'w') as fh:
+                    fh.write(str(info))
+                #print(str(info))
+                raise Exception('Job status extraction failed')
             exec_host_info[item]['status']   = match.group(1)
-            exec_host_info[item]['testdir']  = os.path.basename(re.sub(r'\\n|\s','',match.group(2)))
+            exec_host_info[item]['testdir']  = os.path.basename(match.group(2))
             exec_host_info[item]['cpulimit'] = match.group(3)
             exec_host_info[item]['exechost'] = match.group(4)
             exec_host_info[item]['runlimit'] = match.group(5)
@@ -69,28 +109,59 @@ class LSFMonitor(object):
             else:
                 exec_host_info[item]['cputime_used']   = '-'
             if maxmem:
-                exec_host_info[item]['maxmem']   = maxmem.group(1)+'MB'
+                exec_host_info[item]['maxmem']   = maxmem.group(1)+' MB'
             else:
                 exec_host_info[item]['maxmem']   = '-'
             if match.group(1) == 'EXIT':
-                syndrome = re.search(r'.*Completed <exit>;\s*(\w.*)\..*MEMORY USAGE', str(info))
-                exec_host_info[item]['syndrome'] = str(re.sub(r'\\n\s+','',syndrome.group(1)))
+                syndrome = re.search(r'Completed\s*<exit>;\s*(\w.*)\..*MEMORY\s*USAGE', str(info))
+                if syndrome:
+                    exec_host_info[item]['syndrome'] = str(syndrome.group(1))
+                else:
+                    exec_host_info[item]['syndrome'] = 'LSF job exited with unknown reason'
             else:
                 exec_host_info[item]['syndrome'] = ''
         return exec_host_info
 
-    def get_job_exec_status(self, job_status={}):
+    def update_job_exec_status(self, job_status={}):
         for key,value in job_status.items():
-            if value['status'] == 'RUN':
-                info = subprocess.check_output('bjobs -l '+key, shell = True)
-                match = re.search(r'.*Status\s+<(\w+)>,.*CPU time used is ([\d\.]+).*MAX MEM:\s+(\d+.*)Mbytes;', str(info))
-                job_status[key]['status']       = match.group(1)
-                job_status[key]['cputime_used'] = '{:.1f}'.format(float(match.group(2))/60)+' min'
-                job_status[key]['maxmem']       = match.group(3)+'MB'
-                if match.group(1) == 'EXIT':
-                    syndrome = re.search(r'.*Completed <exit>;\s*(\w.*)\..*MEMORY USAGE', str(info))
-                    job_status[key]['syndrome'] = str(re.sub(r'\\n\s+','',syndrome.group(1)))
-        return job_status
+            if value['status'] in ('RUN','PEND'):
+                try:
+                    info = subprocess.check_output('bjobs -al '+str(key), shell = True)
+                    if not info:
+                        raise(None_Job)
+                except:
+                    print('wait 5s and retry')
+                    time.sleep(5)
+                    try:
+                        info = subprocess.check_output('bjobs -al '+str(key), shell = True)
+                        if not info:
+                            raise(None_Job)
+                    except:
+                        print('[WARNING] Failed to get log info of jobID %0d' % key)
+                        continue
+                info = re.sub(r'\\n\s*','', str(info))
+                status_p   = re.compile(r'Status\s*<(\w+)>,')
+                status     = status_p.search(str(info))
+                cputime_p  = re.compile(r'CPU\s*time\s*used\s*is\s*([\d\.]+)')
+                cputime    = cputime_p.search(str(info))
+                maxmem_p   = re.compile(r'MAX\s*MEM:\s*(\d+.*)Mbytes;')
+                maxmem     = maxmem_p.search(str(info))
+
+                job_status[key].update({'status':status.group(1)})
+                if cputime:
+                    job_status[key].update({'cputime_used':'{:.1f}'.format(float(cputime.group(1))/60)+' min'})
+                else:
+                    job_status[key].update({'cputime_used':'-'})
+                if maxmem:
+                    job_status[key].update({'maxmem':maxmem.group(1)+' MB'})
+                else:
+                    job_status[key].update({'maxmem':'-'})
+                if status.group(1) == 'EXIT':
+                    syndrome = re.search(r'Completed\s*<exit>;\s*(\w.*)\..*MEMORY\s*USAGE', str(info))
+                    if syndrome:
+                        job_status[key].update({'syndrome':str(syndrome.group(1))})
+                    else:
+                        job_status[key].update({'syndrome':'LSF job exited with unknown reason'})
 
     def print_job_report(self, job_status):
         print('[LSF] Jobs status with name ' + self._job_name)

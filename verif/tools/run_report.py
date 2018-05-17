@@ -7,7 +7,9 @@ import argparse
 import time
 import json
 import colorama
-from   shutil import copy2
+from   shutil      import copy2
+from   lsf_monitor import LSFMonitor
+from   pprint      import pprint
 
 __DESCRIPTION__ = '''
   This tool is used to generate regression report.
@@ -27,6 +29,7 @@ class RunReport(object):
     end_time = 0
     test_orgz_data = {}
     regr_sts_data = {}
+    job_status = {}
 
     def __init__(self, regress_dir, publish_dir, publish=False,
                  monitor=False, monitor_interval=30, monitor_timeout=60,
@@ -71,6 +74,11 @@ class RunReport(object):
             self.test_orgz_data = dict(sorted(self.test_orgz_data.items(), key=lambda x:x[1]['name'])) # sort by testname
         with open('regression_status.json', 'r') as regr_sts_fh:
             self.regr_sts_data = json.load(regr_sts_fh)
+        if self.regr_sts_data['farm_type'] == 'LSF':
+            lsfm = LSFMonitor()
+            for item in self.test_orgz_data.values():
+                self.job_status.update(lsfm.get_job_init_status([item['job_id']]))
+
 
     def submetrics_parse(self):
         submetrics_list = []
@@ -163,6 +171,9 @@ class RunReport(object):
         return pattern.sub(replacement, string)
 
     def __parse_regress_status(self):
+        if self.regr_sts_data['farm_type'] == 'LSF':
+            lsfm = LSFMonitor()
+            lsfm.update_job_exec_status(self.job_status)
         for tid, info in self.test_orgz_data.items():
             # ~dump_trace_only~ means we only run trace_generator regression.
             if self.regr_sts_data['dump_trace_only'] == 'True':
@@ -184,54 +195,85 @@ class RunReport(object):
             else:
                 with open(status_file, 'r') as status_fh:
                     status = status_fh.readline().rstrip('\n')
-            self.test_orgz_data[tid]['status'] = status
             if status == 'FAIL':
                 if os.path.exists('testout'):
                     errinfo = self.__get_lastline('testout').rstrip('\n')
                 else:
                     errinfo = 'trace_gen failed'
-            self.test_orgz_data[tid]['errinfo'] = errinfo
+            elif status == 'RUNNING' and self.regr_sts_data['farm_type'] == 'LSF':
+                if self.job_status[info['job_id']]['status'] in ('EXIT', 'EXPIRE'):
+                    status = 'KILLED'
+                    errinfo = self.job_status[info['job_id']]['syndrome']
+            self.test_orgz_data[tid]['status']   = status
+            self.test_orgz_data[tid]['errinfo']  = errinfo
             self.test_orgz_data[tid]['syndrome'] = ''
+            if self.regr_sts_data['farm_type'] == "LSF":
+                self.test_orgz_data[tid]['cputime'] = self.job_status[info['job_id']]['cputime_used']
+                self.test_orgz_data[tid]['memsize'] = self.job_status[info['job_id']]['maxmem']
+                
 
     def __print_regress_report(self):
         passed_testlist  = [v for v in self.test_orgz_data.values() if v['status'] == 'PASS']
         failed_testlist  = [v for v in self.test_orgz_data.values() if v['status'] == 'FAIL']
+        killed_testlist  = [v for v in self.test_orgz_data.values() if v['status'] == 'KILLED']
         running_testlist = [v for v in self.test_orgz_data.values() if v['status'] == 'RUNNING']
         pending_testlist = [v for v in self.test_orgz_data.values() if v['status'] == 'PENDING']
 
+        farm_type = self.regr_sts_data['farm_type']
         print('[INFO] Dir = ' + self.regress_dir)
-        print(100 * '-')
-        print('%-40s %-20s %-10s %-s' % ('Test', 'TB', 'Status', 'Errinfo'))
-        print(100 * '-')
+        print(150 * '-')
+        if farm_type == 'LSF':
+            print('%-10s %-40s %-20s %-10s %-10s %-10s %-10s %-10s %-s' % ('JobID', 'Test', 'TB', 'Status', 'CpuTime', 'MemSize', 'CpuLimit', 'MemLimit', 'Errinfo'))
+        else:
+            print('%-10s %-40s %-20s %-10s %-s' % ('JobID', 'Test', 'TB', 'Status', 'Errinfo'))
+        print(150 * '-')
 
-        self.__print_testlist_status('GREEN', passed_testlist)
-        self.__print_testlist_status('RED', failed_testlist)
-        self.__print_testlist_status('BLUE', running_testlist)
-        self.__print_testlist_status('YELLOW', pending_testlist)
+        self.__print_testlist_status('GREEN',  passed_testlist,  farm_type)
+        self.__print_testlist_status('RED',    failed_testlist,  farm_type)
+        self.__print_testlist_status('CYAN',   killed_testlist,  farm_type)
+        self.__print_testlist_status('BLUE',   running_testlist, farm_type)
+        self.__print_testlist_status('YELLOW', pending_testlist, farm_type)
 
-        print(100 * '-')
-        print('TOTAL    PASS      FAILED    RUNNING   PENDING   Passing Rate')
+        print(150 * '-')
+        print('TOTAL    PASS      FAILED    KILLED    RUNNING   PENDING   Passing Rate')
         print('%-4d     ' % self.regr_sts_data['metrics_result']['running_test_number'], end='')
         print(colorama.Fore.GREEN  + '%-10d'% len(passed_testlist), end='')
         print(colorama.Fore.RED    + '%-10d'% len(failed_testlist), end='')
+        print(colorama.Fore.CYAN   + '%-10d'% len(killed_testlist), end='')
         print(colorama.Fore.BLUE   + '%-10d'% len(running_testlist), end='')
         print(colorama.Fore.YELLOW + '%-10d'% len(pending_testlist), end='')
         print(colorama.Style.BRIGHT+colorama.Fore.MAGENTA + '%.2f%%' % float(100*self.passing_rate_calc()))
 
-    def __print_testlist_status(self, color='', testlist={}):
-        for test in testlist:
-            msg = "%(test)-40s %(tb)-20s %(status)-10s %(errinfo)-s" % {
-                'test'   : os.path.basename(test['dir']),
-                'tb'     : test['test_bench'],
-                'status' : test['status'],
-                'errinfo': self.__replace_path_sub_string(test['errinfo'])
-            }
-            print(getattr(colorama.Fore, color) + msg)
+    def __print_testlist_status(self, color='', testlist={}, farm_type=''):
+        if farm_type == 'LSF':
+            for test in testlist:
+                msg = "%(jobid)-10s %(test)-40s %(tb)-20s %(status)-10s %(cputime)-10s %(memsize)-10s %(cpulimit)-10s %(memlimit)-10s %(errinfo)-s" % {
+                    'jobid'    : test['job_id'],
+                    'test'     : os.path.basename(test['dir']),
+                    'tb'       : test['test_bench'],
+                    'status'   : test['status'],
+                    'cputime'  : self.job_status[test['job_id']]['cputime_used'],
+                    'memsize'  : self.job_status[test['job_id']]['maxmem'],
+                    'cpulimit' : self.job_status[test['job_id']]['cpulimit'],
+                    'memlimit' : self.job_status[test['job_id']]['memlimit'],
+                    'errinfo'  : self.__replace_path_sub_string(test['errinfo'])
+                }
+                print(getattr(colorama.Fore, color) + msg)
+        else:
+            for test in testlist:
+                msg = "%(test)-40s %(tb)-20s %(status)-10s %(errinfo)-s" % {
+                    'test'   : os.path.basename(test['dir']),
+                    'tb'     : test['test_bench'],
+                    'status' : test['status'],
+                    'errinfo': self.__replace_path_sub_string(test['errinfo'])
+                }
+                print(getattr(colorama.Fore, color) + msg)
 
     def __is_regress_done(self):
         passed_testlist  = [v for v in self.test_orgz_data.values() if v['status'] == 'PASS']
         failed_testlist  = [v for v in self.test_orgz_data.values() if v['status'] == 'FAIL']
-        return (len(passed_testlist)+len(failed_testlist)) == self.regr_sts_data['metrics_result']['running_test_number']
+        killed_testlist  = [v for v in self.test_orgz_data.values() if v['status'] == 'KILLED']
+        return (len(passed_testlist)+len(failed_testlist)+len(killed_testlist)) == self.regr_sts_data['metrics_result']['running_test_number']
 
     def __get_lastline(self, filename):
         r = os.popen('tail -n 1 ' + filename)
@@ -241,8 +283,9 @@ class RunReport(object):
         return list(filter(lambda x: not x.startswith('.') and os.path.isdir(os.path.join(d, x)), os.listdir(d)))
 
     def __time_sleep(self, interval):
-        print('[INFO] Will update regression status after {} seconds later ...'.format(interval))
-        time.sleep(interval)
+        for val in range(interval,-1,-1):
+            print(f'[INFO] Will update regression status after {colorama.Fore.RED}%0d{colorama.Style.RESET_ALL} seconds later ...' % val, end='\r')
+            time.sleep(1)
 
     def __is_monitor_timeout(self):
         self.end_time = time.time()

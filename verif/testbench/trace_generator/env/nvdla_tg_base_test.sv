@@ -43,6 +43,7 @@ class nvdla_tg_base_test extends uvm_test;
     /*
         Phases
     */
+    extern function void end_of_elaboration_phase(uvm_phase phase);
     extern task          main_phase(uvm_phase phase);
     extern function void report_phase(uvm_phase phase);
     
@@ -62,6 +63,16 @@ endfunction:new
 function nvdla_tg_base_test::set_inst_name(string inst_name="");
     this.inst_name = inst_name;
 endfunction: set_inst_name
+
+function void nvdla_tg_base_test::end_of_elaboration_phase(uvm_phase phase);
+    super.end_of_elaboration_phase(phase);
+
+    begin
+        uvm_factory factory = uvm_factory::get();
+        factory.print();
+        uvm_top.print_topology();
+    end
+endfunction: end_of_elaboration_phase
 
 task nvdla_tg_base_test::main_phase(uvm_phase phase);
     `uvm_info(inst_name, $sformatf("main_phase begins ..."), UVM_HIGH)

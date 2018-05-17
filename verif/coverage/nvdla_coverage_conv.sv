@@ -196,7 +196,7 @@ class conv_cov_pool extends nvdla_coverage_base;
             bins pixel_format_T_A2Y10U10V10              = {24};
             bins pixel_format_T_V10U10Y10A2              = {25};
 `endif
-            bins pixel_format_T_A8Y8U8V8                 = {25};
+            bins pixel_format_T_A8Y8U8V8                 = {26};
             bins pixel_format_T_V8U8Y8A8                 = {27};
             bins pixel_format_T_Y8___U8V8_N444           = {28};
             bins pixel_format_T_Y8___V8U8_N444           = {29};
@@ -219,10 +219,12 @@ class conv_cov_pool extends nvdla_coverage_base;
             ignore_bins feature = binsof(cp_datain_format.feature);
         }
         cp_pixel_x_offset:     coverpoint ral.nvdla.NVDLA_CDMA.D_PIXEL_OFFSET.PIXEL_X_OFFSET.value {
-            bins ful[8] = {[0:31]};
+            bins ful[4] = {[0:`NVDLA_MEMORY_ATOMIC_SIZE-1]};
         }
         cr_datain_format_pixel_format_pixel_x_offset:    cross cp_datain_format, cp_pixel_format, cp_pixel_x_offset {
             ignore_bins feature = binsof(cp_datain_format.feature);
+            ignore_bins offset  = binsof(cp_pixel_format)intersect{['hc:'h1b]}
+                               && binsof(cp_pixel_x_offset)intersect{[`NVDLA_MEMORY_ATOMIC_SIZE/4:$]};
         }
         cp_pixel_y_offset:     coverpoint ral.nvdla.NVDLA_CDMA.D_PIXEL_OFFSET.PIXEL_Y_OFFSET.value[2:0];
         cr_datain_format_pixel_mapping_pixel_y_offset:    cross cp_datain_format, cp_pixel_mapping, cp_pixel_y_offset {
@@ -337,11 +339,13 @@ class conv_cov_pool extends nvdla_coverage_base;
             bins high[2] = {[256:512]};
             //option.weight = 0;
         }
+`ifdef NVDLA_FEATURE_DATA_TYPE_INT16_FP16
         cr_data_reuse_datain_format_pixel_mapping_pixel_format_line_stride_pitch_0:        cross cp_data_reuse, cp_datain_format, cp_pixel_mapping, cp_pixel_format, cp_line_stride_pitch_0 {
             ignore_bins feature      = binsof(cp_datain_format.feature);
             ignore_bins format       = binsof(cp_pixel_format)intersect{[0:19], [26:35]};
             ignore_bins reuse        = binsof(cp_data_reuse.on);
         }
+`endif
         cp_line_stride_pitch_1:        coverpoint (ral.nvdla.NVDLA_CDMA.D_LINE_STRIDE.LINE_STRIDE.value-(ral.nvdla.NVDLA_CDMA.D_PIXEL_OFFSET.PIXEL_X_OFFSET.value + ral.nvdla.NVDLA_CDMA.D_DATAIN_SIZE_0.DATAIN_WIDTH.value+1)*((ral.nvdla.NVDLA_CDMA.D_MISC_CFG.IN_PRECISION.value==0)?1:2)) {
             bins eql     = {0};
             bins mid[7]  = {[1:255]};
@@ -364,7 +368,7 @@ class conv_cov_pool extends nvdla_coverage_base;
             ignore_bins format       = binsof(cp_pixel_format)intersect{[20:25], [28:35]};
             ignore_bins reuse        = binsof(cp_data_reuse.on);
         }
-        cp_uv_line_stride:             coverpoint (ral.nvdla.NVDLA_CDMA.D_LINE_UV_STRIDE.UV_LINE_STRIDE.value-2*(ral.nvdla.NVDLA_CDMA.D_DATAIN_SIZE_0.DATAIN_WIDTH.value+1)*((ral.nvdla.NVDLA_CDMA.D_MISC_CFG.IN_PRECISION.value==0)?1:2)) {
+        cp_uv_line_stride:             coverpoint (ral.nvdla.NVDLA_CDMA.D_LINE_UV_STRIDE.UV_LINE_STRIDE.value-2*(ral.nvdla.NVDLA_CDMA.D_PIXEL_OFFSET.PIXEL_X_OFFSET.value + ral.nvdla.NVDLA_CDMA.D_DATAIN_SIZE_0.DATAIN_WIDTH.value+1)*((ral.nvdla.NVDLA_CDMA.D_MISC_CFG.IN_PRECISION.value==0)?1:2)) {
             bins eql     = {0};
             bins mid[7]  = {[1:255]};
             bins high[2] = {[256:512]};
@@ -419,10 +423,10 @@ class conv_cov_pool extends nvdla_coverage_base;
             bins mid[8] = {['h1:'h1FFE]};
             bins max = {'h1FFF};
         }
-        cr_data_reuse_datain_format_line_packed_cacc_dataout_width_dataou_height:    cross cp_data_reuse, cp_line_packed_cacc, cp_dataout_width, cp_dataout_height {
+        cr_data_reuse_datain_format_line_packed_cacc_dataout_width_dataout_height:    cross cp_data_reuse, cp_line_packed_cacc, cp_dataout_width, cp_dataout_height {
             //ignore_bins feature    = binsof(cp_datain_format.feature);
             ignore_bins reuse          = binsof(cp_data_reuse.on);
-            ignore_bins illegle_pack   = binsof(cp_line_packed_cacc.pack) && binsof(cp_dataout_width)intersect{[1:$]} && binsof(cp_dataout_height)intersect{[1:$]};
+            ignore_bins illegle_pack   = binsof(cp_line_packed_cacc.pack) && (binsof(cp_dataout_width)intersect{[1:$]} || binsof(cp_dataout_height)intersect{[1:$]});
             ignore_bins illegle_unpack = binsof(cp_line_packed_cacc.unpack) && binsof(cp_dataout_width)intersect{0} && binsof(cp_dataout_height)intersect{0};
             bins        pack           = binsof(cp_line_packed_cacc.pack) && binsof(cp_dataout_width)intersect{0} && binsof(cp_dataout_height)intersect{0};
             bins        unpack         = binsof(cp_line_packed_cacc.unpack) && binsof(cp_dataout_width)intersect{[1:$]} && binsof(cp_dataout_height)intersect{[1:$]};
@@ -432,10 +436,10 @@ class conv_cov_pool extends nvdla_coverage_base;
             bins unpack = {0};
             bins pack   = {1};
         }
-        cr_data_reuse_datain_format_surf_packed_cacc_dataout_width_dataou_height:    cross cp_data_reuse, cp_surf_packed_cacc, cp_dataout_width, cp_dataout_height {
+        cr_data_reuse_datain_format_surf_packed_cacc_dataout_width_dataout_height:    cross cp_data_reuse, cp_surf_packed_cacc, cp_dataout_width, cp_dataout_height {
             //ignore_bins feature    = binsof(cp_datain_format.feature);
             ignore_bins reuse      = binsof(cp_data_reuse.on);
-            ignore_bins illegle_pack   = binsof(cp_surf_packed_cacc.pack) && binsof(cp_dataout_width)intersect{[1:$]} && binsof(cp_dataout_height)intersect{[1:$]};
+            ignore_bins illegle_pack   = binsof(cp_surf_packed_cacc.pack) && (binsof(cp_dataout_width)intersect{[1:$]} || binsof(cp_dataout_height)intersect{[1:$]});
             ignore_bins illegle_unpack = binsof(cp_surf_packed_cacc.unpack) && binsof(cp_dataout_width)intersect{0} && binsof(cp_dataout_height)intersect{0};
             bins        pack       = binsof(cp_surf_packed_cacc.pack) && binsof(cp_dataout_width)intersect{0} && binsof(cp_dataout_height)intersect{0};
             bins        unpack     = binsof(cp_surf_packed_cacc.unpack) && binsof(cp_dataout_width)intersect{[1:$]} && binsof(cp_dataout_height)intersect{[1:$]};
@@ -620,7 +624,9 @@ class conv_cov_pool extends nvdla_coverage_base;
             ignore_bins single_plane  = binsof(cp_pixel_format) intersect {[0:27]};
         }
         cr_skip_data_rls_skip_weight_rls: cross cp_skip_data_rls, cp_skip_weight_rls;
-        cr_data_reuse_weight_reuse:       cross cp_data_reuse, cp_weight_reuse;
+        cr_data_reuse_weight_reuse:       cross cp_data_reuse, cp_weight_reuse {
+            ignore_bins reuse_both = binsof(cp_data_reuse.on) && binsof(cp_weight_reuse.on);
+        }
         // ** precision conversion **
         cr_datain_format_in_precision:    cross cp_datain_format, cp_in_precision;
         cr_datain_format_proc_precision:  cross cp_datain_format, cp_proc_precision;

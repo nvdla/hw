@@ -38,7 +38,10 @@ class nvdla_sdprdma_sdp_scenario extends nvdla_base_scenario;
     */
     extern function void build_phase(uvm_phase phase);
 
-    `uvm_component_utils(nvdla_sdprdma_sdp_scenario)
+    `uvm_component_utils_begin(nvdla_sdprdma_sdp_scenario)
+        `uvm_field_object(sdp_rdma, UVM_DEFAULT)
+        `uvm_field_object(sdp     , UVM_DEFAULT)
+    `uvm_component_utils_end
 
 endclass : nvdla_sdprdma_sdp_scenario
 

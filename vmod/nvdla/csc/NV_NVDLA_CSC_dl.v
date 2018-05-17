@@ -30,6 +30,7 @@ module NV_NVDLA_CSC_dl (
   ,sc2buf_dat_rd_data        //|< i
   ,sc2buf_dat_rd_shift       //|> o
   ,sc2buf_dat_rd_next1_en    //|> o
+  ,sc2buf_dat_rd_next1_addr  //|> o
   ,sc2mac_dat_a_pvld         //|> o
   ,sc2mac_dat_a_mask         //|> o
   //: for(my $i=0; $i<CSC_ATOMC ; $i++){
@@ -92,6 +93,7 @@ input          sc2buf_dat_rd_valid;  /* data valid */
 input [CBUF_ENTRY_BITS-1:0] sc2buf_dat_rd_data;
 output [CBUF_RD_DATA_SHIFT_WIDTH-1:0] sc2buf_dat_rd_shift;
 output sc2buf_dat_rd_next1_en;
+output [CBUF_ADDR_WIDTH-1:0] sc2buf_dat_rd_next1_addr;
 output         sc2mac_dat_a_pvld;     /* data valid */
 output [CSC_ATOMC-1:0] sc2mac_dat_a_mask;
 //: for(my $i=0; $i<CSC_ATOMC ; $i++){
@@ -288,6 +290,7 @@ reg       [7:0] rsp_sft_cnt_l2_ori;
 reg       [7:0] rsp_sft_cnt_l3;
 reg       [7:0] rsp_sft_cnt_l3_ori;
 reg      [CBUF_ADDR_WIDTH-1:0] sc2buf_dat_rd_addr;
+reg      [CBUF_ADDR_WIDTH-1:0] sc2buf_dat_rd_next1_addr;
 reg             sc2buf_dat_rd_en;
 reg      [CSC_ENTRIES_NUM_WIDTH-1:0] sc2cdma_dat_entries;
 reg      [13:0] sc2cdma_dat_slices;
@@ -1250,12 +1253,22 @@ assign dat_req_base_d1 = dat_entry_st[CBUF_ADDR_WIDTH-1:0];
 
 
 ////////////////////////// data read index generator: 2st stage //////////////////////////
+wire [CBUF_ADDR_WIDTH-1:0] dat_req_addr_minus1;
+wire mon_dat_req_addr_minus1;
+wire is_dat_req_addr_minus1_wrap;
+wire [CBUF_ADDR_WIDTH-1:0] dat_req_addr_minus1_wrap;
+wire [CBUF_ADDR_WIDTH-1:0] dat_req_addr_minus1_real;
 assign {mon_h_bias_d1,h_bias_d1} = h_bias_0_d1 + h_bias_1_d1 + h_bias_2_d1 + h_bias_3_d1;
 //assign {mon_dat_req_addr_sum,dat_req_addr_sum} = dat_req_base_d1 + c_bias_d1 + h_bias_d1 + w_bias_d1; //by entry
 assign dat_req_addr_sum = dat_req_base_d1 + c_bias_d1 + h_bias_d1 + w_bias_d1; //by entry
 assign is_dat_req_addr_wrap = (dat_req_addr_sum >= {1'b0,data_bank, {LOG2_CBUF_BANK_DEPTH{1'b0}}});
 assign {mon_dat_req_addr_wrap,dat_req_addr_wrap} = dat_req_addr_sum[CBUF_ADDR_WIDTH:0] - {1'b0,data_bank, {LOG2_CBUF_BANK_DEPTH{1'b0}}};
 assign dat_req_addr_w = (layer_st | dat_req_dummy_d1) ? {CBUF_ADDR_WIDTH{1'b1}} : is_dat_req_addr_wrap ? dat_req_addr_wrap : dat_req_addr_sum[CBUF_ADDR_WIDTH-1:0]; //get the adress sends to cbuf
+assign {mon_dat_req_addr_minus1,dat_req_addr_minus1} = dat_req_addr_w-1'b1;
+assign is_dat_req_addr_minus1_wrap = (dat_req_addr_minus1 >= {1'b0,data_bank, {LOG2_CBUF_BANK_DEPTH{1'b0}}});   //only one case: 0-1=ffff would introduce wrap  
+assign dat_req_addr_minus1_wrap = {1'b0,data_bank, {LOG2_CBUF_BANK_DEPTH{1'b1}}}; 
+assign dat_req_addr_minus1_real = is_dat_req_addr_minus1_wrap ? dat_req_addr_minus1_wrap : dat_req_addr_minus1;
+
 assign sc2buf_dat_rd_en_w = dat_req_valid_d1 & ((dat_req_addr_last != dat_req_addr_w) | pixel_force_fetch_d1);
 assign dat_req_addr_last = (dat_req_sub_h_d1 == 2'h0) ? dat_req_sub_h_0_addr :
                            (dat_req_sub_h_d1 == 2'h1) ? dat_req_sub_h_1_addr :
@@ -1332,6 +1345,10 @@ assign {mon_sc2buf_dat_rd_shift_w, sc2buf_dat_rd_shift_w} =
 //: &eperl::flop("-d sc2buf_dat_rd_shift_w -q sc2buf_dat_rd_shift -wid ${kk}");
 `endif
 
+wire [CBUF_ADDR_WIDTH-1:0] sc2buf_dat_rd_addr_w;
+wire [CBUF_ADDR_WIDTH-1:0] sc2buf_dat_rd_next1_addr_w;
+assign sc2buf_dat_rd_addr_w = sc2buf_dat_rd_next1_en_w ? dat_req_addr_minus1_real : dat_req_addr_w;
+assign sc2buf_dat_rd_next1_addr_w = sc2buf_dat_rd_next1_en_w ? dat_req_addr_w : {CBUF_ADDR_WIDTH{1'b0}};
 
 //: my $kk=CBUF_ADDR_WIDTH;
 //: &eperl::flop("-nodeclare   -rval \"{${kk}{1'b1}}\"  -en \"dat_req_sub_h_0_addr_en\" -d \"dat_req_addr_w\" -q dat_req_sub_h_0_addr");
@@ -1341,7 +1358,8 @@ assign {mon_sc2buf_dat_rd_shift_w, sc2buf_dat_rd_shift_w} =
 
 //: my $kk=CBUF_ADDR_WIDTH;
 //: &eperl::flop("-nodeclare   -rval \"1'b0\"   -d \"sc2buf_dat_rd_en_w\" -q sc2buf_dat_rd_en");
-//: &eperl::flop("-nodeclare   -rval \"{${kk}{1'b1}}\"  -en \"layer_st | sc2buf_dat_rd_en_w\" -d \"dat_req_addr_w\" -q sc2buf_dat_rd_addr");
+//: &eperl::flop("-nodeclare   -rval \"{${kk}{1'b1}}\"  -en \"layer_st | sc2buf_dat_rd_en_w\" -d \"sc2buf_dat_rd_addr_w\" -q sc2buf_dat_rd_addr");
+//: &eperl::flop("-nodeclare   -rval \"{${kk}{1'b1}}\"  -en \"layer_st | sc2buf_dat_rd_en_w\" -d \"sc2buf_dat_rd_next1_addr_w\" -q sc2buf_dat_rd_next1_addr");
 
 //: &eperl::flop("-nodeclare   -rval \"1'b0\"   -d \"dat_pipe_valid_d1\" -q dat_pipe_valid_d2");
 //: &eperl::flop("-nodeclare   -rval \"1'b0\"   -d \"dat_exec_valid_d1\" -q dat_exec_valid_d2");

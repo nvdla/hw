@@ -26,6 +26,6 @@
 #define PKT_nvdla_stripe_info_stripe_st_FIELD   5
 #define PKT_nvdla_stripe_info_stripe_end_FIELD  6
 #define PKT_nvdla_stripe_info_layer_end_FIELD   8
-#ifdef DESIGNWARE_NOEXIST
-`define DESIGNWARE_NOEXIST
+#if (USE_DESIGNWARE==0)
+`define DESIGNWARE_NOEXIST 1
 #endif

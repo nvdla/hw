@@ -796,6 +796,7 @@ NV_NVDLA_SDP_reg u_reg (
   ,.dp2reg_lut_lo_hit               (dp2reg_lut_lo_hit[31:0])               
   ,.dp2reg_lut_oflow                (dp2reg_lut_oflow[31:0])                
   ,.dp2reg_lut_uflow                (dp2reg_lut_uflow[31:0])                
+#endif
 #else 
   ,.dp2reg_lut_hybrid               ( 32'h0) //dp2reg_lut_hybrid[31:0])               
   ,.dp2reg_lut_int_data             ( 16'h0) //dp2reg_lut_int_data[15:0])             
@@ -803,7 +804,6 @@ NV_NVDLA_SDP_reg u_reg (
   ,.dp2reg_lut_lo_hit               ( 32'h0) //dp2reg_lut_lo_hit[31:0])               
   ,.dp2reg_lut_oflow                ( 32'h0) //dp2reg_lut_oflow[31:0])                
   ,.dp2reg_lut_uflow                ( 32'h0) //dp2reg_lut_uflow[31:0])                
-#endif
 #endif
   ,.reg2dp_cvt_offset               (reg2dp_cvt_offset[31:0])               
   ,.reg2dp_cvt_scale                (reg2dp_cvt_scale[15:0])                

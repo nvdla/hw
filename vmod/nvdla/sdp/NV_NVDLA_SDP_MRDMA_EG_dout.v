@@ -789,6 +789,7 @@ always @(
   or pfifo_data2_16
   or pfifo_data3_16
   ) begin
+  //spyglass disable_block W171 W226
     case (1'b1)
      pfifo0_sel: pfifo_data_r = cfg_di_16 ? pfifo_data0_16 : pfifo_data0_8;
      pfifo1_sel: pfifo_data_r = cfg_di_16 ? pfifo_data1_16 : pfifo_data1_8;
@@ -798,6 +799,7 @@ always @(
                 pfifo_data_r[DP_DIN_DW-1:0] = {(DP_DIN_DW){`x_or_0}};
               end  
     endcase
+  //spyglass enable_block W171 W226
 end
 
 assign dat_data = pfifo_data_r;

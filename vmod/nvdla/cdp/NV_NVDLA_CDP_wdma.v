@@ -938,7 +938,7 @@ end
 // DMA Interface
 //==============
 
-NV_NVDLA_DMAIF_wr NV_NVDLA_PDP_WDMA_wr(
+NV_NVDLA_DMAIF_wr NV_NVDLA_CDP_WDMA_wr(
    .nvdla_core_clk          (nvdla_core_clk_orig  )  
   ,.nvdla_core_rstn         (nvdla_core_rstn      ) 
   ,.reg2dp_dst_ram_type     (reg2dp_dst_ram_type  )
