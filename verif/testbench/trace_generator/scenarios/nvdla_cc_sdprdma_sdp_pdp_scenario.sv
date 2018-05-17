@@ -77,6 +77,7 @@ function void nvdla_cc_sdprdma_sdp_pdp_scenario::trace_dump(int fh);
         `uvm_fatal(inst_name, "Null handle of trace file ...")
     end
     `uvm_info(inst_name, "Start trace dumping ...", UVM_HIGH)
+    print_comment(fh, $sformatf("Scenario CC_SDPRDMA_SDP_PDP:%0d start",active_cnt));
 
     surface_dump(fh);
 
@@ -100,6 +101,7 @@ function void nvdla_cc_sdprdma_sdp_pdp_scenario::trace_dump(int fh);
         cov.sdp_pool.sdp_sample();
         cov.pdp_pool.sample();
     end
+    print_comment(fh, $sformatf("Scenario CC_SDPRDMA_SDP_PDP:%0d end",active_cnt));
 endfunction: trace_dump
 
 function void nvdla_cc_sdprdma_sdp_pdp_scenario::surface_dump(int fh);

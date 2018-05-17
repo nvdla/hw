@@ -73,6 +73,7 @@ function void nvdla_cdprdma_cdp_scenario::trace_dump(int fh);
         `uvm_fatal(inst_name, "Null handle of trace file ...")
     end
     `uvm_info(inst_name, "Start trace dumping ...", UVM_HIGH)
+    print_comment(fh, $sformatf("Scenario CDPRDMA_CDP:%0d start",active_cnt));
     
     set_sync_evt_name();
     set_output_mem_addr();
@@ -90,6 +91,7 @@ function void nvdla_cdprdma_cdp_scenario::trace_dump(int fh);
         cov.cdp_pool.cdp_lut_sample();
         cov.cdp_pool.sample();
     end
+    print_comment(fh, $sformatf("Scenario CDPRDMA_CDP:%0d end",active_cnt));
 endfunction: trace_dump
 
 function void nvdla_cdprdma_cdp_scenario::activate();
