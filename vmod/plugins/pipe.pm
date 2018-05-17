@@ -13,7 +13,7 @@ use EperlUtil;
 
 =head1 PIPE
 
-  &eperl::pipe("[-is|os] [-wid <n>]");
+  &eperl::pipe("[-is] [-wid <n>]");
     
   Required Inputs:
     NONE
@@ -27,7 +27,6 @@ use EperlUtil;
     -ri  : input ready signal name
 
     -is  : input skid buffer            
-    -os  : output skid buffer           
 
     -wid <n> : width of data
 
@@ -41,28 +40,27 @@ use EperlUtil;
     ----------
     The pipe function generates a single pipe stage with bubble collapsing(bc).
     Input skid(is) adds comb logic on vi side, while make ro timing clean
-    On contrast output skid(os) adds comb logic on vo side, while make ri timing clean
         
     BASIC        | SKID
                  |
-    pipe -bc     |   -is                            -os                            
-    ------------ |   -----------------------------  -----------------------------
-     di,vi,ro    |     di,vi              ro          di,vi              ro        
-      v     ^    |       v                ^             v                ^         
-      |     |    |     __|  __            |            _|________________|_        
-     _|_    |    |    | _|_|_ |           |           |        pipe        |       
-    |>__|   |    |    | \___/-|------     |           |____________________|       
-      | - >(*)   |    |  _|_  | |  _|_   _|_          __|  __            |         
-      |     |    |    | |>__| | | |>__| |>__|        | _|_|_ |           |         
-      |     |    |    |__ |___| |   |     |          | \___/-|------     |         
-      |     |    |      _|_|_   |   ------|          |  _|_  | |  _|_   _|_        
-      v     ^    |      \___/---          |          | |>__| | | |>__| |>__|       
-     do,vo,ri    |       _|_______________|_         |__ |___| |   |     |         
-                 |      |        pipe       |          _|_|_   |   ------|         
-                 |      |___________________|          \___/---          |         
-                 |        |               |              |               |         
-                 |        v               ^              v               ^         
-                 |     do,v               ri           do,vo             ri        
+    pipe -bc     |   -is                           
+    ------------ |   ----------------------------- 
+     di,vi,ro    |     di,vi              ro       
+      v     ^    |       v                ^        
+      |     |    |     __|  __            |        
+     _|_    |    |    | _|_|_ |           |        
+    |>__|   |    |    | \___/-|------     |        
+      | - >(*)   |    |  _|_  | |  _|_   _|_       
+      |     |    |    | |>__| | | |>__| |>__|      
+      |     |    |    |__ |___| |   |     |        
+      |     |    |      _|_|_   |   ------|        
+      v     ^    |      \___/---          |        
+     do,vo,ri    |       _|_______________|_       
+                 |      |        pipe       |      
+                 |      |___________________|      
+                 |        |               |        
+                 |        v               ^        
+                 |     do,v               ri       
 
 =cut
 
@@ -104,11 +102,9 @@ sub pipe {
     my $wid = 1;
     my $module;
     my $is;
-    my $os;
     GetOptions (
                'prefix=s'  => \$prefix,
                'is'    => \$is,
-               'os'    => \$os,
                'vi=s'  => \$vi,
                'di=s'  => \$di,
                'ro=s'  => \$ro,
@@ -168,7 +164,7 @@ sub pipe {
     ($vi,$di,$ro) = _pipe($vi,$di,$ro,$range);
 
     # os
-    ($vi,$di,$ro) = _skid($vi,$di,$ro,$range) if $os;
+    # ($vi,$di,$ro) = _skid($vi,$di,$ro,$range) if $os;
 
     #================================
     # TAIL
