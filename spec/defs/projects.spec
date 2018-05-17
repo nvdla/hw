@@ -367,24 +367,19 @@
 
 #if defined(NUM_DMA_READ_CLIENTS_10)
     %define NVDLA_NUM_DMA_READ_CLIENTS 10
-#endif
-
-#if defined(NUM_DMA_READ_CLIENTS_8)
+#elif defined(NUM_DMA_READ_CLIENTS_8)
     %define NVDLA_NUM_DMA_READ_CLIENTS 8
-#endif
-
-
-#if defined(NUM_DMA_WRITE_CLIENTS_5)
-    %define NVDLA_NUM_DMA_WRITE_CLIENTS 5
-#endif
-
-#if defined(NUM_DMA_READ_CLIENTS_7)
+#elif defined(NUM_DMA_READ_CLIENTS_7)
     %define NVDLA_NUM_DMA_READ_CLIENTS 7
 #endif
 
-#if defined(NUM_DMA_WRITE_CLIENTS_3)
+#if defined(NUM_DMA_WRITE_CLIENTS_5)
+    %define NVDLA_NUM_DMA_WRITE_CLIENTS 5
+#elif defined(NUM_DMA_WRITE_CLIENTS_3)
     %define NVDLA_NUM_DMA_WRITE_CLIENTS 3
 #endif
+
+
 
 #if defined(DESIGNWARE_NOEXIST)
     %define DESIGNWARE_NOEXIST

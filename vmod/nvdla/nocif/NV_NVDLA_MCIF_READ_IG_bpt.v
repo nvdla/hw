@@ -207,7 +207,7 @@ always @(
     end else if (is_ftran) begin
         slot_needed = (out_size+1)>>1;
     end else begin
-        slot_needed = NVDLA_MCIF_BURST_LENGTH;
+        slot_needed = NVDLA_PRIMARY_MEMIF_MAX_BURST_LENGTH;
     end
 end
 
