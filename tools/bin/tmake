@@ -100,14 +100,15 @@ if ($list) {
 
 if ($clobber) {
     print "[TMAKE]: option -clean is specified, $outdir is deleted before build\n";
-    system ("rm -rf $outdir");
+    my $cmd = "rm -rf $outdir";
+    print "[TMAKE]: command: $cmd\n";
+    system ($cmd);
 }
 
 unless (-e $outdir) {
     print "[TMAKE]: $outdir does not exist, creating before build\n";
     system ("mkdir -p $outdir");
 }
-
 
 foreach my $project (@projects) {
     my $alog = "$outdir/$project".".log";
@@ -117,21 +118,38 @@ foreach my $project (@projects) {
             open ALOG, ">", $alog;
             build($project);
             close ALOG;
-            exit 0;
+            print "[TMAKE]: Done $project\n";
         }
     } else {
         open ALOG, ">", $alog;
         build($project);
         close ALOG;
+        print "[TMAKE]: Done $project\n";
     }
 }
 if ($parallel) {
     while (wait() != -1 ) {sleep 1;}
 }
 
-print "[TMAKE]: DONE\n";
 
-exit (0);
+my $fail=0;
+foreach my $project (@projects) {
+    my $alog = "$outdir/$project".".log";
+
+    my @lines = `tail $alog -n 3`;
+    foreach my $line (@lines) {
+        chomp $line;
+        if ($line =~ /TMAKE:FAIL/) {
+            $fail = 1;
+        }
+    }
+}
+if ($fail) {
+    print "[TMAKE]: FAIL\n";
+} else {
+    print "[TMAKE]: SUCCEED\n";
+}
+exit ($fail);
 
 #=============================
 ## SUB
@@ -251,7 +269,12 @@ sub run_cmd {
         print ALOG $stdout;
         print ALOG $stderr;
     
-        if ($return) { print $stderr; close ALOG; close $SLOG; die; }
+        if ($return) { 
+            print $stderr; 
+            print ALOG "TMAKE:FAIL\n";
+            close ALOG; 
+            close $SLOG;
+            die "[TMAKE]: DIE when building $project $sandbox"}
     }
     close $SLOG;
 }
