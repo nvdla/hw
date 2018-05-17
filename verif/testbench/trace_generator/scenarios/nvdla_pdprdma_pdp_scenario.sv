@@ -74,7 +74,8 @@ function void nvdla_pdprdma_pdp_scenario::trace_dump(int fh);
 
     if (fcov_en) begin
         `uvm_info(inst_name, "Start to sample coverage ...", UVM_HIGH)
-        cov.pdp_pool.sample();
+        cov.pdp_pool.pdp_sample();
+        cov.pdp_pool.pdp_rdma_sample();
     end
     print_comment(fh, $sformatf("Scenario PDPRDMA_PDP:%0d end",active_cnt));
 endfunction: trace_dump

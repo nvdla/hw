@@ -87,7 +87,7 @@ function void nvdla_sdprdma_sdp_pdp_scenario::trace_dump(int fh);
         cov.sdp_pool.sdp_lut_sample();
 `endif
         cov.sdp_pool.sdp_sample();
-        cov.pdp_pool.sample();
+        cov.pdp_pool.pdp_sample();
     end
     print_comment(fh, $sformatf("Scenario SDPRDMA_SDP_PDP:%0d end",active_cnt));
 endfunction: trace_dump

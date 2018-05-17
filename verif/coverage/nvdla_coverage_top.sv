@@ -90,8 +90,8 @@ class nvdla_coverage_top extends uvm_subscriber#(uvm_tlm_gp);
                 ral.nvdla.NVDLA_SDP.D_OP_ENABLE.get_address():        sdp_pool.sdp_sample();
                 ral.nvdla.NVDLA_CDP_RDMA.D_OP_ENABLE.get_address():   cdp_pool.sample();
                 ral.nvdla.NVDLA_CDP.D_OP_ENABLE.get_address():        cdp_pool.sample();
-                ral.nvdla.NVDLA_PDP_RDMA.D_OP_ENABLE.get_address():   pdp_pool.sample();
-                ral.nvdla.NVDLA_PDP.D_OP_ENABLE.get_address():        pdp_pool.sample();
+                ral.nvdla.NVDLA_PDP_RDMA.D_OP_ENABLE.get_address():   pdp_pool.pdp_rdma_sample();
+                ral.nvdla.NVDLA_PDP.D_OP_ENABLE.get_address():        pdp_pool.pdp_sample();
 `ifdef NVDLA_RUBIK_ENABLE
                 ral.nvdla.NVDLA_RBK.D_OP_ENABLE.get_address():        rubik_pool.sample();
 `endif

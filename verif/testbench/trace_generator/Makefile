@@ -147,7 +147,7 @@ build: vcs_build
 
 vcs_build: ${DEFS_FILE}  ${VERIF_DST_FILES}
 	${MKDIRP} ${OUT_DIR}
-	$(VCS_HOME)/bin/vcs ${VCS_ARGS} ${DEFS_FILE} ${DPI_FILES} ${TB_FILES} -l ${COMPILELOG} -o ${VCS_EXE} -Mdir=${OUT_DIR}csrc
+	$(VCS_HOME)/bin/vcs ${VCS_ARGS} ${DEFS_FILE} ${DPI_FILES} ${TB_FILES} -l ${COMPILELOG} -o ${VCS_EXE} -Mdir=${OUT_DIR}/csrc
 
 ${VERIF_DST_FILES}: ${DEPTH}/${OUTDIR}/${PROJECT}/% : ${TOT}/%
 	@${MKDIRP} ${dir $@}
