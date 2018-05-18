@@ -14,7 +14,6 @@ class nvdla_tb_env extends uvm_env;
 
     string                tID;
 
-    // internal passive agent
     //:| global project
     //:| import project
     //:| global dma_ports
@@ -26,9 +25,75 @@ class nvdla_tb_env extends uvm_env;
     //:| if "NVDLA_CDP_ENABLE"    in project.PROJVAR: dma_ports.append("cdp")
     //:| if "NVDLA_BDMA_ENABLE"   in project.PROJVAR: dma_ports.append("bdma")
     //:| if "NVDLA_RUBIK_ENABLE"  in project.PROJVAR: dma_ports.append("rbk")
+    //:| global mem_intf_list
+    //:| mem_intf_list = ["pri_mem"]
+    //:| if "NVDLA_SECONDARY_MEMIF_ENABLE" in project.PROJVAR:
+    //:|     mem_intf_list.append("sec_mem")
+    //:) epython: generated_beg (DO NOT EDIT BELOW)
+    //:) epython: generated_end (DO NOT EDIT ABOVE)
+
+    //:| memory_interface_list = mem_intf_list
+    //:| for inst in memory_interface_list:
+    //:|     print('    string %s_request_compare_mode = "COMPARE_MODE_LOOSE_COMPARE";' % inst)
+    //:|     print('    string %s_response_compare_mode = "COMPARE_MODE_LOOSE_COMPARE";' % inst)
+    //:| internal_instance_list = [
+    //:|                          'csc_dat_a' ,
+    //:|                          'csc_dat_b' ,
+    //:|                          'csc_wt_a'  ,
+    //:|                          'csc_wt_b'  ,
+    //:|                          'cmac_a'    ,
+    //:|                          'cmac_b'    ,
+    //:|                          'cacc'      ,
+    //:|                          'sdp'       ,
+    //:|                          ]
+    //:| for inst in internal_instance_list:
+    //:|     print('    string %s_compare_mode = "COMPARE_MODE_LOOSE_COMPARE";' % inst)
+    //:| dma_list       = dma_ports
+    //:| mem_if_list    = mem_intf_list
+    //:| kind_list      = ['request', 'response']
+    //:| for dma in dma_list:
+    //:|     for mem_if in mem_if_list:
+    //:|         for kind in kind_list:
+    //:|             print('    string %(dma)s_%(mem_if)s_%(kind)s_compare_mode = "COMPARE_MODE_LOOSE_COMPARE";' % {'dma':dma, 'mem_if':mem_if, 'kind':kind})
+    //:) epython: generated_beg (DO NOT EDIT BELOW)
+    string pri_mem_request_compare_mode = "COMPARE_MODE_LOOSE_COMPARE";
+    string pri_mem_response_compare_mode = "COMPARE_MODE_LOOSE_COMPARE";
+    string csc_dat_a_compare_mode = "COMPARE_MODE_LOOSE_COMPARE";
+    string csc_dat_b_compare_mode = "COMPARE_MODE_LOOSE_COMPARE";
+    string csc_wt_a_compare_mode = "COMPARE_MODE_LOOSE_COMPARE";
+    string csc_wt_b_compare_mode = "COMPARE_MODE_LOOSE_COMPARE";
+    string cmac_a_compare_mode = "COMPARE_MODE_LOOSE_COMPARE";
+    string cmac_b_compare_mode = "COMPARE_MODE_LOOSE_COMPARE";
+    string cacc_compare_mode = "COMPARE_MODE_LOOSE_COMPARE";
+    string sdp_compare_mode = "COMPARE_MODE_LOOSE_COMPARE";
+    string cdma_wt_pri_mem_request_compare_mode = "COMPARE_MODE_LOOSE_COMPARE";
+    string cdma_wt_pri_mem_response_compare_mode = "COMPARE_MODE_LOOSE_COMPARE";
+    string cdma_dat_pri_mem_request_compare_mode = "COMPARE_MODE_LOOSE_COMPARE";
+    string cdma_dat_pri_mem_response_compare_mode = "COMPARE_MODE_LOOSE_COMPARE";
+    string sdp_pri_mem_request_compare_mode = "COMPARE_MODE_LOOSE_COMPARE";
+    string sdp_pri_mem_response_compare_mode = "COMPARE_MODE_LOOSE_COMPARE";
+    string sdp_b_pri_mem_request_compare_mode = "COMPARE_MODE_LOOSE_COMPARE";
+    string sdp_b_pri_mem_response_compare_mode = "COMPARE_MODE_LOOSE_COMPARE";
+    string sdp_n_pri_mem_request_compare_mode = "COMPARE_MODE_LOOSE_COMPARE";
+    string sdp_n_pri_mem_response_compare_mode = "COMPARE_MODE_LOOSE_COMPARE";
+    string pdp_pri_mem_request_compare_mode = "COMPARE_MODE_LOOSE_COMPARE";
+    string pdp_pri_mem_response_compare_mode = "COMPARE_MODE_LOOSE_COMPARE";
+    string cdp_pri_mem_request_compare_mode = "COMPARE_MODE_LOOSE_COMPARE";
+    string cdp_pri_mem_response_compare_mode = "COMPARE_MODE_LOOSE_COMPARE";
+    //:) epython: generated_end (DO NOT EDIT ABOVE)
+    // internal passive agent
     //:| for dma in dma_ports: print("    dma_slave_agent    %0s_pri_mem_agt;" % dma)
     //:| if "NVDLA_SECONDARY_MEMIF_ENABLE" in project.PROJVAR:
     //:|     for dma in dma_ports: print("    dma_slave_agent    %0s_sec_mem_agt;" % dma)
+    //:) epython: generated_beg (DO NOT EDIT BELOW)
+    dma_slave_agent    cdma_wt_pri_mem_agt;
+    dma_slave_agent    cdma_dat_pri_mem_agt;
+    dma_slave_agent    sdp_pri_mem_agt;
+    dma_slave_agent    sdp_b_pri_mem_agt;
+    dma_slave_agent    sdp_n_pri_mem_agt;
+    dma_slave_agent    pdp_pri_mem_agt;
+    dma_slave_agent    cdp_pri_mem_agt;
+    //:) epython: generated_end (DO NOT EDIT ABOVE)
 
     // used for interfaces : SC=>MAC & MAC=>ACCU
     cc_slave_agent#(CSC_DT_DW, CSC_DT_DS)     csc_dat_a_agt;
@@ -86,6 +151,55 @@ class nvdla_tb_env extends uvm_env;
 
     `uvm_component_utils_begin(nvdla_tb_env)
         `uvm_field_int(is_rm_en, UVM_ALL_ON)
+        //:| memory_interface_list = mem_intf_list
+        //:| for inst in memory_interface_list:
+        //:|     print("        `uvm_field_string(%s_request_compare_mode, UVM_ALL_ON)" % inst)
+        //:|     print("        `uvm_field_string(%s_response_compare_mode, UVM_ALL_ON)" % inst)
+        //:| internal_instance_list = [
+        //:|                          'csc_dat_a' ,
+        //:|                          'csc_dat_b' ,
+        //:|                          'csc_wt_a'  ,
+        //:|                          'csc_wt_b'  ,
+        //:|                          'cmac_a'    ,
+        //:|                          'cmac_b'    ,
+        //:|                          'cacc'      ,
+        //:|                          'sdp'       ,
+        //:|                          ]
+        //:| for inst in internal_instance_list:
+        //:|     print("        `uvm_field_string(%s_compare_mode, UVM_ALL_ON)" % inst)
+        //:| dma_list       = dma_ports
+        //:| mem_if_list    = mem_intf_list
+        //:| kind_list      = ['request', 'response']
+        //:| for dma in dma_list:
+        //:|     for mem_if in mem_if_list:
+        //:|         for kind in kind_list:
+        //:|             print("        `uvm_field_string(%(dma)s_%(mem_if)s_%(kind)s_compare_mode, UVM_ALL_ON)" % {'dma':dma, 'mem_if':mem_if, 'kind':kind})
+        //:) epython: generated_beg (DO NOT EDIT BELOW)
+        `uvm_field_string(pri_mem_request_compare_mode, UVM_ALL_ON)
+        `uvm_field_string(pri_mem_response_compare_mode, UVM_ALL_ON)
+        `uvm_field_string(csc_dat_a_compare_mode, UVM_ALL_ON)
+        `uvm_field_string(csc_dat_b_compare_mode, UVM_ALL_ON)
+        `uvm_field_string(csc_wt_a_compare_mode, UVM_ALL_ON)
+        `uvm_field_string(csc_wt_b_compare_mode, UVM_ALL_ON)
+        `uvm_field_string(cmac_a_compare_mode, UVM_ALL_ON)
+        `uvm_field_string(cmac_b_compare_mode, UVM_ALL_ON)
+        `uvm_field_string(cacc_compare_mode, UVM_ALL_ON)
+        `uvm_field_string(sdp_compare_mode, UVM_ALL_ON)
+        `uvm_field_string(cdma_wt_pri_mem_request_compare_mode, UVM_ALL_ON)
+        `uvm_field_string(cdma_wt_pri_mem_response_compare_mode, UVM_ALL_ON)
+        `uvm_field_string(cdma_dat_pri_mem_request_compare_mode, UVM_ALL_ON)
+        `uvm_field_string(cdma_dat_pri_mem_response_compare_mode, UVM_ALL_ON)
+        `uvm_field_string(sdp_pri_mem_request_compare_mode, UVM_ALL_ON)
+        `uvm_field_string(sdp_pri_mem_response_compare_mode, UVM_ALL_ON)
+        `uvm_field_string(sdp_b_pri_mem_request_compare_mode, UVM_ALL_ON)
+        `uvm_field_string(sdp_b_pri_mem_response_compare_mode, UVM_ALL_ON)
+        `uvm_field_string(sdp_n_pri_mem_request_compare_mode, UVM_ALL_ON)
+        `uvm_field_string(sdp_n_pri_mem_response_compare_mode, UVM_ALL_ON)
+        `uvm_field_string(pdp_pri_mem_request_compare_mode, UVM_ALL_ON)
+        `uvm_field_string(pdp_pri_mem_response_compare_mode, UVM_ALL_ON)
+        `uvm_field_string(cdp_pri_mem_request_compare_mode, UVM_ALL_ON)
+        `uvm_field_string(cdp_pri_mem_response_compare_mode, UVM_ALL_ON)
+        //:) epython: generated_end (DO NOT EDIT ABOVE)
     `uvm_component_utils_end
 
     extern function new(string name = "nvdla_tb_env", uvm_component parent = null);
@@ -139,6 +253,15 @@ function void nvdla_tb_env::build_phase(uvm_phase phase);
     //:|     for dma in dma_ports:
     //:|         temp = dma + "_sec_mem_agt"
     //:|         print("    %-20s = dma_slave_agent::type_id::create(\"%0s_sec_mem_agt\", this);" % (temp, dma))
+    //:) epython: generated_beg (DO NOT EDIT BELOW)
+    cdma_wt_pri_mem_agt  = dma_slave_agent::type_id::create("cdma_wt_pri_mem_agt", this);
+    cdma_dat_pri_mem_agt = dma_slave_agent::type_id::create("cdma_dat_pri_mem_agt", this);
+    sdp_pri_mem_agt      = dma_slave_agent::type_id::create("sdp_pri_mem_agt", this);
+    sdp_b_pri_mem_agt    = dma_slave_agent::type_id::create("sdp_b_pri_mem_agt", this);
+    sdp_n_pri_mem_agt    = dma_slave_agent::type_id::create("sdp_n_pri_mem_agt", this);
+    pdp_pri_mem_agt      = dma_slave_agent::type_id::create("pdp_pri_mem_agt", this);
+    cdp_pri_mem_agt      = dma_slave_agent::type_id::create("cdp_pri_mem_agt", this);
+    //:) epython: generated_end (DO NOT EDIT ABOVE)
 
     csc_dat_a_agt  = cc_slave_agent#(CSC_DT_DW, CSC_DT_DS)::type_id::create("csc_dat_a_agt", this);
     csc_wt_a_agt   = cc_slave_agent#(CSC_WT_DW, CSC_WT_DS)::type_id::create("csc_wt_a_agt", this);
@@ -177,36 +300,643 @@ function void nvdla_tb_env::connect_phase(uvm_phase phase);
     super.connect_phase(phase);
     `uvm_info(tID, $sformatf("connect_phase begin ..."), UVM_HIGH)
 
-    // connect dut and cmod dbb ports to scoreboard for checking
-    pri_mem_agt.slv_mon.mon_analysis_port_request.connect(sb.pri_mem_sb.dut_init_fifo.analysis_export);
-    pri_mem_agt.slv_mon.mon_analysis_port.connect(sb.pri_mem_sb.dut_cmpl_fifo.analysis_export);
-    rm_pri_mem.req_ap.connect(sb.pri_mem_sb.rm_init_fifo.analysis_export);
-    rm_pri_mem.rsp_ap.connect(sb.pri_mem_sb.rm_cmpl_fifo.analysis_export);
+    // Parse compare mode, determine connection between scoreboard and other components
+    // #0, connect DBB agent/reference memory model to scoreboard
+    //
+    //:| memory_interface_instance_list = mem_intf_list
+    //:| for inst in memory_interface_instance_list:
+    //:|     msg = '''
+    //:|     case(%(inst)s_response_compare_mode)
+    //:|         "COMPARE_MODE_DISABLE": begin
+    //:|          end
+    //:|         "COMPARE_MODE_RTL_AHEAD": begin
+    //:|              %(inst)s_agt.slv_mon.mon_analysis_port.connect(sb.%(inst)s_sb.dut_cmpl_fifo.analysis_export);
+    //:|              rm_%(inst)s.rsp_ap.connect(sb.%(inst)s_sb.rm_cmpl_fifo.analysis_export);
+    //:|          end
+    //:|         "COMPARE_MODE_RTL_GATING_CMOD": begin
+    //:|              %(inst)s_agt.slv_mon.mon_analysis_port.connect(sb.%(inst)s_sb.dut_cmpl_fifo.analysis_export);
+    //:|              rm_%(inst)s.rsp_ap.connect(sb.%(inst)s_sb.rm_cmpl_fifo.analysis_export);
+    //:|          end
+    //:|         "COMPARE_MODE_LOOSE_COMPARE": begin
+    //:|              %(inst)s_agt.slv_mon.mon_analysis_port.connect(sb.%(inst)s_sb.dut_cmpl_fifo.analysis_export);
+    //:|              rm_%(inst)s.rsp_ap.connect(sb.%(inst)s_sb.rm_cmpl_fifo.analysis_export);
+    //:|          end
+    //:|         "COMPARE_MODE_COUNT_TXN_ONLY": begin
+    //:|              %(inst)s_agt.slv_mon.mon_analysis_port.connect(sb.%(inst)s_sb.dut_cmpl_fifo.analysis_export);
+    //:|              rm_%(inst)s.rsp_ap.connect(sb.%(inst)s_sb.rm_cmpl_fifo.analysis_export);
+    //:|         end
+    //:|         default: begin
+    //:|             `uvm_error(tID, {"Unsupported scoreboard working mode: ", %(inst)s_response_compare_mode})
+    //:|         end
+    //:|     endcase
+    //:|     case(%(inst)s_request_compare_mode)
+    //:|         "COMPARE_MODE_DISABLE": begin
+    //:|          end
+    //:|         "COMPARE_MODE_RTL_AHEAD": begin
+    //:|              %(inst)s_agt.slv_mon.mon_analysis_port_request.connect(sb.%(inst)s_sb.dut_init_fifo.analysis_export);
+    //:|              rm_%(inst)s.req_ap.connect(sb.%(inst)s_sb.rm_init_fifo.analysis_export);
+    //:|          end
+    //:|         "COMPARE_MODE_RTL_GATING_CMOD": begin
+    //:|              %(inst)s_agt.slv_mon.mon_analysis_port_request.connect(sb.%(inst)s_sb.dut_init_fifo.analysis_export);
+    //:|              rm_%(inst)s.req_ap.connect(sb.%(inst)s_sb.rm_init_fifo.analysis_export);
+    //:|          end
+    //:|         "COMPARE_MODE_LOOSE_COMPARE": begin
+    //:|              %(inst)s_agt.slv_mon.mon_analysis_port_request.connect(sb.%(inst)s_sb.dut_init_fifo.analysis_export);
+    //:|              rm_%(inst)s.req_ap.connect(sb.%(inst)s_sb.rm_init_fifo.analysis_export);
+    //:|          end
+    //:|         "COMPARE_MODE_COUNT_TXN_ONLY": begin
+    //:|              %(inst)s_agt.slv_mon.mon_analysis_port_request.connect(sb.%(inst)s_sb.dut_init_fifo.analysis_export);
+    //:|              rm_%(inst)s.req_ap.connect(sb.%(inst)s_sb.rm_init_fifo.analysis_export);
+    //:|         end
+    //:|         default: begin
+    //:|             `uvm_error(tID, {"Unsupported scoreboard working mode: ", %(inst)s_request_compare_mode})
+    //:|         end
+    //:|     endcase
+    //:| ''' % {'inst':inst}
+    //:|     print(msg)
+    //:) epython: generated_beg (DO NOT EDIT BELOW)
 
-    `ifdef NVDLA_SECONDARY_MEMIF_ENABLE
-    sec_mem_agt.slv_mon.mon_analysis_port_request.connect(sb.sec_mem_sb.dut_init_fifo.analysis_export);
-    sec_mem_agt.slv_mon.mon_analysis_port.connect(sb.sec_mem_sb.dut_cmpl_fifo.analysis_export);
-    rm_sec_mem.req_ap.connect(sb.sec_mem_sb.rm_init_fifo.analysis_export);
-    rm_sec_mem.rsp_ap.connect(sb.sec_mem_sb.rm_cmpl_fifo.analysis_export);
-    `endif
+    case(pri_mem_response_compare_mode)
+        "COMPARE_MODE_DISABLE": begin
+         end
+        "COMPARE_MODE_RTL_AHEAD": begin
+             pri_mem_agt.slv_mon.mon_analysis_port.connect(sb.pri_mem_sb.dut_cmpl_fifo.analysis_export);
+             rm_pri_mem.rsp_ap.connect(sb.pri_mem_sb.rm_cmpl_fifo.analysis_export);
+         end
+        "COMPARE_MODE_RTL_GATING_CMOD": begin
+             pri_mem_agt.slv_mon.mon_analysis_port.connect(sb.pri_mem_sb.dut_cmpl_fifo.analysis_export);
+             rm_pri_mem.rsp_ap.connect(sb.pri_mem_sb.rm_cmpl_fifo.analysis_export);
+         end
+        "COMPARE_MODE_LOOSE_COMPARE": begin
+             pri_mem_agt.slv_mon.mon_analysis_port.connect(sb.pri_mem_sb.dut_cmpl_fifo.analysis_export);
+             rm_pri_mem.rsp_ap.connect(sb.pri_mem_sb.rm_cmpl_fifo.analysis_export);
+         end
+        "COMPARE_MODE_COUNT_TXN_ONLY": begin
+             pri_mem_agt.slv_mon.mon_analysis_port.connect(sb.pri_mem_sb.dut_cmpl_fifo.analysis_export);
+             rm_pri_mem.rsp_ap.connect(sb.pri_mem_sb.rm_cmpl_fifo.analysis_export);
+        end
+        default: begin
+            `uvm_error(tID, {"Unsupported scoreboard working mode: ", pri_mem_response_compare_mode})
+        end
+    endcase
+    case(pri_mem_request_compare_mode)
+        "COMPARE_MODE_DISABLE": begin
+         end
+        "COMPARE_MODE_RTL_AHEAD": begin
+             pri_mem_agt.slv_mon.mon_analysis_port_request.connect(sb.pri_mem_sb.dut_init_fifo.analysis_export);
+             rm_pri_mem.req_ap.connect(sb.pri_mem_sb.rm_init_fifo.analysis_export);
+         end
+        "COMPARE_MODE_RTL_GATING_CMOD": begin
+             pri_mem_agt.slv_mon.mon_analysis_port_request.connect(sb.pri_mem_sb.dut_init_fifo.analysis_export);
+             rm_pri_mem.req_ap.connect(sb.pri_mem_sb.rm_init_fifo.analysis_export);
+         end
+        "COMPARE_MODE_LOOSE_COMPARE": begin
+             pri_mem_agt.slv_mon.mon_analysis_port_request.connect(sb.pri_mem_sb.dut_init_fifo.analysis_export);
+             rm_pri_mem.req_ap.connect(sb.pri_mem_sb.rm_init_fifo.analysis_export);
+         end
+        "COMPARE_MODE_COUNT_TXN_ONLY": begin
+             pri_mem_agt.slv_mon.mon_analysis_port_request.connect(sb.pri_mem_sb.dut_init_fifo.analysis_export);
+             rm_pri_mem.req_ap.connect(sb.pri_mem_sb.rm_init_fifo.analysis_export);
+        end
+        default: begin
+            `uvm_error(tID, {"Unsupported scoreboard working mode: ", pri_mem_request_compare_mode})
+        end
+    endcase
 
-    // connect dut internal agent monitors to scoreboard
-    //:| for dma in dma_ports:
-    //:|     print("    %0s_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.%0s_pri_mem_sb.dut_init_fifo.analysis_export);" % (dma, dma))
-    //:|     print("    %0s_pri_mem_agt.slv_mon.mon_analysis_port.connect(sb.%0s_pri_mem_sb.dut_cmpl_fifo.analysis_export);" % (dma, dma))
-    //:| if "NVDLA_SECONDARY_MEMIF_ENABLE" in project.PROJVAR:
-    //:|     for dma in dma_ports:
-    //:|         print("    %0s_sec_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.%0s_sec_mem_sb.dut_init_fifo.analysis_export);" % (dma, dma))
-    //:|         print("    %0s_sec_mem_agt.slv_mon.mon_analysis_port.connect(sb.%0s_sec_mem_sb.dut_cmpl_fifo.analysis_export);" % (dma, dma))
+    //:) epython: generated_end (DO NOT EDIT ABOVE)
 
-    csc_dat_a_agt.slv_mon.mon_analysis_port.connect(sb.csc_dat_a_sb.dut_cmpl_fifo.analysis_export);
-    csc_wt_a_agt.slv_mon.mon_analysis_port.connect(sb.csc_wt_a_sb.dut_cmpl_fifo.analysis_export);
-    csc_dat_b_agt.slv_mon.mon_analysis_port.connect(sb.csc_dat_b_sb.dut_cmpl_fifo.analysis_export);
-    csc_wt_b_agt.slv_mon.mon_analysis_port.connect(sb.csc_wt_b_sb.dut_cmpl_fifo.analysis_export);
-    cmac_a_agt.slv_mon.mon_analysis_port.connect(sb.cmac_a_sb.dut_cmpl_fifo.analysis_export);
-    cmac_b_agt.slv_mon.mon_analysis_port.connect(sb.cmac_b_sb.dut_cmpl_fifo.analysis_export);
-    cacc_agt.slv_mon.mon_analysis_port.connect(sb.cacc_sb.dut_cmpl_fifo.analysis_export);
-    sdp_agt.slv_mon.mon_analysis_port.connect(sb.sdp_sb.dut_cmpl_fifo.analysis_export);
+    // #1, convolution core and sdp convertor
+    //
+    //:| conv_and_sdp_internal_instance_list = [
+    //:|                                       'csc_dat_a' ,
+    //:|                                       'csc_dat_b' ,
+    //:|                                       'csc_wt_a'  ,
+    //:|                                       'csc_wt_b'  ,
+    //:|                                       'cmac_a'    ,
+    //:|                                       'cmac_b'    ,
+    //:|                                       'cacc'      ,
+    //:|                                       'sdp'       ,
+    //:|                                       ]
+    //:| for inst in conv_and_sdp_internal_instance_list:
+    //:|     msg = '''
+    //:|     case(%(inst)s_compare_mode)
+    //:|         "COMPARE_MODE_DISABLE": begin
+    //:|          end
+    //:|         "COMPARE_MODE_RTL_AHEAD": begin
+    //:|              %(inst)s_agt.slv_mon.mon_analysis_port.connect(sb.%(inst)s_sb.dut_cmpl_fifo.analysis_export);
+    //:|          end
+    //:|         "COMPARE_MODE_RTL_GATING_CMOD": begin
+    //:|              %(inst)s_agt.slv_mon.mon_analysis_port.connect(sb.%(inst)s_sb.dut_cmpl_fifo.analysis_export);
+    //:|          end
+    //:|         "COMPARE_MODE_LOOSE_COMPARE": begin
+    //:|              %(inst)s_agt.slv_mon.mon_analysis_port.connect(sb.%(inst)s_sb.dut_cmpl_fifo.analysis_export);
+    //:|          end
+    //:|         "COMPARE_MODE_COUNT_TXN_ONLY": begin
+    //:|              %(inst)s_agt.slv_mon.mon_analysis_port.connect(sb.%(inst)s_sb.dut_cmpl_fifo.analysis_export);
+    //:|         end
+    //:|         default: begin
+    //:|             `uvm_error(tID, {"Unsupported scoreboard working mode: ", %(inst)s_compare_mode})
+    //:|         end
+    //:|     endcase
+    //:| ''' % {'inst':inst}
+    //:|     print(msg)
+    //:) epython: generated_beg (DO NOT EDIT BELOW)
+
+    case(csc_dat_a_compare_mode)
+        "COMPARE_MODE_DISABLE": begin
+         end
+        "COMPARE_MODE_RTL_AHEAD": begin
+             csc_dat_a_agt.slv_mon.mon_analysis_port.connect(sb.csc_dat_a_sb.dut_cmpl_fifo.analysis_export);
+         end
+        "COMPARE_MODE_RTL_GATING_CMOD": begin
+             csc_dat_a_agt.slv_mon.mon_analysis_port.connect(sb.csc_dat_a_sb.dut_cmpl_fifo.analysis_export);
+         end
+        "COMPARE_MODE_LOOSE_COMPARE": begin
+             csc_dat_a_agt.slv_mon.mon_analysis_port.connect(sb.csc_dat_a_sb.dut_cmpl_fifo.analysis_export);
+         end
+        "COMPARE_MODE_COUNT_TXN_ONLY": begin
+             csc_dat_a_agt.slv_mon.mon_analysis_port.connect(sb.csc_dat_a_sb.dut_cmpl_fifo.analysis_export);
+        end
+        default: begin
+            `uvm_error(tID, {"Unsupported scoreboard working mode: ", csc_dat_a_compare_mode})
+        end
+    endcase
+
+
+    case(csc_dat_b_compare_mode)
+        "COMPARE_MODE_DISABLE": begin
+         end
+        "COMPARE_MODE_RTL_AHEAD": begin
+             csc_dat_b_agt.slv_mon.mon_analysis_port.connect(sb.csc_dat_b_sb.dut_cmpl_fifo.analysis_export);
+         end
+        "COMPARE_MODE_RTL_GATING_CMOD": begin
+             csc_dat_b_agt.slv_mon.mon_analysis_port.connect(sb.csc_dat_b_sb.dut_cmpl_fifo.analysis_export);
+         end
+        "COMPARE_MODE_LOOSE_COMPARE": begin
+             csc_dat_b_agt.slv_mon.mon_analysis_port.connect(sb.csc_dat_b_sb.dut_cmpl_fifo.analysis_export);
+         end
+        "COMPARE_MODE_COUNT_TXN_ONLY": begin
+             csc_dat_b_agt.slv_mon.mon_analysis_port.connect(sb.csc_dat_b_sb.dut_cmpl_fifo.analysis_export);
+        end
+        default: begin
+            `uvm_error(tID, {"Unsupported scoreboard working mode: ", csc_dat_b_compare_mode})
+        end
+    endcase
+
+
+    case(csc_wt_a_compare_mode)
+        "COMPARE_MODE_DISABLE": begin
+         end
+        "COMPARE_MODE_RTL_AHEAD": begin
+             csc_wt_a_agt.slv_mon.mon_analysis_port.connect(sb.csc_wt_a_sb.dut_cmpl_fifo.analysis_export);
+         end
+        "COMPARE_MODE_RTL_GATING_CMOD": begin
+             csc_wt_a_agt.slv_mon.mon_analysis_port.connect(sb.csc_wt_a_sb.dut_cmpl_fifo.analysis_export);
+         end
+        "COMPARE_MODE_LOOSE_COMPARE": begin
+             csc_wt_a_agt.slv_mon.mon_analysis_port.connect(sb.csc_wt_a_sb.dut_cmpl_fifo.analysis_export);
+         end
+        "COMPARE_MODE_COUNT_TXN_ONLY": begin
+             csc_wt_a_agt.slv_mon.mon_analysis_port.connect(sb.csc_wt_a_sb.dut_cmpl_fifo.analysis_export);
+        end
+        default: begin
+            `uvm_error(tID, {"Unsupported scoreboard working mode: ", csc_wt_a_compare_mode})
+        end
+    endcase
+
+
+    case(csc_wt_b_compare_mode)
+        "COMPARE_MODE_DISABLE": begin
+         end
+        "COMPARE_MODE_RTL_AHEAD": begin
+             csc_wt_b_agt.slv_mon.mon_analysis_port.connect(sb.csc_wt_b_sb.dut_cmpl_fifo.analysis_export);
+         end
+        "COMPARE_MODE_RTL_GATING_CMOD": begin
+             csc_wt_b_agt.slv_mon.mon_analysis_port.connect(sb.csc_wt_b_sb.dut_cmpl_fifo.analysis_export);
+         end
+        "COMPARE_MODE_LOOSE_COMPARE": begin
+             csc_wt_b_agt.slv_mon.mon_analysis_port.connect(sb.csc_wt_b_sb.dut_cmpl_fifo.analysis_export);
+         end
+        "COMPARE_MODE_COUNT_TXN_ONLY": begin
+             csc_wt_b_agt.slv_mon.mon_analysis_port.connect(sb.csc_wt_b_sb.dut_cmpl_fifo.analysis_export);
+        end
+        default: begin
+            `uvm_error(tID, {"Unsupported scoreboard working mode: ", csc_wt_b_compare_mode})
+        end
+    endcase
+
+
+    case(cmac_a_compare_mode)
+        "COMPARE_MODE_DISABLE": begin
+         end
+        "COMPARE_MODE_RTL_AHEAD": begin
+             cmac_a_agt.slv_mon.mon_analysis_port.connect(sb.cmac_a_sb.dut_cmpl_fifo.analysis_export);
+         end
+        "COMPARE_MODE_RTL_GATING_CMOD": begin
+             cmac_a_agt.slv_mon.mon_analysis_port.connect(sb.cmac_a_sb.dut_cmpl_fifo.analysis_export);
+         end
+        "COMPARE_MODE_LOOSE_COMPARE": begin
+             cmac_a_agt.slv_mon.mon_analysis_port.connect(sb.cmac_a_sb.dut_cmpl_fifo.analysis_export);
+         end
+        "COMPARE_MODE_COUNT_TXN_ONLY": begin
+             cmac_a_agt.slv_mon.mon_analysis_port.connect(sb.cmac_a_sb.dut_cmpl_fifo.analysis_export);
+        end
+        default: begin
+            `uvm_error(tID, {"Unsupported scoreboard working mode: ", cmac_a_compare_mode})
+        end
+    endcase
+
+
+    case(cmac_b_compare_mode)
+        "COMPARE_MODE_DISABLE": begin
+         end
+        "COMPARE_MODE_RTL_AHEAD": begin
+             cmac_b_agt.slv_mon.mon_analysis_port.connect(sb.cmac_b_sb.dut_cmpl_fifo.analysis_export);
+         end
+        "COMPARE_MODE_RTL_GATING_CMOD": begin
+             cmac_b_agt.slv_mon.mon_analysis_port.connect(sb.cmac_b_sb.dut_cmpl_fifo.analysis_export);
+         end
+        "COMPARE_MODE_LOOSE_COMPARE": begin
+             cmac_b_agt.slv_mon.mon_analysis_port.connect(sb.cmac_b_sb.dut_cmpl_fifo.analysis_export);
+         end
+        "COMPARE_MODE_COUNT_TXN_ONLY": begin
+             cmac_b_agt.slv_mon.mon_analysis_port.connect(sb.cmac_b_sb.dut_cmpl_fifo.analysis_export);
+        end
+        default: begin
+            `uvm_error(tID, {"Unsupported scoreboard working mode: ", cmac_b_compare_mode})
+        end
+    endcase
+
+
+    case(cacc_compare_mode)
+        "COMPARE_MODE_DISABLE": begin
+         end
+        "COMPARE_MODE_RTL_AHEAD": begin
+             cacc_agt.slv_mon.mon_analysis_port.connect(sb.cacc_sb.dut_cmpl_fifo.analysis_export);
+         end
+        "COMPARE_MODE_RTL_GATING_CMOD": begin
+             cacc_agt.slv_mon.mon_analysis_port.connect(sb.cacc_sb.dut_cmpl_fifo.analysis_export);
+         end
+        "COMPARE_MODE_LOOSE_COMPARE": begin
+             cacc_agt.slv_mon.mon_analysis_port.connect(sb.cacc_sb.dut_cmpl_fifo.analysis_export);
+         end
+        "COMPARE_MODE_COUNT_TXN_ONLY": begin
+             cacc_agt.slv_mon.mon_analysis_port.connect(sb.cacc_sb.dut_cmpl_fifo.analysis_export);
+        end
+        default: begin
+            `uvm_error(tID, {"Unsupported scoreboard working mode: ", cacc_compare_mode})
+        end
+    endcase
+
+
+    case(sdp_compare_mode)
+        "COMPARE_MODE_DISABLE": begin
+         end
+        "COMPARE_MODE_RTL_AHEAD": begin
+             sdp_agt.slv_mon.mon_analysis_port.connect(sb.sdp_sb.dut_cmpl_fifo.analysis_export);
+         end
+        "COMPARE_MODE_RTL_GATING_CMOD": begin
+             sdp_agt.slv_mon.mon_analysis_port.connect(sb.sdp_sb.dut_cmpl_fifo.analysis_export);
+         end
+        "COMPARE_MODE_LOOSE_COMPARE": begin
+             sdp_agt.slv_mon.mon_analysis_port.connect(sb.sdp_sb.dut_cmpl_fifo.analysis_export);
+         end
+        "COMPARE_MODE_COUNT_TXN_ONLY": begin
+             sdp_agt.slv_mon.mon_analysis_port.connect(sb.sdp_sb.dut_cmpl_fifo.analysis_export);
+        end
+        default: begin
+            `uvm_error(tID, {"Unsupported scoreboard working mode: ", sdp_compare_mode})
+        end
+    endcase
+
+    //:) epython: generated_end (DO NOT EDIT ABOVE)
+
+    // #2, DMA convertor
+    //
+    //:| dma_list       = dma_ports
+    //:| mem_if_list    = mem_intf_list
+    //:| kind_list      = ['request', 'response']
+    //:| for dma in dma_list:
+    //:|     for mem_if in mem_if_list:
+    //:|         for kind in kind_list:
+    //:|             msg = '''
+    //:|     case(%(dma)s_%(mem_if)s_%(kind)s_compare_mode)
+    //:|         "COMPARE_MODE_DISABLE": begin
+    //:|          end
+    //:|         "COMPARE_MODE_RTL_AHEAD": begin
+    //:|              %(dma)s_%(mem_if)s_agt.slv_mon.mon_analysis_port_req.connect(sb.%(dma)s_%(mem_if)s_sb.dut_init_fifo.analysis_export);
+    //:|          end
+    //:|         "COMPARE_MODE_RTL_GATING_CMOD": begin
+    //:|              %(dma)s_%(mem_if)s_agt.slv_mon.mon_analysis_port_req.connect(sb.%(dma)s_%(mem_if)s_sb.dut_init_fifo.analysis_export);
+    //:|          end
+    //:|         "COMPARE_MODE_LOOSE_COMPARE": begin
+    //:|              %(dma)s_%(mem_if)s_agt.slv_mon.mon_analysis_port_req.connect(sb.%(dma)s_%(mem_if)s_sb.dut_init_fifo.analysis_export);
+    //:|          end
+    //:|         "COMPARE_MODE_COUNT_TXN_ONLY": begin
+    //:|              %(dma)s_%(mem_if)s_agt.slv_mon.mon_analysis_port_req.connect(sb.%(dma)s_%(mem_if)s_sb.dut_init_fifo.analysis_export);
+    //:|         end
+    //:|         default: begin
+    //:|             `uvm_error(tID, {"Unsupported scoreboard working mode: ", %(dma)s_%(mem_if)s_%(kind)s_compare_mode})
+    //:|         end
+    //:|     endcase
+    //:| ''' % {'dma':dma, 'mem_if':mem_if, 'kind':kind}
+    //:|             print(msg)
+    //:) epython: generated_beg (DO NOT EDIT BELOW)
+
+    case(cdma_wt_pri_mem_request_compare_mode)
+        "COMPARE_MODE_DISABLE": begin
+         end
+        "COMPARE_MODE_RTL_AHEAD": begin
+             cdma_wt_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.cdma_wt_pri_mem_sb.dut_init_fifo.analysis_export);
+         end
+        "COMPARE_MODE_RTL_GATING_CMOD": begin
+             cdma_wt_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.cdma_wt_pri_mem_sb.dut_init_fifo.analysis_export);
+         end
+        "COMPARE_MODE_LOOSE_COMPARE": begin
+             cdma_wt_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.cdma_wt_pri_mem_sb.dut_init_fifo.analysis_export);
+         end
+        "COMPARE_MODE_COUNT_TXN_ONLY": begin
+             cdma_wt_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.cdma_wt_pri_mem_sb.dut_init_fifo.analysis_export);
+        end
+        default: begin
+            `uvm_error(tID, {"Unsupported scoreboard working mode: ", cdma_wt_pri_mem_request_compare_mode})
+        end
+    endcase
+
+
+    case(cdma_wt_pri_mem_response_compare_mode)
+        "COMPARE_MODE_DISABLE": begin
+         end
+        "COMPARE_MODE_RTL_AHEAD": begin
+             cdma_wt_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.cdma_wt_pri_mem_sb.dut_init_fifo.analysis_export);
+         end
+        "COMPARE_MODE_RTL_GATING_CMOD": begin
+             cdma_wt_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.cdma_wt_pri_mem_sb.dut_init_fifo.analysis_export);
+         end
+        "COMPARE_MODE_LOOSE_COMPARE": begin
+             cdma_wt_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.cdma_wt_pri_mem_sb.dut_init_fifo.analysis_export);
+         end
+        "COMPARE_MODE_COUNT_TXN_ONLY": begin
+             cdma_wt_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.cdma_wt_pri_mem_sb.dut_init_fifo.analysis_export);
+        end
+        default: begin
+            `uvm_error(tID, {"Unsupported scoreboard working mode: ", cdma_wt_pri_mem_response_compare_mode})
+        end
+    endcase
+
+
+    case(cdma_dat_pri_mem_request_compare_mode)
+        "COMPARE_MODE_DISABLE": begin
+         end
+        "COMPARE_MODE_RTL_AHEAD": begin
+             cdma_dat_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.cdma_dat_pri_mem_sb.dut_init_fifo.analysis_export);
+         end
+        "COMPARE_MODE_RTL_GATING_CMOD": begin
+             cdma_dat_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.cdma_dat_pri_mem_sb.dut_init_fifo.analysis_export);
+         end
+        "COMPARE_MODE_LOOSE_COMPARE": begin
+             cdma_dat_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.cdma_dat_pri_mem_sb.dut_init_fifo.analysis_export);
+         end
+        "COMPARE_MODE_COUNT_TXN_ONLY": begin
+             cdma_dat_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.cdma_dat_pri_mem_sb.dut_init_fifo.analysis_export);
+        end
+        default: begin
+            `uvm_error(tID, {"Unsupported scoreboard working mode: ", cdma_dat_pri_mem_request_compare_mode})
+        end
+    endcase
+
+
+    case(cdma_dat_pri_mem_response_compare_mode)
+        "COMPARE_MODE_DISABLE": begin
+         end
+        "COMPARE_MODE_RTL_AHEAD": begin
+             cdma_dat_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.cdma_dat_pri_mem_sb.dut_init_fifo.analysis_export);
+         end
+        "COMPARE_MODE_RTL_GATING_CMOD": begin
+             cdma_dat_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.cdma_dat_pri_mem_sb.dut_init_fifo.analysis_export);
+         end
+        "COMPARE_MODE_LOOSE_COMPARE": begin
+             cdma_dat_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.cdma_dat_pri_mem_sb.dut_init_fifo.analysis_export);
+         end
+        "COMPARE_MODE_COUNT_TXN_ONLY": begin
+             cdma_dat_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.cdma_dat_pri_mem_sb.dut_init_fifo.analysis_export);
+        end
+        default: begin
+            `uvm_error(tID, {"Unsupported scoreboard working mode: ", cdma_dat_pri_mem_response_compare_mode})
+        end
+    endcase
+
+
+    case(sdp_pri_mem_request_compare_mode)
+        "COMPARE_MODE_DISABLE": begin
+         end
+        "COMPARE_MODE_RTL_AHEAD": begin
+             sdp_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.sdp_pri_mem_sb.dut_init_fifo.analysis_export);
+         end
+        "COMPARE_MODE_RTL_GATING_CMOD": begin
+             sdp_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.sdp_pri_mem_sb.dut_init_fifo.analysis_export);
+         end
+        "COMPARE_MODE_LOOSE_COMPARE": begin
+             sdp_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.sdp_pri_mem_sb.dut_init_fifo.analysis_export);
+         end
+        "COMPARE_MODE_COUNT_TXN_ONLY": begin
+             sdp_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.sdp_pri_mem_sb.dut_init_fifo.analysis_export);
+        end
+        default: begin
+            `uvm_error(tID, {"Unsupported scoreboard working mode: ", sdp_pri_mem_request_compare_mode})
+        end
+    endcase
+
+
+    case(sdp_pri_mem_response_compare_mode)
+        "COMPARE_MODE_DISABLE": begin
+         end
+        "COMPARE_MODE_RTL_AHEAD": begin
+             sdp_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.sdp_pri_mem_sb.dut_init_fifo.analysis_export);
+         end
+        "COMPARE_MODE_RTL_GATING_CMOD": begin
+             sdp_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.sdp_pri_mem_sb.dut_init_fifo.analysis_export);
+         end
+        "COMPARE_MODE_LOOSE_COMPARE": begin
+             sdp_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.sdp_pri_mem_sb.dut_init_fifo.analysis_export);
+         end
+        "COMPARE_MODE_COUNT_TXN_ONLY": begin
+             sdp_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.sdp_pri_mem_sb.dut_init_fifo.analysis_export);
+        end
+        default: begin
+            `uvm_error(tID, {"Unsupported scoreboard working mode: ", sdp_pri_mem_response_compare_mode})
+        end
+    endcase
+
+
+    case(sdp_b_pri_mem_request_compare_mode)
+        "COMPARE_MODE_DISABLE": begin
+         end
+        "COMPARE_MODE_RTL_AHEAD": begin
+             sdp_b_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.sdp_b_pri_mem_sb.dut_init_fifo.analysis_export);
+         end
+        "COMPARE_MODE_RTL_GATING_CMOD": begin
+             sdp_b_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.sdp_b_pri_mem_sb.dut_init_fifo.analysis_export);
+         end
+        "COMPARE_MODE_LOOSE_COMPARE": begin
+             sdp_b_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.sdp_b_pri_mem_sb.dut_init_fifo.analysis_export);
+         end
+        "COMPARE_MODE_COUNT_TXN_ONLY": begin
+             sdp_b_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.sdp_b_pri_mem_sb.dut_init_fifo.analysis_export);
+        end
+        default: begin
+            `uvm_error(tID, {"Unsupported scoreboard working mode: ", sdp_b_pri_mem_request_compare_mode})
+        end
+    endcase
+
+
+    case(sdp_b_pri_mem_response_compare_mode)
+        "COMPARE_MODE_DISABLE": begin
+         end
+        "COMPARE_MODE_RTL_AHEAD": begin
+             sdp_b_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.sdp_b_pri_mem_sb.dut_init_fifo.analysis_export);
+         end
+        "COMPARE_MODE_RTL_GATING_CMOD": begin
+             sdp_b_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.sdp_b_pri_mem_sb.dut_init_fifo.analysis_export);
+         end
+        "COMPARE_MODE_LOOSE_COMPARE": begin
+             sdp_b_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.sdp_b_pri_mem_sb.dut_init_fifo.analysis_export);
+         end
+        "COMPARE_MODE_COUNT_TXN_ONLY": begin
+             sdp_b_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.sdp_b_pri_mem_sb.dut_init_fifo.analysis_export);
+        end
+        default: begin
+            `uvm_error(tID, {"Unsupported scoreboard working mode: ", sdp_b_pri_mem_response_compare_mode})
+        end
+    endcase
+
+
+    case(sdp_n_pri_mem_request_compare_mode)
+        "COMPARE_MODE_DISABLE": begin
+         end
+        "COMPARE_MODE_RTL_AHEAD": begin
+             sdp_n_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.sdp_n_pri_mem_sb.dut_init_fifo.analysis_export);
+         end
+        "COMPARE_MODE_RTL_GATING_CMOD": begin
+             sdp_n_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.sdp_n_pri_mem_sb.dut_init_fifo.analysis_export);
+         end
+        "COMPARE_MODE_LOOSE_COMPARE": begin
+             sdp_n_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.sdp_n_pri_mem_sb.dut_init_fifo.analysis_export);
+         end
+        "COMPARE_MODE_COUNT_TXN_ONLY": begin
+             sdp_n_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.sdp_n_pri_mem_sb.dut_init_fifo.analysis_export);
+        end
+        default: begin
+            `uvm_error(tID, {"Unsupported scoreboard working mode: ", sdp_n_pri_mem_request_compare_mode})
+        end
+    endcase
+
+
+    case(sdp_n_pri_mem_response_compare_mode)
+        "COMPARE_MODE_DISABLE": begin
+         end
+        "COMPARE_MODE_RTL_AHEAD": begin
+             sdp_n_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.sdp_n_pri_mem_sb.dut_init_fifo.analysis_export);
+         end
+        "COMPARE_MODE_RTL_GATING_CMOD": begin
+             sdp_n_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.sdp_n_pri_mem_sb.dut_init_fifo.analysis_export);
+         end
+        "COMPARE_MODE_LOOSE_COMPARE": begin
+             sdp_n_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.sdp_n_pri_mem_sb.dut_init_fifo.analysis_export);
+         end
+        "COMPARE_MODE_COUNT_TXN_ONLY": begin
+             sdp_n_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.sdp_n_pri_mem_sb.dut_init_fifo.analysis_export);
+        end
+        default: begin
+            `uvm_error(tID, {"Unsupported scoreboard working mode: ", sdp_n_pri_mem_response_compare_mode})
+        end
+    endcase
+
+
+    case(pdp_pri_mem_request_compare_mode)
+        "COMPARE_MODE_DISABLE": begin
+         end
+        "COMPARE_MODE_RTL_AHEAD": begin
+             pdp_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.pdp_pri_mem_sb.dut_init_fifo.analysis_export);
+         end
+        "COMPARE_MODE_RTL_GATING_CMOD": begin
+             pdp_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.pdp_pri_mem_sb.dut_init_fifo.analysis_export);
+         end
+        "COMPARE_MODE_LOOSE_COMPARE": begin
+             pdp_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.pdp_pri_mem_sb.dut_init_fifo.analysis_export);
+         end
+        "COMPARE_MODE_COUNT_TXN_ONLY": begin
+             pdp_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.pdp_pri_mem_sb.dut_init_fifo.analysis_export);
+        end
+        default: begin
+            `uvm_error(tID, {"Unsupported scoreboard working mode: ", pdp_pri_mem_request_compare_mode})
+        end
+    endcase
+
+
+    case(pdp_pri_mem_response_compare_mode)
+        "COMPARE_MODE_DISABLE": begin
+         end
+        "COMPARE_MODE_RTL_AHEAD": begin
+             pdp_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.pdp_pri_mem_sb.dut_init_fifo.analysis_export);
+         end
+        "COMPARE_MODE_RTL_GATING_CMOD": begin
+             pdp_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.pdp_pri_mem_sb.dut_init_fifo.analysis_export);
+         end
+        "COMPARE_MODE_LOOSE_COMPARE": begin
+             pdp_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.pdp_pri_mem_sb.dut_init_fifo.analysis_export);
+         end
+        "COMPARE_MODE_COUNT_TXN_ONLY": begin
+             pdp_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.pdp_pri_mem_sb.dut_init_fifo.analysis_export);
+        end
+        default: begin
+            `uvm_error(tID, {"Unsupported scoreboard working mode: ", pdp_pri_mem_response_compare_mode})
+        end
+    endcase
+
+
+    case(cdp_pri_mem_request_compare_mode)
+        "COMPARE_MODE_DISABLE": begin
+         end
+        "COMPARE_MODE_RTL_AHEAD": begin
+             cdp_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.cdp_pri_mem_sb.dut_init_fifo.analysis_export);
+         end
+        "COMPARE_MODE_RTL_GATING_CMOD": begin
+             cdp_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.cdp_pri_mem_sb.dut_init_fifo.analysis_export);
+         end
+        "COMPARE_MODE_LOOSE_COMPARE": begin
+             cdp_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.cdp_pri_mem_sb.dut_init_fifo.analysis_export);
+         end
+        "COMPARE_MODE_COUNT_TXN_ONLY": begin
+             cdp_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.cdp_pri_mem_sb.dut_init_fifo.analysis_export);
+        end
+        default: begin
+            `uvm_error(tID, {"Unsupported scoreboard working mode: ", cdp_pri_mem_request_compare_mode})
+        end
+    endcase
+
+
+    case(cdp_pri_mem_response_compare_mode)
+        "COMPARE_MODE_DISABLE": begin
+         end
+        "COMPARE_MODE_RTL_AHEAD": begin
+             cdp_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.cdp_pri_mem_sb.dut_init_fifo.analysis_export);
+         end
+        "COMPARE_MODE_RTL_GATING_CMOD": begin
+             cdp_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.cdp_pri_mem_sb.dut_init_fifo.analysis_export);
+         end
+        "COMPARE_MODE_LOOSE_COMPARE": begin
+             cdp_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.cdp_pri_mem_sb.dut_init_fifo.analysis_export);
+         end
+        "COMPARE_MODE_COUNT_TXN_ONLY": begin
+             cdp_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.cdp_pri_mem_sb.dut_init_fifo.analysis_export);
+        end
+        default: begin
+            `uvm_error(tID, {"Unsupported scoreboard working mode: ", cdp_pri_mem_response_compare_mode})
+        end
+    endcase
+
+    //:) epython: generated_end (DO NOT EDIT ABOVE)
 
     // connect reference model internal agent monitors to scoreboard
     //:| for dma in dma_ports:
@@ -216,6 +946,22 @@ function void nvdla_tb_env::connect_phase(uvm_phase phase);
     //:|     for dma in dma_ports:
     //:|         print("    rm_inst.rm_nvdla_dma_convertor_sec.request_%0s.connect(sb.%0s_sec_mem_sb.rm_init_fifo.analysis_export);" % (dma, dma))
     //:|         print("    rm_inst.rm_nvdla_dma_convertor_sec.response_%0s.connect(sb.%0s_sec_mem_sb.rm_cmpl_fifo.analysis_export);" % (dma, dma))
+    //:) epython: generated_beg (DO NOT EDIT BELOW)
+    rm_inst.rm_nvdla_dma_convertor_pri.request_cdma_wt.connect(sb.cdma_wt_pri_mem_sb.rm_init_fifo.analysis_export);
+    rm_inst.rm_nvdla_dma_convertor_pri.response_cdma_wt.connect(sb.cdma_wt_pri_mem_sb.rm_cmpl_fifo.analysis_export);
+    rm_inst.rm_nvdla_dma_convertor_pri.request_cdma_dat.connect(sb.cdma_dat_pri_mem_sb.rm_init_fifo.analysis_export);
+    rm_inst.rm_nvdla_dma_convertor_pri.response_cdma_dat.connect(sb.cdma_dat_pri_mem_sb.rm_cmpl_fifo.analysis_export);
+    rm_inst.rm_nvdla_dma_convertor_pri.request_sdp.connect(sb.sdp_pri_mem_sb.rm_init_fifo.analysis_export);
+    rm_inst.rm_nvdla_dma_convertor_pri.response_sdp.connect(sb.sdp_pri_mem_sb.rm_cmpl_fifo.analysis_export);
+    rm_inst.rm_nvdla_dma_convertor_pri.request_sdp_b.connect(sb.sdp_b_pri_mem_sb.rm_init_fifo.analysis_export);
+    rm_inst.rm_nvdla_dma_convertor_pri.response_sdp_b.connect(sb.sdp_b_pri_mem_sb.rm_cmpl_fifo.analysis_export);
+    rm_inst.rm_nvdla_dma_convertor_pri.request_sdp_n.connect(sb.sdp_n_pri_mem_sb.rm_init_fifo.analysis_export);
+    rm_inst.rm_nvdla_dma_convertor_pri.response_sdp_n.connect(sb.sdp_n_pri_mem_sb.rm_cmpl_fifo.analysis_export);
+    rm_inst.rm_nvdla_dma_convertor_pri.request_pdp.connect(sb.pdp_pri_mem_sb.rm_init_fifo.analysis_export);
+    rm_inst.rm_nvdla_dma_convertor_pri.response_pdp.connect(sb.pdp_pri_mem_sb.rm_cmpl_fifo.analysis_export);
+    rm_inst.rm_nvdla_dma_convertor_pri.request_cdp.connect(sb.cdp_pri_mem_sb.rm_init_fifo.analysis_export);
+    rm_inst.rm_nvdla_dma_convertor_pri.response_cdp.connect(sb.cdp_pri_mem_sb.rm_cmpl_fifo.analysis_export);
+    //:) epython: generated_end (DO NOT EDIT ABOVE)
 
     rm_inst.rm_nvdla_conv_core_socket_convertor_inst.sc2mac_data_a_ana_port.connect(sb.csc_dat_a_sb.rm_cmpl_fifo.analysis_export);
     rm_inst.rm_nvdla_conv_core_socket_convertor_inst.sc2mac_weight_a_ana_port.connect(sb.csc_wt_a_sb.rm_cmpl_fifo.analysis_export);
