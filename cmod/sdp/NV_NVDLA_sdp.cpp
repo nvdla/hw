@@ -1026,7 +1026,7 @@ void NV_NVDLA_sdp::SdpDataOperationDC() {
                         if (NVDLA_SDP_D_FEATURE_MODE_CFG_0_OUTPUT_DST_MEM == sdp_output_dst_) {
                             int16_t *temp_ptr = new int16_t[SDP_PARALLEL_PROC_NUM];
                             cslAssert((temp_ptr != NULL));
-                            memcpy(temp_ptr, sdp_hls_wrapper_.sdp_data_out, ATOM_CUBE_SIZE);
+                            memcpy(temp_ptr, sdp_hls_wrapper_.sdp_data_out, SDP_PARALLEL_PROC_NUM*sizeof(int16_t));
                             // Output destination is memory
                             cslDebug((70, "NV_NVDLA_sdp::%s, DP->WDMA\n", __FUNCTION__));
                             for(int i=0;i<SDP_PARALLEL_PROC_NUM;i++) {
@@ -1183,7 +1183,7 @@ void NV_NVDLA_sdp::SdpDataOperationBatch() {
                                     hls_y_alu_op_[y_idx][proc_iter], hls_y_mul_op_[y_idx][proc_iter]);
                             int16_t *temp_ptr = new int16_t[SDP_PARALLEL_PROC_NUM];
                             cslAssert((temp_ptr != NULL));
-                            memcpy(temp_ptr, sdp_hls_wrapper_.sdp_data_out, ATOM_CUBE_SIZE);
+                            memcpy(temp_ptr, sdp_hls_wrapper_.sdp_data_out, SDP_PARALLEL_PROC_NUM*sizeof(int16_t));
                             cslDebug((50, "before write wdma_fifo_\n"));
                             wdma_fifo_->write(temp_ptr);    //8B
                             cslDebug((50, "after write wdma_fifo_\n"));
@@ -1303,7 +1303,7 @@ void NV_NVDLA_sdp::SdpDataOperationWG() {
                             } else {
                                 int16_t *temp_ptr = new int16_t[SDP_PARALLEL_PROC_NUM];
                                 cslAssert((temp_ptr != NULL));
-                                memcpy(temp_ptr, sdp_hls_wrapper_.sdp_data_out, ATOM_CUBE_SIZE);
+                                memcpy(temp_ptr, sdp_hls_wrapper_.sdp_data_out, SDP_PARALLEL_PROC_NUM*sizeof(int16_t));
                                 wdma_fifo_->write(temp_ptr);    //8B
                                 cslDebug((50, " write wdma_fifo_\n"));
                             }
