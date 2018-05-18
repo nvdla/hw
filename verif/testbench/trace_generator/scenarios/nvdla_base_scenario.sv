@@ -26,7 +26,7 @@ class nvdla_base_scenario extends uvm_component;
         cov: used to measure constraint quality before RTL is ready.
     */
     bit                     fcov_en = 0;
-    static nvdla_coverage_top cov;
+    nvdla_coverage_top      cov;
     
     /*
         methods
@@ -65,8 +65,9 @@ function nvdla_base_scenario::new(string name, uvm_component parent);
     sync_evt_name = "NOT_SET";
     inst_name = name;
 
-    if ($test$plusargs("fcov_en"))
+    if ($test$plusargs("fcov_en")) begin
         fcov_en = 1;
+    end
 endfunction : new
 
 function void nvdla_base_scenario::build_phase(uvm_phase phase);
@@ -74,8 +75,9 @@ function void nvdla_base_scenario::build_phase(uvm_phase phase);
 
     mm = mem_man::get_mem_man();
     surface_gen = surface_generator::type_id::create("surface_generator",this);
-    if (fcov_en)
-        cov = nvdla_coverage_top::type_id::create("cov", this);
+    if (fcov_en && !uvm_config_db#(nvdla_coverage_top)::get(this, "", "cov", cov)) begin
+        `uvm_fatal(inst_name, "Can't get cov instance hdl")
+    end
 endfunction: build_phase
 
 function nvdla_base_scenario::set_sync_evt_name();

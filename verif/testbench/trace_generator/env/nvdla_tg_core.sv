@@ -11,6 +11,7 @@
 import nvdla_ral_pkg::*;
 import nvdla_resource_pkg::*;
 import nvdla_scenario_pkg::*;
+import nvdla_coverage_pkg::*;
 import mem_man_pkg::*;
 
 class nvdla_tg_core extends uvm_component;
@@ -25,6 +26,11 @@ class nvdla_tg_core extends uvm_component;
 
     scenario_e                  scenario_pool[$];
 
+    /*
+        coverage model: used to measure constraint quality before RTL is ready.
+    */
+    bit                         fcov_en = 0;
+    nvdla_coverage_top          cov;
 
     /*
         scenarioes
@@ -59,6 +65,22 @@ class nvdla_tg_core extends uvm_component;
 
 endclass : nvdla_tg_core
 
+function nvdla_tg_core::new(string name="nvdla_tg_core", uvm_component parent);
+    super.new(name,parent);
+    this.inst_name = name;
+    curr_scenario = ALL_SCENARIOS;
+
+    begin
+        mem_man mm = mem_man::get_mem_man();
+        mm.register_domain("PRI", 'h0, {`NVDLA_MEM_ADDRESS_WIDTH{1'b1}}, mem_man_pkg::ALLOC_RANDOM);
+        mm.register_domain("SEC", 'h0, {`NVDLA_MEM_ADDRESS_WIDTH{1'b1}}, mem_man_pkg::ALLOC_RANDOM);
+    end
+
+    if ($test$plusargs("fcov_en")) begin
+        fcov_en = 1;
+    end
+endfunction: new
+
 function void nvdla_tg_core::build_phase(uvm_phase phase);
     super.build_phase(phase);
 
@@ -77,19 +99,12 @@ function void nvdla_tg_core::build_phase(uvm_phase phase);
     cc_sdp_pdp          = nvdla_cc_sdp_pdp_scenario::type_id::create("CC_SDP_PDP",this);
     cc_sdprdma_sdp      = nvdla_cc_sdprdma_sdp_scenario::type_id::create("CC_SDPRDMA_SDP",this);
     cc_sdprdma_sdp_pdp  = nvdla_cc_sdprdma_sdp_pdp_scenario::type_id::create("CC_SDPRDMA_SDP_PDP",this);
-endfunction: build_phase
 
-function nvdla_tg_core::new(string name="nvdla_tg_core", uvm_component parent);
-    super.new(name,parent);
-    this.inst_name = name;
-    curr_scenario = ALL_SCENARIOS;
-
-    begin
-        mem_man mm = mem_man::get_mem_man();
-        mm.register_domain("PRI", 'h0, {`NVDLA_MEM_ADDRESS_WIDTH{1'b1}}, mem_man_pkg::ALLOC_RANDOM);
-        mm.register_domain("SEC", 'h0, {`NVDLA_MEM_ADDRESS_WIDTH{1'b1}}, mem_man_pkg::ALLOC_RANDOM);
+    if (fcov_en) begin
+        cov = nvdla_coverage_top::type_id::create("cov", this);
+        uvm_config_db#(nvdla_coverage_top)::set(this, "*", "cov", cov);
     end
-endfunction: new
+endfunction: build_phase
 
 function void nvdla_tg_core::restore_scenario_pool();
     delete_scenario_pool();
