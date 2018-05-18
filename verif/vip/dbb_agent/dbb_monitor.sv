@@ -159,8 +159,6 @@ class dbb_monitor#(int MEM_DATA_WIDTH=512) extends uvm_monitor;
 
     uvm_tlm_time tlm_time;
 
-    uvm_analysis_port#(uvm_tlm_gp)  analysis_port;
-
     /// Track how many txns are in flight at once.
     int outstanding_txns;
 
@@ -422,12 +420,11 @@ function dbb_monitor::new(string        name = "dbb_monitor",
 
     super.new(name, parent);
     tID           = get_type_name().toupper();
-    analysis_port = new("analysis_port", this);
 
     cycle_count = 0;
     total_txns = 0;
 
-    mon_analysis_port = new ("mon_analysis_port", this);
+    mon_analysis_port         = new ("mon_analysis_port", this);
     mon_analysis_port_request = new ("mon_analysis_port_request", this);
 
     // Create event objects
@@ -1252,7 +1249,6 @@ function void dbb_monitor::transaction_finished(uvm_tlm_gp tr);
     `uvm_info("NVDLA/DBB/MON/TR_FINISH", $psprintf("Starting pre_send_checks for above tr.", tr_helper.print(tr)),UVM_FULL)
     tr_helper.pre_send_checks(tr);
     // Always write to analysis port
-    analysis_port.write(tr);
     mon_analysis_port.write(tr);
 
     `uvm_info("NVDLA/DBB/MON/TXN_TRACE",
