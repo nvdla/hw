@@ -6,15 +6,16 @@
 // this distribution for more information.
 // ================================================================
 
-// File Name: NV_NVDLA_SDP_ERDMA_lat_fifo.v
+// File Name: NV_NVDLA_SDP_MRDMA_EG_lat_fifo.v
 
 `define FORCE_CONTENTION_ASSERTION_RESET_ACTIVE 1'b1
 `include "simulate_x_tick.vh"
 
-#if (NVDLA_MEMIF_WIDTH+NVDLA_DMA_MASK_BIT == 65)  
+
+#elif (NVDLA_MEMIF_WIDTH+NVDLA_DMA_MASK_BIT == 65)
 
 
-module NV_NVDLA_SDP_ERDMA_lat_fifo (
+module NV_NVDLA_SDP_MRDMA_EG_lat_fifo (
       nvdla_core_clk
     , nvdla_core_rstn
     , lat_wr_prdy
@@ -341,7 +342,7 @@ assign nvdla_core_clk_mgated_enable = ((wr_reserving || wr_pushing || rd_popping
 `ifdef EMU_FIFO_CFG
 // Emulation Global Config Override
 //
-assign wr_limit_muxed = `EMU_FIFO_CFG.NV_NVDLA_SDP_ERDMA_lat_fifo_wr_limit_override ? `EMU_FIFO_CFG.NV_NVDLA_SDP_ERDMA_lat_fifo_wr_limit : 7'd0;
+assign wr_limit_muxed = `EMU_FIFO_CFG.NV_NVDLA_SDP_MRDMA_EG_lat_fifo_wr_limit_override ? `EMU_FIFO_CFG.NV_NVDLA_SDP_MRDMA_EG_lat_fifo_wr_limit : 7'd0;
 `else
 // No Global Override for Emulation 
 //
@@ -388,9 +389,9 @@ initial begin
 `endif
     wr_limit_override = 0;
     wr_limit_override_value = 0;  // to keep viva happy with dangles
-    if ( $test$plusargs( "NV_NVDLA_SDP_ERDMA_lat_fifo_wr_limit" ) ) begin
+    if ( $test$plusargs( "NV_NVDLA_SDP_MRDMA_EG_lat_fifo_wr_limit" ) ) begin
         wr_limit_override = 1;
-        $value$plusargs( "NV_NVDLA_SDP_ERDMA_lat_fifo_wr_limit=%d", wr_limit_override_value);
+        $value$plusargs( "NV_NVDLA_SDP_MRDMA_EG_lat_fifo_wr_limit=%d", wr_limit_override_value);
     end
 end
 
@@ -432,20 +433,20 @@ initial begin
 
 `ifdef NO_PLI
 `else
-    if ( $test$plusargs( "NV_NVDLA_SDP_ERDMA_lat_fifo_fifo_stall_probability" ) ) begin
-        $value$plusargs( "NV_NVDLA_SDP_ERDMA_lat_fifo_fifo_stall_probability=%d", stall_probability);
+    if ( $test$plusargs( "NV_NVDLA_SDP_MRDMA_EG_lat_fifo_fifo_stall_probability" ) ) begin
+        $value$plusargs( "NV_NVDLA_SDP_MRDMA_EG_lat_fifo_fifo_stall_probability=%d", stall_probability);
     end else if ( $test$plusargs( "default_fifo_stall_probability" ) ) begin
         $value$plusargs( "default_fifo_stall_probability=%d", stall_probability);
     end
 
-    if ( $test$plusargs( "NV_NVDLA_SDP_ERDMA_lat_fifo_fifo_stall_cycles_min" ) ) begin
-        $value$plusargs( "NV_NVDLA_SDP_ERDMA_lat_fifo_fifo_stall_cycles_min=%d", stall_cycles_min);
+    if ( $test$plusargs( "NV_NVDLA_SDP_MRDMA_EG_lat_fifo_fifo_stall_cycles_min" ) ) begin
+        $value$plusargs( "NV_NVDLA_SDP_MRDMA_EG_lat_fifo_fifo_stall_cycles_min=%d", stall_cycles_min);
     end else if ( $test$plusargs( "default_fifo_stall_cycles_min" ) ) begin
         $value$plusargs( "default_fifo_stall_cycles_min=%d", stall_cycles_min);
     end
 
-    if ( $test$plusargs( "NV_NVDLA_SDP_ERDMA_lat_fifo_fifo_stall_cycles_max" ) ) begin
-        $value$plusargs( "NV_NVDLA_SDP_ERDMA_lat_fifo_fifo_stall_cycles_max=%d", stall_cycles_max);
+    if ( $test$plusargs( "NV_NVDLA_SDP_MRDMA_EG_lat_fifo_fifo_stall_cycles_max" ) ) begin
+        $value$plusargs( "NV_NVDLA_SDP_MRDMA_EG_lat_fifo_fifo_stall_cycles_max=%d", stall_cycles_max);
     end else if ( $test$plusargs( "default_fifo_stall_cycles_max" ) ) begin
         $value$plusargs( "default_fifo_stall_cycles_max=%d", stall_cycles_max);
     end
@@ -467,9 +468,9 @@ end
 // randomization globals
 `ifdef SIMTOP_RANDOMIZE_STALLS
   always @( `SIMTOP_RANDOMIZE_STALLS.global_stall_event ) begin
-    if ( ! $test$plusargs( "NV_NVDLA_SDP_ERDMA_lat_fifo_fifo_stall_probability" ) ) stall_probability = `SIMTOP_RANDOMIZE_STALLS.global_stall_fifo_probability; 
-    if ( ! $test$plusargs( "NV_NVDLA_SDP_ERDMA_lat_fifo_fifo_stall_cycles_min"  ) ) stall_cycles_min  = `SIMTOP_RANDOMIZE_STALLS.global_stall_fifo_cycles_min;
-    if ( ! $test$plusargs( "NV_NVDLA_SDP_ERDMA_lat_fifo_fifo_stall_cycles_max"  ) ) stall_cycles_max  = `SIMTOP_RANDOMIZE_STALLS.global_stall_fifo_cycles_max;
+    if ( ! $test$plusargs( "NV_NVDLA_SDP_MRDMA_EG_lat_fifo_fifo_stall_probability" ) ) stall_probability = `SIMTOP_RANDOMIZE_STALLS.global_stall_fifo_probability; 
+    if ( ! $test$plusargs( "NV_NVDLA_SDP_MRDMA_EG_lat_fifo_fifo_stall_cycles_min"  ) ) stall_cycles_min  = `SIMTOP_RANDOMIZE_STALLS.global_stall_fifo_cycles_min;
+    if ( ! $test$plusargs( "NV_NVDLA_SDP_MRDMA_EG_lat_fifo_fifo_stall_cycles_max"  ) ) stall_cycles_max  = `SIMTOP_RANDOMIZE_STALLS.global_stall_fifo_cycles_max;
   end
 `endif
 
@@ -484,8 +485,8 @@ always @( negedge nvdla_core_clk or negedge nvdla_core_rstn ) begin
 `else
             if ( lat_wr_pvld && !(!lat_wr_prdy)
                  && stall_probability != 0 ) begin
-                if ( prand_inst2(1, 100) <= stall_probability ) begin
-                    stall_cycles_left <=  prand_inst3(stall_cycles_min, stall_cycles_max);
+                if ( prand_inst0(1, 100) <= stall_probability ) begin
+                    stall_cycles_left <=  prand_inst1(stall_cycles_min, stall_cycles_max);
                 end else if ( stall_cycles_left !== 0  ) begin
                     stall_cycles_left <=  stall_cycles_left - 1;
                 end
@@ -600,7 +601,7 @@ NV_BLKBOX_SRC0 dummy_breadcrumb_fifogen_blkbox (.Y());
 // spyglass enable_block W401 -- clock is not input to module
 
 // synopsys dc_script_begin
-//   set_boundary_optimization find(design, "NV_NVDLA_SDP_ERDMA_lat_fifo") true
+//   set_boundary_optimization find(design, "NV_NVDLA_SDP_MRDMA_EG_lat_fifo") true
 // synopsys dc_script_end
 
 
@@ -610,14 +611,14 @@ NV_BLKBOX_SRC0 dummy_breadcrumb_fifogen_blkbox (.Y());
 `else
 `ifdef PRAND_VERILOG
 // Only verilog needs any local variables
-reg [47:0] prand_local_seed2;
-reg prand_initialized2;
-reg prand_no_rollpli2;
+reg [47:0] prand_local_seed0;
+reg prand_initialized0;
+reg prand_no_rollpli0;
 `endif
 `endif
 `endif
 
-function [31:0] prand_inst2;
+function [31:0] prand_inst0;
 //VCS coverage off
     input [31:0] min;
     input [31:0] max;
@@ -625,31 +626,31 @@ function [31:0] prand_inst2;
     
     begin
 `ifdef SYNTH_LEVEL1_COMPILE
-        prand_inst2 = min;
+        prand_inst0 = min;
 `else
 `ifdef SYNTHESIS
-        prand_inst2 = min;
+        prand_inst0 = min;
 `else
 `ifdef PRAND_VERILOG
-        if (prand_initialized2 !== 1'b1) begin
-            prand_no_rollpli2 = $test$plusargs("NO_ROLLPLI");
-            if (!prand_no_rollpli2)
-                prand_local_seed2 = {$prand_get_seed(2), 16'b0};
-            prand_initialized2 = 1'b1;
+        if (prand_initialized0 !== 1'b1) begin
+            prand_no_rollpli0 = $test$plusargs("NO_ROLLPLI");
+            if (!prand_no_rollpli0)
+                prand_local_seed0 = {$prand_get_seed(0), 16'b0};
+            prand_initialized0 = 1'b1;
         end
-        if (prand_no_rollpli2) begin
-            prand_inst2 = min;
+        if (prand_no_rollpli0) begin
+            prand_inst0 = min;
         end else begin
             diff = max - min + 1;
-            prand_inst2 = min + prand_local_seed2[47:16] % diff;
+            prand_inst0 = min + prand_local_seed0[47:16] % diff;
             // magic numbers taken from Java's random class (same as lrand48)
-            prand_local_seed2 = prand_local_seed2 * 48'h5deece66d + 48'd11;
+            prand_local_seed0 = prand_local_seed0 * 48'h5deece66d + 48'd11;
         end
 `else
 `ifdef PRAND_OFF
-        prand_inst2 = min;
+        prand_inst0 = min;
 `else
-        prand_inst2 = $RollPLI(min, max, "auto");
+        prand_inst0 = $RollPLI(min, max, "auto");
 `endif
 `endif
 `endif
@@ -665,14 +666,14 @@ endfunction
 `else
 `ifdef PRAND_VERILOG
 // Only verilog needs any local variables
-reg [47:0] prand_local_seed3;
-reg prand_initialized3;
-reg prand_no_rollpli3;
+reg [47:0] prand_local_seed1;
+reg prand_initialized1;
+reg prand_no_rollpli1;
 `endif
 `endif
 `endif
 
-function [31:0] prand_inst3;
+function [31:0] prand_inst1;
 //VCS coverage off
     input [31:0] min;
     input [31:0] max;
@@ -680,31 +681,31 @@ function [31:0] prand_inst3;
     
     begin
 `ifdef SYNTH_LEVEL1_COMPILE
-        prand_inst3 = min;
+        prand_inst1 = min;
 `else
 `ifdef SYNTHESIS
-        prand_inst3 = min;
+        prand_inst1 = min;
 `else
 `ifdef PRAND_VERILOG
-        if (prand_initialized3 !== 1'b1) begin
-            prand_no_rollpli3 = $test$plusargs("NO_ROLLPLI");
-            if (!prand_no_rollpli3)
-                prand_local_seed3 = {$prand_get_seed(3), 16'b0};
-            prand_initialized3 = 1'b1;
+        if (prand_initialized1 !== 1'b1) begin
+            prand_no_rollpli1 = $test$plusargs("NO_ROLLPLI");
+            if (!prand_no_rollpli1)
+                prand_local_seed1 = {$prand_get_seed(1), 16'b0};
+            prand_initialized1 = 1'b1;
         end
-        if (prand_no_rollpli3) begin
-            prand_inst3 = min;
+        if (prand_no_rollpli1) begin
+            prand_inst1 = min;
         end else begin
             diff = max - min + 1;
-            prand_inst3 = min + prand_local_seed3[47:16] % diff;
+            prand_inst1 = min + prand_local_seed1[47:16] % diff;
             // magic numbers taken from Java's random class (same as lrand48)
-            prand_local_seed3 = prand_local_seed3 * 48'h5deece66d + 48'd11;
+            prand_local_seed1 = prand_local_seed1 * 48'h5deece66d + 48'd11;
         end
 `else
 `ifdef PRAND_OFF
-        prand_inst3 = min;
+        prand_inst1 = min;
 `else
-        prand_inst3 = $RollPLI(min, max, "auto");
+        prand_inst1 = $RollPLI(min, max, "auto");
 `endif
 `endif
 `endif
@@ -714,12 +715,465 @@ function [31:0] prand_inst3;
 endfunction
 
 
-endmodule // NV_NVDLA_SDP_ERDMA_lat_fifo
+endmodule // NV_NVDLA_SDP_MRDMA_EG_lat_fifo
 
 
-#else //(NVDLA_MEMIF_WIDTH+NVDLA_DMA_MASK_BIT == 514)
 
-module NV_NVDLA_SDP_ERDMA_lat_fifo (
+
+
+
+#endif
+
+
+
+
+#ifdef NVDLA_SDP_DATA_TYPE_INT16TO8
+module NV_NVDLA_SDP_MRDMA_EG_sfifo (
+      nvdla_core_clk
+    , nvdla_core_rstn
+    , sfifo_wr_prdy
+    , sfifo_wr_pvld
+    , sfifo_wr_pd
+    , sfifo_rd_prdy
+    , sfifo_rd_pvld
+    , sfifo_rd_pd
+    , pwrbus_ram_pd
+    );
+
+// spyglass disable_block W401 -- clock is not input to module
+input         nvdla_core_clk;
+input         nvdla_core_rstn;
+output        sfifo_wr_prdy;
+input         sfifo_wr_pvld;
+input  [255:0] sfifo_wr_pd;
+input         sfifo_rd_prdy;
+output        sfifo_rd_pvld;
+output [255:0] sfifo_rd_pd;
+input  [31:0] pwrbus_ram_pd;
+
+// Master Clock Gating (SLCG)
+//
+// We gate the clock(s) when idle or stalled.
+// This allows us to turn off numerous miscellaneous flops
+// that don't get gated during synthesis for one reason or another.
+//
+// We gate write side and read side separately. 
+// If the fifo is synchronous, we also gate the ram separately, but if
+// -master_clk_gated_unified or -status_reg/-status_logic_reg is specified, 
+// then we use one clk gate for write, ram, and read.
+//
+wire nvdla_core_clk_mgated_enable;   // assigned by code at end of this module
+wire nvdla_core_clk_mgated;               // used only in synchronous fifos
+NV_CLK_gate_power nvdla_core_clk_mgate( .clk(nvdla_core_clk), .reset_(nvdla_core_rstn), .clk_en(nvdla_core_clk_mgated_enable), .clk_gated(nvdla_core_clk_mgated) );
+
+// 
+// WRITE SIDE
+//
+wire wr_reserving;
+reg        sfifo_wr_busy_int;		        	// copy for internal use
+assign     sfifo_wr_prdy = !sfifo_wr_busy_int;
+assign       wr_reserving = sfifo_wr_pvld && !sfifo_wr_busy_int; // reserving write space?
+
+
+wire       wr_popping;                          // fwd: write side sees pop?
+
+reg        sfifo_wr_count;			// write-side count
+
+wire       wr_count_next_wr_popping = wr_reserving ? sfifo_wr_count : (sfifo_wr_count - 1'd1); // spyglass disable W164a W484
+wire       wr_count_next_no_wr_popping = wr_reserving ? (sfifo_wr_count + 1'd1) : sfifo_wr_count; // spyglass disable W164a W484
+wire       wr_count_next = wr_popping ? wr_count_next_wr_popping : 
+                                               wr_count_next_no_wr_popping;
+
+wire wr_count_next_no_wr_popping_is_1 = ( wr_count_next_no_wr_popping == 1'd1 );
+wire wr_count_next_is_1 = wr_popping ? 1'b0 :
+                                          wr_count_next_no_wr_popping_is_1;
+wire       wr_limit_muxed;  // muxed with simulation/emulation overrides
+wire       wr_limit_reg = wr_limit_muxed;
+                          // VCS coverage off
+wire       sfifo_wr_busy_next = wr_count_next_is_1 || // busy next cycle?
+                          (wr_limit_reg != 1'd0 &&      // check sfifo_wr_limit if != 0
+                           wr_count_next >= wr_limit_reg)  ;
+                          // VCS coverage on
+always @( posedge nvdla_core_clk_mgated or negedge nvdla_core_rstn ) begin
+    if ( !nvdla_core_rstn ) begin
+        sfifo_wr_busy_int <=  1'b0;
+        sfifo_wr_count <=  1'd0;
+    end else begin
+	sfifo_wr_busy_int <=  sfifo_wr_busy_next;
+	if ( wr_reserving ^ wr_popping ) begin
+	    sfifo_wr_count <=  wr_count_next;
+        end 
+        //synopsys translate_off
+            else if ( !(wr_reserving ^ wr_popping) ) begin
+        end else begin
+            sfifo_wr_count <=  {1{`x_or_0}};
+        end
+        //synopsys translate_on
+
+    end
+end
+
+wire       wr_pushing = wr_reserving;   // data pushed same cycle as sfifo_wr_pvld
+
+//
+// RAM
+//
+
+wire rd_popping;
+
+wire ram_we = wr_pushing && (sfifo_wr_count > 1'd0 || !rd_popping);   // note: write occurs next cycle
+wire [255:0] sfifo_rd_pd_p;                    // read data out of ram
+
+wire [31 : 0] pwrbus_ram_pd;
+
+// Adding parameter for fifogen to disable wr/rd contention assertion in ramgen.
+// Fifogen handles this by ignoring the data on the ram data out for that cycle.
+
+
+NV_NVDLA_SDP_MRDMA_EG_sfifo_flopram_rwsa_1x256 ram (
+      .clk( nvdla_core_clk_mgated )
+    , .pwrbus_ram_pd ( pwrbus_ram_pd )
+    , .di        ( sfifo_wr_pd )
+    , .we        ( ram_we )
+    , .ra        ( (sfifo_wr_count == 0) ? 1'd1 : 1'b0 )
+    , .dout        ( sfifo_rd_pd_p )
+    );
+
+
+//
+// SYNCHRONOUS BOUNDARY
+//
+
+
+assign wr_popping = rd_popping;		// let it be seen immediately
+
+wire   rd_pushing = wr_pushing;		// let it be seen immediately
+
+//
+// READ SIDE
+//
+
+wire       sfifo_rd_pvld_p; 		// data out of fifo is valid
+
+reg        sfifo_rd_pvld_int;	// internal copy of sfifo_rd_pvld
+assign     sfifo_rd_pvld = sfifo_rd_pvld_int;
+assign     rd_popping = sfifo_rd_pvld_p && !(sfifo_rd_pvld_int && !sfifo_rd_prdy);
+
+reg        sfifo_rd_count_p;			// read-side fifo count
+// spyglass disable_block W164a W484
+wire       rd_count_p_next_rd_popping = rd_pushing ? sfifo_rd_count_p : 
+                                                                (sfifo_rd_count_p - 1'd1);
+wire       rd_count_p_next_no_rd_popping =  rd_pushing ? (sfifo_rd_count_p + 1'd1) : 
+                                                                    sfifo_rd_count_p;
+// spyglass enable_block W164a W484
+wire       rd_count_p_next = rd_popping ? rd_count_p_next_rd_popping :
+                                                     rd_count_p_next_no_rd_popping; 
+assign     sfifo_rd_pvld_p = sfifo_rd_count_p != 0 || rd_pushing;
+always @( posedge nvdla_core_clk_mgated or negedge nvdla_core_rstn ) begin
+    if ( !nvdla_core_rstn ) begin
+        sfifo_rd_count_p <=  1'd0;
+    end else begin
+        if ( rd_pushing || rd_popping  ) begin
+	    sfifo_rd_count_p <=  rd_count_p_next;
+        end 
+        //synopsys translate_off
+            else if ( !(rd_pushing || rd_popping ) ) begin
+        end else begin
+            sfifo_rd_count_p <=  {1{`x_or_0}};
+        end
+        //synopsys translate_on
+
+    end
+end
+reg [255:0]  sfifo_rd_pd;         // output data register
+wire        rd_req_next = (sfifo_rd_pvld_p || (sfifo_rd_pvld_int && !sfifo_rd_prdy)) ;
+
+always @( posedge nvdla_core_clk_mgated or negedge nvdla_core_rstn ) begin
+    if ( !nvdla_core_rstn ) begin
+        sfifo_rd_pvld_int <=  1'b0;
+    end else begin
+        sfifo_rd_pvld_int <=  rd_req_next;
+    end
+end
+always @( posedge nvdla_core_clk_mgated ) begin
+    if ( (rd_popping) ) begin
+        sfifo_rd_pd <=  sfifo_rd_pd_p;
+    end 
+    //synopsys translate_off
+        else if ( !((rd_popping)) ) begin
+    end else begin
+        sfifo_rd_pd <=  {256{`x_or_0}};
+    end
+    //synopsys translate_on
+
+end
+
+// Master Clock Gating (SLCG) Enables
+//
+
+// plusarg for disabling this stuff:
+
+// synopsys translate_off
+`ifndef SYNTH_LEVEL1_COMPILE
+`ifndef SYNTHESIS
+reg master_clk_gating_disabled;  initial master_clk_gating_disabled = $test$plusargs( "fifogen_disable_master_clk_gating" ) != 0;
+`endif
+`endif
+// synopsys translate_on
+assign nvdla_core_clk_mgated_enable = ((wr_reserving || wr_pushing || wr_popping || (sfifo_wr_pvld && !sfifo_wr_busy_int) || (sfifo_wr_busy_int != sfifo_wr_busy_next)) || (rd_pushing || rd_popping || (sfifo_rd_pvld_int && sfifo_rd_prdy)) || (wr_pushing))
+                               `ifdef FIFOGEN_MASTER_CLK_GATING_DISABLED
+                               || 1'b1
+                               `endif
+                               // synopsys translate_off
+			       `ifndef SYNTH_LEVEL1_COMPILE
+			       `ifndef SYNTHESIS
+                               || master_clk_gating_disabled
+			       `endif
+			       `endif
+                               // synopsys translate_on
+                               ;
+
+
+// Simulation and Emulation Overrides of wr_limit(s)
+//
+
+`ifdef EMU
+
+`ifdef EMU_FIFO_CFG
+// Emulation Global Config Override
+//
+assign wr_limit_muxed = `EMU_FIFO_CFG.NV_NVDLA_SDP_MRDMA_EG_sfifo_wr_limit_override ? `EMU_FIFO_CFG.NV_NVDLA_SDP_MRDMA_EG_sfifo_wr_limit : 1'd0;
+`else
+// No Global Override for Emulation 
+//
+assign wr_limit_muxed = 1'd0;
+`endif // EMU_FIFO_CFG
+
+`else // !EMU
+`ifdef SYNTH_LEVEL1_COMPILE
+
+// No Override for GCS Compiles
+//
+assign wr_limit_muxed = 1'd0;
+`else
+`ifdef SYNTHESIS
+
+// No Override for RTL Synthesis
+//
+
+assign wr_limit_muxed = 1'd0;
+
+`else  
+
+// RTL Simulation Plusarg Override
+
+
+// VCS coverage off
+
+reg wr_limit_override;
+reg       wr_limit_override_value; 
+assign wr_limit_muxed = wr_limit_override ? wr_limit_override_value : 1'd0;
+`ifdef NV_ARCHPRO
+event reinit;
+
+initial begin
+    $display("fifogen reinit initial block %m");
+    -> reinit;
+end
+`endif
+
+`ifdef NV_ARCHPRO
+always @( reinit ) begin
+`else 
+initial begin
+`endif
+    wr_limit_override = 0;
+    wr_limit_override_value = 0;  // to keep viva happy with dangles
+    if ( $test$plusargs( "NV_NVDLA_SDP_MRDMA_EG_sfifo_wr_limit" ) ) begin
+        wr_limit_override = 1;
+        $value$plusargs( "NV_NVDLA_SDP_MRDMA_EG_sfifo_wr_limit=%d", wr_limit_override_value);
+    end
+end
+
+// VCS coverage on
+
+
+`endif 
+`endif
+`endif
+
+//
+// Histogram of fifo depth (from write side's perspective)
+//
+// NOTE: it will reference `SIMTOP.perfmon_enabled, so that
+//       has to at least be defined, though not initialized.
+//	 tbgen testbenches have it already and various
+//	 ways to turn it on and off.
+//
+`ifdef PERFMON_HISTOGRAM 
+// synopsys translate_off
+`ifndef SYNTH_LEVEL1_COMPILE
+`ifndef SYNTHESIS
+perfmon_histogram perfmon (
+      .clk	( nvdla_core_clk ) 
+    , .max      ( {31'd0, (wr_limit_reg == 1'd0) ? 1'd1 : wr_limit_reg} )
+    , .curr	( {31'd0, sfifo_wr_count} )
+    );
+`endif
+`endif
+// synopsys translate_on
+`endif
+
+// spyglass disable_block W164a W164b W116 W484 W504
+
+`ifdef SPYGLASS
+`else
+
+`ifdef FV_ASSERT_ON
+`else
+// synopsys translate_off
+`endif
+
+`ifdef ASSERT_ON
+
+`ifdef SPYGLASS
+wire disable_assert_plusarg = 1'b0;
+`else
+
+`ifdef FV_ASSERT_ON
+wire disable_assert_plusarg = 1'b0;
+`else
+wire disable_assert_plusarg = $test$plusargs("DISABLE_NESS_FLOW_ASSERTIONS");
+`endif
+
+`endif
+wire assert_enabled = 1'b1 && !disable_assert_plusarg;
+
+
+`endif
+
+`ifdef FV_ASSERT_ON
+`else
+// synopsys translate_on
+`endif
+
+`ifdef ASSERT_ON
+
+//synopsys translate_off
+`ifndef SYNTH_LEVEL1_COMPILE
+`ifndef SYNTHESIS
+always @(assert_enabled) begin
+    if ( assert_enabled === 1'b0 ) begin
+        $display("Asserts are disabled for %m");
+    end
+end
+`endif
+`endif
+//synopsys translate_on
+
+`endif
+
+`endif
+
+// spyglass enable_block W164a W164b W116 W484 W504
+
+
+//The NV_BLKBOX_SRC0 module is only present when the FIFOGEN_MODULE_SEARCH
+// define is set.  This is to aid fifogen team search for fifogen fifo
+// instance and module names in a given design.
+`ifdef FIFOGEN_MODULE_SEARCH
+NV_BLKBOX_SRC0 dummy_breadcrumb_fifogen_blkbox (.Y());
+`endif
+
+// spyglass enable_block W401 -- clock is not input to module
+
+// synopsys dc_script_begin
+//   set_boundary_optimization find(design, "NV_NVDLA_SDP_MRDMA_EG_sfifo") true
+// synopsys dc_script_end
+
+
+endmodule // NV_NVDLA_SDP_MRDMA_EG_sfifo
+
+// 
+// Flop-Based RAM 
+//
+module NV_NVDLA_SDP_MRDMA_EG_sfifo_flopram_rwsa_1x256 (
+      clk
+    , pwrbus_ram_pd
+    , di
+    , we
+    , ra
+    , dout
+    );
+
+input  clk;  // write clock
+input [31 : 0] pwrbus_ram_pd;
+input  [255:0] di;
+input  we;
+input  [0:0] ra;
+output [255:0] dout;
+
+`ifndef FPGA
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_0 (.A(pwrbus_ram_pd[0]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_1 (.A(pwrbus_ram_pd[1]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_2 (.A(pwrbus_ram_pd[2]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_3 (.A(pwrbus_ram_pd[3]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_4 (.A(pwrbus_ram_pd[4]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_5 (.A(pwrbus_ram_pd[5]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_6 (.A(pwrbus_ram_pd[6]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_7 (.A(pwrbus_ram_pd[7]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_8 (.A(pwrbus_ram_pd[8]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_9 (.A(pwrbus_ram_pd[9]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_10 (.A(pwrbus_ram_pd[10]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_11 (.A(pwrbus_ram_pd[11]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_12 (.A(pwrbus_ram_pd[12]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_13 (.A(pwrbus_ram_pd[13]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_14 (.A(pwrbus_ram_pd[14]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_15 (.A(pwrbus_ram_pd[15]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_16 (.A(pwrbus_ram_pd[16]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_17 (.A(pwrbus_ram_pd[17]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_18 (.A(pwrbus_ram_pd[18]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_19 (.A(pwrbus_ram_pd[19]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_20 (.A(pwrbus_ram_pd[20]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_21 (.A(pwrbus_ram_pd[21]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_22 (.A(pwrbus_ram_pd[22]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_23 (.A(pwrbus_ram_pd[23]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_24 (.A(pwrbus_ram_pd[24]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_25 (.A(pwrbus_ram_pd[25]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_26 (.A(pwrbus_ram_pd[26]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_27 (.A(pwrbus_ram_pd[27]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_28 (.A(pwrbus_ram_pd[28]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_29 (.A(pwrbus_ram_pd[29]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_30 (.A(pwrbus_ram_pd[30]));
+NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_31 (.A(pwrbus_ram_pd[31]));
+`endif
+
+reg [255:0] ram_ff0;
+
+always @( posedge clk ) begin
+    if ( we ) begin
+	ram_ff0 <=  di;
+    end
+end
+
+reg [255:0] dout;
+
+always @(*) begin
+    case( ra ) 
+    1'd0:       dout = ram_ff0;
+    1'd1:       dout = di;
+    //VCS coverage off
+    default:    dout = {256{`x_or_0}};
+    //VCS coverage on
+    endcase
+end
+
+endmodule // NV_NVDLA_SDP_MRDMA_EG_sfifo_flopram_rwsa_1x256
+
+
+#else  // (NVDLA_MEMIF_WIDTH+NVDLA_DMA_MASK_BIT == 514)
+
+module NV_NVDLA_SDP_MRDMA_EG_lat_fifo (
       nvdla_core_clk
     , nvdla_core_rstn
     , lat_wr_prdy
@@ -1046,7 +1500,7 @@ assign nvdla_core_clk_mgated_enable = ((wr_reserving || wr_pushing || rd_popping
 `ifdef EMU_FIFO_CFG
 // Emulation Global Config Override
 //
-assign wr_limit_muxed = `EMU_FIFO_CFG.NV_NVDLA_SDP_ERDMA_lat_fifo_wr_limit_override ? `EMU_FIFO_CFG.NV_NVDLA_SDP_ERDMA_lat_fifo_wr_limit : 7'd0;
+assign wr_limit_muxed = `EMU_FIFO_CFG.NV_NVDLA_SDP_MRDMA_EG_lat_fifo_wr_limit_override ? `EMU_FIFO_CFG.NV_NVDLA_SDP_MRDMA_EG_lat_fifo_wr_limit : 7'd0;
 `else
 // No Global Override for Emulation 
 //
@@ -1093,9 +1547,9 @@ initial begin
 `endif
     wr_limit_override = 0;
     wr_limit_override_value = 0;  // to keep viva happy with dangles
-    if ( $test$plusargs( "NV_NVDLA_SDP_ERDMA_lat_fifo_wr_limit" ) ) begin
+    if ( $test$plusargs( "NV_NVDLA_SDP_MRDMA_EG_lat_fifo_wr_limit" ) ) begin
         wr_limit_override = 1;
-        $value$plusargs( "NV_NVDLA_SDP_ERDMA_lat_fifo_wr_limit=%d", wr_limit_override_value);
+        $value$plusargs( "NV_NVDLA_SDP_MRDMA_EG_lat_fifo_wr_limit=%d", wr_limit_override_value);
     end
 end
 
@@ -1137,20 +1591,20 @@ initial begin
 
 `ifdef NO_PLI
 `else
-    if ( $test$plusargs( "NV_NVDLA_SDP_ERDMA_lat_fifo_fifo_stall_probability" ) ) begin
-        $value$plusargs( "NV_NVDLA_SDP_ERDMA_lat_fifo_fifo_stall_probability=%d", stall_probability);
+    if ( $test$plusargs( "NV_NVDLA_SDP_MRDMA_EG_lat_fifo_fifo_stall_probability" ) ) begin
+        $value$plusargs( "NV_NVDLA_SDP_MRDMA_EG_lat_fifo_fifo_stall_probability=%d", stall_probability);
     end else if ( $test$plusargs( "default_fifo_stall_probability" ) ) begin
         $value$plusargs( "default_fifo_stall_probability=%d", stall_probability);
     end
 
-    if ( $test$plusargs( "NV_NVDLA_SDP_ERDMA_lat_fifo_fifo_stall_cycles_min" ) ) begin
-        $value$plusargs( "NV_NVDLA_SDP_ERDMA_lat_fifo_fifo_stall_cycles_min=%d", stall_cycles_min);
+    if ( $test$plusargs( "NV_NVDLA_SDP_MRDMA_EG_lat_fifo_fifo_stall_cycles_min" ) ) begin
+        $value$plusargs( "NV_NVDLA_SDP_MRDMA_EG_lat_fifo_fifo_stall_cycles_min=%d", stall_cycles_min);
     end else if ( $test$plusargs( "default_fifo_stall_cycles_min" ) ) begin
         $value$plusargs( "default_fifo_stall_cycles_min=%d", stall_cycles_min);
     end
 
-    if ( $test$plusargs( "NV_NVDLA_SDP_ERDMA_lat_fifo_fifo_stall_cycles_max" ) ) begin
-        $value$plusargs( "NV_NVDLA_SDP_ERDMA_lat_fifo_fifo_stall_cycles_max=%d", stall_cycles_max);
+    if ( $test$plusargs( "NV_NVDLA_SDP_MRDMA_EG_lat_fifo_fifo_stall_cycles_max" ) ) begin
+        $value$plusargs( "NV_NVDLA_SDP_MRDMA_EG_lat_fifo_fifo_stall_cycles_max=%d", stall_cycles_max);
     end else if ( $test$plusargs( "default_fifo_stall_cycles_max" ) ) begin
         $value$plusargs( "default_fifo_stall_cycles_max=%d", stall_cycles_max);
     end
@@ -1172,9 +1626,9 @@ end
 // randomization globals
 `ifdef SIMTOP_RANDOMIZE_STALLS
   always @( `SIMTOP_RANDOMIZE_STALLS.global_stall_event ) begin
-    if ( ! $test$plusargs( "NV_NVDLA_SDP_ERDMA_lat_fifo_fifo_stall_probability" ) ) stall_probability = `SIMTOP_RANDOMIZE_STALLS.global_stall_fifo_probability; 
-    if ( ! $test$plusargs( "NV_NVDLA_SDP_ERDMA_lat_fifo_fifo_stall_cycles_min"  ) ) stall_cycles_min  = `SIMTOP_RANDOMIZE_STALLS.global_stall_fifo_cycles_min;
-    if ( ! $test$plusargs( "NV_NVDLA_SDP_ERDMA_lat_fifo_fifo_stall_cycles_max"  ) ) stall_cycles_max  = `SIMTOP_RANDOMIZE_STALLS.global_stall_fifo_cycles_max;
+    if ( ! $test$plusargs( "NV_NVDLA_SDP_MRDMA_EG_lat_fifo_fifo_stall_probability" ) ) stall_probability = `SIMTOP_RANDOMIZE_STALLS.global_stall_fifo_probability; 
+    if ( ! $test$plusargs( "NV_NVDLA_SDP_MRDMA_EG_lat_fifo_fifo_stall_cycles_min"  ) ) stall_cycles_min  = `SIMTOP_RANDOMIZE_STALLS.global_stall_fifo_cycles_min;
+    if ( ! $test$plusargs( "NV_NVDLA_SDP_MRDMA_EG_lat_fifo_fifo_stall_cycles_max"  ) ) stall_cycles_max  = `SIMTOP_RANDOMIZE_STALLS.global_stall_fifo_cycles_max;
   end
 `endif
 
@@ -1305,7 +1759,7 @@ NV_BLKBOX_SRC0 dummy_breadcrumb_fifogen_blkbox (.Y());
 // spyglass enable_block W401 -- clock is not input to module
 
 // synopsys dc_script_begin
-//   set_boundary_optimization find(design, "NV_NVDLA_SDP_ERDMA_lat_fifo") true
+//   set_boundary_optimization find(design, "NV_NVDLA_SDP_MRDMA_EG_lat_fifo") true
 // synopsys dc_script_end
 
 
@@ -1419,8 +1873,6 @@ function [31:0] prand_inst1;
 endfunction
 
 
-endmodule // NV_NVDLA_SDP_ERDMA_lat_fifo
-
-
+endmodule // NV_NVDLA_SDP_MRDMA_EG_lat_fifo
 
 #endif
