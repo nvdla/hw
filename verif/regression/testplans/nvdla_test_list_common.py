@@ -65,18 +65,32 @@ DISABLE_COMPARE_CC_SB_ARG   = ( DISABLE_COMPARE_CDMA_SB_ARG
 # =============================================================================
 
 DISABLE_COMPARE_SDP2PDP_SB_ARG       = " -rtlarg '+uvm_set_config_string=uvm_test_top,sdp_compare_mode,COMPARE_MODE_DISABLE'"
-DISABLE_COMPARE_SDP_PRI_MEM_SB_ARG   = " -rtlarg '+uvm_set_config_string=uvm_test_top,sdp_pri_mem_response_compare_mode,COMPARE_MODE_DISABLE'"
-DISABLE_COMPARE_SDP_SEC_MEM_SB_ARG   = " -rtlarg '+uvm_set_config_string=uvm_test_top,sdp_sec_mem_response_compare_mode,COMPARE_MODE_DISABLE'"
-DISABLE_COMPARE_SDP_N_PRI_MEM_SB_ARG = " -rtlarg '+uvm_set_config_string=uvm_test_top,sdp_n_pri_mem_response_compare_mode,COMPARE_MODE_DISABLE'"
-DISABLE_COMPARE_SDP_E_PRI_MEM_SB_ARG = " -rtlarg '+uvm_set_config_string=uvm_test_top,sdp_e_pri_mem_response_compare_mode,COMPARE_MODE_DISABLE'"
-DISABLE_COMPARE_SDP_B_PRI_MEM_SB_ARG = " -rtlarg '+uvm_set_config_string=uvm_test_top,sdp_b_pri_mem_response_compare_mode,COMPARE_MODE_DISABLE'"
+DISABLE_COMPARE_SDP_PRI_MEM_SB_ARG   = " -rtlarg '+uvm_set_config_string=uvm_test_top,sdp_pri_mem_request_compare_mode,COMPARE_MODE_DISABLE'"
+DISABLE_COMPARE_SDP_N_PRI_MEM_SB_ARG = " -rtlarg '+uvm_set_config_string=uvm_test_top,sdp_n_pri_mem_request_compare_mode,COMPARE_MODE_DISABLE'"
+DISABLE_COMPARE_SDP_E_PRI_MEM_SB_ARG = " -rtlarg '+uvm_set_config_string=uvm_test_top,sdp_e_pri_mem_request_compare_mode,COMPARE_MODE_DISABLE'"
+DISABLE_COMPARE_SDP_B_PRI_MEM_SB_ARG = " -rtlarg '+uvm_set_config_string=uvm_test_top,sdp_b_pri_mem_request_compare_mode,COMPARE_MODE_DISABLE'"
+DISABLE_COMPARE_SDP_PRI_MEM_SB_ARG   += " -rtlarg '+uvm_set_config_string=uvm_test_top,sdp_pri_mem_response_compare_mode,COMPARE_MODE_DISABLE'"
+DISABLE_COMPARE_SDP_N_PRI_MEM_SB_ARG += " -rtlarg '+uvm_set_config_string=uvm_test_top,sdp_n_pri_mem_response_compare_mode,COMPARE_MODE_DISABLE'"
+DISABLE_COMPARE_SDP_E_PRI_MEM_SB_ARG += " -rtlarg '+uvm_set_config_string=uvm_test_top,sdp_e_pri_mem_response_compare_mode,COMPARE_MODE_DISABLE'"
+DISABLE_COMPARE_SDP_B_PRI_MEM_SB_ARG += " -rtlarg '+uvm_set_config_string=uvm_test_top,sdp_b_pri_mem_response_compare_mode,COMPARE_MODE_DISABLE'"
+DISABLE_COMPARE_SDP_SEC_MEM_SB_ARG   = " -rtlarg '+uvm_set_config_string=uvm_test_top,sdp_sec_mem_request_compare_mode,COMPARE_MODE_DISABLE'"
+DISABLE_COMPARE_SDP_N_SEC_MEM_SB_ARG = " -rtlarg '+uvm_set_config_string=uvm_test_top,sdp_n_sec_mem_request_compare_mode,COMPARE_MODE_DISABLE'"
+DISABLE_COMPARE_SDP_E_SEC_MEM_SB_ARG = " -rtlarg '+uvm_set_config_string=uvm_test_top,sdp_e_sec_mem_request_compare_mode,COMPARE_MODE_DISABLE'"
+DISABLE_COMPARE_SDP_B_SEC_MEM_SB_ARG = " -rtlarg '+uvm_set_config_string=uvm_test_top,sdp_b_sec_mem_request_compare_mode,COMPARE_MODE_DISABLE'"
+DISABLE_COMPARE_SDP_SEC_MEM_SB_ARG   += " -rtlarg '+uvm_set_config_string=uvm_test_top,sdp_sec_mem_response_compare_mode,COMPARE_MODE_DISABLE'"
+DISABLE_COMPARE_SDP_N_SEC_MEM_SB_ARG += " -rtlarg '+uvm_set_config_string=uvm_test_top,sdp_n_sec_mem_response_compare_mode,COMPARE_MODE_DISABLE'"
+DISABLE_COMPARE_SDP_E_SEC_MEM_SB_ARG += " -rtlarg '+uvm_set_config_string=uvm_test_top,sdp_e_sec_mem_response_compare_mode,COMPARE_MODE_DISABLE'"
+DISABLE_COMPARE_SDP_B_SEC_MEM_SB_ARG += " -rtlarg '+uvm_set_config_string=uvm_test_top,sdp_b_sec_mem_response_compare_mode,COMPARE_MODE_DISABLE'"
 
 DISABLE_COMPARE_SDP_SB_ARG = ( DISABLE_COMPARE_SDP2PDP_SB_ARG
                              + DISABLE_COMPARE_SDP_PRI_MEM_SB_ARG
-                             + DISABLE_COMPARE_SDP_SEC_MEM_SB_ARG
                              + DISABLE_COMPARE_SDP_N_PRI_MEM_SB_ARG
                              + DISABLE_COMPARE_SDP_E_PRI_MEM_SB_ARG
                              + DISABLE_COMPARE_SDP_B_PRI_MEM_SB_ARG
+                             + DISABLE_COMPARE_SDP_SEC_MEM_SB_ARG
+                             + DISABLE_COMPARE_SDP_N_SEC_MEM_SB_ARG
+                             + DISABLE_COMPARE_SDP_E_SEC_MEM_SB_ARG
+                             + DISABLE_COMPARE_SDP_B_SEC_MEM_SB_ARG
                              )
 
 # =============================================================================
