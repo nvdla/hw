@@ -8,6 +8,23 @@
 // @description
 //-------------------------------------------------------------------------------------
 
+//:| global project
+//:| import project
+//:| global dma_list
+//:| dma_list = ["cdma_wt", "cdma_dat", "sdp"]
+//:| if "NVDLA_SDP_BS_ENABLE" in project.PROJVAR: dma_list.append("sdp_b")
+//:| if "NVDLA_SDP_BN_ENABLE" in project.PROJVAR: dma_list.append("sdp_n")
+//:| if "NVDLA_SDP_EW_ENABLE" in project.PROJVAR: dma_list.append("sdp_e")
+//:| if "NVDLA_PDP_ENABLE"    in project.PROJVAR: dma_list.append("pdp")
+//:| if "NVDLA_CDP_ENABLE"    in project.PROJVAR: dma_list.append("cdp")
+//:| if "NVDLA_BDMA_ENABLE"   in project.PROJVAR: dma_list.append("bdma")
+//:| if "NVDLA_RUBIK_ENABLE"  in project.PROJVAR: dma_list.append("rbk")
+//:| global mem_intf_list
+//:| mem_intf_list = ["pri_mem"]
+//:| if "NVDLA_SECONDARY_MEMIF_ENABLE" in project.PROJVAR:
+//:|     mem_intf_list.append("sec_mem")
+//:) epython: generated_beg (DO NOT EDIT BELOW)
+//:) epython: generated_end (DO NOT EDIT ABOVE)
 class nvdla_tb_base_test extends uvm_test;
 
     string                  tID;
@@ -23,6 +40,10 @@ class nvdla_tb_base_test extends uvm_test;
     string      sec_memif_random_enable = "DISABLE";
     string      work_mode = "CROSS_CHECK";
 
+    //:| memory_interface_list = mem_intf_list
+    //:| for inst in memory_interface_list:
+    //:|     print('    string %s_request_compare_mode = "COMPARE_MODE_LOOSE_COMPARE";' % inst)
+    //:|     print('    string %s_response_compare_mode = "COMPARE_MODE_LOOSE_COMPARE";' % inst)
     //:| internal_instance_list = [
     //:|                          'csc_dat_a' ,
     //:|                          'csc_dat_b' ,
@@ -35,14 +56,41 @@ class nvdla_tb_base_test extends uvm_test;
     //:|                          ]
     //:| for inst in internal_instance_list:
     //:|     print('    string %s_compare_mode = "COMPARE_MODE_LOOSE_COMPARE";' % inst)
+    //:) epython: generated_beg (DO NOT EDIT BELOW)
+    string pri_mem_request_compare_mode = "COMPARE_MODE_LOOSE_COMPARE";
+    string pri_mem_response_compare_mode = "COMPARE_MODE_LOOSE_COMPARE";
+    string csc_dat_a_compare_mode = "COMPARE_MODE_LOOSE_COMPARE";
+    string csc_dat_b_compare_mode = "COMPARE_MODE_LOOSE_COMPARE";
+    string csc_wt_a_compare_mode = "COMPARE_MODE_LOOSE_COMPARE";
+    string csc_wt_b_compare_mode = "COMPARE_MODE_LOOSE_COMPARE";
+    string cmac_a_compare_mode = "COMPARE_MODE_LOOSE_COMPARE";
+    string cmac_b_compare_mode = "COMPARE_MODE_LOOSE_COMPARE";
+    string cacc_compare_mode = "COMPARE_MODE_LOOSE_COMPARE";
+    string sdp_compare_mode = "COMPARE_MODE_LOOSE_COMPARE";
+    //:) epython: generated_end (DO NOT EDIT ABOVE)
     //:|
-    //:| dma_list       = ['bdma', 'sdp', 'pdp', 'cdp', 'rbk', 'sdp_b', 'sdp_n', 'sdp_e', 'cdma_dat', 'cdma_wt']
-    //:| mem_if_list    = ['pri_mem', 'sec_mem']
+    //:| mem_if_list    = mem_intf_list
     //:| kind_list      = ['request', 'response']
     //:| for dma in dma_list:
     //:|     for mem_if in mem_if_list:
     //:|         for kind in kind_list:
     //:|             print('    string %(dma)s_%(mem_if)s_%(kind)s_compare_mode = "COMPARE_MODE_LOOSE_COMPARE";' % {'dma':dma, 'mem_if':mem_if, 'kind':kind})
+    //:) epython: generated_beg (DO NOT EDIT BELOW)
+    string cdma_wt_pri_mem_request_compare_mode = "COMPARE_MODE_LOOSE_COMPARE";
+    string cdma_wt_pri_mem_response_compare_mode = "COMPARE_MODE_LOOSE_COMPARE";
+    string cdma_dat_pri_mem_request_compare_mode = "COMPARE_MODE_LOOSE_COMPARE";
+    string cdma_dat_pri_mem_response_compare_mode = "COMPARE_MODE_LOOSE_COMPARE";
+    string sdp_pri_mem_request_compare_mode = "COMPARE_MODE_LOOSE_COMPARE";
+    string sdp_pri_mem_response_compare_mode = "COMPARE_MODE_LOOSE_COMPARE";
+    string sdp_b_pri_mem_request_compare_mode = "COMPARE_MODE_LOOSE_COMPARE";
+    string sdp_b_pri_mem_response_compare_mode = "COMPARE_MODE_LOOSE_COMPARE";
+    string sdp_n_pri_mem_request_compare_mode = "COMPARE_MODE_LOOSE_COMPARE";
+    string sdp_n_pri_mem_response_compare_mode = "COMPARE_MODE_LOOSE_COMPARE";
+    string pdp_pri_mem_request_compare_mode = "COMPARE_MODE_LOOSE_COMPARE";
+    string pdp_pri_mem_response_compare_mode = "COMPARE_MODE_LOOSE_COMPARE";
+    string cdp_pri_mem_request_compare_mode = "COMPARE_MODE_LOOSE_COMPARE";
+    string cdp_pri_mem_response_compare_mode = "COMPARE_MODE_LOOSE_COMPARE";
+    //:) epython: generated_end (DO NOT EDIT ABOVE)
 
     //----------------------------------------------------------CONFIGURATION PARAMETERS
     // NVDLA_TB_BASE_TEST Configuration Parameters. These parameters can be controlled
@@ -53,6 +101,10 @@ class nvdla_tb_base_test extends uvm_test;
 
     `uvm_component_utils_begin(nvdla_tb_base_test)
         `uvm_field_string(work_mode, UVM_ALL_ON)
+        //:| memory_interface_list = mem_intf_list
+        //:| for inst in memory_interface_list:
+        //:|     print("        `uvm_field_string(%s_request_compare_mode, UVM_ALL_ON)" % inst)
+        //:|     print("        `uvm_field_string(%s_response_compare_mode, UVM_ALL_ON)" % inst)
         //:| internal_instance_list = [
         //:|                          'csc_dat_a' ,
         //:|                          'csc_dat_b' ,
@@ -65,14 +117,41 @@ class nvdla_tb_base_test extends uvm_test;
         //:|                          ]
         //:| for inst in internal_instance_list:
         //:|     print("        `uvm_field_string(%s_compare_mode, UVM_ALL_ON)" % inst)
+        //:) epython: generated_beg (DO NOT EDIT BELOW)
+        `uvm_field_string(pri_mem_request_compare_mode, UVM_ALL_ON)
+        `uvm_field_string(pri_mem_response_compare_mode, UVM_ALL_ON)
+        `uvm_field_string(csc_dat_a_compare_mode, UVM_ALL_ON)
+        `uvm_field_string(csc_dat_b_compare_mode, UVM_ALL_ON)
+        `uvm_field_string(csc_wt_a_compare_mode, UVM_ALL_ON)
+        `uvm_field_string(csc_wt_b_compare_mode, UVM_ALL_ON)
+        `uvm_field_string(cmac_a_compare_mode, UVM_ALL_ON)
+        `uvm_field_string(cmac_b_compare_mode, UVM_ALL_ON)
+        `uvm_field_string(cacc_compare_mode, UVM_ALL_ON)
+        `uvm_field_string(sdp_compare_mode, UVM_ALL_ON)
+        //:) epython: generated_end (DO NOT EDIT ABOVE)
         //:|
-        //:| dma_list       = ['bdma', 'sdp', 'pdp', 'cdp', 'rbk', 'sdp_b', 'sdp_n', 'sdp_e', 'cdma_dat', 'cdma_wt']
-        //:| mem_if_list    = ['pri_mem', 'sec_mem']
+        //:| mem_if_list    = mem_intf_list
         //:| kind_list      = ['request', 'response']
         //:| for dma in dma_list:
         //:|     for mem_if in mem_if_list:
         //:|         for kind in kind_list:
         //:|             print("        `uvm_field_string(%(dma)s_%(mem_if)s_%(kind)s_compare_mode, UVM_ALL_ON)" % {'dma':dma, 'mem_if':mem_if, 'kind':kind})
+        //:) epython: generated_beg (DO NOT EDIT BELOW)
+        `uvm_field_string(cdma_wt_pri_mem_request_compare_mode, UVM_ALL_ON)
+        `uvm_field_string(cdma_wt_pri_mem_response_compare_mode, UVM_ALL_ON)
+        `uvm_field_string(cdma_dat_pri_mem_request_compare_mode, UVM_ALL_ON)
+        `uvm_field_string(cdma_dat_pri_mem_response_compare_mode, UVM_ALL_ON)
+        `uvm_field_string(sdp_pri_mem_request_compare_mode, UVM_ALL_ON)
+        `uvm_field_string(sdp_pri_mem_response_compare_mode, UVM_ALL_ON)
+        `uvm_field_string(sdp_b_pri_mem_request_compare_mode, UVM_ALL_ON)
+        `uvm_field_string(sdp_b_pri_mem_response_compare_mode, UVM_ALL_ON)
+        `uvm_field_string(sdp_n_pri_mem_request_compare_mode, UVM_ALL_ON)
+        `uvm_field_string(sdp_n_pri_mem_response_compare_mode, UVM_ALL_ON)
+        `uvm_field_string(pdp_pri_mem_request_compare_mode, UVM_ALL_ON)
+        `uvm_field_string(pdp_pri_mem_response_compare_mode, UVM_ALL_ON)
+        `uvm_field_string(cdp_pri_mem_request_compare_mode, UVM_ALL_ON)
+        `uvm_field_string(cdp_pri_mem_response_compare_mode, UVM_ALL_ON)
+        //:) epython: generated_end (DO NOT EDIT ABOVE)
     `uvm_component_utils_end
 
     extern function new(string name = "nvdla_tb_base_test", uvm_component parent = null);
@@ -139,6 +218,56 @@ function void nvdla_tb_base_test::build_phase(uvm_phase phase);
         `uvm_info(tID, $sformatf("Setting WORK_MODE:%0s", work_mode), UVM_MEDIUM)
     end
 
+    // Setup tb_env
+    //:| memory_interface_list = mem_intf_list
+    //:| for inst in memory_interface_list:
+    //:|     print('    uvm_config_db#(string)::set(this, "*", "%(inst)s_request_compare_mode",  %(inst)s_request_compare_mode);'  % {'inst':inst})
+    //:|     print('    uvm_config_db#(string)::set(this, "*", "%(inst)s_response_compare_mode", %(inst)s_response_compare_mode);' % {'inst':inst})
+    //:| internal_instance_list = [
+    //:|                          'csc_dat_a' ,
+    //:|                          'csc_dat_b' ,
+    //:|                          'csc_wt_a'  ,
+    //:|                          'csc_wt_b'  ,
+    //:|                          'cmac_a'    ,
+    //:|                          'cmac_b'    ,
+    //:|                          'cacc'      ,
+    //:|                          'sdp'       ,
+    //:|                          ]
+    //:| for inst in internal_instance_list:
+    //:|     print('    uvm_config_db#(string)::set(this, "*", "%(inst)s_compare_mode", %(inst)s_compare_mode);' % {'inst':inst})
+    //:| mem_if_list    = mem_intf_list
+    //:| kind_list      = ['request', 'response']
+    //:| for dma in dma_list:
+    //:|     for mem_if in mem_if_list:
+    //:|         for kind in kind_list:
+    //:|             print('    uvm_config_db#(string)::set(this, "*", "%(dma)s_%(mem_if)s_%(kind)s_compare_mode", %(dma)s_%(mem_if)s_%(kind)s_compare_mode);' % {'dma':dma, 'mem_if':mem_if, 'kind':kind})
+    //:) epython: generated_beg (DO NOT EDIT BELOW)
+    uvm_config_db#(string)::set(this, "*", "pri_mem_request_compare_mode",  pri_mem_request_compare_mode);
+    uvm_config_db#(string)::set(this, "*", "pri_mem_response_compare_mode", pri_mem_response_compare_mode);
+    uvm_config_db#(string)::set(this, "*", "csc_dat_a_compare_mode", csc_dat_a_compare_mode);
+    uvm_config_db#(string)::set(this, "*", "csc_dat_b_compare_mode", csc_dat_b_compare_mode);
+    uvm_config_db#(string)::set(this, "*", "csc_wt_a_compare_mode", csc_wt_a_compare_mode);
+    uvm_config_db#(string)::set(this, "*", "csc_wt_b_compare_mode", csc_wt_b_compare_mode);
+    uvm_config_db#(string)::set(this, "*", "cmac_a_compare_mode", cmac_a_compare_mode);
+    uvm_config_db#(string)::set(this, "*", "cmac_b_compare_mode", cmac_b_compare_mode);
+    uvm_config_db#(string)::set(this, "*", "cacc_compare_mode", cacc_compare_mode);
+    uvm_config_db#(string)::set(this, "*", "sdp_compare_mode", sdp_compare_mode);
+    uvm_config_db#(string)::set(this, "*", "cdma_wt_pri_mem_request_compare_mode", cdma_wt_pri_mem_request_compare_mode);
+    uvm_config_db#(string)::set(this, "*", "cdma_wt_pri_mem_response_compare_mode", cdma_wt_pri_mem_response_compare_mode);
+    uvm_config_db#(string)::set(this, "*", "cdma_dat_pri_mem_request_compare_mode", cdma_dat_pri_mem_request_compare_mode);
+    uvm_config_db#(string)::set(this, "*", "cdma_dat_pri_mem_response_compare_mode", cdma_dat_pri_mem_response_compare_mode);
+    uvm_config_db#(string)::set(this, "*", "sdp_pri_mem_request_compare_mode", sdp_pri_mem_request_compare_mode);
+    uvm_config_db#(string)::set(this, "*", "sdp_pri_mem_response_compare_mode", sdp_pri_mem_response_compare_mode);
+    uvm_config_db#(string)::set(this, "*", "sdp_b_pri_mem_request_compare_mode", sdp_b_pri_mem_request_compare_mode);
+    uvm_config_db#(string)::set(this, "*", "sdp_b_pri_mem_response_compare_mode", sdp_b_pri_mem_response_compare_mode);
+    uvm_config_db#(string)::set(this, "*", "sdp_n_pri_mem_request_compare_mode", sdp_n_pri_mem_request_compare_mode);
+    uvm_config_db#(string)::set(this, "*", "sdp_n_pri_mem_response_compare_mode", sdp_n_pri_mem_response_compare_mode);
+    uvm_config_db#(string)::set(this, "*", "pdp_pri_mem_request_compare_mode", pdp_pri_mem_request_compare_mode);
+    uvm_config_db#(string)::set(this, "*", "pdp_pri_mem_response_compare_mode", pdp_pri_mem_response_compare_mode);
+    uvm_config_db#(string)::set(this, "*", "cdp_pri_mem_request_compare_mode", cdp_pri_mem_request_compare_mode);
+    uvm_config_db#(string)::set(this, "*", "cdp_pri_mem_response_compare_mode", cdp_pri_mem_response_compare_mode);
+    //:) epython: generated_end (DO NOT EDIT ABOVE)
+
     // map = scb_name:monitor_name
     //
     //:| scb_map = {
@@ -173,6 +302,140 @@ function void nvdla_tb_base_test::build_phase(uvm_phase phase);
     //:|     endcase
     //:| ''' % {'scb':k, 'monitor':v}
     //:|     print(msg)
+    //:) epython: generated_beg (DO NOT EDIT BELOW)
+
+    case(csc_dat_a_compare_mode)
+        "COMPARE_MODE_DISABLE": begin
+             uvm_config_int::set(this, "*.rm_nvdla_conv_core_socket_convertor_inst", "sc2mac_dat_a_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_NOT_SAMPLING);
+         end
+        "COMPARE_MODE_RTL_AHEAD": begin
+             uvm_config_int::set(this, "*.rm_nvdla_conv_core_socket_convertor_inst", "sc2mac_dat_a_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_RTL_AHEAD);
+         end
+        "COMPARE_MODE_RTL_GATING_CMOD": begin
+             uvm_config_int::set(this, "*.rm_nvdla_conv_core_socket_convertor_inst", "sc2mac_dat_a_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_RTL_GATING_CMOD);
+         end
+        "COMPARE_MODE_LOOSE_COMPARE": begin
+             uvm_config_int::set(this, "*.rm_nvdla_conv_core_socket_convertor_inst", "sc2mac_dat_a_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_PASSTHROUGH);
+         end
+        "COMPARE_MODE_COUNT_TXN_ONLY": begin
+             uvm_config_int::set(this, "*.rm_nvdla_conv_core_socket_convertor_inst", "sc2mac_dat_a_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_PASSTHROUGH);
+         end
+         default: begin
+             `uvm_error(tID, {"Unsupported scoreboard working mode: ", csc_dat_a_compare_mode})
+         end
+    endcase
+
+
+    case(csc_dat_b_compare_mode)
+        "COMPARE_MODE_DISABLE": begin
+             uvm_config_int::set(this, "*.rm_nvdla_conv_core_socket_convertor_inst", "sc2mac_dat_b_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_NOT_SAMPLING);
+         end
+        "COMPARE_MODE_RTL_AHEAD": begin
+             uvm_config_int::set(this, "*.rm_nvdla_conv_core_socket_convertor_inst", "sc2mac_dat_b_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_RTL_AHEAD);
+         end
+        "COMPARE_MODE_RTL_GATING_CMOD": begin
+             uvm_config_int::set(this, "*.rm_nvdla_conv_core_socket_convertor_inst", "sc2mac_dat_b_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_RTL_GATING_CMOD);
+         end
+        "COMPARE_MODE_LOOSE_COMPARE": begin
+             uvm_config_int::set(this, "*.rm_nvdla_conv_core_socket_convertor_inst", "sc2mac_dat_b_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_PASSTHROUGH);
+         end
+        "COMPARE_MODE_COUNT_TXN_ONLY": begin
+             uvm_config_int::set(this, "*.rm_nvdla_conv_core_socket_convertor_inst", "sc2mac_dat_b_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_PASSTHROUGH);
+         end
+         default: begin
+             `uvm_error(tID, {"Unsupported scoreboard working mode: ", csc_dat_b_compare_mode})
+         end
+    endcase
+
+
+    case(csc_wt_a_compare_mode)
+        "COMPARE_MODE_DISABLE": begin
+             uvm_config_int::set(this, "*.rm_nvdla_conv_core_socket_convertor_inst", "sc2mac_wt_a_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_NOT_SAMPLING);
+         end
+        "COMPARE_MODE_RTL_AHEAD": begin
+             uvm_config_int::set(this, "*.rm_nvdla_conv_core_socket_convertor_inst", "sc2mac_wt_a_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_RTL_AHEAD);
+         end
+        "COMPARE_MODE_RTL_GATING_CMOD": begin
+             uvm_config_int::set(this, "*.rm_nvdla_conv_core_socket_convertor_inst", "sc2mac_wt_a_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_RTL_GATING_CMOD);
+         end
+        "COMPARE_MODE_LOOSE_COMPARE": begin
+             uvm_config_int::set(this, "*.rm_nvdla_conv_core_socket_convertor_inst", "sc2mac_wt_a_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_PASSTHROUGH);
+         end
+        "COMPARE_MODE_COUNT_TXN_ONLY": begin
+             uvm_config_int::set(this, "*.rm_nvdla_conv_core_socket_convertor_inst", "sc2mac_wt_a_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_PASSTHROUGH);
+         end
+         default: begin
+             `uvm_error(tID, {"Unsupported scoreboard working mode: ", csc_wt_a_compare_mode})
+         end
+    endcase
+
+
+    case(csc_wt_b_compare_mode)
+        "COMPARE_MODE_DISABLE": begin
+             uvm_config_int::set(this, "*.rm_nvdla_conv_core_socket_convertor_inst", "sc2mac_wt_b_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_NOT_SAMPLING);
+         end
+        "COMPARE_MODE_RTL_AHEAD": begin
+             uvm_config_int::set(this, "*.rm_nvdla_conv_core_socket_convertor_inst", "sc2mac_wt_b_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_RTL_AHEAD);
+         end
+        "COMPARE_MODE_RTL_GATING_CMOD": begin
+             uvm_config_int::set(this, "*.rm_nvdla_conv_core_socket_convertor_inst", "sc2mac_wt_b_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_RTL_GATING_CMOD);
+         end
+        "COMPARE_MODE_LOOSE_COMPARE": begin
+             uvm_config_int::set(this, "*.rm_nvdla_conv_core_socket_convertor_inst", "sc2mac_wt_b_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_PASSTHROUGH);
+         end
+        "COMPARE_MODE_COUNT_TXN_ONLY": begin
+             uvm_config_int::set(this, "*.rm_nvdla_conv_core_socket_convertor_inst", "sc2mac_wt_b_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_PASSTHROUGH);
+         end
+         default: begin
+             `uvm_error(tID, {"Unsupported scoreboard working mode: ", csc_wt_b_compare_mode})
+         end
+    endcase
+
+
+    case(cmac_a_compare_mode)
+        "COMPARE_MODE_DISABLE": begin
+             uvm_config_int::set(this, "*.rm_nvdla_conv_core_socket_convertor_inst", "mac_a2accu_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_NOT_SAMPLING);
+         end
+        "COMPARE_MODE_RTL_AHEAD": begin
+             uvm_config_int::set(this, "*.rm_nvdla_conv_core_socket_convertor_inst", "mac_a2accu_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_RTL_AHEAD);
+         end
+        "COMPARE_MODE_RTL_GATING_CMOD": begin
+             uvm_config_int::set(this, "*.rm_nvdla_conv_core_socket_convertor_inst", "mac_a2accu_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_RTL_GATING_CMOD);
+         end
+        "COMPARE_MODE_LOOSE_COMPARE": begin
+             uvm_config_int::set(this, "*.rm_nvdla_conv_core_socket_convertor_inst", "mac_a2accu_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_PASSTHROUGH);
+         end
+        "COMPARE_MODE_COUNT_TXN_ONLY": begin
+             uvm_config_int::set(this, "*.rm_nvdla_conv_core_socket_convertor_inst", "mac_a2accu_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_PASSTHROUGH);
+         end
+         default: begin
+             `uvm_error(tID, {"Unsupported scoreboard working mode: ", cmac_a_compare_mode})
+         end
+    endcase
+
+
+    case(cmac_b_compare_mode)
+        "COMPARE_MODE_DISABLE": begin
+             uvm_config_int::set(this, "*.rm_nvdla_conv_core_socket_convertor_inst", "mac_b2accu_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_NOT_SAMPLING);
+         end
+        "COMPARE_MODE_RTL_AHEAD": begin
+             uvm_config_int::set(this, "*.rm_nvdla_conv_core_socket_convertor_inst", "mac_b2accu_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_RTL_AHEAD);
+         end
+        "COMPARE_MODE_RTL_GATING_CMOD": begin
+             uvm_config_int::set(this, "*.rm_nvdla_conv_core_socket_convertor_inst", "mac_b2accu_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_RTL_GATING_CMOD);
+         end
+        "COMPARE_MODE_LOOSE_COMPARE": begin
+             uvm_config_int::set(this, "*.rm_nvdla_conv_core_socket_convertor_inst", "mac_b2accu_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_PASSTHROUGH);
+         end
+        "COMPARE_MODE_COUNT_TXN_ONLY": begin
+             uvm_config_int::set(this, "*.rm_nvdla_conv_core_socket_convertor_inst", "mac_b2accu_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_PASSTHROUGH);
+         end
+         default: begin
+             `uvm_error(tID, {"Unsupported scoreboard working mode: ", cmac_b_compare_mode})
+         end
+    endcase
+
+    //:) epython: generated_end (DO NOT EDIT ABOVE)
 
 
     // map = scb_name:monitor_name
@@ -205,12 +468,69 @@ function void nvdla_tb_base_test::build_phase(uvm_phase phase);
     //:|     endcase
     //:| ''' % {'scb':k, 'monitor':v}
     //:|     print(msg)
+    //:) epython: generated_beg (DO NOT EDIT BELOW)
+
+    case(cacc_compare_mode)
+        "COMPARE_MODE_DISABLE": begin
+             uvm_config_int::set(this, "*.rm_nvdla_post_processing_socket_convertor_inst", "cacc2sdp_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_NOT_SAMPLING);
+         end
+        "COMPARE_MODE_RTL_AHEAD": begin
+             uvm_config_int::set(this, "*.rm_nvdla_post_processing_socket_convertor_inst", "cacc2sdp_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_RTL_AHEAD);
+         end
+        "COMPARE_MODE_RTL_GATING_CMOD": begin
+             uvm_config_int::set(this, "*.rm_nvdla_post_processing_socket_convertor_inst", "cacc2sdp_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_RTL_GATING_CMOD);
+         end
+        "COMPARE_MODE_LOOSE_COMPARE": begin
+             uvm_config_int::set(this, "*.rm_nvdla_post_processing_socket_convertor_inst", "cacc2sdp_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_PASSTHROUGH);
+         end
+        "COMPARE_MODE_COUNT_TXN_ONLY": begin
+             uvm_config_int::set(this, "*.rm_nvdla_post_processing_socket_convertor_inst", "cacc2sdp_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_PASSTHROUGH);
+         end
+         default: begin
+             `uvm_error(tID, {"Unsupported scoreboard working mode: ", cacc_compare_mode})
+         end
+    endcase
+
+
+    case(sdp_compare_mode)
+        "COMPARE_MODE_DISABLE": begin
+             uvm_config_int::set(this, "*.rm_nvdla_post_processing_socket_convertor_inst", "sdp2pdp_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_NOT_SAMPLING);
+         end
+        "COMPARE_MODE_RTL_AHEAD": begin
+             uvm_config_int::set(this, "*.rm_nvdla_post_processing_socket_convertor_inst", "sdp2pdp_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_RTL_AHEAD);
+         end
+        "COMPARE_MODE_RTL_GATING_CMOD": begin
+             uvm_config_int::set(this, "*.rm_nvdla_post_processing_socket_convertor_inst", "sdp2pdp_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_RTL_GATING_CMOD);
+         end
+        "COMPARE_MODE_LOOSE_COMPARE": begin
+             uvm_config_int::set(this, "*.rm_nvdla_post_processing_socket_convertor_inst", "sdp2pdp_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_PASSTHROUGH);
+         end
+        "COMPARE_MODE_COUNT_TXN_ONLY": begin
+             uvm_config_int::set(this, "*.rm_nvdla_post_processing_socket_convertor_inst", "sdp2pdp_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_PASSTHROUGH);
+         end
+         default: begin
+             `uvm_error(tID, {"Unsupported scoreboard working mode: ", sdp_compare_mode})
+         end
+    endcase
+
+    //:) epython: generated_end (DO NOT EDIT ABOVE)
 
     // DMA convertor, general
     //
-    //:| read_dma_list  = ['bdma', 'sdp', 'pdp', 'cdp', 'rbk', 'sdp_b', 'sdp_n', 'sdp_e', 'cdma_dat', 'cdma_wt']
-    //:| write_dma_list = ['bdma', 'sdp', 'pdp', 'cdp', 'rbk']
-    //:| mem_if_list    = ['pri_mem', 'sec_mem']
+    //:| read_dma_list  = ['cdma_dat', 'cdma_wt', 'sdp']
+    //:| write_dma_list = ['sdp']
+    //:| if "NVDLA_SDP_BS_ENABLE" in project.PROJVAR: read_dma_list.append("sdp_b")
+    //:| if "NVDLA_SDP_BN_ENABLE" in project.PROJVAR: read_dma_list.append("sdp_n")
+    //:| if "NVDLA_SDP_EW_ENABLE" in project.PROJVAR: read_dma_list.append("sdp_e")
+    //:| if "NVDLA_PDP_ENABLE"    in project.PROJVAR: read_dma_list.append("pdp")
+    //:| if "NVDLA_CDP_ENABLE"    in project.PROJVAR: read_dma_list.append("cdp")
+    //:| if "NVDLA_BDMA_ENABLE"   in project.PROJVAR: read_dma_list.append("bdma")
+    //:| if "NVDLA_RUBIK_ENABLE"  in project.PROJVAR: write_dma_list.append("rbk")
+    //:| if "NVDLA_PDP_ENABLE"    in project.PROJVAR: write_dma_list.append("pdp")
+    //:| if "NVDLA_CDP_ENABLE"    in project.PROJVAR: write_dma_list.append("cdp")
+    //:| if "NVDLA_BDMA_ENABLE"   in project.PROJVAR: write_dma_list.append("bdma")
+    //:| if "NVDLA_RUBIK_ENABLE"  in project.PROJVAR: write_dma_list.append("rbk")
+    //:| mem_if_list    = mem_intf_list
     //:| kind_list      = ['request', 'response']
     //:| for dma in read_dma_list:
     //:|     for mem_if in mem_if_list:
@@ -264,9 +584,544 @@ function void nvdla_tb_base_test::build_phase(uvm_phase phase);
     //:|     endcase
     //:| ''' % {'monitor':dma, 'mem_if':mem_if, 'kind':kind}
     //:|            print(msg)
+    //:) epython: generated_beg (DO NOT EDIT BELOW)
+
+    case(cdma_dat_pri_mem_request_compare_mode)
+        "COMPARE_MODE_DISABLE": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "cdma_dat_read_request_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_NOT_SAMPLING);
+         end
+        "COMPARE_MODE_RTL_AHEAD": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "cdma_dat_read_request_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_RTL_AHEAD);
+         end
+        "COMPARE_MODE_RTL_GATING_CMOD": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "cdma_dat_read_request_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_RTL_GATING_CMOD);
+         end
+        "COMPARE_MODE_LOOSE_COMPARE": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "cdma_dat_read_request_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_PASSTHROUGH);
+         end
+        "COMPARE_MODE_COUNT_TXN_ONLY": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "cdma_dat_read_request_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_PASSTHROUGH);
+         end
+         default: begin
+             `uvm_error(tID, {"Unsupported scoreboard working mode: ", cdma_dat_pri_mem_request_compare_mode})
+         end
+    endcase
+
+
+    case(cdma_dat_pri_mem_response_compare_mode)
+        "COMPARE_MODE_DISABLE": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "cdma_dat_read_response_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_NOT_SAMPLING);
+         end
+        "COMPARE_MODE_RTL_AHEAD": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "cdma_dat_read_response_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_RTL_AHEAD);
+         end
+        "COMPARE_MODE_RTL_GATING_CMOD": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "cdma_dat_read_response_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_RTL_GATING_CMOD);
+         end
+        "COMPARE_MODE_LOOSE_COMPARE": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "cdma_dat_read_response_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_PASSTHROUGH);
+         end
+        "COMPARE_MODE_COUNT_TXN_ONLY": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "cdma_dat_read_response_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_PASSTHROUGH);
+         end
+         default: begin
+             `uvm_error(tID, {"Unsupported scoreboard working mode: ", cdma_dat_pri_mem_response_compare_mode})
+         end
+    endcase
+
+
+    case(cdma_wt_pri_mem_request_compare_mode)
+        "COMPARE_MODE_DISABLE": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "cdma_wt_read_request_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_NOT_SAMPLING);
+         end
+        "COMPARE_MODE_RTL_AHEAD": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "cdma_wt_read_request_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_RTL_AHEAD);
+         end
+        "COMPARE_MODE_RTL_GATING_CMOD": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "cdma_wt_read_request_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_RTL_GATING_CMOD);
+         end
+        "COMPARE_MODE_LOOSE_COMPARE": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "cdma_wt_read_request_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_PASSTHROUGH);
+         end
+        "COMPARE_MODE_COUNT_TXN_ONLY": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "cdma_wt_read_request_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_PASSTHROUGH);
+         end
+         default: begin
+             `uvm_error(tID, {"Unsupported scoreboard working mode: ", cdma_wt_pri_mem_request_compare_mode})
+         end
+    endcase
+
+
+    case(cdma_wt_pri_mem_response_compare_mode)
+        "COMPARE_MODE_DISABLE": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "cdma_wt_read_response_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_NOT_SAMPLING);
+         end
+        "COMPARE_MODE_RTL_AHEAD": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "cdma_wt_read_response_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_RTL_AHEAD);
+         end
+        "COMPARE_MODE_RTL_GATING_CMOD": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "cdma_wt_read_response_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_RTL_GATING_CMOD);
+         end
+        "COMPARE_MODE_LOOSE_COMPARE": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "cdma_wt_read_response_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_PASSTHROUGH);
+         end
+        "COMPARE_MODE_COUNT_TXN_ONLY": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "cdma_wt_read_response_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_PASSTHROUGH);
+         end
+         default: begin
+             `uvm_error(tID, {"Unsupported scoreboard working mode: ", cdma_wt_pri_mem_response_compare_mode})
+         end
+    endcase
+
+
+    case(sdp_pri_mem_request_compare_mode)
+        "COMPARE_MODE_DISABLE": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "sdp_read_request_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_NOT_SAMPLING);
+         end
+        "COMPARE_MODE_RTL_AHEAD": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "sdp_read_request_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_RTL_AHEAD);
+         end
+        "COMPARE_MODE_RTL_GATING_CMOD": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "sdp_read_request_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_RTL_GATING_CMOD);
+         end
+        "COMPARE_MODE_LOOSE_COMPARE": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "sdp_read_request_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_PASSTHROUGH);
+         end
+        "COMPARE_MODE_COUNT_TXN_ONLY": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "sdp_read_request_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_PASSTHROUGH);
+         end
+         default: begin
+             `uvm_error(tID, {"Unsupported scoreboard working mode: ", sdp_pri_mem_request_compare_mode})
+         end
+    endcase
+
+
+    case(sdp_pri_mem_response_compare_mode)
+        "COMPARE_MODE_DISABLE": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "sdp_read_response_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_NOT_SAMPLING);
+         end
+        "COMPARE_MODE_RTL_AHEAD": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "sdp_read_response_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_RTL_AHEAD);
+         end
+        "COMPARE_MODE_RTL_GATING_CMOD": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "sdp_read_response_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_RTL_GATING_CMOD);
+         end
+        "COMPARE_MODE_LOOSE_COMPARE": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "sdp_read_response_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_PASSTHROUGH);
+         end
+        "COMPARE_MODE_COUNT_TXN_ONLY": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "sdp_read_response_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_PASSTHROUGH);
+         end
+         default: begin
+             `uvm_error(tID, {"Unsupported scoreboard working mode: ", sdp_pri_mem_response_compare_mode})
+         end
+    endcase
+
+
+    case(sdp_b_pri_mem_request_compare_mode)
+        "COMPARE_MODE_DISABLE": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "sdp_b_read_request_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_NOT_SAMPLING);
+         end
+        "COMPARE_MODE_RTL_AHEAD": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "sdp_b_read_request_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_RTL_AHEAD);
+         end
+        "COMPARE_MODE_RTL_GATING_CMOD": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "sdp_b_read_request_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_RTL_GATING_CMOD);
+         end
+        "COMPARE_MODE_LOOSE_COMPARE": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "sdp_b_read_request_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_PASSTHROUGH);
+         end
+        "COMPARE_MODE_COUNT_TXN_ONLY": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "sdp_b_read_request_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_PASSTHROUGH);
+         end
+         default: begin
+             `uvm_error(tID, {"Unsupported scoreboard working mode: ", sdp_b_pri_mem_request_compare_mode})
+         end
+    endcase
+
+
+    case(sdp_b_pri_mem_response_compare_mode)
+        "COMPARE_MODE_DISABLE": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "sdp_b_read_response_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_NOT_SAMPLING);
+         end
+        "COMPARE_MODE_RTL_AHEAD": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "sdp_b_read_response_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_RTL_AHEAD);
+         end
+        "COMPARE_MODE_RTL_GATING_CMOD": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "sdp_b_read_response_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_RTL_GATING_CMOD);
+         end
+        "COMPARE_MODE_LOOSE_COMPARE": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "sdp_b_read_response_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_PASSTHROUGH);
+         end
+        "COMPARE_MODE_COUNT_TXN_ONLY": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "sdp_b_read_response_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_PASSTHROUGH);
+         end
+         default: begin
+             `uvm_error(tID, {"Unsupported scoreboard working mode: ", sdp_b_pri_mem_response_compare_mode})
+         end
+    endcase
+
+
+    case(sdp_n_pri_mem_request_compare_mode)
+        "COMPARE_MODE_DISABLE": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "sdp_n_read_request_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_NOT_SAMPLING);
+         end
+        "COMPARE_MODE_RTL_AHEAD": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "sdp_n_read_request_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_RTL_AHEAD);
+         end
+        "COMPARE_MODE_RTL_GATING_CMOD": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "sdp_n_read_request_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_RTL_GATING_CMOD);
+         end
+        "COMPARE_MODE_LOOSE_COMPARE": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "sdp_n_read_request_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_PASSTHROUGH);
+         end
+        "COMPARE_MODE_COUNT_TXN_ONLY": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "sdp_n_read_request_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_PASSTHROUGH);
+         end
+         default: begin
+             `uvm_error(tID, {"Unsupported scoreboard working mode: ", sdp_n_pri_mem_request_compare_mode})
+         end
+    endcase
+
+
+    case(sdp_n_pri_mem_response_compare_mode)
+        "COMPARE_MODE_DISABLE": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "sdp_n_read_response_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_NOT_SAMPLING);
+         end
+        "COMPARE_MODE_RTL_AHEAD": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "sdp_n_read_response_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_RTL_AHEAD);
+         end
+        "COMPARE_MODE_RTL_GATING_CMOD": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "sdp_n_read_response_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_RTL_GATING_CMOD);
+         end
+        "COMPARE_MODE_LOOSE_COMPARE": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "sdp_n_read_response_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_PASSTHROUGH);
+         end
+        "COMPARE_MODE_COUNT_TXN_ONLY": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "sdp_n_read_response_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_PASSTHROUGH);
+         end
+         default: begin
+             `uvm_error(tID, {"Unsupported scoreboard working mode: ", sdp_n_pri_mem_response_compare_mode})
+         end
+    endcase
+
+
+    case(pdp_pri_mem_request_compare_mode)
+        "COMPARE_MODE_DISABLE": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "pdp_read_request_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_NOT_SAMPLING);
+         end
+        "COMPARE_MODE_RTL_AHEAD": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "pdp_read_request_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_RTL_AHEAD);
+         end
+        "COMPARE_MODE_RTL_GATING_CMOD": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "pdp_read_request_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_RTL_GATING_CMOD);
+         end
+        "COMPARE_MODE_LOOSE_COMPARE": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "pdp_read_request_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_PASSTHROUGH);
+         end
+        "COMPARE_MODE_COUNT_TXN_ONLY": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "pdp_read_request_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_PASSTHROUGH);
+         end
+         default: begin
+             `uvm_error(tID, {"Unsupported scoreboard working mode: ", pdp_pri_mem_request_compare_mode})
+         end
+    endcase
+
+
+    case(pdp_pri_mem_response_compare_mode)
+        "COMPARE_MODE_DISABLE": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "pdp_read_response_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_NOT_SAMPLING);
+         end
+        "COMPARE_MODE_RTL_AHEAD": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "pdp_read_response_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_RTL_AHEAD);
+         end
+        "COMPARE_MODE_RTL_GATING_CMOD": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "pdp_read_response_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_RTL_GATING_CMOD);
+         end
+        "COMPARE_MODE_LOOSE_COMPARE": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "pdp_read_response_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_PASSTHROUGH);
+         end
+        "COMPARE_MODE_COUNT_TXN_ONLY": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "pdp_read_response_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_PASSTHROUGH);
+         end
+         default: begin
+             `uvm_error(tID, {"Unsupported scoreboard working mode: ", pdp_pri_mem_response_compare_mode})
+         end
+    endcase
+
+
+    case(cdp_pri_mem_request_compare_mode)
+        "COMPARE_MODE_DISABLE": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "cdp_read_request_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_NOT_SAMPLING);
+         end
+        "COMPARE_MODE_RTL_AHEAD": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "cdp_read_request_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_RTL_AHEAD);
+         end
+        "COMPARE_MODE_RTL_GATING_CMOD": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "cdp_read_request_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_RTL_GATING_CMOD);
+         end
+        "COMPARE_MODE_LOOSE_COMPARE": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "cdp_read_request_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_PASSTHROUGH);
+         end
+        "COMPARE_MODE_COUNT_TXN_ONLY": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "cdp_read_request_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_PASSTHROUGH);
+         end
+         default: begin
+             `uvm_error(tID, {"Unsupported scoreboard working mode: ", cdp_pri_mem_request_compare_mode})
+         end
+    endcase
+
+
+    case(cdp_pri_mem_response_compare_mode)
+        "COMPARE_MODE_DISABLE": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "cdp_read_response_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_NOT_SAMPLING);
+         end
+        "COMPARE_MODE_RTL_AHEAD": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "cdp_read_response_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_RTL_AHEAD);
+         end
+        "COMPARE_MODE_RTL_GATING_CMOD": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "cdp_read_response_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_RTL_GATING_CMOD);
+         end
+        "COMPARE_MODE_LOOSE_COMPARE": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "cdp_read_response_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_PASSTHROUGH);
+         end
+        "COMPARE_MODE_COUNT_TXN_ONLY": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "cdp_read_response_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_PASSTHROUGH);
+         end
+         default: begin
+             `uvm_error(tID, {"Unsupported scoreboard working mode: ", cdp_pri_mem_response_compare_mode})
+         end
+    endcase
+
+
+    case(sdp_pri_mem_request_compare_mode)
+        "COMPARE_MODE_DISABLE": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "sdp_write_request_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_NOT_SAMPLING);
+         end
+        "COMPARE_MODE_RTL_AHEAD": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "sdp_write_request_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_RTL_AHEAD);
+         end
+        "COMPARE_MODE_RTL_GATING_CMOD": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "sdp_write_request_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_RTL_GATING_CMOD);
+         end
+        "COMPARE_MODE_LOOSE_COMPARE": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "sdp_write_request_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_PASSTHROUGH);
+         end
+        "COMPARE_MODE_COUNT_TXN_ONLY": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "sdp_write_request_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_PASSTHROUGH);
+         end
+         default: begin
+             `uvm_error(tID, {"Unsupported scoreboard working mode: ", sdp_pri_mem_request_compare_mode})
+         end
+    endcase
+
+
+    case(sdp_pri_mem_response_compare_mode)
+        "COMPARE_MODE_DISABLE": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "sdp_write_response_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_NOT_SAMPLING);
+         end
+        "COMPARE_MODE_RTL_AHEAD": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "sdp_write_response_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_RTL_AHEAD);
+         end
+        "COMPARE_MODE_RTL_GATING_CMOD": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "sdp_write_response_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_RTL_GATING_CMOD);
+         end
+        "COMPARE_MODE_LOOSE_COMPARE": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "sdp_write_response_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_PASSTHROUGH);
+         end
+        "COMPARE_MODE_COUNT_TXN_ONLY": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "sdp_write_response_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_PASSTHROUGH);
+         end
+         default: begin
+             `uvm_error(tID, {"Unsupported scoreboard working mode: ", sdp_pri_mem_response_compare_mode})
+         end
+    endcase
+
+
+    case(pdp_pri_mem_request_compare_mode)
+        "COMPARE_MODE_DISABLE": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "pdp_write_request_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_NOT_SAMPLING);
+         end
+        "COMPARE_MODE_RTL_AHEAD": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "pdp_write_request_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_RTL_AHEAD);
+         end
+        "COMPARE_MODE_RTL_GATING_CMOD": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "pdp_write_request_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_RTL_GATING_CMOD);
+         end
+        "COMPARE_MODE_LOOSE_COMPARE": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "pdp_write_request_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_PASSTHROUGH);
+         end
+        "COMPARE_MODE_COUNT_TXN_ONLY": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "pdp_write_request_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_PASSTHROUGH);
+         end
+         default: begin
+             `uvm_error(tID, {"Unsupported scoreboard working mode: ", pdp_pri_mem_request_compare_mode})
+         end
+    endcase
+
+
+    case(pdp_pri_mem_response_compare_mode)
+        "COMPARE_MODE_DISABLE": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "pdp_write_response_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_NOT_SAMPLING);
+         end
+        "COMPARE_MODE_RTL_AHEAD": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "pdp_write_response_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_RTL_AHEAD);
+         end
+        "COMPARE_MODE_RTL_GATING_CMOD": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "pdp_write_response_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_RTL_GATING_CMOD);
+         end
+        "COMPARE_MODE_LOOSE_COMPARE": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "pdp_write_response_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_PASSTHROUGH);
+         end
+        "COMPARE_MODE_COUNT_TXN_ONLY": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "pdp_write_response_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_PASSTHROUGH);
+         end
+         default: begin
+             `uvm_error(tID, {"Unsupported scoreboard working mode: ", pdp_pri_mem_response_compare_mode})
+         end
+    endcase
+
+
+    case(cdp_pri_mem_request_compare_mode)
+        "COMPARE_MODE_DISABLE": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "cdp_write_request_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_NOT_SAMPLING);
+         end
+        "COMPARE_MODE_RTL_AHEAD": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "cdp_write_request_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_RTL_AHEAD);
+         end
+        "COMPARE_MODE_RTL_GATING_CMOD": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "cdp_write_request_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_RTL_GATING_CMOD);
+         end
+        "COMPARE_MODE_LOOSE_COMPARE": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "cdp_write_request_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_PASSTHROUGH);
+         end
+        "COMPARE_MODE_COUNT_TXN_ONLY": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "cdp_write_request_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_PASSTHROUGH);
+         end
+         default: begin
+             `uvm_error(tID, {"Unsupported scoreboard working mode: ", cdp_pri_mem_request_compare_mode})
+         end
+    endcase
+
+
+    case(cdp_pri_mem_response_compare_mode)
+        "COMPARE_MODE_DISABLE": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "cdp_write_response_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_NOT_SAMPLING);
+         end
+        "COMPARE_MODE_RTL_AHEAD": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "cdp_write_response_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_RTL_AHEAD);
+         end
+        "COMPARE_MODE_RTL_GATING_CMOD": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "cdp_write_response_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_RTL_GATING_CMOD);
+         end
+        "COMPARE_MODE_LOOSE_COMPARE": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "cdp_write_response_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_PASSTHROUGH);
+         end
+        "COMPARE_MODE_COUNT_TXN_ONLY": begin
+             uvm_config_int::set(this, "*.rm_nvdla_dma_convertor_pri_mem", "cdp_write_response_initial_credit", SCSV_CONVERTOR_INITIAL_CREDIT_WORKING_MODE_PASSTHROUGH);
+         end
+         default: begin
+             `uvm_error(tID, {"Unsupported scoreboard working mode: ", cdp_pri_mem_response_compare_mode})
+         end
+    endcase
+
+    //:) epython: generated_end (DO NOT EDIT ABOVE)
 
     // Parse compare mode, determine scoreboard compare mode
-    // #0, convolution core and sdp convertor
+    // #0, memory interface scoreboard
+    //
+    //:| memory_interface_instance_list = mem_intf_list
+    //:| for inst in memory_interface_instance_list:
+    //:|     scb = inst + '_sb'
+    //:|     msg = '''
+    //:|     case(%(inst)s_response_compare_mode)
+    //:|         "COMPARE_MODE_DISABLE": begin
+    //:|              uvm_config_int::set(this, "*.%(scb)s",      "response_ck_enable",      0);
+    //:|          end
+    //:|         "COMPARE_MODE_RTL_AHEAD": begin
+    //:|              uvm_config_int::set(this, "*.%(scb)s",      "response_compare_mode",      COMPARE_MODE_RTL_AHEAD);
+    //:|          end
+    //:|         "COMPARE_MODE_RTL_GATING_CMOD": begin
+    //:|              uvm_config_int::set(this, "*.%(scb)s",      "response_compare_mode",      COMPARE_MODE_RTL_GATING_CMOD);
+    //:|          end
+    //:|         "COMPARE_MODE_LOOSE_COMPARE": begin
+    //:|              uvm_config_int::set(this, "*.%(scb)s",      "response_compare_mode",      COMPARE_MODE_LOOSE_COMPARE);
+    //:|          end
+    //:|         "COMPARE_MODE_COUNT_TXN_ONLY": begin
+    //:|              uvm_config_int::set(this, "*.%(scb)s",      "response_compare_mode",      COMPARE_MODE_COUNT_TXN_ONLY);
+    //:|         end
+    //:|         default: begin
+    //:|             `uvm_error(tID, {"Unsupported scoreboard working mode: ", %(inst)s_response_compare_mode})
+    //:|         end
+    //:|     endcase
+    //:|     case(%(inst)s_request_compare_mode)
+    //:|         "COMPARE_MODE_DISABLE": begin
+    //:|              uvm_config_int::set(this, "*.%(scb)s",      "request_ck_enable",      0);
+    //:|          end
+    //:|         "COMPARE_MODE_RTL_AHEAD": begin
+    //:|              uvm_config_int::set(this, "*.%(scb)s",      "request_compare_mode",      COMPARE_MODE_RTL_AHEAD);
+    //:|          end
+    //:|         "COMPARE_MODE_RTL_GATING_CMOD": begin
+    //:|              uvm_config_int::set(this, "*.%(scb)s",      "request_compare_mode",      COMPARE_MODE_RTL_GATING_CMOD);
+    //:|          end
+    //:|         "COMPARE_MODE_LOOSE_COMPARE": begin
+    //:|              uvm_config_int::set(this, "*.%(scb)s",      "request_compare_mode",      COMPARE_MODE_LOOSE_COMPARE);
+    //:|          end
+    //:|         "COMPARE_MODE_COUNT_TXN_ONLY": begin
+    //:|              uvm_config_int::set(this, "*.%(scb)s",      "request_compare_mode",      COMPARE_MODE_COUNT_TXN_ONLY);
+    //:|         end
+    //:|         default: begin
+    //:|             `uvm_error(tID, {"Unsupported scoreboard working mode: ", %(inst)s_request_compare_mode})
+    //:|         end
+    //:|     endcase
+    //:| ''' % {'inst':inst, 'scb':scb}
+    //:|     print(msg)
+    //:) epython: generated_beg (DO NOT EDIT BELOW)
+
+    case(pri_mem_response_compare_mode)
+        "COMPARE_MODE_DISABLE": begin
+             uvm_config_int::set(this, "*.pri_mem_sb",      "response_ck_enable",      0);
+         end
+        "COMPARE_MODE_RTL_AHEAD": begin
+             uvm_config_int::set(this, "*.pri_mem_sb",      "response_compare_mode",      COMPARE_MODE_RTL_AHEAD);
+         end
+        "COMPARE_MODE_RTL_GATING_CMOD": begin
+             uvm_config_int::set(this, "*.pri_mem_sb",      "response_compare_mode",      COMPARE_MODE_RTL_GATING_CMOD);
+         end
+        "COMPARE_MODE_LOOSE_COMPARE": begin
+             uvm_config_int::set(this, "*.pri_mem_sb",      "response_compare_mode",      COMPARE_MODE_LOOSE_COMPARE);
+         end
+        "COMPARE_MODE_COUNT_TXN_ONLY": begin
+             uvm_config_int::set(this, "*.pri_mem_sb",      "response_compare_mode",      COMPARE_MODE_COUNT_TXN_ONLY);
+        end
+        default: begin
+            `uvm_error(tID, {"Unsupported scoreboard working mode: ", pri_mem_response_compare_mode})
+        end
+    endcase
+    case(pri_mem_request_compare_mode)
+        "COMPARE_MODE_DISABLE": begin
+             uvm_config_int::set(this, "*.pri_mem_sb",      "request_ck_enable",      0);
+         end
+        "COMPARE_MODE_RTL_AHEAD": begin
+             uvm_config_int::set(this, "*.pri_mem_sb",      "request_compare_mode",      COMPARE_MODE_RTL_AHEAD);
+         end
+        "COMPARE_MODE_RTL_GATING_CMOD": begin
+             uvm_config_int::set(this, "*.pri_mem_sb",      "request_compare_mode",      COMPARE_MODE_RTL_GATING_CMOD);
+         end
+        "COMPARE_MODE_LOOSE_COMPARE": begin
+             uvm_config_int::set(this, "*.pri_mem_sb",      "request_compare_mode",      COMPARE_MODE_LOOSE_COMPARE);
+         end
+        "COMPARE_MODE_COUNT_TXN_ONLY": begin
+             uvm_config_int::set(this, "*.pri_mem_sb",      "request_compare_mode",      COMPARE_MODE_COUNT_TXN_ONLY);
+        end
+        default: begin
+            `uvm_error(tID, {"Unsupported scoreboard working mode: ", pri_mem_request_compare_mode})
+        end
+    endcase
+
+    //:) epython: generated_end (DO NOT EDIT ABOVE)
+
+    // #1, convolution core and sdp convertor
     //
     //:| conv_and_sdp_internal_instance_list = [
     //:|                                       'csc_dat_a' ,
@@ -303,11 +1158,188 @@ function void nvdla_tb_base_test::build_phase(uvm_phase phase);
     //:|     endcase
     //:| ''' % {'inst':inst, 'scb':scb}
     //:|     print(msg)
+    //:) epython: generated_beg (DO NOT EDIT BELOW)
 
-    // #1, DMA convertor
+    case(csc_dat_a_compare_mode)
+        "COMPARE_MODE_DISABLE": begin
+             uvm_config_int::set(this, "*.csc_dat_a_sb",      "response_ck_enable",      0);
+         end
+        "COMPARE_MODE_RTL_AHEAD": begin
+             uvm_config_int::set(this, "*.csc_dat_a_sb",      "response_compare_mode",      COMPARE_MODE_RTL_AHEAD);
+         end
+        "COMPARE_MODE_RTL_GATING_CMOD": begin
+             uvm_config_int::set(this, "*.csc_dat_a_sb",      "response_compare_mode",      COMPARE_MODE_RTL_GATING_CMOD);
+         end
+        "COMPARE_MODE_LOOSE_COMPARE": begin
+             uvm_config_int::set(this, "*.csc_dat_a_sb",      "response_compare_mode",      COMPARE_MODE_LOOSE_COMPARE);
+         end
+        "COMPARE_MODE_COUNT_TXN_ONLY": begin
+             uvm_config_int::set(this, "*.csc_dat_a_sb",      "response_compare_mode",      COMPARE_MODE_COUNT_TXN_ONLY);
+        end
+        default: begin
+            `uvm_error(tID, {"Unsupported scoreboard working mode: ", csc_dat_a_compare_mode})
+        end
+    endcase
+
+
+    case(csc_dat_b_compare_mode)
+        "COMPARE_MODE_DISABLE": begin
+             uvm_config_int::set(this, "*.csc_dat_b_sb",      "response_ck_enable",      0);
+         end
+        "COMPARE_MODE_RTL_AHEAD": begin
+             uvm_config_int::set(this, "*.csc_dat_b_sb",      "response_compare_mode",      COMPARE_MODE_RTL_AHEAD);
+         end
+        "COMPARE_MODE_RTL_GATING_CMOD": begin
+             uvm_config_int::set(this, "*.csc_dat_b_sb",      "response_compare_mode",      COMPARE_MODE_RTL_GATING_CMOD);
+         end
+        "COMPARE_MODE_LOOSE_COMPARE": begin
+             uvm_config_int::set(this, "*.csc_dat_b_sb",      "response_compare_mode",      COMPARE_MODE_LOOSE_COMPARE);
+         end
+        "COMPARE_MODE_COUNT_TXN_ONLY": begin
+             uvm_config_int::set(this, "*.csc_dat_b_sb",      "response_compare_mode",      COMPARE_MODE_COUNT_TXN_ONLY);
+        end
+        default: begin
+            `uvm_error(tID, {"Unsupported scoreboard working mode: ", csc_dat_b_compare_mode})
+        end
+    endcase
+
+
+    case(csc_wt_a_compare_mode)
+        "COMPARE_MODE_DISABLE": begin
+             uvm_config_int::set(this, "*.csc_wt_a_sb",      "response_ck_enable",      0);
+         end
+        "COMPARE_MODE_RTL_AHEAD": begin
+             uvm_config_int::set(this, "*.csc_wt_a_sb",      "response_compare_mode",      COMPARE_MODE_RTL_AHEAD);
+         end
+        "COMPARE_MODE_RTL_GATING_CMOD": begin
+             uvm_config_int::set(this, "*.csc_wt_a_sb",      "response_compare_mode",      COMPARE_MODE_RTL_GATING_CMOD);
+         end
+        "COMPARE_MODE_LOOSE_COMPARE": begin
+             uvm_config_int::set(this, "*.csc_wt_a_sb",      "response_compare_mode",      COMPARE_MODE_LOOSE_COMPARE);
+         end
+        "COMPARE_MODE_COUNT_TXN_ONLY": begin
+             uvm_config_int::set(this, "*.csc_wt_a_sb",      "response_compare_mode",      COMPARE_MODE_COUNT_TXN_ONLY);
+        end
+        default: begin
+            `uvm_error(tID, {"Unsupported scoreboard working mode: ", csc_wt_a_compare_mode})
+        end
+    endcase
+
+
+    case(csc_wt_b_compare_mode)
+        "COMPARE_MODE_DISABLE": begin
+             uvm_config_int::set(this, "*.csc_wt_b_sb",      "response_ck_enable",      0);
+         end
+        "COMPARE_MODE_RTL_AHEAD": begin
+             uvm_config_int::set(this, "*.csc_wt_b_sb",      "response_compare_mode",      COMPARE_MODE_RTL_AHEAD);
+         end
+        "COMPARE_MODE_RTL_GATING_CMOD": begin
+             uvm_config_int::set(this, "*.csc_wt_b_sb",      "response_compare_mode",      COMPARE_MODE_RTL_GATING_CMOD);
+         end
+        "COMPARE_MODE_LOOSE_COMPARE": begin
+             uvm_config_int::set(this, "*.csc_wt_b_sb",      "response_compare_mode",      COMPARE_MODE_LOOSE_COMPARE);
+         end
+        "COMPARE_MODE_COUNT_TXN_ONLY": begin
+             uvm_config_int::set(this, "*.csc_wt_b_sb",      "response_compare_mode",      COMPARE_MODE_COUNT_TXN_ONLY);
+        end
+        default: begin
+            `uvm_error(tID, {"Unsupported scoreboard working mode: ", csc_wt_b_compare_mode})
+        end
+    endcase
+
+
+    case(cmac_a_compare_mode)
+        "COMPARE_MODE_DISABLE": begin
+             uvm_config_int::set(this, "*.cmac_a_sb",      "response_ck_enable",      0);
+         end
+        "COMPARE_MODE_RTL_AHEAD": begin
+             uvm_config_int::set(this, "*.cmac_a_sb",      "response_compare_mode",      COMPARE_MODE_RTL_AHEAD);
+         end
+        "COMPARE_MODE_RTL_GATING_CMOD": begin
+             uvm_config_int::set(this, "*.cmac_a_sb",      "response_compare_mode",      COMPARE_MODE_RTL_GATING_CMOD);
+         end
+        "COMPARE_MODE_LOOSE_COMPARE": begin
+             uvm_config_int::set(this, "*.cmac_a_sb",      "response_compare_mode",      COMPARE_MODE_LOOSE_COMPARE);
+         end
+        "COMPARE_MODE_COUNT_TXN_ONLY": begin
+             uvm_config_int::set(this, "*.cmac_a_sb",      "response_compare_mode",      COMPARE_MODE_COUNT_TXN_ONLY);
+        end
+        default: begin
+            `uvm_error(tID, {"Unsupported scoreboard working mode: ", cmac_a_compare_mode})
+        end
+    endcase
+
+
+    case(cmac_b_compare_mode)
+        "COMPARE_MODE_DISABLE": begin
+             uvm_config_int::set(this, "*.cmac_b_sb",      "response_ck_enable",      0);
+         end
+        "COMPARE_MODE_RTL_AHEAD": begin
+             uvm_config_int::set(this, "*.cmac_b_sb",      "response_compare_mode",      COMPARE_MODE_RTL_AHEAD);
+         end
+        "COMPARE_MODE_RTL_GATING_CMOD": begin
+             uvm_config_int::set(this, "*.cmac_b_sb",      "response_compare_mode",      COMPARE_MODE_RTL_GATING_CMOD);
+         end
+        "COMPARE_MODE_LOOSE_COMPARE": begin
+             uvm_config_int::set(this, "*.cmac_b_sb",      "response_compare_mode",      COMPARE_MODE_LOOSE_COMPARE);
+         end
+        "COMPARE_MODE_COUNT_TXN_ONLY": begin
+             uvm_config_int::set(this, "*.cmac_b_sb",      "response_compare_mode",      COMPARE_MODE_COUNT_TXN_ONLY);
+        end
+        default: begin
+            `uvm_error(tID, {"Unsupported scoreboard working mode: ", cmac_b_compare_mode})
+        end
+    endcase
+
+
+    case(cacc_compare_mode)
+        "COMPARE_MODE_DISABLE": begin
+             uvm_config_int::set(this, "*.cacc_sb",      "response_ck_enable",      0);
+         end
+        "COMPARE_MODE_RTL_AHEAD": begin
+             uvm_config_int::set(this, "*.cacc_sb",      "response_compare_mode",      COMPARE_MODE_RTL_AHEAD);
+         end
+        "COMPARE_MODE_RTL_GATING_CMOD": begin
+             uvm_config_int::set(this, "*.cacc_sb",      "response_compare_mode",      COMPARE_MODE_RTL_GATING_CMOD);
+         end
+        "COMPARE_MODE_LOOSE_COMPARE": begin
+             uvm_config_int::set(this, "*.cacc_sb",      "response_compare_mode",      COMPARE_MODE_LOOSE_COMPARE);
+         end
+        "COMPARE_MODE_COUNT_TXN_ONLY": begin
+             uvm_config_int::set(this, "*.cacc_sb",      "response_compare_mode",      COMPARE_MODE_COUNT_TXN_ONLY);
+        end
+        default: begin
+            `uvm_error(tID, {"Unsupported scoreboard working mode: ", cacc_compare_mode})
+        end
+    endcase
+
+
+    case(sdp_compare_mode)
+        "COMPARE_MODE_DISABLE": begin
+             uvm_config_int::set(this, "*.sdp_sb",      "response_ck_enable",      0);
+         end
+        "COMPARE_MODE_RTL_AHEAD": begin
+             uvm_config_int::set(this, "*.sdp_sb",      "response_compare_mode",      COMPARE_MODE_RTL_AHEAD);
+         end
+        "COMPARE_MODE_RTL_GATING_CMOD": begin
+             uvm_config_int::set(this, "*.sdp_sb",      "response_compare_mode",      COMPARE_MODE_RTL_GATING_CMOD);
+         end
+        "COMPARE_MODE_LOOSE_COMPARE": begin
+             uvm_config_int::set(this, "*.sdp_sb",      "response_compare_mode",      COMPARE_MODE_LOOSE_COMPARE);
+         end
+        "COMPARE_MODE_COUNT_TXN_ONLY": begin
+             uvm_config_int::set(this, "*.sdp_sb",      "response_compare_mode",      COMPARE_MODE_COUNT_TXN_ONLY);
+        end
+        default: begin
+            `uvm_error(tID, {"Unsupported scoreboard working mode: ", sdp_compare_mode})
+        end
+    endcase
+
+    //:) epython: generated_end (DO NOT EDIT ABOVE)
+
+    // #2, DMA convertor
     //
-    //:| dma_list       = ['bdma', 'sdp', 'pdp', 'cdp', 'rbk', 'sdp_b', 'sdp_n', 'sdp_e', 'cdma_dat', 'cdma_wt']
-    //:| mem_if_list    = ['pri_mem', 'sec_mem']
+    //:| mem_if_list    = mem_intf_list
     //:| kind_list      = ['request', 'response']
     //:| for dma in dma_list:
     //:|     for mem_if in mem_if_list:
@@ -335,6 +1367,316 @@ function void nvdla_tb_base_test::build_phase(uvm_phase phase);
     //:|     endcase
     //:| ''' % {'dma':dma, 'mem_if':mem_if, 'kind':kind}
     //:|             print(msg)
+    //:) epython: generated_beg (DO NOT EDIT BELOW)
+
+    case(cdma_wt_pri_mem_request_compare_mode)
+        "COMPARE_MODE_DISABLE": begin
+             uvm_config_int::set(this, "*.cdma_wt_pri_mem_sb",      "request_ck_enable",      0);
+         end
+        "COMPARE_MODE_RTL_AHEAD": begin
+             uvm_config_int::set(this, "*.cdma_wt_pri_mem_sb",         "request_compare_mode",   COMPARE_MODE_RTL_AHEAD);
+         end
+        "COMPARE_MODE_RTL_GATING_CMOD": begin
+             uvm_config_int::set(this, "*.cdma_wt_pri_mem_sb",      "request_compare_mode",      COMPARE_MODE_RTL_GATING_CMOD);
+         end
+        "COMPARE_MODE_LOOSE_COMPARE": begin
+             uvm_config_int::set(this, "*.cdma_wt_pri_mem_sb",      "request_compare_mode",      COMPARE_MODE_LOOSE_COMPARE);
+         end
+        "COMPARE_MODE_COUNT_TXN_ONLY": begin
+             uvm_config_int::set(this, "*.cdma_wt_pri_mem_sb",      "request_compare_mode",      COMPARE_MODE_COUNT_TXN_ONLY);
+        end
+        default: begin
+            `uvm_error(tID, {"Unsupported scoreboard working mode: ", cdma_wt_pri_mem_request_compare_mode})
+        end
+    endcase
+
+
+    case(cdma_wt_pri_mem_response_compare_mode)
+        "COMPARE_MODE_DISABLE": begin
+             uvm_config_int::set(this, "*.cdma_wt_pri_mem_sb",      "response_ck_enable",      0);
+         end
+        "COMPARE_MODE_RTL_AHEAD": begin
+             uvm_config_int::set(this, "*.cdma_wt_pri_mem_sb",         "response_compare_mode",   COMPARE_MODE_RTL_AHEAD);
+         end
+        "COMPARE_MODE_RTL_GATING_CMOD": begin
+             uvm_config_int::set(this, "*.cdma_wt_pri_mem_sb",      "response_compare_mode",      COMPARE_MODE_RTL_GATING_CMOD);
+         end
+        "COMPARE_MODE_LOOSE_COMPARE": begin
+             uvm_config_int::set(this, "*.cdma_wt_pri_mem_sb",      "response_compare_mode",      COMPARE_MODE_LOOSE_COMPARE);
+         end
+        "COMPARE_MODE_COUNT_TXN_ONLY": begin
+             uvm_config_int::set(this, "*.cdma_wt_pri_mem_sb",      "response_compare_mode",      COMPARE_MODE_COUNT_TXN_ONLY);
+        end
+        default: begin
+            `uvm_error(tID, {"Unsupported scoreboard working mode: ", cdma_wt_pri_mem_response_compare_mode})
+        end
+    endcase
+
+
+    case(cdma_dat_pri_mem_request_compare_mode)
+        "COMPARE_MODE_DISABLE": begin
+             uvm_config_int::set(this, "*.cdma_dat_pri_mem_sb",      "request_ck_enable",      0);
+         end
+        "COMPARE_MODE_RTL_AHEAD": begin
+             uvm_config_int::set(this, "*.cdma_dat_pri_mem_sb",         "request_compare_mode",   COMPARE_MODE_RTL_AHEAD);
+         end
+        "COMPARE_MODE_RTL_GATING_CMOD": begin
+             uvm_config_int::set(this, "*.cdma_dat_pri_mem_sb",      "request_compare_mode",      COMPARE_MODE_RTL_GATING_CMOD);
+         end
+        "COMPARE_MODE_LOOSE_COMPARE": begin
+             uvm_config_int::set(this, "*.cdma_dat_pri_mem_sb",      "request_compare_mode",      COMPARE_MODE_LOOSE_COMPARE);
+         end
+        "COMPARE_MODE_COUNT_TXN_ONLY": begin
+             uvm_config_int::set(this, "*.cdma_dat_pri_mem_sb",      "request_compare_mode",      COMPARE_MODE_COUNT_TXN_ONLY);
+        end
+        default: begin
+            `uvm_error(tID, {"Unsupported scoreboard working mode: ", cdma_dat_pri_mem_request_compare_mode})
+        end
+    endcase
+
+
+    case(cdma_dat_pri_mem_response_compare_mode)
+        "COMPARE_MODE_DISABLE": begin
+             uvm_config_int::set(this, "*.cdma_dat_pri_mem_sb",      "response_ck_enable",      0);
+         end
+        "COMPARE_MODE_RTL_AHEAD": begin
+             uvm_config_int::set(this, "*.cdma_dat_pri_mem_sb",         "response_compare_mode",   COMPARE_MODE_RTL_AHEAD);
+         end
+        "COMPARE_MODE_RTL_GATING_CMOD": begin
+             uvm_config_int::set(this, "*.cdma_dat_pri_mem_sb",      "response_compare_mode",      COMPARE_MODE_RTL_GATING_CMOD);
+         end
+        "COMPARE_MODE_LOOSE_COMPARE": begin
+             uvm_config_int::set(this, "*.cdma_dat_pri_mem_sb",      "response_compare_mode",      COMPARE_MODE_LOOSE_COMPARE);
+         end
+        "COMPARE_MODE_COUNT_TXN_ONLY": begin
+             uvm_config_int::set(this, "*.cdma_dat_pri_mem_sb",      "response_compare_mode",      COMPARE_MODE_COUNT_TXN_ONLY);
+        end
+        default: begin
+            `uvm_error(tID, {"Unsupported scoreboard working mode: ", cdma_dat_pri_mem_response_compare_mode})
+        end
+    endcase
+
+
+    case(sdp_pri_mem_request_compare_mode)
+        "COMPARE_MODE_DISABLE": begin
+             uvm_config_int::set(this, "*.sdp_pri_mem_sb",      "request_ck_enable",      0);
+         end
+        "COMPARE_MODE_RTL_AHEAD": begin
+             uvm_config_int::set(this, "*.sdp_pri_mem_sb",         "request_compare_mode",   COMPARE_MODE_RTL_AHEAD);
+         end
+        "COMPARE_MODE_RTL_GATING_CMOD": begin
+             uvm_config_int::set(this, "*.sdp_pri_mem_sb",      "request_compare_mode",      COMPARE_MODE_RTL_GATING_CMOD);
+         end
+        "COMPARE_MODE_LOOSE_COMPARE": begin
+             uvm_config_int::set(this, "*.sdp_pri_mem_sb",      "request_compare_mode",      COMPARE_MODE_LOOSE_COMPARE);
+         end
+        "COMPARE_MODE_COUNT_TXN_ONLY": begin
+             uvm_config_int::set(this, "*.sdp_pri_mem_sb",      "request_compare_mode",      COMPARE_MODE_COUNT_TXN_ONLY);
+        end
+        default: begin
+            `uvm_error(tID, {"Unsupported scoreboard working mode: ", sdp_pri_mem_request_compare_mode})
+        end
+    endcase
+
+
+    case(sdp_pri_mem_response_compare_mode)
+        "COMPARE_MODE_DISABLE": begin
+             uvm_config_int::set(this, "*.sdp_pri_mem_sb",      "response_ck_enable",      0);
+         end
+        "COMPARE_MODE_RTL_AHEAD": begin
+             uvm_config_int::set(this, "*.sdp_pri_mem_sb",         "response_compare_mode",   COMPARE_MODE_RTL_AHEAD);
+         end
+        "COMPARE_MODE_RTL_GATING_CMOD": begin
+             uvm_config_int::set(this, "*.sdp_pri_mem_sb",      "response_compare_mode",      COMPARE_MODE_RTL_GATING_CMOD);
+         end
+        "COMPARE_MODE_LOOSE_COMPARE": begin
+             uvm_config_int::set(this, "*.sdp_pri_mem_sb",      "response_compare_mode",      COMPARE_MODE_LOOSE_COMPARE);
+         end
+        "COMPARE_MODE_COUNT_TXN_ONLY": begin
+             uvm_config_int::set(this, "*.sdp_pri_mem_sb",      "response_compare_mode",      COMPARE_MODE_COUNT_TXN_ONLY);
+        end
+        default: begin
+            `uvm_error(tID, {"Unsupported scoreboard working mode: ", sdp_pri_mem_response_compare_mode})
+        end
+    endcase
+
+
+    case(sdp_b_pri_mem_request_compare_mode)
+        "COMPARE_MODE_DISABLE": begin
+             uvm_config_int::set(this, "*.sdp_b_pri_mem_sb",      "request_ck_enable",      0);
+         end
+        "COMPARE_MODE_RTL_AHEAD": begin
+             uvm_config_int::set(this, "*.sdp_b_pri_mem_sb",         "request_compare_mode",   COMPARE_MODE_RTL_AHEAD);
+         end
+        "COMPARE_MODE_RTL_GATING_CMOD": begin
+             uvm_config_int::set(this, "*.sdp_b_pri_mem_sb",      "request_compare_mode",      COMPARE_MODE_RTL_GATING_CMOD);
+         end
+        "COMPARE_MODE_LOOSE_COMPARE": begin
+             uvm_config_int::set(this, "*.sdp_b_pri_mem_sb",      "request_compare_mode",      COMPARE_MODE_LOOSE_COMPARE);
+         end
+        "COMPARE_MODE_COUNT_TXN_ONLY": begin
+             uvm_config_int::set(this, "*.sdp_b_pri_mem_sb",      "request_compare_mode",      COMPARE_MODE_COUNT_TXN_ONLY);
+        end
+        default: begin
+            `uvm_error(tID, {"Unsupported scoreboard working mode: ", sdp_b_pri_mem_request_compare_mode})
+        end
+    endcase
+
+
+    case(sdp_b_pri_mem_response_compare_mode)
+        "COMPARE_MODE_DISABLE": begin
+             uvm_config_int::set(this, "*.sdp_b_pri_mem_sb",      "response_ck_enable",      0);
+         end
+        "COMPARE_MODE_RTL_AHEAD": begin
+             uvm_config_int::set(this, "*.sdp_b_pri_mem_sb",         "response_compare_mode",   COMPARE_MODE_RTL_AHEAD);
+         end
+        "COMPARE_MODE_RTL_GATING_CMOD": begin
+             uvm_config_int::set(this, "*.sdp_b_pri_mem_sb",      "response_compare_mode",      COMPARE_MODE_RTL_GATING_CMOD);
+         end
+        "COMPARE_MODE_LOOSE_COMPARE": begin
+             uvm_config_int::set(this, "*.sdp_b_pri_mem_sb",      "response_compare_mode",      COMPARE_MODE_LOOSE_COMPARE);
+         end
+        "COMPARE_MODE_COUNT_TXN_ONLY": begin
+             uvm_config_int::set(this, "*.sdp_b_pri_mem_sb",      "response_compare_mode",      COMPARE_MODE_COUNT_TXN_ONLY);
+        end
+        default: begin
+            `uvm_error(tID, {"Unsupported scoreboard working mode: ", sdp_b_pri_mem_response_compare_mode})
+        end
+    endcase
+
+
+    case(sdp_n_pri_mem_request_compare_mode)
+        "COMPARE_MODE_DISABLE": begin
+             uvm_config_int::set(this, "*.sdp_n_pri_mem_sb",      "request_ck_enable",      0);
+         end
+        "COMPARE_MODE_RTL_AHEAD": begin
+             uvm_config_int::set(this, "*.sdp_n_pri_mem_sb",         "request_compare_mode",   COMPARE_MODE_RTL_AHEAD);
+         end
+        "COMPARE_MODE_RTL_GATING_CMOD": begin
+             uvm_config_int::set(this, "*.sdp_n_pri_mem_sb",      "request_compare_mode",      COMPARE_MODE_RTL_GATING_CMOD);
+         end
+        "COMPARE_MODE_LOOSE_COMPARE": begin
+             uvm_config_int::set(this, "*.sdp_n_pri_mem_sb",      "request_compare_mode",      COMPARE_MODE_LOOSE_COMPARE);
+         end
+        "COMPARE_MODE_COUNT_TXN_ONLY": begin
+             uvm_config_int::set(this, "*.sdp_n_pri_mem_sb",      "request_compare_mode",      COMPARE_MODE_COUNT_TXN_ONLY);
+        end
+        default: begin
+            `uvm_error(tID, {"Unsupported scoreboard working mode: ", sdp_n_pri_mem_request_compare_mode})
+        end
+    endcase
+
+
+    case(sdp_n_pri_mem_response_compare_mode)
+        "COMPARE_MODE_DISABLE": begin
+             uvm_config_int::set(this, "*.sdp_n_pri_mem_sb",      "response_ck_enable",      0);
+         end
+        "COMPARE_MODE_RTL_AHEAD": begin
+             uvm_config_int::set(this, "*.sdp_n_pri_mem_sb",         "response_compare_mode",   COMPARE_MODE_RTL_AHEAD);
+         end
+        "COMPARE_MODE_RTL_GATING_CMOD": begin
+             uvm_config_int::set(this, "*.sdp_n_pri_mem_sb",      "response_compare_mode",      COMPARE_MODE_RTL_GATING_CMOD);
+         end
+        "COMPARE_MODE_LOOSE_COMPARE": begin
+             uvm_config_int::set(this, "*.sdp_n_pri_mem_sb",      "response_compare_mode",      COMPARE_MODE_LOOSE_COMPARE);
+         end
+        "COMPARE_MODE_COUNT_TXN_ONLY": begin
+             uvm_config_int::set(this, "*.sdp_n_pri_mem_sb",      "response_compare_mode",      COMPARE_MODE_COUNT_TXN_ONLY);
+        end
+        default: begin
+            `uvm_error(tID, {"Unsupported scoreboard working mode: ", sdp_n_pri_mem_response_compare_mode})
+        end
+    endcase
+
+
+    case(pdp_pri_mem_request_compare_mode)
+        "COMPARE_MODE_DISABLE": begin
+             uvm_config_int::set(this, "*.pdp_pri_mem_sb",      "request_ck_enable",      0);
+         end
+        "COMPARE_MODE_RTL_AHEAD": begin
+             uvm_config_int::set(this, "*.pdp_pri_mem_sb",         "request_compare_mode",   COMPARE_MODE_RTL_AHEAD);
+         end
+        "COMPARE_MODE_RTL_GATING_CMOD": begin
+             uvm_config_int::set(this, "*.pdp_pri_mem_sb",      "request_compare_mode",      COMPARE_MODE_RTL_GATING_CMOD);
+         end
+        "COMPARE_MODE_LOOSE_COMPARE": begin
+             uvm_config_int::set(this, "*.pdp_pri_mem_sb",      "request_compare_mode",      COMPARE_MODE_LOOSE_COMPARE);
+         end
+        "COMPARE_MODE_COUNT_TXN_ONLY": begin
+             uvm_config_int::set(this, "*.pdp_pri_mem_sb",      "request_compare_mode",      COMPARE_MODE_COUNT_TXN_ONLY);
+        end
+        default: begin
+            `uvm_error(tID, {"Unsupported scoreboard working mode: ", pdp_pri_mem_request_compare_mode})
+        end
+    endcase
+
+
+    case(pdp_pri_mem_response_compare_mode)
+        "COMPARE_MODE_DISABLE": begin
+             uvm_config_int::set(this, "*.pdp_pri_mem_sb",      "response_ck_enable",      0);
+         end
+        "COMPARE_MODE_RTL_AHEAD": begin
+             uvm_config_int::set(this, "*.pdp_pri_mem_sb",         "response_compare_mode",   COMPARE_MODE_RTL_AHEAD);
+         end
+        "COMPARE_MODE_RTL_GATING_CMOD": begin
+             uvm_config_int::set(this, "*.pdp_pri_mem_sb",      "response_compare_mode",      COMPARE_MODE_RTL_GATING_CMOD);
+         end
+        "COMPARE_MODE_LOOSE_COMPARE": begin
+             uvm_config_int::set(this, "*.pdp_pri_mem_sb",      "response_compare_mode",      COMPARE_MODE_LOOSE_COMPARE);
+         end
+        "COMPARE_MODE_COUNT_TXN_ONLY": begin
+             uvm_config_int::set(this, "*.pdp_pri_mem_sb",      "response_compare_mode",      COMPARE_MODE_COUNT_TXN_ONLY);
+        end
+        default: begin
+            `uvm_error(tID, {"Unsupported scoreboard working mode: ", pdp_pri_mem_response_compare_mode})
+        end
+    endcase
+
+
+    case(cdp_pri_mem_request_compare_mode)
+        "COMPARE_MODE_DISABLE": begin
+             uvm_config_int::set(this, "*.cdp_pri_mem_sb",      "request_ck_enable",      0);
+         end
+        "COMPARE_MODE_RTL_AHEAD": begin
+             uvm_config_int::set(this, "*.cdp_pri_mem_sb",         "request_compare_mode",   COMPARE_MODE_RTL_AHEAD);
+         end
+        "COMPARE_MODE_RTL_GATING_CMOD": begin
+             uvm_config_int::set(this, "*.cdp_pri_mem_sb",      "request_compare_mode",      COMPARE_MODE_RTL_GATING_CMOD);
+         end
+        "COMPARE_MODE_LOOSE_COMPARE": begin
+             uvm_config_int::set(this, "*.cdp_pri_mem_sb",      "request_compare_mode",      COMPARE_MODE_LOOSE_COMPARE);
+         end
+        "COMPARE_MODE_COUNT_TXN_ONLY": begin
+             uvm_config_int::set(this, "*.cdp_pri_mem_sb",      "request_compare_mode",      COMPARE_MODE_COUNT_TXN_ONLY);
+        end
+        default: begin
+            `uvm_error(tID, {"Unsupported scoreboard working mode: ", cdp_pri_mem_request_compare_mode})
+        end
+    endcase
+
+
+    case(cdp_pri_mem_response_compare_mode)
+        "COMPARE_MODE_DISABLE": begin
+             uvm_config_int::set(this, "*.cdp_pri_mem_sb",      "response_ck_enable",      0);
+         end
+        "COMPARE_MODE_RTL_AHEAD": begin
+             uvm_config_int::set(this, "*.cdp_pri_mem_sb",         "response_compare_mode",   COMPARE_MODE_RTL_AHEAD);
+         end
+        "COMPARE_MODE_RTL_GATING_CMOD": begin
+             uvm_config_int::set(this, "*.cdp_pri_mem_sb",      "response_compare_mode",      COMPARE_MODE_RTL_GATING_CMOD);
+         end
+        "COMPARE_MODE_LOOSE_COMPARE": begin
+             uvm_config_int::set(this, "*.cdp_pri_mem_sb",      "response_compare_mode",      COMPARE_MODE_LOOSE_COMPARE);
+         end
+        "COMPARE_MODE_COUNT_TXN_ONLY": begin
+             uvm_config_int::set(this, "*.cdp_pri_mem_sb",      "response_compare_mode",      COMPARE_MODE_COUNT_TXN_ONLY);
+        end
+        default: begin
+            `uvm_error(tID, {"Unsupported scoreboard working mode: ", cdp_pri_mem_response_compare_mode})
+        end
+    endcase
+
+    //:) epython: generated_end (DO NOT EDIT ABOVE)
 endfunction : build_phase
 
 // Function: connect_phase
