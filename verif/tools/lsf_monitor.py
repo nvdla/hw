@@ -82,6 +82,7 @@ class LSFMonitor(object):
                     exec_host_info[item]['exechost']     = '-'
                     exec_host_info[item]['runlimit']     = '-'
                     exec_host_info[item]['memlimit']     = '-'
+                    exec_host_info[item]['queue_type']   = '-'
                     exec_host_info[item]['cputime_used'] = '-'
                     exec_host_info[item]['maxmem']       = '-'
                     exec_host_info[item]['syndrome']     = '-'
@@ -92,18 +93,19 @@ class LSFMonitor(object):
             maxmem_p   = re.compile(r'MAX\s*MEM:\s*(\d+.*)Mbytes;')
             maxmem     = maxmem_p.search(str(info))
 
-            match = re.search(r'.*Status\s*<(\w+)>,.*CWD\s*<(.*)>,.*CPULIMIT\s*([\d\.]+\s*min)\s*of\s*([a-zA-Z0-9-]+)\s*.*RUNLIMIT\s*([\d\.]+\s*min)\s*.*MEMLIMIT\s*(\d+\s*)K\s*', str(info))
+            match = re.search(r'.*Status\s*<(\w+)>,.*VIRTUAL_QUEUE=(\w+)\s.*CWD\s*<(.*)>,.*CPULIMIT\s*([\d\.]+\s*min)\s*of\s*([a-zA-Z0-9-]+)\s*.*RUNLIMIT\s*([\d\.]+\s*min)\s*.*MEMLIMIT\s*(\d+\s*)K\s*', str(info))
             if match is None:
                 with open('log_of_job_'+str(item), 'w') as fh:
                     fh.write(str(info))
                 #print(str(info))
                 raise Exception('Job status extraction failed')
-            exec_host_info[item]['status']   = match.group(1)
-            exec_host_info[item]['testdir']  = os.path.basename(match.group(2))
-            exec_host_info[item]['cpulimit'] = match.group(3)
-            exec_host_info[item]['exechost'] = match.group(4)
-            exec_host_info[item]['runlimit'] = match.group(5)
-            exec_host_info[item]['memlimit'] = str(int(match.group(6))//1024)+' MB'
+            exec_host_info[item]['status']     = match.group(1)
+            exec_host_info[item]['queue_type'] = match.group(2)
+            exec_host_info[item]['testdir']    = os.path.basename(match.group(3))
+            exec_host_info[item]['cpulimit']   = match.group(4)
+            exec_host_info[item]['exechost']   = match.group(5)
+            exec_host_info[item]['runlimit']   = match.group(6)
+            exec_host_info[item]['memlimit']   = str(int(match.group(7))//1024)+' MB'
             if cputime:
                 exec_host_info[item]['cputime_used']   = '{:.1f}'.format(float(cputime.group(1))/60)+' min'
             else:

@@ -208,8 +208,11 @@ class RunReport(object):
             self.test_orgz_data[tid]['errinfo']  = errinfo
             self.test_orgz_data[tid]['syndrome'] = ''
             if self.regr_sts_data['farm_type'] == "LSF":
-                self.test_orgz_data[tid]['cputime'] = self.job_status[info['job_id']]['cputime_used']
-                self.test_orgz_data[tid]['memsize'] = self.job_status[info['job_id']]['maxmem']
+                self.test_orgz_data[tid]['cputime']    = self.job_status[info['job_id']]['cputime_used']
+                self.test_orgz_data[tid]['memsize']    = self.job_status[info['job_id']]['maxmem']
+                self.test_orgz_data[tid]['cpulimit']   = self.job_status[info['job_id']]['runlimit']
+                self.test_orgz_data[tid]['memlimit']   = self.job_status[info['job_id']]['memlimit']
+                self.test_orgz_data[tid]['queue_type'] = self.job_status[info['job_id']]['queue_type']
                 
 
     def __print_regress_report(self):
