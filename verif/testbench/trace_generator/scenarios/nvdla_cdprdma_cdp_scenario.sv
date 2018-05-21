@@ -88,8 +88,8 @@ function void nvdla_cdprdma_cdp_scenario::trace_dump(int fh);
         `uvm_info(inst_name, $sformatf("CDP_RDMA.OP_ENABLE = %0d, CDP_OP_ENABLE = %0d",
             cdp.ral.nvdla.NVDLA_CDP_RDMA.D_OP_ENABLE.OP_EN.value,
             cdp.ral.nvdla.NVDLA_CDP.D_OP_ENABLE.OP_EN.value), UVM_NONE)
-        cov.cdp_pool.cdp_lut_sample();
-        cov.cdp_pool.sample();
+        cov.cdp_pool.cdp_lut_sample(ral);
+        cov.cdp_pool.sample(ral);
     end
     print_comment(fh, $sformatf("Scenario CDPRDMA_CDP:%0d end",active_cnt));
 endfunction: trace_dump

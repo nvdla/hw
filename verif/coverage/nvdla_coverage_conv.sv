@@ -45,41 +45,41 @@ class conv_cov_pool extends nvdla_coverage_base;
 
     endfunction : new
 
-    task sample();
+    task sample(ref ral_sys_top ral_mdl);
         `uvm_info(tID, $sformatf("CONV Sample Begin ..."), UVM_LOW)
-        conv_toggle_sample();
-        conv_cg.sample();
+        conv_toggle_sample(ral_mdl);
+        conv_cg.sample(ral_mdl);
     endtask : sample
 
-    function void conv_toggle_sample();
+    function void conv_toggle_sample(ref ral_sys_top ral_mdl);
         uvm_reg_field fld;
         foreach(tg_cdma_flds[i]) begin
-            fld = ral.nvdla.NVDLA_CDMA.get_field_by_name(i);
+            fld = ral_mdl.nvdla.NVDLA_CDMA.get_field_by_name(i);
             tg_cdma_flds[i].sample(fld.value);
         end
         foreach(tg_csc_flds[i]) begin
-            fld = ral.nvdla.NVDLA_CSC.get_field_by_name(i);
+            fld = ral_mdl.nvdla.NVDLA_CSC.get_field_by_name(i);
             tg_csc_flds[i].sample(fld.value);
         end
     endfunction : conv_toggle_sample
 
 
-    covergroup conv_cg;
+    covergroup conv_cg with function sample(ref ral_sys_top ral_mdl);
         // ** conv mode **
-        cp_conv_mode:          coverpoint ral.nvdla.NVDLA_CDMA.D_MISC_CFG.CONV_MODE.value {
+        cp_conv_mode:          coverpoint ral_mdl.nvdla.NVDLA_CDMA.D_MISC_CFG.CONV_MODE.value {
             bins dc       = {0};
 `ifdef NVDLA_WINOGRAD_ENABLE
             bins winograd = {1};
 `endif
         }
-        cp_in_precision:       coverpoint ral.nvdla.NVDLA_CDMA.D_MISC_CFG.IN_PRECISION.value {
+        cp_in_precision:       coverpoint ral_mdl.nvdla.NVDLA_CDMA.D_MISC_CFG.IN_PRECISION.value {
             bins int8  = {0};
 `ifdef NVDLA_FEATURE_DATA_TYPE_INT16_FP16
             bins int16 = {1};
             bins fp16  = {2};
 `endif
         }
-        cp_proc_precision:       coverpoint ral.nvdla.NVDLA_CDMA.D_MISC_CFG.PROC_PRECISION.value {
+        cp_proc_precision:       coverpoint ral_mdl.nvdla.NVDLA_CDMA.D_MISC_CFG.PROC_PRECISION.value {
             bins int8  = {0};
 `ifdef NVDLA_FEATURE_DATA_TYPE_INT16_FP16
             bins int16 = {1};
@@ -88,11 +88,11 @@ class conv_cov_pool extends nvdla_coverage_base;
         }
         // ** activation input **
         // image input
-        cp_datain_format:      coverpoint ral.nvdla.NVDLA_CDMA.D_DATAIN_FORMAT.DATAIN_FORMAT.value {
+        cp_datain_format:      coverpoint ral_mdl.nvdla.NVDLA_CDMA.D_DATAIN_FORMAT.DATAIN_FORMAT.value {
             bins feature = {0};
             bins pixel   = {1};
         }
-        cp_pixel_format:       coverpoint ral.nvdla.NVDLA_CDMA.D_DATAIN_FORMAT.PIXEL_FORMAT.value {
+        cp_pixel_format:       coverpoint ral_mdl.nvdla.NVDLA_CDMA.D_DATAIN_FORMAT.PIXEL_FORMAT.value {
             bins pixel_format_T_R8                       = {0};
 `ifdef NVDLA_FEATURE_DATA_TYPE_INT16_FP16
             bins pixel_format_T_R10                      = {1};
@@ -137,7 +137,7 @@ class conv_cov_pool extends nvdla_coverage_base;
 `endif
         }
 
-        cp_pixel_mapping:      coverpoint ral.nvdla.NVDLA_CDMA.D_DATAIN_FORMAT.PIXEL_MAPPING.value {
+        cp_pixel_mapping:      coverpoint ral_mdl.nvdla.NVDLA_CDMA.D_DATAIN_FORMAT.PIXEL_MAPPING.value {
             bins pitch_linear = {0};
             ignore_bins non_pitch_linear = {1};
         }
@@ -145,7 +145,7 @@ class conv_cov_pool extends nvdla_coverage_base;
         cr_datain_format_pixel_format_pixel_mapping:     cross cp_datain_format, cp_pixel_format, cp_pixel_mapping {
             ignore_bins feature = binsof(cp_datain_format.feature);
         }
-        cp_pixel_x_offset:     coverpoint ral.nvdla.NVDLA_CDMA.D_PIXEL_OFFSET.PIXEL_X_OFFSET.value {
+        cp_pixel_x_offset:     coverpoint ral_mdl.nvdla.NVDLA_CDMA.D_PIXEL_OFFSET.PIXEL_X_OFFSET.value {
             bins ful[4] = {[0:`NVDLA_MEMORY_ATOMIC_SIZE-1]};
         }
         cr_datain_format_pixel_format_pixel_x_offset:    cross cp_datain_format, cp_pixel_format, cp_pixel_x_offset {
@@ -153,24 +153,24 @@ class conv_cov_pool extends nvdla_coverage_base;
             ignore_bins offset  = binsof(cp_pixel_format)intersect{['hc:'h1b]}
                                && binsof(cp_pixel_x_offset)intersect{[`NVDLA_MEMORY_ATOMIC_SIZE/4:$]};
         }
-        cp_pixel_y_offset:     coverpoint ral.nvdla.NVDLA_CDMA.D_PIXEL_OFFSET.PIXEL_Y_OFFSET.value[2:0];
+        cp_pixel_y_offset:     coverpoint ral_mdl.nvdla.NVDLA_CDMA.D_PIXEL_OFFSET.PIXEL_Y_OFFSET.value[2:0];
         cr_datain_format_pixel_mapping_pixel_y_offset:    cross cp_datain_format, cp_pixel_mapping, cp_pixel_y_offset {
             ignore_bins feature      = binsof(cp_datain_format.feature);
             ignore_bins pitch_linear = binsof(cp_pixel_mapping.pitch_linear);
         }
-        cp_pixel_sign_override:coverpoint ral.nvdla.NVDLA_CDMA.D_DATAIN_FORMAT.PIXEL_SIGN_OVERRIDE.value {
+        cp_pixel_sign_override:coverpoint ral_mdl.nvdla.NVDLA_CDMA.D_DATAIN_FORMAT.PIXEL_SIGN_OVERRIDE.value {
             bins unsign = {0};
             bins sign   = {1};
         }
         // ** feature input **
         // cp_datain_format (define above)
-        cp_datain_ram_type:    coverpoint ral.nvdla.NVDLA_CDMA.D_DAIN_RAM_TYPE.DATAIN_RAM_TYPE.value {
+        cp_datain_ram_type:    coverpoint ral_mdl.nvdla.NVDLA_CDMA.D_DAIN_RAM_TYPE.DATAIN_RAM_TYPE.value {
 `ifdef NVDLA_SECONDARY_MEMIF_ENABLE
             bins cv = {0};
 `endif
             bins mc = {1};
         }
-        cp_data_reuse:         coverpoint ral.nvdla.NVDLA_CDMA.D_MISC_CFG.DATA_REUSE.value {
+        cp_data_reuse:         coverpoint ral_mdl.nvdla.NVDLA_CDMA.D_MISC_CFG.DATA_REUSE.value {
             bins off = {0};
             bins on  = {1};
         }
@@ -178,17 +178,17 @@ class conv_cov_pool extends nvdla_coverage_base;
             ignore_bins on = binsof(cp_data_reuse.on);
         }
         // input size
-        cp_datain_width:       coverpoint ral.nvdla.NVDLA_CDMA.D_DATAIN_SIZE_0.DATAIN_WIDTH.value[12:0] {
+        cp_datain_width:       coverpoint ral_mdl.nvdla.NVDLA_CDMA.D_DATAIN_SIZE_0.DATAIN_WIDTH.value[12:0] {
             bins min = {0};
             bins mid[8] = {['h1:'h1FFE]};
             bins max = {'h1FFF};
         }
-        cp_datain_height:      coverpoint ral.nvdla.NVDLA_CDMA.D_DATAIN_SIZE_0.DATAIN_HEIGHT.value[12:0] {
+        cp_datain_height:      coverpoint ral_mdl.nvdla.NVDLA_CDMA.D_DATAIN_SIZE_0.DATAIN_HEIGHT.value[12:0] {
             bins min = {0};
             bins mid[8] = {[1:3838]};
             bins max = {3839};
         }
-        cp_datain_channel:     coverpoint ral.nvdla.NVDLA_CDMA.D_DATAIN_SIZE_1.DATAIN_CHANNEL.value[12:0] {
+        cp_datain_channel:     coverpoint ral_mdl.nvdla.NVDLA_CDMA.D_DATAIN_SIZE_1.DATAIN_CHANNEL.value[12:0] {
             bins min = {0};
             bins mid[8] = {['h1:'h1FFE]};
             bins max = {'h1FFF};
@@ -197,23 +197,23 @@ class conv_cov_pool extends nvdla_coverage_base;
             ignore_bins pixel = binsof(cp_datain_format.pixel) && binsof(cp_datain_channel)intersect{1,[4:$]};
         }
         // input_size_ext
-        cp_datain_width_ext:   coverpoint ral.nvdla.NVDLA_CSC.D_DATAIN_SIZE_EXT_0.DATAIN_WIDTH_EXT.value[12:0] {
+        cp_datain_width_ext:   coverpoint ral_mdl.nvdla.NVDLA_CSC.D_DATAIN_SIZE_EXT_0.DATAIN_WIDTH_EXT.value[12:0] {
             bins min = {0};
             bins mid[8] = {['h1:'h1FFE]};
             bins max = {'h1FFF};
         }
-        cp_datain_height_ext:  coverpoint ral.nvdla.NVDLA_CSC.D_DATAIN_SIZE_EXT_0.DATAIN_HEIGHT_EXT.value[12:0] {
+        cp_datain_height_ext:  coverpoint ral_mdl.nvdla.NVDLA_CSC.D_DATAIN_SIZE_EXT_0.DATAIN_HEIGHT_EXT.value[12:0] {
             bins min = {0};
             bins mid[8] = {[1:3838]};
             bins max = {3839};
         }
-        cp_datain_channel_ext: coverpoint ral.nvdla.NVDLA_CSC.D_DATAIN_SIZE_EXT_1.DATAIN_CHANNEL_EXT.value[12:0] {
+        cp_datain_channel_ext: coverpoint ral_mdl.nvdla.NVDLA_CSC.D_DATAIN_SIZE_EXT_1.DATAIN_CHANNEL_EXT.value[12:0] {
             bins min = {0};
             bins mid[8] = {['h1:'h1FFE]};
             bins max = {'h1FFF};
         }
         // input address
-        cp_datain_addr_low_0:  coverpoint ral.nvdla.NVDLA_CDMA.D_DAIN_ADDR_LOW_0.DATAIN_ADDR_LOW_0.value[31:5] {
+        cp_datain_addr_low_0:  coverpoint ral_mdl.nvdla.NVDLA_CDMA.D_DAIN_ADDR_LOW_0.DATAIN_ADDR_LOW_0.value[31:5] {
             wildcard bins align_64  = {27'b??????????????????????????0};
             wildcard bins align_128 = {27'b?????????????????????????00};
             wildcard bins align_256 = {27'b????????????????????????000};
@@ -223,14 +223,14 @@ class conv_cov_pool extends nvdla_coverage_base;
             ignore_bins reuse = binsof(cp_data_reuse.on);
         }
 `ifdef MEM_ADDR_WIDTH_GT_32
-        cp_datain_addr_high_0:   coverpoint ral.nvdla.NVDLA_CDMA.D_DAIN_ADDR_HIGH_0.DATAIN_ADDR_HIGH_0.value[7:0] {
+        cp_datain_addr_high_0:   coverpoint ral_mdl.nvdla.NVDLA_CDMA.D_DAIN_ADDR_HIGH_0.DATAIN_ADDR_HIGH_0.value[7:0] {
             bins ful[8]    = {[0:$]};
         }
         cr_data_reuse_datain_addr_high_0_datain_ram_type: cross cp_data_reuse, cp_datain_addr_high_0, cp_datain_ram_type {
             ignore_bins reuse = binsof(cp_data_reuse.on);
         }
 `endif
-        cp_datain_addr_low_1:  coverpoint ral.nvdla.NVDLA_CDMA.D_DAIN_ADDR_LOW_1.DATAIN_ADDR_LOW_1.value[31:5] {
+        cp_datain_addr_low_1:  coverpoint ral_mdl.nvdla.NVDLA_CDMA.D_DAIN_ADDR_LOW_1.DATAIN_ADDR_LOW_1.value[31:5] {
             wildcard bins align_64  = {27'b??????????????????????????0};
             wildcard bins align_128 = {27'b?????????????????????????00};
             wildcard bins align_256 = {27'b????????????????????????000};
@@ -241,7 +241,7 @@ class conv_cov_pool extends nvdla_coverage_base;
             ignore_bins feature = binsof(cp_datain_format.feature);
         }
 `ifdef MEM_ADDR_WIDTH_GT_32
-        cp_datain_addr_high_1:   coverpoint ral.nvdla.NVDLA_CDMA.D_DAIN_ADDR_HIGH_1.DATAIN_ADDR_HIGH_1.value[7:0] {
+        cp_datain_addr_high_1:   coverpoint ral_mdl.nvdla.NVDLA_CDMA.D_DAIN_ADDR_HIGH_1.DATAIN_ADDR_HIGH_1.value[7:0] {
             bins ful[8]    = {[0:$]};
         }
         cr_data_reuse_datain_format_datain_addr_high_1_datain_ram_type:  cross cp_data_reuse, cp_datain_format, cp_datain_addr_high_1, cp_datain_ram_type {
@@ -250,7 +250,7 @@ class conv_cov_pool extends nvdla_coverage_base;
         }
 `endif
         // line_stride
-        cp_line_stride_feature:        coverpoint (ral.nvdla.NVDLA_CDMA.D_LINE_STRIDE.LINE_STRIDE.value/`NVDLA_MEMORY_ATOMIC_SIZE-ral.nvdla.NVDLA_CDMA.D_DATAIN_SIZE_0.DATAIN_WIDTH.value-1) {
+        cp_line_stride_feature:        coverpoint (ral_mdl.nvdla.NVDLA_CDMA.D_LINE_STRIDE.LINE_STRIDE.value/`NVDLA_MEMORY_ATOMIC_SIZE-ral_mdl.nvdla.NVDLA_CDMA.D_DATAIN_SIZE_0.DATAIN_WIDTH.value-1) {
             bins eql     = {0};
             bins mid[7]  = {[1:7]};
             bins high[2] = {[8:16]};
@@ -260,7 +260,7 @@ class conv_cov_pool extends nvdla_coverage_base;
             ignore_bins pixel = binsof(cp_datain_format.pixel);
             ignore_bins reuse = binsof(cp_data_reuse.on);
         }
-        cp_line_stride_pitch_0:        coverpoint (ral.nvdla.NVDLA_CDMA.D_LINE_STRIDE.LINE_STRIDE.value-(ral.nvdla.NVDLA_CDMA.D_PIXEL_OFFSET.PIXEL_X_OFFSET.value + ral.nvdla.NVDLA_CDMA.D_DATAIN_SIZE_0.DATAIN_WIDTH.value+1)*(ral.nvdla.NVDLA_CDMA.D_DATAIN_SIZE_1.DATAIN_CHANNEL.value+1)) {
+        cp_line_stride_pitch_0:        coverpoint (ral_mdl.nvdla.NVDLA_CDMA.D_LINE_STRIDE.LINE_STRIDE.value-(ral_mdl.nvdla.NVDLA_CDMA.D_PIXEL_OFFSET.PIXEL_X_OFFSET.value + ral_mdl.nvdla.NVDLA_CDMA.D_DATAIN_SIZE_0.DATAIN_WIDTH.value+1)*(ral_mdl.nvdla.NVDLA_CDMA.D_DATAIN_SIZE_1.DATAIN_CHANNEL.value+1)) {
             bins eql     = {0};
             bins mid[7]  = {[1:255]};
             bins high[2] = {[256:512]};
@@ -273,7 +273,7 @@ class conv_cov_pool extends nvdla_coverage_base;
             ignore_bins reuse        = binsof(cp_data_reuse.on);
         }
 `endif
-        cp_line_stride_pitch_1:        coverpoint (ral.nvdla.NVDLA_CDMA.D_LINE_STRIDE.LINE_STRIDE.value-(ral.nvdla.NVDLA_CDMA.D_PIXEL_OFFSET.PIXEL_X_OFFSET.value + ral.nvdla.NVDLA_CDMA.D_DATAIN_SIZE_0.DATAIN_WIDTH.value+1)*((ral.nvdla.NVDLA_CDMA.D_MISC_CFG.IN_PRECISION.value==0)?1:2)) {
+        cp_line_stride_pitch_1:        coverpoint (ral_mdl.nvdla.NVDLA_CDMA.D_LINE_STRIDE.LINE_STRIDE.value-(ral_mdl.nvdla.NVDLA_CDMA.D_PIXEL_OFFSET.PIXEL_X_OFFSET.value + ral_mdl.nvdla.NVDLA_CDMA.D_DATAIN_SIZE_0.DATAIN_WIDTH.value+1)*((ral_mdl.nvdla.NVDLA_CDMA.D_MISC_CFG.IN_PRECISION.value==0)?1:2)) {
             bins eql     = {0};
             bins mid[7]  = {[1:255]};
             bins high[2] = {[256:512]};
@@ -284,7 +284,7 @@ class conv_cov_pool extends nvdla_coverage_base;
             ignore_bins format       = binsof(cp_pixel_format)intersect{[0:27]};
             ignore_bins reuse        = binsof(cp_data_reuse.on);
         }
-        cp_line_stride_pitch_2:        coverpoint (ral.nvdla.NVDLA_CDMA.D_LINE_STRIDE.LINE_STRIDE.value-(ral.nvdla.NVDLA_CDMA.D_PIXEL_OFFSET.PIXEL_X_OFFSET.value + ral.nvdla.NVDLA_CDMA.D_DATAIN_SIZE_0.DATAIN_WIDTH.value+1)*((ral.nvdla.NVDLA_CDMA.D_MISC_CFG.IN_PRECISION.value==0)?1:2)*(ral.nvdla.NVDLA_CDMA.D_DATAIN_SIZE_1.DATAIN_CHANNEL.value+1)) {
+        cp_line_stride_pitch_2:        coverpoint (ral_mdl.nvdla.NVDLA_CDMA.D_LINE_STRIDE.LINE_STRIDE.value-(ral_mdl.nvdla.NVDLA_CDMA.D_PIXEL_OFFSET.PIXEL_X_OFFSET.value + ral_mdl.nvdla.NVDLA_CDMA.D_DATAIN_SIZE_0.DATAIN_WIDTH.value+1)*((ral_mdl.nvdla.NVDLA_CDMA.D_MISC_CFG.IN_PRECISION.value==0)?1:2)*(ral_mdl.nvdla.NVDLA_CDMA.D_DATAIN_SIZE_1.DATAIN_CHANNEL.value+1)) {
             bins eql     = {0};
             bins mid[7]  = {[1:255]};
             bins high[2] = {[256:512]};
@@ -295,7 +295,7 @@ class conv_cov_pool extends nvdla_coverage_base;
             ignore_bins format       = binsof(cp_pixel_format)intersect{[20:25], [28:35]};
             ignore_bins reuse        = binsof(cp_data_reuse.on);
         }
-        cp_uv_line_stride:             coverpoint (ral.nvdla.NVDLA_CDMA.D_LINE_UV_STRIDE.UV_LINE_STRIDE.value-2*(ral.nvdla.NVDLA_CDMA.D_PIXEL_OFFSET.PIXEL_X_OFFSET.value + ral.nvdla.NVDLA_CDMA.D_DATAIN_SIZE_0.DATAIN_WIDTH.value+1)*((ral.nvdla.NVDLA_CDMA.D_MISC_CFG.IN_PRECISION.value==0)?1:2)) {
+        cp_uv_line_stride:             coverpoint (ral_mdl.nvdla.NVDLA_CDMA.D_LINE_UV_STRIDE.UV_LINE_STRIDE.value-2*(ral_mdl.nvdla.NVDLA_CDMA.D_PIXEL_OFFSET.PIXEL_X_OFFSET.value + ral_mdl.nvdla.NVDLA_CDMA.D_DATAIN_SIZE_0.DATAIN_WIDTH.value+1)*((ral_mdl.nvdla.NVDLA_CDMA.D_MISC_CFG.IN_PRECISION.value==0)?1:2)) {
             bins eql     = {0};
             bins mid[7]  = {[1:255]};
             bins high[2] = {[256:512]};
@@ -306,7 +306,7 @@ class conv_cov_pool extends nvdla_coverage_base;
             ignore_bins format       = binsof(cp_pixel_format)intersect{[0:27]};
             ignore_bins reuse        = binsof(cp_data_reuse.on);
         }
-        cp_surf_stride:       coverpoint (ral.nvdla.NVDLA_CDMA.D_SURF_STRIDE.SURF_STRIDE.value/`NVDLA_MEMORY_ATOMIC_SIZE - (ral.nvdla.NVDLA_CDMA.D_LINE_STRIDE.LINE_STRIDE.value/`NVDLA_MEMORY_ATOMIC_SIZE*(ral.nvdla.NVDLA_CDMA.D_DATAIN_SIZE_0.DATAIN_HEIGHT.value+1))) {
+        cp_surf_stride:       coverpoint (ral_mdl.nvdla.NVDLA_CDMA.D_SURF_STRIDE.SURF_STRIDE.value/`NVDLA_MEMORY_ATOMIC_SIZE - (ral_mdl.nvdla.NVDLA_CDMA.D_LINE_STRIDE.LINE_STRIDE.value/`NVDLA_MEMORY_ATOMIC_SIZE*(ral_mdl.nvdla.NVDLA_CDMA.D_DATAIN_SIZE_0.DATAIN_HEIGHT.value+1))) {
             bins eql     = {0};
             bins mid[7]  = {[1:7]};
             bins high[2] = {[8:16]};
@@ -315,7 +315,7 @@ class conv_cov_pool extends nvdla_coverage_base;
             ignore_bins pixel      = binsof(cp_datain_format.pixel);
             ignore_bins reuse      = binsof(cp_data_reuse.on);
         }
-        cp_line_packed:       coverpoint ral.nvdla.NVDLA_CDMA.D_DAIN_MAP.LINE_PACKED.value {
+        cp_line_packed:       coverpoint ral_mdl.nvdla.NVDLA_CDMA.D_DAIN_MAP.LINE_PACKED.value {
             bins unpack = {0};
             bins pack   = {1};
         }
@@ -323,7 +323,7 @@ class conv_cov_pool extends nvdla_coverage_base;
             ignore_bins pixel      = binsof(cp_datain_format.pixel);
             ignore_bins reuse      = binsof(cp_data_reuse.on);
         }
-        cp_surf_packed:       coverpoint ral.nvdla.NVDLA_CDMA.D_DAIN_MAP.SURF_PACKED.value {
+        cp_surf_packed:       coverpoint ral_mdl.nvdla.NVDLA_CDMA.D_DAIN_MAP.SURF_PACKED.value {
             bins unpack = {0};
             bins pack   = {1};
         }
@@ -331,21 +331,21 @@ class conv_cov_pool extends nvdla_coverage_base;
             ignore_bins pixel      = binsof(cp_datain_format.pixel);
             ignore_bins reuse      = binsof(cp_data_reuse.on);
         }
-        cp_line_packed_cacc:       coverpoint ral.nvdla.NVDLA_CACC.D_DATAOUT_MAP.LINE_PACKED.value {
+        cp_line_packed_cacc:       coverpoint ral_mdl.nvdla.NVDLA_CACC.D_DATAOUT_MAP.LINE_PACKED.value {
             bins unpack = {0};
             bins pack   = {1};
         }
-        cp_dataout_width:       coverpoint ral.nvdla.NVDLA_CSC.D_DATAOUT_SIZE_0.DATAOUT_WIDTH.value[12:0] {
+        cp_dataout_width:       coverpoint ral_mdl.nvdla.NVDLA_CSC.D_DATAOUT_SIZE_0.DATAOUT_WIDTH.value[12:0] {
             bins min = {0};
             bins mid[8] = {['h1:'h1FFE]};
             bins max = {'h1FFF};
         }
-        cp_dataout_height:      coverpoint ral.nvdla.NVDLA_CSC.D_DATAOUT_SIZE_0.DATAOUT_HEIGHT.value[12:0] {
+        cp_dataout_height:      coverpoint ral_mdl.nvdla.NVDLA_CSC.D_DATAOUT_SIZE_0.DATAOUT_HEIGHT.value[12:0] {
             bins min = {0};
             bins mid[8] = {[1:3838]};
             bins max = {3839};
         }
-        cp_dataout_channel:     coverpoint ral.nvdla.NVDLA_CSC.D_DATAOUT_SIZE_1.DATAOUT_CHANNEL.value[12:0] {
+        cp_dataout_channel:     coverpoint ral_mdl.nvdla.NVDLA_CSC.D_DATAOUT_SIZE_1.DATAOUT_CHANNEL.value[12:0] {
             bins min = {0};
             bins mid[8] = {['h1:'h1FFE]};
             bins max = {'h1FFF};
@@ -359,7 +359,7 @@ class conv_cov_pool extends nvdla_coverage_base;
             bins        unpack         = binsof(cp_line_packed_cacc.unpack) && binsof(cp_dataout_width)intersect{[1:$]} && binsof(cp_dataout_height)intersect{[1:$]};
         } // not cross datain_format
 
-        cp_surf_packed_cacc:       coverpoint ral.nvdla.NVDLA_CACC.D_DATAOUT_MAP.SURF_PACKED.value {
+        cp_surf_packed_cacc:       coverpoint ral_mdl.nvdla.NVDLA_CACC.D_DATAOUT_MAP.SURF_PACKED.value {
             bins unpack = {0};
             bins pack   = {1};
         }
@@ -372,7 +372,7 @@ class conv_cov_pool extends nvdla_coverage_base;
             bins        unpack     = binsof(cp_surf_packed_cacc.unpack) && binsof(cp_dataout_width)intersect{[1:$]} && binsof(cp_dataout_height)intersect{[1:$]};
         } // not cross datain_format
         // activation batch
-        cp_batches:           coverpoint ral.nvdla.NVDLA_CDMA.D_BATCH_NUMBER.BATCHES.value {
+        cp_batches:           coverpoint ral_mdl.nvdla.NVDLA_CDMA.D_BATCH_NUMBER.BATCHES.value {
             bins single      = {0};
 `ifdef NVDLA_BATCH_ENABLE
             bins multiple[8] = {[1:31]};
@@ -380,17 +380,17 @@ class conv_cov_pool extends nvdla_coverage_base;
         }
 
         // ** weight input **
-        cp_weight_reuse:      coverpoint ral.nvdla.NVDLA_CDMA.D_MISC_CFG.WEIGHT_REUSE.value {
+        cp_weight_reuse:      coverpoint ral_mdl.nvdla.NVDLA_CDMA.D_MISC_CFG.WEIGHT_REUSE.value {
             bins off = {0};
             bins on  = {1};
         }
-        cp_weight_format:     coverpoint ral.nvdla.NVDLA_CDMA.D_WEIGHT_FORMAT.WEIGHT_FORMAT.value {
+        cp_weight_format:     coverpoint ral_mdl.nvdla.NVDLA_CDMA.D_WEIGHT_FORMAT.WEIGHT_FORMAT.value {
             bins uncompress = {0};
 `ifdef NVDLA_WEIGHT_COMPRESSION_ENABLE
             bins compress   = {1};
 `endif
         }
-        cp_weight_ram_type:   coverpoint ral.nvdla.NVDLA_CDMA.D_WEIGHT_RAM_TYPE.WEIGHT_RAM_TYPE.value {
+        cp_weight_ram_type:   coverpoint ral_mdl.nvdla.NVDLA_CDMA.D_WEIGHT_RAM_TYPE.WEIGHT_RAM_TYPE.value {
 `ifdef NVDLA_SECONDARY_MEMIF_ENABLE
             bins cv = {0};
 `endif
@@ -399,7 +399,7 @@ class conv_cov_pool extends nvdla_coverage_base;
         cr_weight_reuse_weight_ram_type:     cross cp_weight_reuse, cp_weight_ram_type {
             ignore_bins reuse = binsof(cp_weight_reuse.on);
         }
-        cp_weight_addr_low:  coverpoint ral.nvdla.NVDLA_CDMA.D_WEIGHT_ADDR_LOW.WEIGHT_ADDR_LOW.value[31:5] {
+        cp_weight_addr_low:  coverpoint ral_mdl.nvdla.NVDLA_CDMA.D_WEIGHT_ADDR_LOW.WEIGHT_ADDR_LOW.value[31:5] {
             wildcard bins align_64  = {27'b??????????????????????????0};
             wildcard bins align_128 = {27'b?????????????????????????00};
             wildcard bins align_256 = {27'b????????????????????????000};
@@ -409,14 +409,14 @@ class conv_cov_pool extends nvdla_coverage_base;
             ignore_bins reuse = binsof(cp_weight_reuse.on);
         }
 `ifdef MEM_ADDR_WIDTH_GT_32
-        cp_weight_addr_high:  coverpoint ral.nvdla.NVDLA_CDMA.D_WEIGHT_ADDR_HIGH.WEIGHT_ADDR_HIGH.value[`NVDLA_MEM_ADDRESS_WIDTH-32-1:0] {
+        cp_weight_addr_high:  coverpoint ral_mdl.nvdla.NVDLA_CDMA.D_WEIGHT_ADDR_HIGH.WEIGHT_ADDR_HIGH.value[`NVDLA_MEM_ADDRESS_WIDTH-32-1:0] {
             bins ful[8]    = {[0:$]};
         }
         cr_weight_reuse_weight_addr_high_weight_ram_type:  cross cp_weight_reuse, cp_weight_addr_high, cp_weight_ram_type {
             ignore_bins reuse = binsof(cp_weight_reuse.on);
         }
 `endif
-        cp_wgs_addr_low:  coverpoint ral.nvdla.NVDLA_CDMA.D_WGS_ADDR_LOW.WGS_ADDR_LOW.value[31:5] {
+        cp_wgs_addr_low:  coverpoint ral_mdl.nvdla.NVDLA_CDMA.D_WGS_ADDR_LOW.WGS_ADDR_LOW.value[31:5] {
             wildcard bins align_64  = {27'b??????????????????????????0};
             wildcard bins align_128 = {27'b?????????????????????????00};
             wildcard bins align_256 = {27'b????????????????????????000};
@@ -427,7 +427,7 @@ class conv_cov_pool extends nvdla_coverage_base;
             ignore_bins uncompress = binsof(cp_weight_format.uncompress);
         }
 `ifdef MEM_ADDR_WIDTH_GT_32
-        cp_wgs_addr_high:  coverpoint ral.nvdla.NVDLA_CDMA.D_WGS_ADDR_HIGH.WGS_ADDR_HIGH.value[`NVDLA_MEM_ADDRESS_WIDTH-32-1:0] {
+        cp_wgs_addr_high:  coverpoint ral_mdl.nvdla.NVDLA_CDMA.D_WGS_ADDR_HIGH.WGS_ADDR_HIGH.value[`NVDLA_MEM_ADDRESS_WIDTH-32-1:0] {
             bins ful[8]    = {[0:$]};
         }
         cr_weight_reuse_weight_format_wgs_addr_high_weight_ram_type:  cross cp_weight_reuse, cp_weight_format, cp_wgs_addr_high, cp_weight_ram_type {
@@ -435,7 +435,7 @@ class conv_cov_pool extends nvdla_coverage_base;
             ignore_bins uncompress = binsof(cp_weight_format.uncompress);
         }
 `endif
-        cp_wmb_addr_low:  coverpoint ral.nvdla.NVDLA_CDMA.D_WMB_ADDR_LOW.WMB_ADDR_LOW.value[31:5] {
+        cp_wmb_addr_low:  coverpoint ral_mdl.nvdla.NVDLA_CDMA.D_WMB_ADDR_LOW.WMB_ADDR_LOW.value[31:5] {
             wildcard bins align_64  = {27'b??????????????????????????0};
             wildcard bins align_128 = {27'b?????????????????????????00};
             wildcard bins align_256 = {27'b????????????????????????000};
@@ -446,7 +446,7 @@ class conv_cov_pool extends nvdla_coverage_base;
             ignore_bins uncompress = binsof(cp_weight_format.uncompress);
         }
 `ifdef MEM_ADDR_WIDTH_GT_32
-        cp_wmb_addr_high:  coverpoint ral.nvdla.NVDLA_CDMA.D_WMB_ADDR_HIGH.WMB_ADDR_HIGH.value[`NVDLA_MEM_ADDRESS_WIDTH-32-1:0] {
+        cp_wmb_addr_high:  coverpoint ral_mdl.nvdla.NVDLA_CDMA.D_WMB_ADDR_HIGH.WMB_ADDR_HIGH.value[`NVDLA_MEM_ADDRESS_WIDTH-32-1:0] {
             bins ful[8]    = {[0:$]};
         }
         cr_weight_reuse_weight_format_wmb_addr_high_weight_ram_type:  cross cp_weight_reuse, cp_weight_format, cp_wmb_addr_high, cp_weight_ram_type {
@@ -455,20 +455,20 @@ class conv_cov_pool extends nvdla_coverage_base;
         }
 `endif
         // ** weight size **
-        cp_weight_width_ext:       coverpoint ral.nvdla.NVDLA_CSC.D_WEIGHT_SIZE_EXT_0.WEIGHT_WIDTH_EXT.value[4:0] {
+        cp_weight_width_ext:       coverpoint ral_mdl.nvdla.NVDLA_CSC.D_WEIGHT_SIZE_EXT_0.WEIGHT_WIDTH_EXT.value[4:0] {
             bins ful[8] = {[0:$]};
         }
-        cp_weight_height_ext:      coverpoint ral.nvdla.NVDLA_CSC.D_WEIGHT_SIZE_EXT_0.WEIGHT_HEIGHT_EXT.value[4:0] {
+        cp_weight_height_ext:      coverpoint ral_mdl.nvdla.NVDLA_CSC.D_WEIGHT_SIZE_EXT_0.WEIGHT_HEIGHT_EXT.value[4:0] {
             bins ful[8] = {[0:$]};
         }
-        cp_weight_channel_ext:     coverpoint ral.nvdla.NVDLA_CSC.D_WEIGHT_SIZE_EXT_1.WEIGHT_CHANNEL_EXT.value[12:0] {
+        cp_weight_channel_ext:     coverpoint ral_mdl.nvdla.NVDLA_CSC.D_WEIGHT_SIZE_EXT_1.WEIGHT_CHANNEL_EXT.value[12:0] {
             bins ful[8] = {[0:$]};
         }
-        cp_y_extension:            coverpoint ral.nvdla.NVDLA_CSC.D_POST_Y_EXTENSION.Y_EXTENSION.value {
+        cp_y_extension:            coverpoint ral_mdl.nvdla.NVDLA_CSC.D_POST_Y_EXTENSION.Y_EXTENSION.value {
             bins ful[] = {[0:2]};
         }
         // dilation
-        cp_x_dilation_ext:         coverpoint ral.nvdla.NVDLA_CSC.D_DILATION_EXT.X_DILATION_EXT.value {
+        cp_x_dilation_ext:         coverpoint ral_mdl.nvdla.NVDLA_CSC.D_DILATION_EXT.X_DILATION_EXT.value {
             bins ful[] = {[0:31]};
         }
         cr_conv_mode_datain_format_x_dilation_ext:      cross cp_conv_mode, cp_datain_format, cp_x_dilation_ext {
@@ -478,7 +478,7 @@ class conv_cov_pool extends nvdla_coverage_base;
 `endif
             ignore_bins pixel    = binsof(cp_datain_format.pixel);
         }
-        cp_y_dilation_ext:         coverpoint ral.nvdla.NVDLA_CSC.D_DILATION_EXT.Y_DILATION_EXT.value {
+        cp_y_dilation_ext:         coverpoint ral_mdl.nvdla.NVDLA_CSC.D_DILATION_EXT.Y_DILATION_EXT.value {
             bins ful[] = {[0:31]};
         }
         cr_conv_mode_datain_format_y_dilation_ext:      cross cp_conv_mode, cp_datain_format, cp_y_dilation_ext {
@@ -489,7 +489,7 @@ class conv_cov_pool extends nvdla_coverage_base;
             ignore_bins pixel    = binsof(cp_datain_format.pixel);
         }
         // mean input
-        cp_mean_format:            coverpoint ral.nvdla.NVDLA_CDMA.D_MEAN_FORMAT.MEAN_FORMAT.value {
+        cp_mean_format:            coverpoint ral_mdl.nvdla.NVDLA_CDMA.D_MEAN_FORMAT.MEAN_FORMAT.value {
             bins off = {0};
             bins on  = {1};
         }
@@ -499,52 +499,52 @@ class conv_cov_pool extends nvdla_coverage_base;
             ignore_bins illegle_mode = binsof(cp_conv_mode.winograd) && binsof(cp_datain_format.pixel);
 `endif
         }
-        cp_conv_x_stride_0:          coverpoint ral.nvdla.NVDLA_CDMA.D_CONV_STRIDE.CONV_X_STRIDE.value[2:0];
-        cp_conv_y_stride_0:          coverpoint ral.nvdla.NVDLA_CDMA.D_CONV_STRIDE.CONV_Y_STRIDE.value[2:0];
-        //cp_conv_x_stride_1:          coverpoint signed'(ral.nvdla.NVDLA_CDMA.D_CONV_STRIDE.CONV_X_STRIDE.value - ral.nvdla.NVDLA_CSC.D_WEIGHT_SIZE_EXT_0.WEIGHT_WIDTH_EXT.value) {
+        cp_conv_x_stride_0:          coverpoint ral_mdl.nvdla.NVDLA_CDMA.D_CONV_STRIDE.CONV_X_STRIDE.value[2:0];
+        cp_conv_y_stride_0:          coverpoint ral_mdl.nvdla.NVDLA_CDMA.D_CONV_STRIDE.CONV_Y_STRIDE.value[2:0];
+        //cp_conv_x_stride_1:          coverpoint signed'(ral_mdl.nvdla.NVDLA_CDMA.D_CONV_STRIDE.CONV_X_STRIDE.value - ral_mdl.nvdla.NVDLA_CSC.D_WEIGHT_SIZE_EXT_0.WEIGHT_WIDTH_EXT.value) {
         //    bins neg  = {[$:-1]};
         //    bins zero = {0};
         //    bins pos  = {[1:$]};
         //}
-        //cp_conv_y_stride_1:          coverpoint signed'(ral.nvdla.NVDLA_CDMA.D_CONV_STRIDE.CONV_Y_STRIDE.value - ral.nvdla.NVDLA_CSC.D_WEIGHT_SIZE_EXT_0.WEIGHT_HEIGHT_EXT.value) {
+        //cp_conv_y_stride_1:          coverpoint signed'(ral_mdl.nvdla.NVDLA_CDMA.D_CONV_STRIDE.CONV_Y_STRIDE.value - ral_mdl.nvdla.NVDLA_CSC.D_WEIGHT_SIZE_EXT_0.WEIGHT_HEIGHT_EXT.value) {
         //    bins neg  = {[$:-1]};
         //    bins zero = {0};
         //    bins pos  = {[1:$]};
         //}
-        cp_conv_x_stride_ext:      coverpoint ral.nvdla.NVDLA_CSC.D_CONV_STRIDE_EXT.CONV_X_STRIDE_EXT.value[2:0];
-        cp_conv_y_stride_ext:      coverpoint ral.nvdla.NVDLA_CSC.D_CONV_STRIDE_EXT.CONV_Y_STRIDE_EXT.value[2:0];
+        cp_conv_x_stride_ext:      coverpoint ral_mdl.nvdla.NVDLA_CSC.D_CONV_STRIDE_EXT.CONV_X_STRIDE_EXT.value[2:0];
+        cp_conv_y_stride_ext:      coverpoint ral_mdl.nvdla.NVDLA_CSC.D_CONV_STRIDE_EXT.CONV_Y_STRIDE_EXT.value[2:0];
         // ** padding **
-        cp_pad_left:               coverpoint ral.nvdla.NVDLA_CDMA.D_ZERO_PADDING.PAD_LEFT.value[4:0] {
+        cp_pad_left:               coverpoint ral_mdl.nvdla.NVDLA_CDMA.D_ZERO_PADDING.PAD_LEFT.value[4:0] {
             bins ful[8] = {[0:$]};
         }
-        cp_pad_right:              coverpoint ral.nvdla.NVDLA_CDMA.D_ZERO_PADDING.PAD_RIGHT.value[5:0] {
+        cp_pad_right:              coverpoint ral_mdl.nvdla.NVDLA_CDMA.D_ZERO_PADDING.PAD_RIGHT.value[5:0] {
             bins ful[8] = {[0:$]};
         }
-        cp_pad_top:                coverpoint ral.nvdla.NVDLA_CDMA.D_ZERO_PADDING.PAD_TOP.value[4:0] {
+        cp_pad_top:                coverpoint ral_mdl.nvdla.NVDLA_CDMA.D_ZERO_PADDING.PAD_TOP.value[4:0] {
             bins ful[8] = {[0:$]};
         }
-        cp_pad_bottom:             coverpoint ral.nvdla.NVDLA_CDMA.D_ZERO_PADDING.PAD_BOTTOM.value[5:0] {
+        cp_pad_bottom:             coverpoint ral_mdl.nvdla.NVDLA_CDMA.D_ZERO_PADDING.PAD_BOTTOM.value[5:0] {
             bins ful[8] = {[0:$]};
         }
         // cbuf control
-        cp_data_bank:              coverpoint ral.nvdla.NVDLA_CDMA.D_BANK.DATA_BANK.value[3:0];
+        cp_data_bank:              coverpoint ral_mdl.nvdla.NVDLA_CDMA.D_BANK.DATA_BANK.value[3:0];
         cr_data_reuse_data_bank:         cross cp_data_reuse, cp_data_bank {
             ignore_bins reuse = binsof(cp_data_reuse.on);
         }
-        cp_weight_bank:            coverpoint ral.nvdla.NVDLA_CDMA.D_BANK.WEIGHT_BANK.value[3:0];
+        cp_weight_bank:            coverpoint ral_mdl.nvdla.NVDLA_CDMA.D_BANK.WEIGHT_BANK.value[3:0];
         cr_weight_reuse_weight_bank:         cross cp_weight_reuse, cp_weight_bank {
             ignore_bins reuse = binsof(cp_weight_reuse.on);
         }
         // reuse
-        cp_skip_data_rls:          coverpoint ral.nvdla.NVDLA_CSC.D_MISC_CFG.SKIP_DATA_RLS.value {
+        cp_skip_data_rls:          coverpoint ral_mdl.nvdla.NVDLA_CSC.D_MISC_CFG.SKIP_DATA_RLS.value {
             bins off = {0};
             bins on  = {1};
         }
-        cp_skip_weight_rls:        coverpoint ral.nvdla.NVDLA_CSC.D_MISC_CFG.SKIP_WEIGHT_RLS.value {
+        cp_skip_weight_rls:        coverpoint ral_mdl.nvdla.NVDLA_CSC.D_MISC_CFG.SKIP_WEIGHT_RLS.value {
             bins off = {0};
             bins on  = {1};
         }
-        cp_rtl_padded_width_alignment:  coverpoint ((ral.nvdla.NVDLA_CDMA.D_ZERO_PADDING.PAD_LEFT.value[4:0] + ral.nvdla.NVDLA_CDMA.D_DATAIN_SIZE_0.DATAIN_WIDTH.value[12:0] + 64'h1 + ral.nvdla.NVDLA_CDMA.D_ZERO_PADDING.PAD_RIGHT.value[4:0]) % `NVDLA_MEMORY_ATOMIC_SIZE) {
+        cp_rtl_padded_width_alignment:  coverpoint ((ral_mdl.nvdla.NVDLA_CDMA.D_ZERO_PADDING.PAD_LEFT.value[4:0] + ral_mdl.nvdla.NVDLA_CDMA.D_DATAIN_SIZE_0.DATAIN_WIDTH.value[12:0] + 64'h1 + ral_mdl.nvdla.NVDLA_CDMA.D_ZERO_PADDING.PAD_RIGHT.value[4:0]) % `NVDLA_MEMORY_ATOMIC_SIZE) {
             bins ful[]  = {[0:`NVDLA_MEMORY_ATOMIC_SIZE-1]};
         }
         cr_pixel_format_rtl_yuv_padded_width_alignment: cross cp_pixel_format, cp_rtl_padded_width_alignment {
@@ -557,7 +557,7 @@ class conv_cov_pool extends nvdla_coverage_base;
         // ** precision conversion **
         cr_datain_format_in_precision:    cross cp_datain_format, cp_in_precision;
         cr_datain_format_proc_precision:  cross cp_datain_format, cp_proc_precision;
-        cp_pra_truncate:                  coverpoint ral.nvdla.NVDLA_CSC.D_PRA_CFG.PRA_TRUNCATE.value {
+        cp_pra_truncate:                  coverpoint ral_mdl.nvdla.NVDLA_CSC.D_PRA_CFG.PRA_TRUNCATE.value {
             bins ful[] = {0, 1, 2};
         }
         cr_conv_mode_in_precision_pra_truncate:  cross cp_conv_mode, cp_in_precision, cp_pra_truncate {

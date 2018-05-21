@@ -13,6 +13,7 @@ package nvdla_scenario_pkg;
     import nvdla_resource_pkg::*;
     import mem_man_pkg::*;
     import nvdla_coverage_pkg::*;
+    import nvdla_ral_pkg::*;
 
     `include "nvdla_base_scenario.sv"
     `include "nvdla_pdprdma_pdp_scenario.sv"

@@ -981,7 +981,7 @@ constraint nvdla_sdp_resource::c_sim_cube_size_normal {
 
 function void nvdla_sdp_resource::pre_randomize();
     if(sdp_lut_reuse == 1 && pre_proc_precision != -1) begin
-        proc_precision = pre_proc_precision;
+        proc_precision = proc_precision_t'(pre_proc_precision);
         proc_precision.rand_mode(0);
     end
 endfunction : pre_randomize

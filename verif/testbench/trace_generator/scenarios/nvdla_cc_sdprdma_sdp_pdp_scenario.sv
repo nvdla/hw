@@ -93,13 +93,13 @@ function void nvdla_cc_sdprdma_sdp_pdp_scenario::trace_dump(int fh);
 
     if (fcov_en) begin
         `uvm_info(inst_name, "Start to sample coverage ...", UVM_HIGH)
-        cov.conv_pool.sample();
-        cov.sdp_pool.sdp_rdma_sample();
+        cov.conv_pool.sample(ral);
+        cov.sdp_pool.sdp_rdma_sample(ral);
 `ifdef NVDLA_SDP_EW_ENABLE
-        cov.sdp_pool.sdp_lut_sample();
+        cov.sdp_pool.sdp_lut_sample(ral);
 `endif
-        cov.sdp_pool.sdp_sample();
-        cov.pdp_pool.pdp_sample();
+        cov.sdp_pool.sdp_sample(ral);
+        cov.pdp_pool.pdp_sample(ral);
     end
     print_comment(fh, $sformatf("Scenario CC_SDPRDMA_SDP_PDP:%0d end",active_cnt));
 endfunction: trace_dump

@@ -29,6 +29,11 @@ class nvdla_base_scenario extends uvm_component;
     nvdla_coverage_top      cov;
     
     /*
+        ral: register top
+    */
+    ral_sys_top             ral;
+
+    /*
         methods
     */
     extern function         new(string name, uvm_component parent);
@@ -77,6 +82,9 @@ function void nvdla_base_scenario::build_phase(uvm_phase phase);
     surface_gen = surface_generator::type_id::create("surface_generator",this);
     if (fcov_en && !uvm_config_db#(nvdla_coverage_top)::get(this, "", "cov", cov)) begin
         `uvm_fatal(inst_name, "Can't get cov instance hdl")
+    end
+    if(!uvm_config_db#(ral_sys_top)::get(this,"", "ral", ral)) begin
+        `uvm_fatal(inst_name, "Null ral object, please check")
     end
 endfunction: build_phase
 
