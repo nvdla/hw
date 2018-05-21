@@ -1744,7 +1744,7 @@ endmodule // NV_NVDLA_MCIF_WRITE_IG_BPT_dfifo_flopram_rwsa_1x64
 
 
 
-#elif ( NVDLA_MEMORY_ATOMIC_WIDTH  == 256 )
+#else //( NVDLA_MEMORY_ATOMIC_WIDTH  == 256 )
 
 
 module NV_NVDLA_MCIF_WRITE_IG_BPT_dfifo (
