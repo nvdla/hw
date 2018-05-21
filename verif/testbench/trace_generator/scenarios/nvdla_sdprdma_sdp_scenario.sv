@@ -64,6 +64,7 @@ function void nvdla_sdprdma_sdp_scenario::trace_dump(int fh);
         `uvm_fatal(inst_name, "Null handle of trace file ...")
     end
     `uvm_info(inst_name, "Start trace dumping ...", UVM_HIGH)
+    print_comment(fh, $sformatf("Scenario SDPRDMA_SDP:%0d start",active_cnt));
     
     set_sync_evt_name();
     // Get surface setting fro resource register
@@ -83,6 +84,7 @@ function void nvdla_sdprdma_sdp_scenario::trace_dump(int fh);
 `endif
         cov.sdp_pool.sdp_sample();
     end
+    print_comment(fh, $sformatf("Scenario SDPRDMA_SDP:%0d end",active_cnt));
 endfunction: trace_dump
 
 function void nvdla_sdprdma_sdp_scenario::activate();
