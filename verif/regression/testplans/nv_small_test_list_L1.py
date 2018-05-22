@@ -556,92 +556,92 @@ add_test(name='dc_1x1x8_1x1x8x1_int8_0',
 
 #add_test(name='dc_sdp_pdp_WxHxC_RxSxCxK_int8_0',
 #         tags=['L1','cc', 'dc'],
-#         args=[],
+#         args=[FIXED_SEED_ARG, DISABLE_COMPARE_ALL_UNITS_SB_ARG],
 #         config=['nvdla_utb'],
 #         desc='''test fused layers''')
 
 #SDP tests
 add_test(name='sdp_3x3x33_bs_int8_reg_0',
          tags=['L1', 'sdp'],
-         args=[],
+         args=[FIXED_SEED_ARG, DISABLE_COMPARE_ALL_UNITS_SB_ARG],
          config=['nvdla_utb'],
          desc='''copied from sdp_bs_reg_stest, alu_algo SUM. mul_prelu 0''')
 
 add_test(name='sdp_3x3x33_bs_int8_reg_1',
          tags=['L1', 'sdp'],
-         args=[],
+         args=[FIXED_SEED_ARG, DISABLE_COMPARE_ALL_UNITS_SB_ARG],
          config=['nvdla_utb'],
          desc='''copied from sdp_bs_reg_stest, alu_algo MIN. mul_prelu 0''')
 
 add_test(name='sdp_23x13x42_bs_int8_mem_0',
          tags=['L1', 'sdp'],
-         args=[],
+         args=[FIXED_SEED_ARG, DISABLE_COMPARE_ALL_UNITS_SB_ARG],
          config=['nvdla_utb'],
          desc='''converted from sdp_cmod_full_feature_3, src mem, one_byte, per_element, bypass alu, mul_prelu 1, bypass relu''')
 
 add_test(name='sdp_5x24x18_bs_int8_mem_0',
          tags=['L1', 'sdp'],
-         args=[],
+         args=[FIXED_SEED_ARG, DISABLE_COMPARE_ALL_UNITS_SB_ARG],
          config=['nvdla_utb'],
          desc='''converted from sdp_cmod_full_feature_4, src mem, one_byte, per_element, alu_algo MAX, bypass mul, bypass relu''')
 
 add_test(name='sdp_3x3x33_bn_int8_reg_0',
          tags=['L1', 'sdp'],
-         args=[],
+         args=[FIXED_SEED_ARG, DISABLE_COMPARE_ALL_UNITS_SB_ARG],
          config=['nvdla_utb'],
          desc='''copied from sdp_bn_reg_stest_0, alu_algo SUM. mul_prelu 0''')
 
 add_test(name='sdp_3x3x33_bn_int8_reg_1',
          tags=['L1', 'sdp'],
-         args=[],
+         args=[FIXED_SEED_ARG, DISABLE_COMPARE_ALL_UNITS_SB_ARG],
          config=['nvdla_utb'],
          desc='''copied from sdp_bn_reg_stest_1, alu_algo MAX. bypass mul, bypass relu''')
 
 add_test(name='sdp_3x3x33_bn_int8_reg_2',
          tags=['L1', 'sdp'],
-         args=[],
+         args=[FIXED_SEED_ARG, DISABLE_COMPARE_ALL_UNITS_SB_ARG],
          config=['nvdla_utb'],
          desc='''copied from sdp_bn_reg_stest_2, alu_algo MIN. mul_prelu 1''')
 
 add_test(name='sdp_3x3x33_bn_int8_reg_3',
          tags=['L1', 'sdp'],
-         args=[],
+         args=[FIXED_SEED_ARG, DISABLE_COMPARE_ALL_UNITS_SB_ARG],
          config=['nvdla_utb'],
          desc='''copied from sdp_bn_reg_stest_3, alu_algo SUM. mul_prelu 0, bypass alu''')
 
 add_test(name='sdp_3x3x33_bn_int8_mem_0',
          tags=['L1', 'sdp'],
-         args=[],
+         args=[FIXED_SEED_ARG, DISABLE_COMPARE_ALL_UNITS_SB_ARG],
          config=['nvdla_utb'],
          desc='''converted from sdp_bn_mem_stest, alu_algo SUM. bypass mul, per_element''')
 
 #add_test(name='sdp_3x3x33_ew_int8_reg_0',
 #         tags=['L1', 'sdp'],
-#         args=[],
+#         args=[FIXED_SEED_ARG, DISABLE_COMPARE_ALL_UNITS_SB_ARG],
 #         config=['nvdla_utb'],
 #         desc='''copied from sdp_ew_reg_stest, alu_algo SUM. mul_prelu 0, bypass alu_cvt, bypass mul_cvt, bypass lut''')
 #
 #add_test(name='sdp_3x3x33_ew_le_lin_int8',
 #         tags=['L1', 'sdp'],
-#         args=[],
+#         args=[FIXED_SEED_ARG, DISABLE_COMPARE_ALL_UNITS_SB_ARG],
 #         config=['nvdla_utb'],
 #         desc='''copied from sdp_le_lin_stest, bypass alu, bypass mul''')
 #
 #add_test(name='sdp_3x3x33_ew_le_exp_int8',
 #         tags=['L1', 'sdp'],
-#         args=[],
+#         args=[FIXED_SEED_ARG, DISABLE_COMPARE_ALL_UNITS_SB_ARG],
 #         config=['nvdla_utb'],
 #         desc='''copied from sdp_le_exp_stest, bypass alu, bypass mul''')
 #
 #add_test(name='sdp_3x3x32_ew_lo_lin_int8',
 #         tags=['L1', 'sdp'],
-#         args=[],
+#         args=[FIXED_SEED_ARG, DISABLE_COMPARE_ALL_UNITS_SB_ARG],
 #         config=['nvdla_utb'],
 #         desc='''copied from sdp_lo_lin_stest, bypass alu, bypass mul''')
 
 add_test(name='sdp_1x1x8_pass_through_int8_0',
          tags=['L1', 'sdp'],
-         args=[],
+         args=[FIXED_SEED_ARG, DISABLE_COMPARE_ALL_UNITS_SB_ARG],
          config=['nvdla_utb'],
          desc='''test 1x1x8 case, bypass bs, bypass bn, bypass ew''')
 
