@@ -1,0 +1,11 @@
+interface csc2cmac_data_if
+  flow valid
+  field pd 9
+  field mask NVDLA_MAC_ATOMIC_C_SIZE
+  field data[NVDLA_MAC_ATOMIC_C_SIZE] NVDLA_BPE
+
+interface csc2cmac_wt_if
+  flow valid
+  field data[NVDLA_MAC_ATOMIC_C_SIZE]  NVDLA_BPE
+  field mask NVDLA_MAC_ATOMIC_C_SIZE
+  field sel NVDLA_MAC_ATOMIC_K_SIZE_DIV2

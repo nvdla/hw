@@ -1,0 +1,5 @@
+module csc2mac
+  out csc2cmac_data_if sc2cmac_data_a
+  out csc2cmac_data_if sc2cmac_data_b
+  out csc2cmac_wt_if sc2mac_wt_a
+  out csc2cmac_wt_if sc2mac_wt_b

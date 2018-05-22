@@ -4,7 +4,8 @@ include $(DEPTH)/tools/make/common.make
 # define the sub modules
 
 ODIF_FILES := $(shell find . -name "*.odif")
-ODIF_TOP := example.top.odif
+#ODIF_TOP := example.top.odif
+ODIF_TOP := nvdla.top.odif
 
 VCP_ODIF_FILES  := $(ODIF_FILES:%=%.vcp)
 OUT_ODIF_FILES := $(addprefix $(OUT_DIR)/,$(ODIF_FILES))
