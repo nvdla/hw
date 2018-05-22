@@ -3,3 +3,12 @@ module csc2mac
   out csc2cmac_data_if sc2cmac_data_b
   out csc2cmac_wt_if sc2mac_wt_a
   out csc2cmac_wt_if sc2mac_wt_b
+
+module cmac2cacc
+  out  cmac2cacc_if mac2accu
+
+module cacc2sdp
+  out cacc2sdp_if cacc2sdp
+
+module sdp2pdp
+  out  sdp2pdp_if sdp2pdp 

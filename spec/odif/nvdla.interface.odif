@@ -9,3 +9,18 @@ interface csc2cmac_wt_if
   field data[NVDLA_MAC_ATOMIC_C_SIZE]  NVDLA_BPE
   field mask NVDLA_MAC_ATOMIC_C_SIZE
   field sel NVDLA_MAC_ATOMIC_K_SIZE_DIV2
+
+interface cmac2cacc_if
+  flow valid
+  field data[NVDLA_MAC_ATOMIC_K_SIZE_DIV2] NVDLA_MAC_RESULT_WIDTH
+  field mask  NVDLA_MAC_ATOMIC_K_SIZE_DIV2
+  field mode  1
+  field pd    9
+
+interface cacc2sdp_if
+  flow valid_ready
+  field pd NVDLA_CACC_SDP_WIDTH
+
+interface sdp2pdp_if
+  flow valid_ready
+  field pd NVDLA_SDP2PDP_WIDTH
