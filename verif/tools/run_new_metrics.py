@@ -346,11 +346,12 @@ class DivPlot():
                         )
                     ],
                     style = {
-                        'textAlign' : 'left',
+                        'textAlign' : 'center',
                         'float'     : 'right',
                         'width'     : '90%',
                         'display'   : 'inline-block',
                         'marginTop' : '10',
+                        #'fontSize'  : '13',
                     }
                 )
                 divs[proj][regr] = div
@@ -399,8 +400,8 @@ class DivPlot():
                                 #resizable           = True,
                                 sortable             = True,
                                 #column_width        = [50,320,100,200,400,400,],
-                                row_height           = 120,
-                                min_height           = 500,
+                                row_height           = 80,
+                                min_height           = 400,
                                 selected_row_indices = [],
                             )
                         ],
@@ -409,7 +410,7 @@ class DivPlot():
                             'float'     : 'left',
                             'width'     : '100%',
                             'display'   : 'inline-block',
-                            'fontSize'  : '12',
+                            'fontSize'  : '13',
                             'marginTop' : '10',
                         }
                     )
@@ -486,7 +487,7 @@ class DivPlot():
                         html.H3('Desc:',     style={'marginTop':'29'}),
                         html.H3('Status:',   style={'marginTop':'29'}),
                     ],
-                    style = {'dispaly':'inline-block', 'float':'left', 'marginLeft':'300'}
+                    style = {'dispaly':'inline-block', 'float':'left', 'marginLeft':'20%'}
                 ),
                 html.Div(
                     children = [
@@ -497,18 +498,18 @@ class DivPlot():
                             clearable = True,
                             multi = False,
                         ),
-                        dcc.Input(id='syndrome', type='text', style={'marginTop':'13','width':'845','height':'30','color':'green'}),
-                        dcc.Input(id='bugid',    type='text', style={'marginTop':'13','width':'845','height':'30','color':'green'}),
-                        dcc.Input(id='pattern',  type='text', style={'marginTop':'13','width':'845','height':'30','color':'green'}),
-                        dcc.Input(id='desc',     type='text', style={'marginTop':'13','width':'845','height':'30','color':'green'}),
-                        dcc.Input(id='status',  value='', type='text', style={'marginTop':'13','width':'845','height':'30','color':'red'}),
+                        dcc.Input(id='syndrome', type='text', style={'marginTop':'13','width':'100%','height':'30','color':'green'}),
+                        dcc.Input(id='bugid',    type='text', style={'marginTop':'13','width':'100%','height':'30','color':'green'}),
+                        dcc.Input(id='pattern',  type='text', style={'marginTop':'13','width':'100%','height':'30','color':'green'}),
+                        dcc.Input(id='desc',     type='text', style={'marginTop':'13','width':'100%','height':'30','color':'green'}),
+                        dcc.Input(id='status',  value='', type='text', style={'marginTop':'13','width':'100%','height':'30','color':'red'}),
                     ],
                     style = {'dispaly':'inline-block', 'width':'50%', 'marginLeft':'20','marginTop':'20', 'fontWeight':'bold', 'float':'left'}
                 ),
                 html.Button(
                     'Update',
                     id       = 'up_button',
-                    style    = {'backgroundColor' : '#F0F0F0', 'color':'green', 'marginLeft':'330', 'marginTop':'15', 'fontSize':'18', 'fontWeight':'bold', 'dispaly':'inline-block'},
+                    style    = {'backgroundColor' : '#F0F0F0', 'color':'green', 'marginLeft':'20%', 'marginTop':'15', 'fontSize':'18', 'fontWeight':'bold', 'dispaly':'inline-block'},
                 ),
                 html.Button(
                     'Delete',
@@ -533,7 +534,7 @@ class DivPlot():
             html.Div(
                 id       = 'nav',
                 children = [
-                    html.A('PASSINGRATE', href='#passing_rate_div', style={'color':'green'}),
+                    html.A('PASSRATE',    href='#passing_rate_div', style={'color':'green'}),
                     html.Br(),html.Br(),
                     html.A('TESTNUM',     href='#test_num_div',     style={'color':'green'}),
                     html.Br(),html.Br(),
@@ -550,6 +551,7 @@ class DivPlot():
                     'paddingRight'    : '10',
                     'paddingTop'      : '10',
                     'paddingBottom'   : '10',
+                    'width'           : '7%',
                 }
             ),
             html.Div(id='passing_rate_v', children = div_pr[proj][regr]),
@@ -611,7 +613,7 @@ class DivPlot():
             children = [
                 html.Div(
                     html.H4('PROJECT:  ', style={'marginTop':'30'}),
-                    style = {'dispaly':'inline-block', 'float':'left', 'marginLeft':'300'}
+                    style = {'dispaly':'inline-block', 'float':'left', 'marginLeft':'15%'}
                 ),
                 html.Div(
                     dcc.Dropdown(
@@ -621,11 +623,11 @@ class DivPlot():
                         clearable = True,
                         multi     = False,
                     ),
-                    style = {'dispaly':'inline-block', 'width':'15%', 'marginLeft':'20','marginTop':'20', 'fontWeight':'bold', 'float':'left'}
+                    style = {'dispaly':'inline-block', 'width':'15%', 'marginLeft':'3%','marginTop':'20', 'fontWeight':'bold', 'float':'left'}
                 ),
                 html.Div(
                     html.H4('REGRESSION:  ', style={'marginTop':'30'}),
-                    style = {'dispaly':'inline-block', 'float':'left', 'marginLeft':'200'}
+                    style = {'dispaly':'inline-block', 'float':'left', 'marginLeft':'5%'}
                 ),
                 html.Div(
                     dcc.Dropdown(
@@ -635,7 +637,7 @@ class DivPlot():
                         clearable = True,
                         multi     = False,
                     ),
-                    style = {'dispaly':'inline-block', 'width':'15%', 'marginLeft':'20','marginTop':'20', 'fontWeight':'bold', 'float':'left'}
+                    style = {'dispaly':'inline-block', 'width':'15%', 'marginLeft':'3%','marginTop':'20', 'fontWeight':'bold', 'float':'left'}
                 ),
             ],
             style = {
@@ -733,12 +735,12 @@ class DivPlot():
                         html.Div(
                             children = [
                                 #html.A('BACK', href='/nvdla', style={'color':'green'}),
-                                dcc.Link('BACK', href='/nvdla', style={'color':'green','textDecoration':'underline','cursor':'pointer'}),
+                                #dcc.Link('BACK', href='/nvdla', style={'color':'green','textDecoration':'underline','cursor':'pointer'}),
                             ],
                             style = {
                                 'float'           : 'left',
-                                'border'          : 'solid #F1F1F1',
-                                'backgroundColor' : 'rgba(240,240,240,0.85)',
+                                #'border'          : 'solid #F1F1F1',
+                                #'backgroundColor' : 'rgba(240,240,240,0.85)',
                                 'marginTop'       : '10',
                                 'marginLeft'      : '10',
                                 'paddingLeft'     : '10',
