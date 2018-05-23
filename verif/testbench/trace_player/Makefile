@@ -74,9 +74,11 @@ VMOD_RAM_DIRS        := ${VMOD_DIR}/rams
 VMOD_RAM_DIRS        += ${VMOD_DIR}/rams/model
 VMOD_RAM_DIRS        += ${VMOD_DIR}/rams/synth
 VMOD_RAM_DIRS_ALL    := ${VMOD_RAM_DIRS:%=+incdir+%}
+VMOD_FIFO_DIR        := ${VMOD_DIR}/fifos
 VLIBS                := ${VMOD_DIR}/nvdla/nocif/NV_NVDLA_XXIF_libs.v
 VLIBS                += ${VMOD_LIB_DIR}/RANDFUNC.vlib
 VLIBS                += ${VMOD_LIB_DIR}/nv_assert_no_x.vlib
+VLIBS                += ${shell find ${VMOD_FIFO_DIR} -name '*.v'}
 ifeq (${USE_DESIGNWARE},0)
 DWDIR                := ${TOT}/${OUTDIR}/${PROJECT}/vmod/vlibs
 DWFILES              := ${DWDIR}/NV_DW02_tree.v \
