@@ -1,6 +1,10 @@
 interface csc2cmac_data_if
   flow valid
-  field pd 9
+  field batch_index 5
+  field stripe_st 1
+  field stripe_end 1
+  field channel_end 1
+  field layer_end 1
   field mask NVDLA_MAC_ATOMIC_C_SIZE
   field data[NVDLA_MAC_ATOMIC_C_SIZE] NVDLA_BPE
 
@@ -15,12 +19,19 @@ interface cmac2cacc_if
   field data[NVDLA_MAC_ATOMIC_K_SIZE_DIV2] NVDLA_MAC_RESULT_WIDTH
   field mask  NVDLA_MAC_ATOMIC_K_SIZE_DIV2
   field mode  1
-  field pd    9
+  field batch_index 5
+  field stripe_st 1
+  field stripe_end 1
+  field channel_end 1
+  field layer_end 1
 
 interface cacc2sdp_if
   flow valid_ready
-  field pd NVDLA_CACC_SDP_WIDTH
+  field pd[NVDLA_SDP_MAX_THROUGHPUT]  32
+  field pd_batch_end  1
+  field pd_layer_end  1
+
 
 interface sdp2pdp_if
   flow valid_ready
-  field pd NVDLA_SDP2PDP_WIDTH
+  field pd[NVDLA_SDP_MAX_THROUGHPUT] NVDLA_BPE
