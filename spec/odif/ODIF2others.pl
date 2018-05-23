@@ -326,6 +326,7 @@ sub emit_c
         print FILE "#if !defined(_${key_interface}_iface_H_)\n#define _${key_interface}_iface_H_\n\n";
         print FILE "#include <stdint.h>\n";
         if(exists $interface{$key_interface}{packet}){
+            my $id=$interface{$key_interface}{id};
             my @packet=@{$interface{$key_interface}{packet}};
             foreach my $key_group (@packet){
                 print FILE "#ifndef _${key_group}_struct_H_\n#define _${key_group}_struct_H_\n\n";
@@ -345,6 +346,8 @@ sub emit_c
                 print FILE "} ${key_group}_t;\n\n#endif\n";    
             }
             print FILE "union ${key_interface}_u {\n";
+            #print FILE "    uint8_t tag;\n";        
+            print FILE "    sc_int<$id> tag;\n";
             foreach my $key_group (@packet){
                     print FILE "    ${key_group}_t $key_group;\n";        
             }
