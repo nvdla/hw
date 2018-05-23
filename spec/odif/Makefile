@@ -24,7 +24,7 @@ endif
 	$(AT)$(VCP) -i $< -o $@ -imacros $(PROJ_HEAD) -cpp $(CPP)
 
 $(OUT_ODIF_TOP) : $(OUT_ODIF_FILES) $(PATH_SPEC_ODIF)/ODIF2others.pl
-	$(AT)$(PERL) $(PATH_SPEC_ODIF)/ODIF2others.pl -o $(OUT_DIR) -f $@ -c -v -m
+	$(AT)$(PERL) $(PATH_SPEC_ODIF)/ODIF2others.pl -o $(OUT_DIR) -f $@ -c -sv -v -m
 
 # ======================
 .PHONE: clean
