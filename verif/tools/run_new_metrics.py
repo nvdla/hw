@@ -790,6 +790,11 @@ class DivPlot():
             else:
                 return ''
 
+        @self._app.callback(dash.dependencies.Output('syn_dropdown', 'options'),
+                            [dash.dependencies.Input('up_button', 'n_clicks'),dash.dependencies.Input('del_button', 'n_clicks')])
+        def up_db(up_num,del_num):
+            return [{'label': i, 'value':i} for i in synd_db]
+
         @self._app.callback(dash.dependencies.Output('status', 'value'),
                             [dash.dependencies.Input('up_button', 'n_clicks'),dash.dependencies.Input('del_button', 'n_clicks'),dash.dependencies.Input('syndrome', 'value'),
                             dash.dependencies.Input('bugid', 'value'),dash.dependencies.Input('pattern', 'value'),  dash.dependencies.Input('desc', 'value')])
