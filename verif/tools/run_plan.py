@@ -141,6 +141,8 @@ class RunPlan(object):
             args        = test_dict['args']
             config_list = test_dict['config']
             module      = test_dict['module']
+            if test_dict['unwritten']:
+                continue
             for config in config_list:
                 cmd_exe = os.path.join(_get_abs_path_to_tree_root(), 'verif/tools/run_test.py')
                 #print(self.config['rtlarg'])
@@ -261,6 +263,7 @@ class RunPlan(object):
         # dump regression status data in JSON fromat
         sts_data                   = {}
         test_list                  = []
+        unwritten_test_list        = []
         test_run_multi_time_list   = []
         git_cm_id                  = subprocess.check_output('git log -n 1 --pretty=format:"%H"', shell = True, encoding = 'ascii')
         sts_data['unique_id']      = git_cm_id;
@@ -280,12 +283,14 @@ class RunPlan(object):
         for item in self.run_test_list:
             if item['name'] not in test_list:
                 test_list.append(item['name']) 
+            if all([item['unwritten'] == True, item['name'] not in unwritten_test_list]):
+                unwritten_test_list.append(item['name'])
             else:
                 test_run_multi_time_list.append(item['name'])
         print('RUN_PLAN: following tests will be run multiple times')
         pprint(test_run_multi_time_list)
         sts_data['metrics_result']['planned_test_number']    = len(test_list)
-        sts_data['metrics_result']['unwrittern_test_number'] = 0
+        sts_data['metrics_result']['unwrittern_test_number'] = len(unwritten_test_list)
         sts_data['metrics_result']['running_test_number']    = len(self._test_dir_cmd)
         sts_data['metrics_result']['passing_rate']           = 0
         sts_data['metrics_result']['code_coverage']          = 0

@@ -34,7 +34,7 @@ class TestPlan():
         self.plan_arguments.update(attr_dict)
         self.user_variables.update(dict(plan_arguments=self.plan_arguments))
 
-    def add_test(self, name='', args=[], config=[], module='nvdla_trace_test', tags=[], desc=''):
+    def add_test(self, name='', args=[], config=[], module='nvdla_trace_test', tags=[], desc='', unwritten=False):
         ## TODO, type checker
         self.test_list.append( {
             'name'   : name,
@@ -43,6 +43,7 @@ class TestPlan():
             'module' : module,
             'tags'   : tags,
             'desc'   : desc,
+            'unwritten': unwritten,
             }
         )
 
