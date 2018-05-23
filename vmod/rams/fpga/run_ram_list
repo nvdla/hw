@@ -1,21 +1,41 @@
+ dla_ramgen -m  nv_ram_rws_128x128
  dla_ramgen -m  nv_ram_rws_128x18
+ dla_ramgen -m  nv_ram_rws_128x256
+ dla_ramgen -m  nv_ram_rws_128x32
+ dla_ramgen -m  nv_ram_rws_128x512
+ dla_ramgen -m  nv_ram_rws_128x64
  dla_ramgen -m  nv_ram_rws_16x256
  dla_ramgen -m  nv_ram_rws_16x272
  dla_ramgen -m  nv_ram_rws_16x64
+ dla_ramgen -m  nv_ram_rws_256x128
+ dla_ramgen -m  nv_ram_rws_256x256
  dla_ramgen -m  nv_ram_rws_256x3
  dla_ramgen -m  nv_ram_rws_256x512
+ dla_ramgen -m  nv_ram_rws_256x64
  dla_ramgen -m  nv_ram_rws_256x7
+ dla_ramgen -m  nv_ram_rws_32x128
  dla_ramgen -m  nv_ram_rws_32x16
+ dla_ramgen -m  nv_ram_rws_32x256
+ dla_ramgen -m  nv_ram_rws_32x272
+ dla_ramgen -m  nv_ram_rws_32x32
  dla_ramgen -m  nv_ram_rws_32x512
  dla_ramgen -m  nv_ram_rws_32x544
+ dla_ramgen -m  nv_ram_rws_32x64
  dla_ramgen -m  nv_ram_rws_32x768
+ dla_ramgen -m  nv_ram_rws_512x128
+ dla_ramgen -m  nv_ram_rws_512x256
  dla_ramgen -m  nv_ram_rws_512x512
  dla_ramgen -m  nv_ram_rws_512x64
  dla_ramgen -m  nv_ram_rws_64x10
  dla_ramgen -m  nv_ram_rws_64x1024
  dla_ramgen -m  nv_ram_rws_64x1088
  dla_ramgen -m  nv_ram_rws_64x116
+ dla_ramgen -m  nv_ram_rws_64x128
  dla_ramgen -m  nv_ram_rws_64x18
+ dla_ramgen -m  nv_ram_rws_64x256
+ dla_ramgen -m  nv_ram_rws_64x32
+ dla_ramgen -m  nv_ram_rws_64x512
+ dla_ramgen -m  nv_ram_rws_64x64
  dla_ramgen -m  nv_ram_rwsp_128x11
  dla_ramgen -m  nv_ram_rwsp_128x6
  dla_ramgen -m  nv_ram_rwsp_160x16
@@ -33,6 +53,7 @@
  dla_ramgen -m  nv_ram_rwsp_80x256
  dla_ramgen -m  nv_ram_rwsp_80x514
  dla_ramgen -m  nv_ram_rwsp_80x65
+ dla_ramgen -m  nv_ram_rwsp_8x65
  dla_ramgen -m  nv_ram_rwst_256x8
  dla_ramgen -m  nv_ram_rwsthp_19x32
  dla_ramgen -m  nv_ram_rwsthp_19x4
@@ -40,5 +61,6 @@
  dla_ramgen -m  nv_ram_rwsthp_60x168
  dla_ramgen -m  nv_ram_rwsthp_60x21
  dla_ramgen -m  nv_ram_rwsthp_80x15
+ dla_ramgen -m  nv_ram_rwsthp_80x17
  dla_ramgen -m  nv_ram_rwsthp_80x72
  dla_ramgen -m  nv_ram_rwsthp_80x9
