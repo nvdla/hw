@@ -1,15 +1,15 @@
-//RAM             : RAMDP_60X22_GL_M1_E2
+//RAM             : RAMDP_80X18_GL_M1_E2
 //Technology      : TSMC16FFLR
 //Compiler version: FINAL.1 - 2017-05-23.14:46:11
 
 `timescale 10ps/1ps
 
 `celldefine
-module RAMDP_60X22_GL_M1_E2 (CLK_R, CLK_W, RE, WE
-	, RADR_5, RADR_4, RADR_3, RADR_2, RADR_1, RADR_0
-    , WADR_5, WADR_4, WADR_3, WADR_2, WADR_1, WADR_0
-	, WD_21, WD_20, WD_19, WD_18, WD_17, WD_16, WD_15, WD_14, WD_13, WD_12, WD_11, WD_10, WD_9, WD_8, WD_7, WD_6, WD_5, WD_4, WD_3, WD_2, WD_1, WD_0
-	, RD_21, RD_20, RD_19, RD_18, RD_17, RD_16, RD_15, RD_14, RD_13, RD_12, RD_11, RD_10, RD_9, RD_8, RD_7, RD_6, RD_5, RD_4, RD_3, RD_2, RD_1, RD_0
+module RAMDP_80X18_GL_M1_E2 (CLK_R, CLK_W, RE, WE
+	, RADR_6, RADR_5, RADR_4, RADR_3, RADR_2, RADR_1, RADR_0
+    , WADR_6, WADR_5, WADR_4, WADR_3, WADR_2, WADR_1, WADR_0
+	, WD_17, WD_16, WD_15, WD_14, WD_13, WD_12, WD_11, WD_10, WD_9, WD_8, WD_7, WD_6, WD_5, WD_4, WD_3, WD_2, WD_1, WD_0
+	, RD_17, RD_16, RD_15, RD_14, RD_13, RD_12, RD_11, RD_10, RD_9, RD_8, RD_7, RD_6, RD_5, RD_4, RD_3, RD_2, RD_1, RD_0
     
     , IDDQ
 	, SVOP_1, SVOP_0
@@ -23,33 +23,33 @@ module RAMDP_60X22_GL_M1_E2 (CLK_R, CLK_W, RE, WE
 `ifndef EMULATION
 `ifndef SYNTHESIS
 // Physical ram size defined as localparam
-localparam phy_rows = 60;
-localparam phy_cols = 22;
-localparam phy_rcols_pos = 22'b0;
+localparam phy_rows = 80;
+localparam phy_cols = 18;
+localparam phy_rcols_pos = 18'b0;
 `endif //ndef SYNTHESIS
 `endif //EMULATION
 `endif //ndef RAM_INTERFACE
 
 input CLK_R, CLK_W, RE, WE
-	, RADR_5, RADR_4, RADR_3, RADR_2, RADR_1, RADR_0
-    , WADR_5, WADR_4, WADR_3, WADR_2, WADR_1, WADR_0
-	, WD_21, WD_20, WD_19, WD_18, WD_17, WD_16, WD_15, WD_14, WD_13, WD_12, WD_11, WD_10, WD_9, WD_8, WD_7, WD_6, WD_5, WD_4, WD_3, WD_2, WD_1, WD_0
+	, RADR_6, RADR_5, RADR_4, RADR_3, RADR_2, RADR_1, RADR_0
+    , WADR_6, WADR_5, WADR_4, WADR_3, WADR_2, WADR_1, WADR_0
+	, WD_17, WD_16, WD_15, WD_14, WD_13, WD_12, WD_11, WD_10, WD_9, WD_8, WD_7, WD_6, WD_5, WD_4, WD_3, WD_2, WD_1, WD_0
     
     , SLEEP_EN_7, SLEEP_EN_6, SLEEP_EN_5, SLEEP_EN_4, SLEEP_EN_3, SLEEP_EN_2, SLEEP_EN_1, SLEEP_EN_0, RET_EN
     , IDDQ
     
 	, SVOP_1, SVOP_0;
-output RD_21, RD_20, RD_19, RD_18, RD_17, RD_16, RD_15, RD_14, RD_13, RD_12, RD_11, RD_10, RD_9, RD_8, RD_7, RD_6, RD_5, RD_4, RD_3, RD_2, RD_1, RD_0;
+output RD_17, RD_16, RD_15, RD_14, RD_13, RD_12, RD_11, RD_10, RD_9, RD_8, RD_7, RD_6, RD_5, RD_4, RD_3, RD_2, RD_1, RD_0;
 
 	
 `ifndef RAM_INTERFACE
 	//assemble & rename wires
-	wire [5:0] RA = {RADR_5, RADR_4, RADR_3, RADR_2, RADR_1, RADR_0};
-	wire [5:0] WA = {WADR_5, WADR_4, WADR_3, WADR_2, WADR_1, WADR_0};
-	wire [21:0] WD = {WD_21, WD_20, WD_19, WD_18, WD_17, WD_16, WD_15, WD_14, WD_13, WD_12, WD_11, WD_10, WD_9, WD_8, WD_7, WD_6, WD_5, WD_4, WD_3, WD_2, WD_1, WD_0};
+	wire [6:0] RA = {RADR_6, RADR_5, RADR_4, RADR_3, RADR_2, RADR_1, RADR_0};
+	wire [6:0] WA = {WADR_6, WADR_5, WADR_4, WADR_3, WADR_2, WADR_1, WADR_0};
+	wire [17:0] WD = {WD_17, WD_16, WD_15, WD_14, WD_13, WD_12, WD_11, WD_10, WD_9, WD_8, WD_7, WD_6, WD_5, WD_4, WD_3, WD_2, WD_1, WD_0};
 
-	wire [21:0] RD;
-	assign {RD_21, RD_20, RD_19, RD_18, RD_17, RD_16, RD_15, RD_14, RD_13, RD_12, RD_11, RD_10, RD_9, RD_8, RD_7, RD_6, RD_5, RD_4, RD_3, RD_2, RD_1, RD_0} = RD;
+	wire [17:0] RD;
+	assign {RD_17, RD_16, RD_15, RD_14, RD_13, RD_12, RD_11, RD_10, RD_9, RD_8, RD_7, RD_6, RD_5, RD_4, RD_3, RD_2, RD_1, RD_0} = RD;
 	wire [1:0] SVOP = {SVOP_1, SVOP_0};
     wire [7:0] SLEEP_EN = {SLEEP_EN_7, SLEEP_EN_6, SLEEP_EN_5, SLEEP_EN_4, SLEEP_EN_3, SLEEP_EN_2, SLEEP_EN_1, SLEEP_EN_0};
     
@@ -66,8 +66,8 @@ output RD_21, RD_20, RD_19, RD_18, RD_17, RD_16, RD_15, RD_14, RD_13, RD_12, RD_
     integer i;
     always  @(clobber_array) begin
       if (clobber_array) begin
-    		for (i=0; i<60; i=i+1) begin
-    		    ITOP.io.array[i] <= 22'bx;
+    		for (i=0; i<80; i=i+1) begin
+    		    ITOP.io.array[i] <= 18'bx;
     		end
       end
     end
@@ -76,12 +76,12 @@ output RD_21, RD_20, RD_19, RD_18, RD_17, RD_16, RD_15, RD_14, RD_13, RD_12, RD_
     always  @(clobber_flops) begin
         if (clobber_flops) begin
         ITOP.we_lat <= 1'bx;
-        ITOP.wa_lat <= 6'bx;
-        ITOP.wd_lat <= 22'bx;
+        ITOP.wa_lat <= 7'bx;
+        ITOP.wd_lat <= 18'bx;
         
         ITOP.re_lat <= 1'bx;
-        ITOP.ra_lat <= 6'bx;
-        ITOP.io.r0_dout_tmp <= 22'b0;
+        ITOP.ra_lat <= 7'bx;
+        ITOP.io.r0_dout_tmp <= 18'b0;
         end
     end
 //VCS coverage on    
@@ -106,12 +106,12 @@ output RD_21, RD_20, RD_19, RD_18, RD_17, RD_16, RD_15, RD_14, RD_13, RD_12, RD_
     wire weclk_gating = ITOP.we_lat & ~IDDQ;
     wire reclk_gating = ITOP.re_lat & ~IDDQ;
     //Logic-S1: write address out of range
-    wire illegal_logic_assertion_wadr_out_of_range = (ITOP.wa_lat>=6'd60) & weclk_gating;
+    wire illegal_logic_assertion_wadr_out_of_range = (ITOP.wa_lat>=7'd80) & weclk_gating;
     wire disable_logic_assertion_wadr_out_of_range = $test$plusargs("disable_logic_assertions_globally") | $test$plusargs("disable_logic_assertion_wadr_out_of_range");
     nv_assert_never #(0,0, "Logic-S1:write address out of range") disable_logic_assertion_wadr_out_of_range_x (CLK_W ^ rst_clk, ~disable_logic_assertion_wadr_out_of_range & sim_reset, illegal_logic_assertion_wadr_out_of_range);
 
     //Logic-S2: read address out of range
-    wire illegal_logic_assertion_radr_out_of_range = (ITOP.ra_lat>=6'd60) & reclk_gating;
+    wire illegal_logic_assertion_radr_out_of_range = (ITOP.ra_lat>=7'd80) & reclk_gating;
     wire disable_logic_assertion_radr_out_of_range = $test$plusargs("disable_logic_assertions_globally") | $test$plusargs("disable_logic_assertion_radr_out_of_range");
     nv_assert_never #(0,0, "Logic-S2:read address out of range") disable_logic_assertion_radr_out_of_range_x (CLK_R ^ rst_clk, ~disable_logic_assertion_radr_out_of_range & sim_reset, illegal_logic_assertion_radr_out_of_range);
   //Assertion checks for power sequence of G-option RAMDP:
@@ -231,66 +231,86 @@ output RD_21, RD_20, RD_19, RD_18, RD_17, RD_16, RD_15, RD_14, RD_13, RD_12, RD_
 //VCS coverage on 
 
 `ifdef NV_RAM_EXPAND_ARRAY
-  wire [22-1:0] Q_59 = ITOP.io.array[59];
-  wire [22-1:0] Q_58 = ITOP.io.array[58];
-  wire [22-1:0] Q_57 = ITOP.io.array[57];
-  wire [22-1:0] Q_56 = ITOP.io.array[56];
-  wire [22-1:0] Q_55 = ITOP.io.array[55];
-  wire [22-1:0] Q_54 = ITOP.io.array[54];
-  wire [22-1:0] Q_53 = ITOP.io.array[53];
-  wire [22-1:0] Q_52 = ITOP.io.array[52];
-  wire [22-1:0] Q_51 = ITOP.io.array[51];
-  wire [22-1:0] Q_50 = ITOP.io.array[50];
-  wire [22-1:0] Q_49 = ITOP.io.array[49];
-  wire [22-1:0] Q_48 = ITOP.io.array[48];
-  wire [22-1:0] Q_47 = ITOP.io.array[47];
-  wire [22-1:0] Q_46 = ITOP.io.array[46];
-  wire [22-1:0] Q_45 = ITOP.io.array[45];
-  wire [22-1:0] Q_44 = ITOP.io.array[44];
-  wire [22-1:0] Q_43 = ITOP.io.array[43];
-  wire [22-1:0] Q_42 = ITOP.io.array[42];
-  wire [22-1:0] Q_41 = ITOP.io.array[41];
-  wire [22-1:0] Q_40 = ITOP.io.array[40];
-  wire [22-1:0] Q_39 = ITOP.io.array[39];
-  wire [22-1:0] Q_38 = ITOP.io.array[38];
-  wire [22-1:0] Q_37 = ITOP.io.array[37];
-  wire [22-1:0] Q_36 = ITOP.io.array[36];
-  wire [22-1:0] Q_35 = ITOP.io.array[35];
-  wire [22-1:0] Q_34 = ITOP.io.array[34];
-  wire [22-1:0] Q_33 = ITOP.io.array[33];
-  wire [22-1:0] Q_32 = ITOP.io.array[32];
-  wire [22-1:0] Q_31 = ITOP.io.array[31];
-  wire [22-1:0] Q_30 = ITOP.io.array[30];
-  wire [22-1:0] Q_29 = ITOP.io.array[29];
-  wire [22-1:0] Q_28 = ITOP.io.array[28];
-  wire [22-1:0] Q_27 = ITOP.io.array[27];
-  wire [22-1:0] Q_26 = ITOP.io.array[26];
-  wire [22-1:0] Q_25 = ITOP.io.array[25];
-  wire [22-1:0] Q_24 = ITOP.io.array[24];
-  wire [22-1:0] Q_23 = ITOP.io.array[23];
-  wire [22-1:0] Q_22 = ITOP.io.array[22];
-  wire [22-1:0] Q_21 = ITOP.io.array[21];
-  wire [22-1:0] Q_20 = ITOP.io.array[20];
-  wire [22-1:0] Q_19 = ITOP.io.array[19];
-  wire [22-1:0] Q_18 = ITOP.io.array[18];
-  wire [22-1:0] Q_17 = ITOP.io.array[17];
-  wire [22-1:0] Q_16 = ITOP.io.array[16];
-  wire [22-1:0] Q_15 = ITOP.io.array[15];
-  wire [22-1:0] Q_14 = ITOP.io.array[14];
-  wire [22-1:0] Q_13 = ITOP.io.array[13];
-  wire [22-1:0] Q_12 = ITOP.io.array[12];
-  wire [22-1:0] Q_11 = ITOP.io.array[11];
-  wire [22-1:0] Q_10 = ITOP.io.array[10];
-  wire [22-1:0] Q_9 = ITOP.io.array[9];
-  wire [22-1:0] Q_8 = ITOP.io.array[8];
-  wire [22-1:0] Q_7 = ITOP.io.array[7];
-  wire [22-1:0] Q_6 = ITOP.io.array[6];
-  wire [22-1:0] Q_5 = ITOP.io.array[5];
-  wire [22-1:0] Q_4 = ITOP.io.array[4];
-  wire [22-1:0] Q_3 = ITOP.io.array[3];
-  wire [22-1:0] Q_2 = ITOP.io.array[2];
-  wire [22-1:0] Q_1 = ITOP.io.array[1];
-  wire [22-1:0] Q_0 = ITOP.io.array[0];
+  wire [18-1:0] Q_79 = ITOP.io.array[79];
+  wire [18-1:0] Q_78 = ITOP.io.array[78];
+  wire [18-1:0] Q_77 = ITOP.io.array[77];
+  wire [18-1:0] Q_76 = ITOP.io.array[76];
+  wire [18-1:0] Q_75 = ITOP.io.array[75];
+  wire [18-1:0] Q_74 = ITOP.io.array[74];
+  wire [18-1:0] Q_73 = ITOP.io.array[73];
+  wire [18-1:0] Q_72 = ITOP.io.array[72];
+  wire [18-1:0] Q_71 = ITOP.io.array[71];
+  wire [18-1:0] Q_70 = ITOP.io.array[70];
+  wire [18-1:0] Q_69 = ITOP.io.array[69];
+  wire [18-1:0] Q_68 = ITOP.io.array[68];
+  wire [18-1:0] Q_67 = ITOP.io.array[67];
+  wire [18-1:0] Q_66 = ITOP.io.array[66];
+  wire [18-1:0] Q_65 = ITOP.io.array[65];
+  wire [18-1:0] Q_64 = ITOP.io.array[64];
+  wire [18-1:0] Q_63 = ITOP.io.array[63];
+  wire [18-1:0] Q_62 = ITOP.io.array[62];
+  wire [18-1:0] Q_61 = ITOP.io.array[61];
+  wire [18-1:0] Q_60 = ITOP.io.array[60];
+  wire [18-1:0] Q_59 = ITOP.io.array[59];
+  wire [18-1:0] Q_58 = ITOP.io.array[58];
+  wire [18-1:0] Q_57 = ITOP.io.array[57];
+  wire [18-1:0] Q_56 = ITOP.io.array[56];
+  wire [18-1:0] Q_55 = ITOP.io.array[55];
+  wire [18-1:0] Q_54 = ITOP.io.array[54];
+  wire [18-1:0] Q_53 = ITOP.io.array[53];
+  wire [18-1:0] Q_52 = ITOP.io.array[52];
+  wire [18-1:0] Q_51 = ITOP.io.array[51];
+  wire [18-1:0] Q_50 = ITOP.io.array[50];
+  wire [18-1:0] Q_49 = ITOP.io.array[49];
+  wire [18-1:0] Q_48 = ITOP.io.array[48];
+  wire [18-1:0] Q_47 = ITOP.io.array[47];
+  wire [18-1:0] Q_46 = ITOP.io.array[46];
+  wire [18-1:0] Q_45 = ITOP.io.array[45];
+  wire [18-1:0] Q_44 = ITOP.io.array[44];
+  wire [18-1:0] Q_43 = ITOP.io.array[43];
+  wire [18-1:0] Q_42 = ITOP.io.array[42];
+  wire [18-1:0] Q_41 = ITOP.io.array[41];
+  wire [18-1:0] Q_40 = ITOP.io.array[40];
+  wire [18-1:0] Q_39 = ITOP.io.array[39];
+  wire [18-1:0] Q_38 = ITOP.io.array[38];
+  wire [18-1:0] Q_37 = ITOP.io.array[37];
+  wire [18-1:0] Q_36 = ITOP.io.array[36];
+  wire [18-1:0] Q_35 = ITOP.io.array[35];
+  wire [18-1:0] Q_34 = ITOP.io.array[34];
+  wire [18-1:0] Q_33 = ITOP.io.array[33];
+  wire [18-1:0] Q_32 = ITOP.io.array[32];
+  wire [18-1:0] Q_31 = ITOP.io.array[31];
+  wire [18-1:0] Q_30 = ITOP.io.array[30];
+  wire [18-1:0] Q_29 = ITOP.io.array[29];
+  wire [18-1:0] Q_28 = ITOP.io.array[28];
+  wire [18-1:0] Q_27 = ITOP.io.array[27];
+  wire [18-1:0] Q_26 = ITOP.io.array[26];
+  wire [18-1:0] Q_25 = ITOP.io.array[25];
+  wire [18-1:0] Q_24 = ITOP.io.array[24];
+  wire [18-1:0] Q_23 = ITOP.io.array[23];
+  wire [18-1:0] Q_22 = ITOP.io.array[22];
+  wire [18-1:0] Q_21 = ITOP.io.array[21];
+  wire [18-1:0] Q_20 = ITOP.io.array[20];
+  wire [18-1:0] Q_19 = ITOP.io.array[19];
+  wire [18-1:0] Q_18 = ITOP.io.array[18];
+  wire [18-1:0] Q_17 = ITOP.io.array[17];
+  wire [18-1:0] Q_16 = ITOP.io.array[16];
+  wire [18-1:0] Q_15 = ITOP.io.array[15];
+  wire [18-1:0] Q_14 = ITOP.io.array[14];
+  wire [18-1:0] Q_13 = ITOP.io.array[13];
+  wire [18-1:0] Q_12 = ITOP.io.array[12];
+  wire [18-1:0] Q_11 = ITOP.io.array[11];
+  wire [18-1:0] Q_10 = ITOP.io.array[10];
+  wire [18-1:0] Q_9 = ITOP.io.array[9];
+  wire [18-1:0] Q_8 = ITOP.io.array[8];
+  wire [18-1:0] Q_7 = ITOP.io.array[7];
+  wire [18-1:0] Q_6 = ITOP.io.array[6];
+  wire [18-1:0] Q_5 = ITOP.io.array[5];
+  wire [18-1:0] Q_4 = ITOP.io.array[4];
+  wire [18-1:0] Q_3 = ITOP.io.array[3];
+  wire [18-1:0] Q_2 = ITOP.io.array[2];
+  wire [18-1:0] Q_1 = ITOP.io.array[1];
+  wire [18-1:0] Q_0 = ITOP.io.array[0];
 
 `endif //def NV_RAM_EXPAND_ARRAY
 
@@ -316,8 +336,8 @@ task mem_fill_value;
 input fill_bit;
 integer i;
 begin
-    for (i=0; i<60; i=i+1) begin
-    	ITOP.io.array[i] = {22{fill_bit}};
+    for (i=0; i<80; i=i+1) begin
+    	ITOP.io.array[i] = {18{fill_bit}};
     end
 end
 endtask 
@@ -325,10 +345,10 @@ endtask
 task mem_fill_random; 
 integer i;
 integer j;
-reg [21:0] val;
+reg [17:0] val;
 begin
-    for (j=0; j<60; j=j+1) begin
-        for (i=0; i<22; i=i+1) begin
+    for (j=0; j<80; j=j+1) begin
+        for (i=0; i<18; i=i+1) begin
             val[i] = {$random}; 
         end
 	    ITOP.io.array[j] = val;
@@ -337,22 +357,22 @@ end
 endtask
 
 task mem_write;
-  input [5:0] addr;
-  input [21:0] data;
+  input [6:0] addr;
+  input [17:0] data;
   begin
      ITOP.io.mem_wr_raw(addr,data);
   end
 endtask
 
-function [21:0] mem_read;
-  input [5:0] addr;
+function [17:0] mem_read;
+  input [6:0] addr;
   begin
 	mem_read = ITOP.io.mem_read_raw(addr);
   end
 endfunction
 
 task force_rd;
-  input [5:0] addr;
+  input [6:0] addr;
   begin
 	ITOP.io.r0_dout_tmp = ITOP.io.array[addr];
   end
@@ -360,36 +380,36 @@ endtask
 
 `ifdef MEM_PHYS_INFO
 task mem_phys_write;
-  input [5:0] addr;
-  input [21:0] data;
+  input [6:0] addr;
+  input [17:0] data;
   begin
      ITOP.io.mem_wr_raw(addr,data);
   end
 endtask
 
-function [21:0] mem_phys_read_padr;
-  input [5:0] addr;
+function [17:0] mem_phys_read_padr;
+  input [6:0] addr;
   begin
 	mem_phys_read_padr = ITOP.io.mem_read_raw(addr);
   end
 endfunction
 
-function [5:0] mem_log_to_phys_adr;
-    input [5:0] addr;
+function [6:0] mem_log_to_phys_adr;
+    input [6:0] addr;
     begin
     mem_log_to_phys_adr = addr;
     end
 endfunction
 
-function [21:0] mem_phys_read_pmasked;
-  input [5:0] addr;
+function [17:0] mem_phys_read_pmasked;
+  input [6:0] addr;
   begin
 	mem_phys_read_pmasked = ITOP.io.mem_read_raw(addr);
   end
 endfunction
 
-function [21:0] mem_phys_read_ladr;
-  input [5:0] addr;
+function [17:0] mem_phys_read_ladr;
+  input [6:0] addr;
   begin
 	mem_phys_read_ladr = mem_phys_read_padr(mem_log_to_phys_adr(addr));
   end
@@ -398,14 +418,14 @@ endfunction
 
 `ifdef FAULT_INJECTION
 task mem_fault_no_write;
-  input [21:0] fault_mask;
+  input [17:0] fault_mask;
    begin
     ITOP.io.mem_fault_no_write(fault_mask);
   end
 endtask
 
 task mem_fault_stuck_0;
-  input [21:0] fault_mask;
+  input [17:0] fault_mask;
   integer i;
    begin
     ITOP.io.mem_fault_stuck_0(fault_mask);
@@ -413,7 +433,7 @@ task mem_fault_stuck_0;
 endtask
 
 task mem_fault_stuck_1;
-  input [21:0] fault_mask;
+  input [17:0] fault_mask;
   integer i;
    begin
     ITOP.io.mem_fault_stuck_1(fault_mask);
@@ -464,7 +484,7 @@ endtask
 `endif //ndef SYNTHESIS
 
 	//instantiate memory bank
-	RAM_BANK_RAMDP_60X22_GL_M1_E2 ITOP (
+	RAM_BANK_RAMDP_80X18_GL_M1_E2 ITOP (
 		.RE(RE), 
 		.WE(WE), 
 		.RA(RA),  
@@ -488,8 +508,8 @@ endtask
     // Simple emulation model without MBIST, SCAN or REDUNDANCY
     	//common part for write
     	reg we_ff;
-        reg [5:0] wa_ff;
-        reg [21:0] wd_ff; 
+        reg [6:0] wa_ff;
+        reg [17:0] wd_ff; 
     	always @(posedge CLK_W) begin // spyglass disable W391
                 we_ff  <= WE;
                 wa_ff <= WA;
@@ -508,17 +528,17 @@ endtask
     	
     	wire reclk = CLK_R & re_lat;
     
-    	reg [5:0] ra_ff;
+    	reg [6:0] ra_ff;
     	always @(posedge CLK_R) begin // spyglass disable W391
     			ra_ff <= RA;
     	end
 
-        reg [21:0] dout; 
+        reg [17:0] dout; 
 
         assign RD = dout;
     
  	    //memory array       
-	    reg [21:0] array[0:59]; 
+	    reg [17:0] array[0:79]; 
 	    always @(negedge CLK_W ) begin
             if (we_ff) begin
 	    		array[wa_ff] <= wd_ff; // spyglass disable SYNTH_5130
@@ -548,18 +568,18 @@ endmodule
 
 `ifndef RAM_INTERFACE
 `ifndef EMULATION
-module RAM_BANK_RAMDP_60X22_GL_M1_E2 (RE, WE, RA, WA, CLK_R, CLK_W, IDDQ, SVOP, WD, RD, SLEEP_EN, RET_EN, clobber_flops, clobber_array, clobber_x
+module RAM_BANK_RAMDP_80X18_GL_M1_E2 (RE, WE, RA, WA, CLK_R, CLK_W, IDDQ, SVOP, WD, RD, SLEEP_EN, RET_EN, clobber_flops, clobber_array, clobber_x
 );
 
 
 input RET_EN;
 input RE, WE, CLK_R, CLK_W, IDDQ;
-input [5:0] RA, WA;
-input [21:0] WD;
+input [6:0] RA, WA;
+input [17:0] WD;
 input [1:0] SVOP;
 input [7:0] SLEEP_EN;
 input clobber_flops, clobber_array, clobber_x;
-output [21:0] RD;
+output [17:0] RD;
 
 //State point clobering signals:
 
@@ -598,14 +618,14 @@ output [21:0] RD;
     assign #1 wdclk_d3 = wdclk_d2;
     assign wdclk = wdclk_d0 | wdclk_d1 | wdclk_d2 | wdclk_d3;  
 
-    reg [5:0] wa_lat;
+    reg [6:0] wa_lat;
 	always @(*) begin
 		if (!wadclk & !clobber_flops) begin
 			wa_lat  <=  WA; // spyglass disable W18, IntClock
 		end
 	end
 
-	reg [21:0] wd_lat;
+	reg [17:0] wd_lat;
 	always @(*) begin
 		if (!wdclk & !clobber_flops) begin
 			wd_lat  <= WD; // spyglass disable W18, IntClock
@@ -632,24 +652,24 @@ output [21:0] RD;
     assign #1 radclk_d1 = radclk_d0;
     assign radclk = radclk_d0 | radclk_d1;  
 
-	reg [5:0] ra_lat;
+	reg [6:0] ra_lat;
 	always @(*) begin
 		if (!radclk & !clobber_flops) begin
 			ra_lat <=  RA; // spyglass disable W18, IntClock
 		end
 	end
 	
-	wire [21:0] dout;
-	assign RD = clamp_o ? 22'b0 : (output_valid ? dout : 22'bx); //spyglass disable STARC-2.10.1.6
+	wire [17:0] dout;
+	assign RD = clamp_o ? 18'b0 : (output_valid ? dout : 18'bx); //spyglass disable STARC-2.10.1.6
 
 
 	//for E-option RAM
 
 
-	vram_RAMDP_60X22_GL_M1_E2 # (60, 22, 6) io (
+	vram_RAMDP_80X18_GL_M1_E2 # (80, 18, 7) io (
 		.w0_addr(wa_lat),
 		.w0_clk(weclk),
-		.w0_bwe({22{1'b1}}),
+		.w0_bwe({18{1'b1}}),
 		.w0_din(wd_lat),
 		.r0_addr(ra_lat),
 		.r0_clk(reclk),
@@ -674,7 +694,7 @@ endmodule
 
 `ifndef RAM_INTERFACE
 `ifndef EMULATION
-module vram_RAMDP_60X22_GL_M1_E2 (
+module vram_RAMDP_80X18_GL_M1_E2 (
 	w0_addr,
 	w0_clk,
 	w0_bwe,
@@ -685,9 +705,9 @@ module vram_RAMDP_60X22_GL_M1_E2 (
     clamp_o
 );
 
-parameter words = 60;
-parameter bits = 22;
-parameter addrs = 6;
+parameter words = 80;
+parameter bits = 18;
+parameter addrs = 7;
 
 
 input [addrs-1:0] w0_addr;
@@ -749,34 +769,34 @@ always @(dump_monitor_result) begin : dump_monitor
     integer r;
 	integer c;
     integer b;
-	reg [22-1:0] tmp_row;
+	reg [18-1:0] tmp_row;
     	if (dump_monitor_result == 1'b1) begin
 		    $display("Exercised coverage summary:");
 		    $display("\t%m bits not written as 0:");
-		    for (r=0; r<60; r=r+1) begin
+		    for (r=0; r<80; r=r+1) begin
 		        tmp_row = bit_written[r];
-		    	for (c=0; c<22; c=c+1) begin
+		    	for (c=0; c<18; c=c+1) begin
 		    		if (tmp_row[c] !== 1'b0 && tmp_row[c] !== 1'bz) $display("\t\t[row,col] [%d,%d]", r, c);
 		    	end
 		    end
             $display("\t%m bits not written as 1:");
-		    for (r=0; r<60; r=r+1) begin
+		    for (r=0; r<80; r=r+1) begin
 		        tmp_row = bit_written[r];
-		    	for (c=0; c<22; c=c+1) begin
+		    	for (c=0; c<18; c=c+1) begin
 		    		if (tmp_row[c] !== 1'b1 && tmp_row[c] !== 1'bz) $display("\t\t[row,col] [%d,%d]", r, c);
 		    	end
 		    end
 		    $display("\t%m bits not read as 0:");
-		    for (r=0; r<60; r=r+1) begin
+		    for (r=0; r<80; r=r+1) begin
 		        tmp_row = bit_read[r];
-		    	for (c=0; c<22; c=c+1) begin
+		    	for (c=0; c<18; c=c+1) begin
 		    		if (tmp_row[c] !== 1'b0 && tmp_row[c] !== 1'bz) $display("\t\t[row,col] [%d,%d]", r, c);
 		    	end
 		    end
 		    $display("\t%m bits not read as 1:");
-		    for (r=0; r<60; r=r+1) begin
+		    for (r=0; r<80; r=r+1) begin
 		        tmp_row = bit_read[r];
-		    	for (c=0; c<22; c=c+1) begin
+		    	for (c=0; c<18; c=c+1) begin
 		    		if (tmp_row[c] !== 1'b1 && tmp_row[c] !== 1'bz) $display("\t\t[row,col] [%d,%d]", r, c);
 		    	end
 		    end

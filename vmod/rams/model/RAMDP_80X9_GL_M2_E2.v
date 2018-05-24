@@ -1,14 +1,9 @@
-// ================================================================
-// NVDLA Open Source Project
-// 
-// Copyright(c) 2016 - 2017 NVIDIA Corporation.  Licensed under the
-// NVDLA Open Hardware License; Check "LICENSE" which comes with 
-// this distribution for more information.
-// ================================================================
-
-// File Name: RAMDP_80X9_GL_M2_E2.v
+//RAM             : RAMDP_80X9_GL_M2_E2
+//Technology      : TSMC16FFLR
+//Compiler version: FINAL.1 - 2017-05-23.14:46:11
 
 `timescale 10ps/1ps
+
 `celldefine
 module RAMDP_80X9_GL_M2_E2 (CLK_R, CLK_W, RE, WE
 	, RADR_6, RADR_5, RADR_4, RADR_3, RADR_2, RADR_1, RADR_0

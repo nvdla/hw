@@ -1,12 +1,6 @@
-// ================================================================
-// NVDLA Open Source Project
-// 
-// Copyright(c) 2016 - 2017 NVIDIA Corporation.  Licensed under the
-// NVDLA Open Hardware License; Check "LICENSE" which comes with 
-// this distribution for more information.
-// ================================================================
 
-// File Name: RAMPDP_80X72_GL_M1_D2.v
+//Technology      : TSMC 16FF-LR
+//Compiler version: FINAL.1 - 2017-05-25.18:47:15
 
 `ifdef EMULATION
 	`define SYNTHESIS
