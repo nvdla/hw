@@ -23,8 +23,8 @@
 `timescale 10ps/1ps
 `endif 
 `celldefine
-module RAMPDP_32X256_GL_M1_D2 (  WE,  CLK, IDDQ, SVOP_0, SVOP_1, SVOP_2, SVOP_3, SVOP_4, SVOP_5, SVOP_6, SVOP_7 
-,WD_255, WD_254, WD_253, WD_252, WD_251, WD_250, WD_249, WD_248, WD_247, WD_246, WD_245, WD_244, WD_243, WD_242, WD_241, WD_240, WD_239, WD_238, WD_237, WD_236, WD_235, WD_234, WD_233, WD_232, WD_231, WD_230, WD_229, WD_228, WD_227, WD_226, WD_225, WD_224, WD_223, WD_222, WD_221, WD_220, WD_219, WD_218, WD_217, WD_216, WD_215, WD_214, WD_213, WD_212, WD_211, WD_210, WD_209, WD_208, WD_207, WD_206, WD_205, WD_204, WD_203, WD_202, WD_201, WD_200, WD_199, WD_198, WD_197, WD_196, WD_195, WD_194, WD_193, WD_192, WD_191, WD_190, WD_189, WD_188, WD_187, WD_186, WD_185, WD_184, WD_183, WD_182, WD_181, WD_180, WD_179, WD_178, WD_177, WD_176, WD_175, WD_174, WD_173, WD_172, WD_171, WD_170, WD_169, WD_168, WD_167, WD_166, WD_165, WD_164, WD_163, WD_162, WD_161, WD_160, WD_159, WD_158, WD_157, WD_156, WD_155, WD_154, WD_153, WD_152, WD_151, WD_150, WD_149, WD_148, WD_147, WD_146, WD_145, WD_144, WD_143, WD_142, WD_141, WD_140, WD_139, WD_138, WD_137, WD_136, WD_135, WD_134, WD_133, WD_132, WD_131, WD_130, WD_129, WD_128, WD_127, WD_126, WD_125, WD_124, WD_123, WD_122, WD_121, WD_120, WD_119, WD_118, WD_117, WD_116, WD_115, WD_114, WD_113, WD_112, WD_111, WD_110, WD_109, WD_108, WD_107, WD_106, WD_105, WD_104, WD_103, WD_102, WD_101, WD_100, WD_99, WD_98, WD_97, WD_96, WD_95, WD_94, WD_93, WD_92, WD_91, WD_90, WD_89, WD_88, WD_87, WD_86, WD_85, WD_84, WD_83, WD_82, WD_81, WD_80, WD_79, WD_78, WD_77, WD_76, WD_75, WD_74, WD_73, WD_72, WD_71, WD_70, WD_69, WD_68, WD_67, WD_66, WD_65, WD_64, WD_63, WD_62, WD_61, WD_60, WD_59, WD_58, WD_57, WD_56, WD_55, WD_54, WD_53, WD_52, WD_51, WD_50, WD_49, WD_48, WD_47, WD_46, WD_45, WD_44, WD_43, WD_42, WD_41, WD_40, WD_39, WD_38, WD_37, WD_36, WD_35, WD_34, WD_33, WD_32, WD_31, WD_30, WD_29, WD_28, WD_27, WD_26, WD_25, WD_24, WD_23, WD_22, WD_21, WD_20, WD_19, WD_18, WD_17, WD_16, WD_15, WD_14, WD_13, WD_12, WD_11, WD_10, WD_9, WD_8, WD_7, WD_6, WD_5, WD_4, WD_3, WD_2, WD_1, WD_0,RD_255, RD_254, RD_253, RD_252, RD_251, RD_250, RD_249, RD_248, RD_247, RD_246, RD_245, RD_244, RD_243, RD_242, RD_241, RD_240, RD_239, RD_238, RD_237, RD_236, RD_235, RD_234, RD_233, RD_232, RD_231, RD_230, RD_229, RD_228, RD_227, RD_226, RD_225, RD_224, RD_223, RD_222, RD_221, RD_220, RD_219, RD_218, RD_217, RD_216, RD_215, RD_214, RD_213, RD_212, RD_211, RD_210, RD_209, RD_208, RD_207, RD_206, RD_205, RD_204, RD_203, RD_202, RD_201, RD_200, RD_199, RD_198, RD_197, RD_196, RD_195, RD_194, RD_193, RD_192, RD_191, RD_190, RD_189, RD_188, RD_187, RD_186, RD_185, RD_184, RD_183, RD_182, RD_181, RD_180, RD_179, RD_178, RD_177, RD_176, RD_175, RD_174, RD_173, RD_172, RD_171, RD_170, RD_169, RD_168, RD_167, RD_166, RD_165, RD_164, RD_163, RD_162, RD_161, RD_160, RD_159, RD_158, RD_157, RD_156, RD_155, RD_154, RD_153, RD_152, RD_151, RD_150, RD_149, RD_148, RD_147, RD_146, RD_145, RD_144, RD_143, RD_142, RD_141, RD_140, RD_139, RD_138, RD_137, RD_136, RD_135, RD_134, RD_133, RD_132, RD_131, RD_130, RD_129, RD_128, RD_127, RD_126, RD_125, RD_124, RD_123, RD_122, RD_121, RD_120, RD_119, RD_118, RD_117, RD_116, RD_115, RD_114, RD_113, RD_112, RD_111, RD_110, RD_109, RD_108, RD_107, RD_106, RD_105, RD_104, RD_103, RD_102, RD_101, RD_100, RD_99, RD_98, RD_97, RD_96, RD_95, RD_94, RD_93, RD_92, RD_91, RD_90, RD_89, RD_88, RD_87, RD_86, RD_85, RD_84, RD_83, RD_82, RD_81, RD_80, RD_79, RD_78, RD_77, RD_76, RD_75, RD_74, RD_73, RD_72, RD_71, RD_70, RD_69, RD_68, RD_67, RD_66, RD_65, RD_64, RD_63, RD_62, RD_61, RD_60, RD_59, RD_58, RD_57, RD_56, RD_55, RD_54, RD_53, RD_52, RD_51, RD_50, RD_49, RD_48, RD_47, RD_46, RD_45, RD_44, RD_43, RD_42, RD_41, RD_40, RD_39, RD_38, RD_37, RD_36, RD_35, RD_34, RD_33, RD_32, RD_31, RD_30, RD_29, RD_28, RD_27, RD_26, RD_25, RD_24, RD_23, RD_22, RD_21, RD_20, RD_19, RD_18, RD_17, RD_16, RD_15, RD_14, RD_13, RD_12, RD_11, RD_10, RD_9, RD_8, RD_7, RD_6, RD_5, RD_4, RD_3, RD_2, RD_1, RD_0, RE
+module RAMPDP_32X130_GL_M1_D2 (  WE,  CLK, IDDQ, SVOP_0, SVOP_1, SVOP_2, SVOP_3, SVOP_4, SVOP_5, SVOP_6, SVOP_7 
+,WD_129, WD_128, WD_127, WD_126, WD_125, WD_124, WD_123, WD_122, WD_121, WD_120, WD_119, WD_118, WD_117, WD_116, WD_115, WD_114, WD_113, WD_112, WD_111, WD_110, WD_109, WD_108, WD_107, WD_106, WD_105, WD_104, WD_103, WD_102, WD_101, WD_100, WD_99, WD_98, WD_97, WD_96, WD_95, WD_94, WD_93, WD_92, WD_91, WD_90, WD_89, WD_88, WD_87, WD_86, WD_85, WD_84, WD_83, WD_82, WD_81, WD_80, WD_79, WD_78, WD_77, WD_76, WD_75, WD_74, WD_73, WD_72, WD_71, WD_70, WD_69, WD_68, WD_67, WD_66, WD_65, WD_64, WD_63, WD_62, WD_61, WD_60, WD_59, WD_58, WD_57, WD_56, WD_55, WD_54, WD_53, WD_52, WD_51, WD_50, WD_49, WD_48, WD_47, WD_46, WD_45, WD_44, WD_43, WD_42, WD_41, WD_40, WD_39, WD_38, WD_37, WD_36, WD_35, WD_34, WD_33, WD_32, WD_31, WD_30, WD_29, WD_28, WD_27, WD_26, WD_25, WD_24, WD_23, WD_22, WD_21, WD_20, WD_19, WD_18, WD_17, WD_16, WD_15, WD_14, WD_13, WD_12, WD_11, WD_10, WD_9, WD_8, WD_7, WD_6, WD_5, WD_4, WD_3, WD_2, WD_1, WD_0,RD_129, RD_128, RD_127, RD_126, RD_125, RD_124, RD_123, RD_122, RD_121, RD_120, RD_119, RD_118, RD_117, RD_116, RD_115, RD_114, RD_113, RD_112, RD_111, RD_110, RD_109, RD_108, RD_107, RD_106, RD_105, RD_104, RD_103, RD_102, RD_101, RD_100, RD_99, RD_98, RD_97, RD_96, RD_95, RD_94, RD_93, RD_92, RD_91, RD_90, RD_89, RD_88, RD_87, RD_86, RD_85, RD_84, RD_83, RD_82, RD_81, RD_80, RD_79, RD_78, RD_77, RD_76, RD_75, RD_74, RD_73, RD_72, RD_71, RD_70, RD_69, RD_68, RD_67, RD_66, RD_65, RD_64, RD_63, RD_62, RD_61, RD_60, RD_59, RD_58, RD_57, RD_56, RD_55, RD_54, RD_53, RD_52, RD_51, RD_50, RD_49, RD_48, RD_47, RD_46, RD_45, RD_44, RD_43, RD_42, RD_41, RD_40, RD_39, RD_38, RD_37, RD_36, RD_35, RD_34, RD_33, RD_32, RD_31, RD_30, RD_29, RD_28, RD_27, RD_26, RD_25, RD_24, RD_23, RD_22, RD_21, RD_20, RD_19, RD_18, RD_17, RD_16, RD_15, RD_14, RD_13, RD_12, RD_11, RD_10, RD_9, RD_8, RD_7, RD_6, RD_5, RD_4, RD_3, RD_2, RD_1, RD_0, RE
 , RADR_4, RADR_3, RADR_2, RADR_1, RADR_0, WADR_4, WADR_3, WADR_2, WADR_1, WADR_0, SLEEP_EN_7, SLEEP_EN_6, SLEEP_EN_5, SLEEP_EN_4, SLEEP_EN_3, SLEEP_EN_2, SLEEP_EN_1, SLEEP_EN_0, RET_EN
 );
 
@@ -34,8 +34,8 @@ module RAMPDP_32X256_GL_M1_D2 (  WE,  CLK, IDDQ, SVOP_0, SVOP_1, SVOP_2, SVOP_3,
 `ifndef SYNTHESIS
 // Physical ram size defined as localparam
 parameter phy_rows = 32;
-parameter phy_cols = 256;
-parameter phy_rcols_pos = 256'b0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000;
+parameter phy_cols = 130;
+parameter phy_rcols_pos = 130'b0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000;
 
 `endif //SYNTHESIS
 `endif //RAM_INTERFACE
@@ -47,9 +47,9 @@ input CLK;
 // SVOP ports
 input SVOP_0, SVOP_1, SVOP_2, SVOP_3, SVOP_4, SVOP_5, SVOP_6, SVOP_7;
 // Write data ports
-input WD_255, WD_254, WD_253, WD_252, WD_251, WD_250, WD_249, WD_248, WD_247, WD_246, WD_245, WD_244, WD_243, WD_242, WD_241, WD_240, WD_239, WD_238, WD_237, WD_236, WD_235, WD_234, WD_233, WD_232, WD_231, WD_230, WD_229, WD_228, WD_227, WD_226, WD_225, WD_224, WD_223, WD_222, WD_221, WD_220, WD_219, WD_218, WD_217, WD_216, WD_215, WD_214, WD_213, WD_212, WD_211, WD_210, WD_209, WD_208, WD_207, WD_206, WD_205, WD_204, WD_203, WD_202, WD_201, WD_200, WD_199, WD_198, WD_197, WD_196, WD_195, WD_194, WD_193, WD_192, WD_191, WD_190, WD_189, WD_188, WD_187, WD_186, WD_185, WD_184, WD_183, WD_182, WD_181, WD_180, WD_179, WD_178, WD_177, WD_176, WD_175, WD_174, WD_173, WD_172, WD_171, WD_170, WD_169, WD_168, WD_167, WD_166, WD_165, WD_164, WD_163, WD_162, WD_161, WD_160, WD_159, WD_158, WD_157, WD_156, WD_155, WD_154, WD_153, WD_152, WD_151, WD_150, WD_149, WD_148, WD_147, WD_146, WD_145, WD_144, WD_143, WD_142, WD_141, WD_140, WD_139, WD_138, WD_137, WD_136, WD_135, WD_134, WD_133, WD_132, WD_131, WD_130, WD_129, WD_128, WD_127, WD_126, WD_125, WD_124, WD_123, WD_122, WD_121, WD_120, WD_119, WD_118, WD_117, WD_116, WD_115, WD_114, WD_113, WD_112, WD_111, WD_110, WD_109, WD_108, WD_107, WD_106, WD_105, WD_104, WD_103, WD_102, WD_101, WD_100, WD_99, WD_98, WD_97, WD_96, WD_95, WD_94, WD_93, WD_92, WD_91, WD_90, WD_89, WD_88, WD_87, WD_86, WD_85, WD_84, WD_83, WD_82, WD_81, WD_80, WD_79, WD_78, WD_77, WD_76, WD_75, WD_74, WD_73, WD_72, WD_71, WD_70, WD_69, WD_68, WD_67, WD_66, WD_65, WD_64, WD_63, WD_62, WD_61, WD_60, WD_59, WD_58, WD_57, WD_56, WD_55, WD_54, WD_53, WD_52, WD_51, WD_50, WD_49, WD_48, WD_47, WD_46, WD_45, WD_44, WD_43, WD_42, WD_41, WD_40, WD_39, WD_38, WD_37, WD_36, WD_35, WD_34, WD_33, WD_32, WD_31, WD_30, WD_29, WD_28, WD_27, WD_26, WD_25, WD_24, WD_23, WD_22, WD_21, WD_20, WD_19, WD_18, WD_17, WD_16, WD_15, WD_14, WD_13, WD_12, WD_11, WD_10, WD_9, WD_8, WD_7, WD_6, WD_5, WD_4, WD_3, WD_2, WD_1, WD_0;
+input WD_129, WD_128, WD_127, WD_126, WD_125, WD_124, WD_123, WD_122, WD_121, WD_120, WD_119, WD_118, WD_117, WD_116, WD_115, WD_114, WD_113, WD_112, WD_111, WD_110, WD_109, WD_108, WD_107, WD_106, WD_105, WD_104, WD_103, WD_102, WD_101, WD_100, WD_99, WD_98, WD_97, WD_96, WD_95, WD_94, WD_93, WD_92, WD_91, WD_90, WD_89, WD_88, WD_87, WD_86, WD_85, WD_84, WD_83, WD_82, WD_81, WD_80, WD_79, WD_78, WD_77, WD_76, WD_75, WD_74, WD_73, WD_72, WD_71, WD_70, WD_69, WD_68, WD_67, WD_66, WD_65, WD_64, WD_63, WD_62, WD_61, WD_60, WD_59, WD_58, WD_57, WD_56, WD_55, WD_54, WD_53, WD_52, WD_51, WD_50, WD_49, WD_48, WD_47, WD_46, WD_45, WD_44, WD_43, WD_42, WD_41, WD_40, WD_39, WD_38, WD_37, WD_36, WD_35, WD_34, WD_33, WD_32, WD_31, WD_30, WD_29, WD_28, WD_27, WD_26, WD_25, WD_24, WD_23, WD_22, WD_21, WD_20, WD_19, WD_18, WD_17, WD_16, WD_15, WD_14, WD_13, WD_12, WD_11, WD_10, WD_9, WD_8, WD_7, WD_6, WD_5, WD_4, WD_3, WD_2, WD_1, WD_0;
 // Read data ports
-output RD_255, RD_254, RD_253, RD_252, RD_251, RD_250, RD_249, RD_248, RD_247, RD_246, RD_245, RD_244, RD_243, RD_242, RD_241, RD_240, RD_239, RD_238, RD_237, RD_236, RD_235, RD_234, RD_233, RD_232, RD_231, RD_230, RD_229, RD_228, RD_227, RD_226, RD_225, RD_224, RD_223, RD_222, RD_221, RD_220, RD_219, RD_218, RD_217, RD_216, RD_215, RD_214, RD_213, RD_212, RD_211, RD_210, RD_209, RD_208, RD_207, RD_206, RD_205, RD_204, RD_203, RD_202, RD_201, RD_200, RD_199, RD_198, RD_197, RD_196, RD_195, RD_194, RD_193, RD_192, RD_191, RD_190, RD_189, RD_188, RD_187, RD_186, RD_185, RD_184, RD_183, RD_182, RD_181, RD_180, RD_179, RD_178, RD_177, RD_176, RD_175, RD_174, RD_173, RD_172, RD_171, RD_170, RD_169, RD_168, RD_167, RD_166, RD_165, RD_164, RD_163, RD_162, RD_161, RD_160, RD_159, RD_158, RD_157, RD_156, RD_155, RD_154, RD_153, RD_152, RD_151, RD_150, RD_149, RD_148, RD_147, RD_146, RD_145, RD_144, RD_143, RD_142, RD_141, RD_140, RD_139, RD_138, RD_137, RD_136, RD_135, RD_134, RD_133, RD_132, RD_131, RD_130, RD_129, RD_128, RD_127, RD_126, RD_125, RD_124, RD_123, RD_122, RD_121, RD_120, RD_119, RD_118, RD_117, RD_116, RD_115, RD_114, RD_113, RD_112, RD_111, RD_110, RD_109, RD_108, RD_107, RD_106, RD_105, RD_104, RD_103, RD_102, RD_101, RD_100, RD_99, RD_98, RD_97, RD_96, RD_95, RD_94, RD_93, RD_92, RD_91, RD_90, RD_89, RD_88, RD_87, RD_86, RD_85, RD_84, RD_83, RD_82, RD_81, RD_80, RD_79, RD_78, RD_77, RD_76, RD_75, RD_74, RD_73, RD_72, RD_71, RD_70, RD_69, RD_68, RD_67, RD_66, RD_65, RD_64, RD_63, RD_62, RD_61, RD_60, RD_59, RD_58, RD_57, RD_56, RD_55, RD_54, RD_53, RD_52, RD_51, RD_50, RD_49, RD_48, RD_47, RD_46, RD_45, RD_44, RD_43, RD_42, RD_41, RD_40, RD_39, RD_38, RD_37, RD_36, RD_35, RD_34, RD_33, RD_32, RD_31, RD_30, RD_29, RD_28, RD_27, RD_26, RD_25, RD_24, RD_23, RD_22, RD_21, RD_20, RD_19, RD_18, RD_17, RD_16, RD_15, RD_14, RD_13, RD_12, RD_11, RD_10, RD_9, RD_8, RD_7, RD_6, RD_5, RD_4, RD_3, RD_2, RD_1, RD_0;
+output RD_129, RD_128, RD_127, RD_126, RD_125, RD_124, RD_123, RD_122, RD_121, RD_120, RD_119, RD_118, RD_117, RD_116, RD_115, RD_114, RD_113, RD_112, RD_111, RD_110, RD_109, RD_108, RD_107, RD_106, RD_105, RD_104, RD_103, RD_102, RD_101, RD_100, RD_99, RD_98, RD_97, RD_96, RD_95, RD_94, RD_93, RD_92, RD_91, RD_90, RD_89, RD_88, RD_87, RD_86, RD_85, RD_84, RD_83, RD_82, RD_81, RD_80, RD_79, RD_78, RD_77, RD_76, RD_75, RD_74, RD_73, RD_72, RD_71, RD_70, RD_69, RD_68, RD_67, RD_66, RD_65, RD_64, RD_63, RD_62, RD_61, RD_60, RD_59, RD_58, RD_57, RD_56, RD_55, RD_54, RD_53, RD_52, RD_51, RD_50, RD_49, RD_48, RD_47, RD_46, RD_45, RD_44, RD_43, RD_42, RD_41, RD_40, RD_39, RD_38, RD_37, RD_36, RD_35, RD_34, RD_33, RD_32, RD_31, RD_30, RD_29, RD_28, RD_27, RD_26, RD_25, RD_24, RD_23, RD_22, RD_21, RD_20, RD_19, RD_18, RD_17, RD_16, RD_15, RD_14, RD_13, RD_12, RD_11, RD_10, RD_9, RD_8, RD_7, RD_6, RD_5, RD_4, RD_3, RD_2, RD_1, RD_0;
 // Read enable ports
 input RE;
 // Write enable ports
@@ -103,15 +103,15 @@ wire GND  = 1'b0;
 	wire [6:0] RA = {1'b0, 1'b0, RADR_4, RADR_3, RADR_2, RADR_1, RADR_0};
 	wire [6:0] WA = {1'b0, 1'b0, WADR_4, WADR_3, WADR_2, WADR_1, WADR_0};
 // Combine all the write data input bits
-	wire [255:0] WD = {WD_255, WD_254, WD_253, WD_252, WD_251, WD_250, WD_249, WD_248, WD_247, WD_246, WD_245, WD_244, WD_243, WD_242, WD_241, WD_240, WD_239, WD_238, WD_237, WD_236, WD_235, WD_234, WD_233, WD_232, WD_231, WD_230, WD_229, WD_228, WD_227, WD_226, WD_225, WD_224, WD_223, WD_222, WD_221, WD_220, WD_219, WD_218, WD_217, WD_216, WD_215, WD_214, WD_213, WD_212, WD_211, WD_210, WD_209, WD_208, WD_207, WD_206, WD_205, WD_204, WD_203, WD_202, WD_201, WD_200, WD_199, WD_198, WD_197, WD_196, WD_195, WD_194, WD_193, WD_192, WD_191, WD_190, WD_189, WD_188, WD_187, WD_186, WD_185, WD_184, WD_183, WD_182, WD_181, WD_180, WD_179, WD_178, WD_177, WD_176, WD_175, WD_174, WD_173, WD_172, WD_171, WD_170, WD_169, WD_168, WD_167, WD_166, WD_165, WD_164, WD_163, WD_162, WD_161, WD_160, WD_159, WD_158, WD_157, WD_156, WD_155, WD_154, WD_153, WD_152, WD_151, WD_150, WD_149, WD_148, WD_147, WD_146, WD_145, WD_144, WD_143, WD_142, WD_141, WD_140, WD_139, WD_138, WD_137, WD_136, WD_135, WD_134, WD_133, WD_132, WD_131, WD_130, WD_129, WD_128, WD_127, WD_126, WD_125, WD_124, WD_123, WD_122, WD_121, WD_120, WD_119, WD_118, WD_117, WD_116, WD_115, WD_114, WD_113, WD_112, WD_111, WD_110, WD_109, WD_108, WD_107, WD_106, WD_105, WD_104, WD_103, WD_102, WD_101, WD_100, WD_99, WD_98, WD_97, WD_96, WD_95, WD_94, WD_93, WD_92, WD_91, WD_90, WD_89, WD_88, WD_87, WD_86, WD_85, WD_84, WD_83, WD_82, WD_81, WD_80, WD_79, WD_78, WD_77, WD_76, WD_75, WD_74, WD_73, WD_72, WD_71, WD_70, WD_69, WD_68, WD_67, WD_66, WD_65, WD_64, WD_63, WD_62, WD_61, WD_60, WD_59, WD_58, WD_57, WD_56, WD_55, WD_54, WD_53, WD_52, WD_51, WD_50, WD_49, WD_48, WD_47, WD_46, WD_45, WD_44, WD_43, WD_42, WD_41, WD_40, WD_39, WD_38, WD_37, WD_36, WD_35, WD_34, WD_33, WD_32, WD_31, WD_30, WD_29, WD_28, WD_27, WD_26, WD_25, WD_24, WD_23, WD_22, WD_21, WD_20, WD_19, WD_18, WD_17, WD_16, WD_15, WD_14, WD_13, WD_12, WD_11, WD_10, WD_9, WD_8, WD_7, WD_6, WD_5, WD_4, WD_3, WD_2, WD_1, WD_0};
-	wire [255:0] RD;
+	wire [129:0] WD = {WD_129, WD_128, WD_127, WD_126, WD_125, WD_124, WD_123, WD_122, WD_121, WD_120, WD_119, WD_118, WD_117, WD_116, WD_115, WD_114, WD_113, WD_112, WD_111, WD_110, WD_109, WD_108, WD_107, WD_106, WD_105, WD_104, WD_103, WD_102, WD_101, WD_100, WD_99, WD_98, WD_97, WD_96, WD_95, WD_94, WD_93, WD_92, WD_91, WD_90, WD_89, WD_88, WD_87, WD_86, WD_85, WD_84, WD_83, WD_82, WD_81, WD_80, WD_79, WD_78, WD_77, WD_76, WD_75, WD_74, WD_73, WD_72, WD_71, WD_70, WD_69, WD_68, WD_67, WD_66, WD_65, WD_64, WD_63, WD_62, WD_61, WD_60, WD_59, WD_58, WD_57, WD_56, WD_55, WD_54, WD_53, WD_52, WD_51, WD_50, WD_49, WD_48, WD_47, WD_46, WD_45, WD_44, WD_43, WD_42, WD_41, WD_40, WD_39, WD_38, WD_37, WD_36, WD_35, WD_34, WD_33, WD_32, WD_31, WD_30, WD_29, WD_28, WD_27, WD_26, WD_25, WD_24, WD_23, WD_22, WD_21, WD_20, WD_19, WD_18, WD_17, WD_16, WD_15, WD_14, WD_13, WD_12, WD_11, WD_10, WD_9, WD_8, WD_7, WD_6, WD_5, WD_4, WD_3, WD_2, WD_1, WD_0};
+	wire [129:0] RD;
 // Expand the read data bus into individual output bits
-//	assign {RD_255, RD_254, RD_253, RD_252, RD_251, RD_250, RD_249, RD_248, RD_247, RD_246, RD_245, RD_244, RD_243, RD_242, RD_241, RD_240, RD_239, RD_238, RD_237, RD_236, RD_235, RD_234, RD_233, RD_232, RD_231, RD_230, RD_229, RD_228, RD_227, RD_226, RD_225, RD_224, RD_223, RD_222, RD_221, RD_220, RD_219, RD_218, RD_217, RD_216, RD_215, RD_214, RD_213, RD_212, RD_211, RD_210, RD_209, RD_208, RD_207, RD_206, RD_205, RD_204, RD_203, RD_202, RD_201, RD_200, RD_199, RD_198, RD_197, RD_196, RD_195, RD_194, RD_193, RD_192, RD_191, RD_190, RD_189, RD_188, RD_187, RD_186, RD_185, RD_184, RD_183, RD_182, RD_181, RD_180, RD_179, RD_178, RD_177, RD_176, RD_175, RD_174, RD_173, RD_172, RD_171, RD_170, RD_169, RD_168, RD_167, RD_166, RD_165, RD_164, RD_163, RD_162, RD_161, RD_160, RD_159, RD_158, RD_157, RD_156, RD_155, RD_154, RD_153, RD_152, RD_151, RD_150, RD_149, RD_148, RD_147, RD_146, RD_145, RD_144, RD_143, RD_142, RD_141, RD_140, RD_139, RD_138, RD_137, RD_136, RD_135, RD_134, RD_133, RD_132, RD_131, RD_130, RD_129, RD_128, RD_127, RD_126, RD_125, RD_124, RD_123, RD_122, RD_121, RD_120, RD_119, RD_118, RD_117, RD_116, RD_115, RD_114, RD_113, RD_112, RD_111, RD_110, RD_109, RD_108, RD_107, RD_106, RD_105, RD_104, RD_103, RD_102, RD_101, RD_100, RD_99, RD_98, RD_97, RD_96, RD_95, RD_94, RD_93, RD_92, RD_91, RD_90, RD_89, RD_88, RD_87, RD_86, RD_85, RD_84, RD_83, RD_82, RD_81, RD_80, RD_79, RD_78, RD_77, RD_76, RD_75, RD_74, RD_73, RD_72, RD_71, RD_70, RD_69, RD_68, RD_67, RD_66, RD_65, RD_64, RD_63, RD_62, RD_61, RD_60, RD_59, RD_58, RD_57, RD_56, RD_55, RD_54, RD_53, RD_52, RD_51, RD_50, RD_49, RD_48, RD_47, RD_46, RD_45, RD_44, RD_43, RD_42, RD_41, RD_40, RD_39, RD_38, RD_37, RD_36, RD_35, RD_34, RD_33, RD_32, RD_31, RD_30, RD_29, RD_28, RD_27, RD_26, RD_25, RD_24, RD_23, RD_22, RD_21, RD_20, RD_19, RD_18, RD_17, RD_16, RD_15, RD_14, RD_13, RD_12, RD_11, RD_10, RD_9, RD_8, RD_7, RD_6, RD_5, RD_4, RD_3, RD_2, RD_1, RD_0} = (outvalid) ? RD : 256'bx;
+//	assign {RD_129, RD_128, RD_127, RD_126, RD_125, RD_124, RD_123, RD_122, RD_121, RD_120, RD_119, RD_118, RD_117, RD_116, RD_115, RD_114, RD_113, RD_112, RD_111, RD_110, RD_109, RD_108, RD_107, RD_106, RD_105, RD_104, RD_103, RD_102, RD_101, RD_100, RD_99, RD_98, RD_97, RD_96, RD_95, RD_94, RD_93, RD_92, RD_91, RD_90, RD_89, RD_88, RD_87, RD_86, RD_85, RD_84, RD_83, RD_82, RD_81, RD_80, RD_79, RD_78, RD_77, RD_76, RD_75, RD_74, RD_73, RD_72, RD_71, RD_70, RD_69, RD_68, RD_67, RD_66, RD_65, RD_64, RD_63, RD_62, RD_61, RD_60, RD_59, RD_58, RD_57, RD_56, RD_55, RD_54, RD_53, RD_52, RD_51, RD_50, RD_49, RD_48, RD_47, RD_46, RD_45, RD_44, RD_43, RD_42, RD_41, RD_40, RD_39, RD_38, RD_37, RD_36, RD_35, RD_34, RD_33, RD_32, RD_31, RD_30, RD_29, RD_28, RD_27, RD_26, RD_25, RD_24, RD_23, RD_22, RD_21, RD_20, RD_19, RD_18, RD_17, RD_16, RD_15, RD_14, RD_13, RD_12, RD_11, RD_10, RD_9, RD_8, RD_7, RD_6, RD_5, RD_4, RD_3, RD_2, RD_1, RD_0} = (outvalid) ? RD : 130'bx;
 // Do the read data swizzing based on the number of words and bits. 
 `ifndef SYNTHESIS
-	assign {RD_255, RD_254, RD_253, RD_252, RD_251, RD_250, RD_249, RD_248, RD_247, RD_246, RD_245, RD_244, RD_243, RD_242, RD_241, RD_240, RD_239, RD_238, RD_237, RD_236, RD_235, RD_234, RD_233, RD_232, RD_231, RD_230, RD_229, RD_228, RD_227, RD_226, RD_225, RD_224, RD_223, RD_222, RD_221, RD_220, RD_219, RD_218, RD_217, RD_216, RD_215, RD_214, RD_213, RD_212, RD_211, RD_210, RD_209, RD_208, RD_207, RD_206, RD_205, RD_204, RD_203, RD_202, RD_201, RD_200, RD_199, RD_198, RD_197, RD_196, RD_195, RD_194, RD_193, RD_192, RD_191, RD_190, RD_189, RD_188, RD_187, RD_186, RD_185, RD_184, RD_183, RD_182, RD_181, RD_180, RD_179, RD_178, RD_177, RD_176, RD_175, RD_174, RD_173, RD_172, RD_171, RD_170, RD_169, RD_168, RD_167, RD_166, RD_165, RD_164, RD_163, RD_162, RD_161, RD_160, RD_159, RD_158, RD_157, RD_156, RD_155, RD_154, RD_153, RD_152, RD_151, RD_150, RD_149, RD_148, RD_147, RD_146, RD_145, RD_144, RD_143, RD_142, RD_141, RD_140, RD_139, RD_138, RD_137, RD_136, RD_135, RD_134, RD_133, RD_132, RD_131, RD_130, RD_129, RD_128, RD_127, RD_126, RD_125, RD_124, RD_123, RD_122, RD_121, RD_120, RD_119, RD_118, RD_117, RD_116, RD_115, RD_114, RD_113, RD_112, RD_111, RD_110, RD_109, RD_108, RD_107, RD_106, RD_105, RD_104, RD_103, RD_102, RD_101, RD_100, RD_99, RD_98, RD_97, RD_96, RD_95, RD_94, RD_93, RD_92, RD_91, RD_90, RD_89, RD_88, RD_87, RD_86, RD_85, RD_84, RD_83, RD_82, RD_81, RD_80, RD_79, RD_78, RD_77, RD_76, RD_75, RD_74, RD_73, RD_72, RD_71, RD_70, RD_69, RD_68, RD_67, RD_66, RD_65, RD_64, RD_63, RD_62, RD_61, RD_60, RD_59, RD_58, RD_57, RD_56, RD_55, RD_54, RD_53, RD_52, RD_51, RD_50, RD_49, RD_48, RD_47, RD_46, RD_45, RD_44, RD_43, RD_42, RD_41, RD_40, RD_39, RD_38, RD_37, RD_36, RD_35, RD_34, RD_33, RD_32, RD_31, RD_30, RD_29, RD_28, RD_27, RD_26, RD_25, RD_24, RD_23, RD_22, RD_21, RD_20, RD_19, RD_18, RD_17, RD_16, RD_15, RD_14, RD_13, RD_12, RD_11, RD_10, RD_9, RD_8, RD_7, RD_6, RD_5, RD_4, RD_3, RD_2, RD_1, RD_0} = (outvalid) ? RD & ~{256{clamp_rd}} : 256'bx;
+	assign {RD_129, RD_128, RD_127, RD_126, RD_125, RD_124, RD_123, RD_122, RD_121, RD_120, RD_119, RD_118, RD_117, RD_116, RD_115, RD_114, RD_113, RD_112, RD_111, RD_110, RD_109, RD_108, RD_107, RD_106, RD_105, RD_104, RD_103, RD_102, RD_101, RD_100, RD_99, RD_98, RD_97, RD_96, RD_95, RD_94, RD_93, RD_92, RD_91, RD_90, RD_89, RD_88, RD_87, RD_86, RD_85, RD_84, RD_83, RD_82, RD_81, RD_80, RD_79, RD_78, RD_77, RD_76, RD_75, RD_74, RD_73, RD_72, RD_71, RD_70, RD_69, RD_68, RD_67, RD_66, RD_65, RD_64, RD_63, RD_62, RD_61, RD_60, RD_59, RD_58, RD_57, RD_56, RD_55, RD_54, RD_53, RD_52, RD_51, RD_50, RD_49, RD_48, RD_47, RD_46, RD_45, RD_44, RD_43, RD_42, RD_41, RD_40, RD_39, RD_38, RD_37, RD_36, RD_35, RD_34, RD_33, RD_32, RD_31, RD_30, RD_29, RD_28, RD_27, RD_26, RD_25, RD_24, RD_23, RD_22, RD_21, RD_20, RD_19, RD_18, RD_17, RD_16, RD_15, RD_14, RD_13, RD_12, RD_11, RD_10, RD_9, RD_8, RD_7, RD_6, RD_5, RD_4, RD_3, RD_2, RD_1, RD_0} = (outvalid) ? RD & ~{130{clamp_rd}} : 130'bx;
 `else
-	assign {RD_255, RD_254, RD_253, RD_252, RD_251, RD_250, RD_249, RD_248, RD_247, RD_246, RD_245, RD_244, RD_243, RD_242, RD_241, RD_240, RD_239, RD_238, RD_237, RD_236, RD_235, RD_234, RD_233, RD_232, RD_231, RD_230, RD_229, RD_228, RD_227, RD_226, RD_225, RD_224, RD_223, RD_222, RD_221, RD_220, RD_219, RD_218, RD_217, RD_216, RD_215, RD_214, RD_213, RD_212, RD_211, RD_210, RD_209, RD_208, RD_207, RD_206, RD_205, RD_204, RD_203, RD_202, RD_201, RD_200, RD_199, RD_198, RD_197, RD_196, RD_195, RD_194, RD_193, RD_192, RD_191, RD_190, RD_189, RD_188, RD_187, RD_186, RD_185, RD_184, RD_183, RD_182, RD_181, RD_180, RD_179, RD_178, RD_177, RD_176, RD_175, RD_174, RD_173, RD_172, RD_171, RD_170, RD_169, RD_168, RD_167, RD_166, RD_165, RD_164, RD_163, RD_162, RD_161, RD_160, RD_159, RD_158, RD_157, RD_156, RD_155, RD_154, RD_153, RD_152, RD_151, RD_150, RD_149, RD_148, RD_147, RD_146, RD_145, RD_144, RD_143, RD_142, RD_141, RD_140, RD_139, RD_138, RD_137, RD_136, RD_135, RD_134, RD_133, RD_132, RD_131, RD_130, RD_129, RD_128, RD_127, RD_126, RD_125, RD_124, RD_123, RD_122, RD_121, RD_120, RD_119, RD_118, RD_117, RD_116, RD_115, RD_114, RD_113, RD_112, RD_111, RD_110, RD_109, RD_108, RD_107, RD_106, RD_105, RD_104, RD_103, RD_102, RD_101, RD_100, RD_99, RD_98, RD_97, RD_96, RD_95, RD_94, RD_93, RD_92, RD_91, RD_90, RD_89, RD_88, RD_87, RD_86, RD_85, RD_84, RD_83, RD_82, RD_81, RD_80, RD_79, RD_78, RD_77, RD_76, RD_75, RD_74, RD_73, RD_72, RD_71, RD_70, RD_69, RD_68, RD_67, RD_66, RD_65, RD_64, RD_63, RD_62, RD_61, RD_60, RD_59, RD_58, RD_57, RD_56, RD_55, RD_54, RD_53, RD_52, RD_51, RD_50, RD_49, RD_48, RD_47, RD_46, RD_45, RD_44, RD_43, RD_42, RD_41, RD_40, RD_39, RD_38, RD_37, RD_36, RD_35, RD_34, RD_33, RD_32, RD_31, RD_30, RD_29, RD_28, RD_27, RD_26, RD_25, RD_24, RD_23, RD_22, RD_21, RD_20, RD_19, RD_18, RD_17, RD_16, RD_15, RD_14, RD_13, RD_12, RD_11, RD_10, RD_9, RD_8, RD_7, RD_6, RD_5, RD_4, RD_3, RD_2, RD_1, RD_0} =  RD & ~{256{clamp_rd}};
+	assign {RD_129, RD_128, RD_127, RD_126, RD_125, RD_124, RD_123, RD_122, RD_121, RD_120, RD_119, RD_118, RD_117, RD_116, RD_115, RD_114, RD_113, RD_112, RD_111, RD_110, RD_109, RD_108, RD_107, RD_106, RD_105, RD_104, RD_103, RD_102, RD_101, RD_100, RD_99, RD_98, RD_97, RD_96, RD_95, RD_94, RD_93, RD_92, RD_91, RD_90, RD_89, RD_88, RD_87, RD_86, RD_85, RD_84, RD_83, RD_82, RD_81, RD_80, RD_79, RD_78, RD_77, RD_76, RD_75, RD_74, RD_73, RD_72, RD_71, RD_70, RD_69, RD_68, RD_67, RD_66, RD_65, RD_64, RD_63, RD_62, RD_61, RD_60, RD_59, RD_58, RD_57, RD_56, RD_55, RD_54, RD_53, RD_52, RD_51, RD_50, RD_49, RD_48, RD_47, RD_46, RD_45, RD_44, RD_43, RD_42, RD_41, RD_40, RD_39, RD_38, RD_37, RD_36, RD_35, RD_34, RD_33, RD_32, RD_31, RD_30, RD_29, RD_28, RD_27, RD_26, RD_25, RD_24, RD_23, RD_22, RD_21, RD_20, RD_19, RD_18, RD_17, RD_16, RD_15, RD_14, RD_13, RD_12, RD_11, RD_10, RD_9, RD_8, RD_7, RD_6, RD_5, RD_4, RD_3, RD_2, RD_1, RD_0} =  RD & ~{130{clamp_rd}};
 `endif
 	wire [7:0] SVOP = {SVOP_7, SVOP_6, SVOP_5, SVOP_4, SVOP_3, SVOP_2, SVOP_1, SVOP_0};
 
@@ -120,7 +120,7 @@ wire GND  = 1'b0;
 
 // Instantiate memory bank
 // This block defines the core functionality of the rams.
-	RAM_BANK_RAMPDP_32X256_GL_M1_D2 ITOP ( WE, CLK, IDDQ, SVOP, WD, RD, RE, RA, WA
+	RAM_BANK_RAMPDP_32X130_GL_M1_D2 ITOP ( WE, CLK, IDDQ, SVOP, WD, RD, RE, RA, WA
 , SLEEP_EN
 ,  RET_EN, clobber_array , clobber_flops 
 );
@@ -132,7 +132,7 @@ always  @(clobber_array) begin : clobber_array_block
     integer i;
     if (clobber_array) begin
 	    for (i=0; i<32; i=i+1) begin
-		     mem_wr_raw(i, {256{1'bx}});
+		     mem_wr_raw(i, {130{1'bx}});
 		end
     end
 end
@@ -147,8 +147,8 @@ always  @(clobber_flops) begin
       ITOP.RADR <= 7'bx;
       ITOP.WADR <= 7'bx;
       ITOP.WAFF <= 7'bx;
-      ITOP.WDQ_pr <= 256'bx;
-      ITOP.dout <= 256'bx;
+      ITOP.WDQ_pr <= 130'bx;
+      ITOP.dout <= 130'bx;
   end
 end  
 //VCS coverage on    
@@ -156,7 +156,7 @@ end
 //VCS coverage off    
 task mem_wr_raw;
   input [4:0] addr;
-  input [255:0] data;
+  input [129:0] data;
   begin
         ITOP.iow0.mem_wr_raw_subbank(addr[4:0],data);
   end
@@ -165,14 +165,14 @@ endtask
 // Ramgen function for writing the arrays 
 task mem_write;
   input [4:0] addr;
-  input [255:0] data;
+  input [129:0] data;
   begin
     ITOP.mem_write_bank(addr,data);
   end
 endtask
 
 // Ramgen function for reading the arrays 
-function [255:0] mem_read;
+function [129:0] mem_read;
 input [4:0] addr;
   begin
         mem_read = ITOP.mem_read_bank(addr);
@@ -186,11 +186,11 @@ endfunction
 
 
 task mem_fill_random;
-	reg [255:0] val;
+	reg [129:0] val;
 	integer i;
 	begin
 		for (i=0; i<32; i=i+1) begin
-		    val = {$random, $random, $random, $random, $random, $random, $random, $random};
+		    val = {$random, $random, $random, $random, $random};
 		    mem_wr_raw(i, val);
 		end
 	end 
@@ -199,10 +199,10 @@ endtask
 // Fill the memory with a given bit value 
 task mem_fill_value;
     input fill_bit;
-	reg [255:0] val;
+	reg [129:0] val;
     integer i;
     begin
-        val = {256{fill_bit}};
+        val = {130{fill_bit}};
         for (i=0; i<32; i=i+1) begin
 		    mem_wr_raw(i, val);
         end
@@ -212,7 +212,7 @@ endtask
 // read logical address and feed into salat
 task force_rd;
 input [4:0] addr;
-	reg [255:0] rd;
+	reg [129:0] rd;
 
 	`ifdef USE_RAMINIT_LIBS
 	reg raminit_active, raminit_argcheck, raminit_debug, raminit_enable, raminit_random, raminit_invert,
@@ -279,9 +279,9 @@ input [4:0] addr;
 	  #0; // wait for raminit variables to be set
 	  if (raminit_enable)
 	  begin : raminit_val_blk
-	    reg [256-1:0] raminit_fullval;
-	    if (raminit_random)  raminit_fullval = `ifdef NO_PLI {256 {1'b1}} `else { $RollPLI(0,{32{1'b1}}), $RollPLI(0,{32{1'b1}}), $RollPLI(0,{32{1'b1}}), $RollPLI(0,{32{1'b1}}), $RollPLI(0,{32{1'b1}}), $RollPLI(0,{32{1'b1}}), $RollPLI(0,{32{1'b1}}), $RollPLI(0,{32{1'b1}}) } `endif ;
-	    else                 raminit_fullval = {256 {raminit_val}};
+	    reg [130-1:0] raminit_fullval;
+	    if (raminit_random)  raminit_fullval = `ifdef NO_PLI {130 {1'b1}} `else { $RollPLI(0,{32{1'b1}}), $RollPLI(0,{32{1'b1}}), $RollPLI(0,{32{1'b1}}), $RollPLI(0,{32{1'b1}}), $RollPLI(0,{2{1'b1}}) } `endif ;
+	    else                 raminit_fullval = {130 {raminit_val}};
 	    if (raminit_invert)  raminit_fullval = ~raminit_fullval;
 	    if (raminit_use_force)  force rd = raminit_fullval;
 	    if (raminit_waitclock)  wait ( !== 1'bx);
@@ -308,9 +308,9 @@ endtask
 
 `ifdef MEM_PHYS_INFO
 //function for physical array read row, takes physical address
-function [255:0] mem_phys_read_padr;
+function [129:0] mem_phys_read_padr;
 input [4:0] addr;
-	reg [255:0] rd_row;
+	reg [129:0] rd_row;
 
 	`ifdef USE_RAMINIT_LIBS
 	// init rd_row
@@ -319,9 +319,9 @@ input [4:0] addr;
 	  #0; // wait for raminit variables to be set
 	  if (raminit_enable)
 	  begin : raminit_val_blk
-	    reg [256-1:0] raminit_fullval;
-	    if (raminit_random)  raminit_fullval = `ifdef NO_PLI {256 {1'b1}} `else { $RollPLI(0,{32{1'b1}}), $RollPLI(0,{32{1'b1}}), $RollPLI(0,{32{1'b1}}), $RollPLI(0,{32{1'b1}}), $RollPLI(0,{32{1'b1}}), $RollPLI(0,{32{1'b1}}), $RollPLI(0,{32{1'b1}}), $RollPLI(0,{32{1'b1}}) } `endif ;
-	    else                 raminit_fullval = {256 {raminit_val}};
+	    reg [130-1:0] raminit_fullval;
+	    if (raminit_random)  raminit_fullval = `ifdef NO_PLI {130 {1'b1}} `else { $RollPLI(0,{32{1'b1}}), $RollPLI(0,{32{1'b1}}), $RollPLI(0,{32{1'b1}}), $RollPLI(0,{32{1'b1}}), $RollPLI(0,{2{1'b1}}) } `endif ;
+	    else                 raminit_fullval = {130 {raminit_val}};
 	    if (raminit_invert)  raminit_fullval = ~raminit_fullval;
 	    if (raminit_use_force)  force rd_row = raminit_fullval;
 	    if (raminit_waitclock)  wait ( !== 1'bx);
@@ -340,11 +340,11 @@ input [4:0] addr;
 	`endif
 	`endif // `ifdef USE_RAMINIT_LIBS
 
-	reg [255:0] rd[0:0];
+	reg [129:0] rd[0:0];
 	integer i;
 	begin
         rd[0] = ITOP.iow0.mem_read_raw_subbank(addr);
-        for (i=0; i<=255; i=i+1) begin
+        for (i=0; i<=129; i=i+1) begin
             rd_row[i*1+0] = rd[0][i];
 		end
 		mem_phys_read_padr = rd_row;
@@ -352,10 +352,10 @@ input [4:0] addr;
 endfunction
 
 //function for physical array read row, takes logical address
-function [255:0] mem_phys_read_ladr;
+function [129:0] mem_phys_read_ladr;
 input [4:0] addr;
     reg [4:0] paddr;
-	reg [255:0] rd_row;
+	reg [129:0] rd_row;
 
 	`ifdef USE_RAMINIT_LIBS
 	// init rd_row
@@ -364,9 +364,9 @@ input [4:0] addr;
 	  #0; // wait for raminit variables to be set
 	  if (raminit_enable)
 	  begin : raminit_val_blk
-	    reg [256-1:0] raminit_fullval;
-	    if (raminit_random)  raminit_fullval = `ifdef NO_PLI {256 {1'b1}} `else { $RollPLI(0,{32{1'b1}}), $RollPLI(0,{32{1'b1}}), $RollPLI(0,{32{1'b1}}), $RollPLI(0,{32{1'b1}}), $RollPLI(0,{32{1'b1}}), $RollPLI(0,{32{1'b1}}), $RollPLI(0,{32{1'b1}}), $RollPLI(0,{32{1'b1}}) } `endif ;
-	    else                 raminit_fullval = {256 {raminit_val}};
+	    reg [130-1:0] raminit_fullval;
+	    if (raminit_random)  raminit_fullval = `ifdef NO_PLI {130 {1'b1}} `else { $RollPLI(0,{32{1'b1}}), $RollPLI(0,{32{1'b1}}), $RollPLI(0,{32{1'b1}}), $RollPLI(0,{32{1'b1}}), $RollPLI(0,{2{1'b1}}) } `endif ;
+	    else                 raminit_fullval = {130 {raminit_val}};
 	    if (raminit_invert)  raminit_fullval = ~raminit_fullval;
 	    if (raminit_use_force)  force rd_row = raminit_fullval;
 	    if (raminit_waitclock)  wait ( !== 1'bx);
@@ -385,12 +385,12 @@ input [4:0] addr;
 	`endif
 	`endif // `ifdef USE_RAMINIT_LIBS
 
-	reg [255:0] rd[0:0];
+	reg [129:0] rd[0:0];
 	integer i;
 	begin
         paddr = (addr >> 0);
         rd[0] = ITOP.iow0.mem_read_raw_subbank(paddr);
-        for (i=0; i<=255; i=i+1) begin
+        for (i=0; i<=129; i=i+1) begin
             rd_row[i*1+0] = rd[0][i];
 		end
 		mem_phys_read_ladr = rd_row;
@@ -399,9 +399,9 @@ endfunction
 
 
 //function for physical array read row with column masking, takes logical address
-function [255:0] mem_phys_read_pmasked;
+function [129:0] mem_phys_read_pmasked;
 input [4:0] addr;
-   reg [255:0] rd_row;
+   reg [129:0] rd_row;
 
    `ifdef USE_RAMINIT_LIBS
    // init rd_row
@@ -410,9 +410,9 @@ input [4:0] addr;
      #0; // wait for raminit variables to be set
      if (raminit_enable)
      begin : raminit_val_blk
-       reg [256-1:0] raminit_fullval;
-       if (raminit_random)  raminit_fullval = `ifdef NO_PLI {256 {1'b1}} `else { $RollPLI(0,{32{1'b1}}), $RollPLI(0,{32{1'b1}}), $RollPLI(0,{32{1'b1}}), $RollPLI(0,{32{1'b1}}), $RollPLI(0,{32{1'b1}}), $RollPLI(0,{32{1'b1}}), $RollPLI(0,{32{1'b1}}), $RollPLI(0,{32{1'b1}}) } `endif ;
-       else                 raminit_fullval = {256 {raminit_val}};
+       reg [130-1:0] raminit_fullval;
+       if (raminit_random)  raminit_fullval = `ifdef NO_PLI {130 {1'b1}} `else { $RollPLI(0,{32{1'b1}}), $RollPLI(0,{32{1'b1}}), $RollPLI(0,{32{1'b1}}), $RollPLI(0,{32{1'b1}}), $RollPLI(0,{2{1'b1}}) } `endif ;
+       else                 raminit_fullval = {130 {raminit_val}};
        if (raminit_invert)  raminit_fullval = ~raminit_fullval;
        if (raminit_use_force)  force rd_row = raminit_fullval;
        if (raminit_waitclock)  wait ( !== 1'bx);
@@ -431,7 +431,7 @@ input [4:0] addr;
    `endif
    `endif // `ifdef USE_RAMINIT_LIBS
 
-   reg [255:0] rd[0 : 0];
+   reg [129:0] rd[0 : 0];
    integer i;
    begin
         rd_row = ITOP.iow0.mem_read_raw_subbank(addr);
@@ -442,11 +442,11 @@ endfunction
 //Task for physical array write row, takes physical address
 task mem_phys_write;
 input [4:0] addr;
-input [255:0] data;
-	reg [255:0] wr[0:0];
+input [129:0] data;
+	reg [129:0] wr[0:0];
 	integer i;
 	begin
-        for (i=0; i<=255; i=i+1) begin
+        for (i=0; i<=129; i=i+1) begin
             wr[0][i] = data[i*1+0];
 		end
         ITOP.iow0.mem_wr_raw_subbank(addr,wr[0]);
@@ -484,16 +484,16 @@ task monitor_off;
 endtask
 
 // read bit_written monitor row by physical address from subarray
-function [255:0] mon_bit_w;
+function [129:0] mon_bit_w;
 input [4:0] addr;
-	reg [255:0] mon_row;
-	reg [255:0] mon_word[0:0];
+	reg [129:0] mon_row;
+	reg [129:0] mon_word[0:0];
 	integer i;
 	begin
 		// read all monitor words for a row
 		mon_word[0] = ITOP.iow0.bit_written[addr];
 		// combine all 1 words to a row
-		for (i=0; i<=255; i=i+1) begin
+		for (i=0; i<=129; i=i+1) begin
 			mon_row[i*1+0] = mon_word[0][i];
 		end
 		mon_bit_w = mon_row;
@@ -501,16 +501,16 @@ input [4:0] addr;
 endfunction
 
 // read bit_read monitor word by address from subarray
-function [255:0] mon_bit_r;
+function [129:0] mon_bit_r;
 input [4:0] addr;
-	reg [255:0] mon_row;
-	reg [255:0] mon_word[0:0];
+	reg [129:0] mon_row;
+	reg [129:0] mon_word[0:0];
 	integer i;
 	begin
 		// read all monitor words for a row
 		mon_word[0] = ITOP.iow0.bit_read[addr];
 		// combine all 1 words to a row
-		for (i=0; i<=255; i=i+1) begin
+		for (i=0; i<=129; i=i+1) begin
 			mon_row[i*1+0] = mon_word[0][i];
 		end
 		mon_bit_r = mon_row;
@@ -546,7 +546,7 @@ endfunction
 always @(dump_monitor_result) begin : dump_monitor
 	integer i;
 	integer j;
-	reg [255:0] tmp_row;
+	reg [129:0] tmp_row;
     reg tmp_bit;
 	if (dump_monitor_result == 1'b1) begin
 	    $display("Exercised coverage summary:");
@@ -563,28 +563,28 @@ always @(dump_monitor_result) begin : dump_monitor
 		$display("\t%m bits not written as 0:");
 		for (i=0; i<32; i=i+1) begin
 			tmp_row = mon_bit_w(i);
-			for (j=0; j<256; j=j+1) begin
+			for (j=0; j<130; j=j+1) begin
 				if (tmp_row[j] !== 1'b0 && tmp_row[j] !== 1'bz) $display("\t\t[row,bit] [%d,%d]", i, j);
 			end
 		end
 		$display("\t%m bits not written as 1:");
 		for (i=0; i<32; i=i+1) begin
 			tmp_row = mon_bit_w(i);
-			for (j=0; j<256; j=j+1) begin
+			for (j=0; j<130; j=j+1) begin
 				if (tmp_row[j] !== 1'b1 && tmp_row[j] !== 1'bz) $display("\t\t[row,bit] [%d,%d]", i, j);
 			end
 		end
 		$display("\t%m bits not read as 0:");
 		for (i=0; i<32; i=i+1) begin
 			tmp_row = mon_bit_r(i);
-			for (j=0; j<256; j=j+1) begin
+			for (j=0; j<130; j=j+1) begin
 				if (tmp_row[j] !== 1'b0 && tmp_row[j] !== 1'bz) $display("\t\t[row,bit] [%d,%d]", i, j);
 			end
 		end
 		$display("\t%m bits not read as 1:");
 		for (i=0; i<32; i=i+1) begin
 			tmp_row = mon_bit_r(i);
-			for (j=0; j<256; j=j+1) begin
+			for (j=0; j<130; j=j+1) begin
 				if (tmp_row[j] !== 1'b1 && tmp_row[j] !== 1'bz) $display("\t\t[row,bit] [%d,%d]", i, j);
 			end
 		end
@@ -596,38 +596,38 @@ end
 `endif // MONITOR
 
 `ifdef NV_RAM_EXPAND_ARRAY
-wire [255:0] Q_0 = ITOP.iow0.arr[0];
-wire [255:0] Q_1 = ITOP.iow0.arr[1];
-wire [255:0] Q_2 = ITOP.iow0.arr[2];
-wire [255:0] Q_3 = ITOP.iow0.arr[3];
-wire [255:0] Q_4 = ITOP.iow0.arr[4];
-wire [255:0] Q_5 = ITOP.iow0.arr[5];
-wire [255:0] Q_6 = ITOP.iow0.arr[6];
-wire [255:0] Q_7 = ITOP.iow0.arr[7];
-wire [255:0] Q_8 = ITOP.iow0.arr[8];
-wire [255:0] Q_9 = ITOP.iow0.arr[9];
-wire [255:0] Q_10 = ITOP.iow0.arr[10];
-wire [255:0] Q_11 = ITOP.iow0.arr[11];
-wire [255:0] Q_12 = ITOP.iow0.arr[12];
-wire [255:0] Q_13 = ITOP.iow0.arr[13];
-wire [255:0] Q_14 = ITOP.iow0.arr[14];
-wire [255:0] Q_15 = ITOP.iow0.arr[15];
-wire [255:0] Q_16 = ITOP.iow0.arr[16];
-wire [255:0] Q_17 = ITOP.iow0.arr[17];
-wire [255:0] Q_18 = ITOP.iow0.arr[18];
-wire [255:0] Q_19 = ITOP.iow0.arr[19];
-wire [255:0] Q_20 = ITOP.iow0.arr[20];
-wire [255:0] Q_21 = ITOP.iow0.arr[21];
-wire [255:0] Q_22 = ITOP.iow0.arr[22];
-wire [255:0] Q_23 = ITOP.iow0.arr[23];
-wire [255:0] Q_24 = ITOP.iow0.arr[24];
-wire [255:0] Q_25 = ITOP.iow0.arr[25];
-wire [255:0] Q_26 = ITOP.iow0.arr[26];
-wire [255:0] Q_27 = ITOP.iow0.arr[27];
-wire [255:0] Q_28 = ITOP.iow0.arr[28];
-wire [255:0] Q_29 = ITOP.iow0.arr[29];
-wire [255:0] Q_30 = ITOP.iow0.arr[30];
-wire [255:0] Q_31 = ITOP.iow0.arr[31];
+wire [129:0] Q_0 = ITOP.iow0.arr[0];
+wire [129:0] Q_1 = ITOP.iow0.arr[1];
+wire [129:0] Q_2 = ITOP.iow0.arr[2];
+wire [129:0] Q_3 = ITOP.iow0.arr[3];
+wire [129:0] Q_4 = ITOP.iow0.arr[4];
+wire [129:0] Q_5 = ITOP.iow0.arr[5];
+wire [129:0] Q_6 = ITOP.iow0.arr[6];
+wire [129:0] Q_7 = ITOP.iow0.arr[7];
+wire [129:0] Q_8 = ITOP.iow0.arr[8];
+wire [129:0] Q_9 = ITOP.iow0.arr[9];
+wire [129:0] Q_10 = ITOP.iow0.arr[10];
+wire [129:0] Q_11 = ITOP.iow0.arr[11];
+wire [129:0] Q_12 = ITOP.iow0.arr[12];
+wire [129:0] Q_13 = ITOP.iow0.arr[13];
+wire [129:0] Q_14 = ITOP.iow0.arr[14];
+wire [129:0] Q_15 = ITOP.iow0.arr[15];
+wire [129:0] Q_16 = ITOP.iow0.arr[16];
+wire [129:0] Q_17 = ITOP.iow0.arr[17];
+wire [129:0] Q_18 = ITOP.iow0.arr[18];
+wire [129:0] Q_19 = ITOP.iow0.arr[19];
+wire [129:0] Q_20 = ITOP.iow0.arr[20];
+wire [129:0] Q_21 = ITOP.iow0.arr[21];
+wire [129:0] Q_22 = ITOP.iow0.arr[22];
+wire [129:0] Q_23 = ITOP.iow0.arr[23];
+wire [129:0] Q_24 = ITOP.iow0.arr[24];
+wire [129:0] Q_25 = ITOP.iow0.arr[25];
+wire [129:0] Q_26 = ITOP.iow0.arr[26];
+wire [129:0] Q_27 = ITOP.iow0.arr[27];
+wire [129:0] Q_28 = ITOP.iow0.arr[28];
+wire [129:0] Q_29 = ITOP.iow0.arr[29];
+wire [129:0] Q_30 = ITOP.iow0.arr[30];
+wire [129:0] Q_31 = ITOP.iow0.arr[31];
 `endif //NV_RAM_EXPAND_ARRAY
 `endif //SYNTHESIS
 
@@ -636,21 +636,21 @@ wire [255:0] Q_31 = ITOP.iow0.arr[31];
 // induce faults on columns
 //VCS coverage off    
 task mem_fault_no_write;
-input [255:0] fault_mask;
+input [129:0] fault_mask;
     begin
         ITOP.iow0.mem_fault_no_write_subbank(fault_mask);
     end
 endtask
 
 task mem_fault_stuck_0;
-input [255:0] fault_mask;
+input [129:0] fault_mask;
     begin
         ITOP.iow0.mem_fault_stuck_0_subbank(fault_mask);
     end
 endtask
 
 task mem_fault_stuck_1;
-input [255:0] fault_mask;
+input [129:0] fault_mask;
     begin
         ITOP.iow0.mem_fault_stuck_1_subbank(fault_mask);
     end
@@ -710,8 +710,8 @@ endtask
 // Addresses 
     reg [6:0] RAFF,WAFF;
 // Data 
-    reg [255:0] WD_FF;
-    reg [255:0] RD_LAT;
+    reg [129:0] WD_FF;
+    reg [129:0] RD_LAT;
  
 // Latch the enables
 //spyglass disable_block IntClock,W18 
@@ -744,7 +744,7 @@ endtask
 
 
 // Memory 
-    reg [255:0] mem[31:0]; 
+    reg [129:0] mem[31:0]; 
 
 // write into the memory on negative edge of clock
    wire WRCLK = ~CLK & WE_FF ; //spyglass disable GatedClock
@@ -753,9 +753,9 @@ endtask
         mem[WAFF] <= WD_FF; //spyglass disable SYNTH_5130
 
 // Read 
-    wire [255:0] dout;
+    wire [129:0] dout;
     assign dout = mem[RAFF]; //spyglass disable SYNTH_5130
-    reg [255:0] dout_LAT;
+    reg [129:0] dout_LAT;
     always @(RECLK or dout) 
         if (RECLK) 
             dout_LAT <= dout; //spyglass disable W18
@@ -771,7 +771,7 @@ endmodule
 `ifndef EMULATION
 
 //memory bank block
-module RAM_BANK_RAMPDP_32X256_GL_M1_D2 ( WE, CLK, IDDQ, SVOP, WD, RD, RE, RA, WA
+module RAM_BANK_RAMPDP_32X130_GL_M1_D2 ( WE, CLK, IDDQ, SVOP, WD, RD, RE, RA, WA
 , SLEEP_EN
 , RET_EN , clobber_array , clobber_flops 
 );
@@ -779,9 +779,9 @@ module RAM_BANK_RAMPDP_32X256_GL_M1_D2 ( WE, CLK, IDDQ, SVOP, WD, RD, RE, RA, WA
 // Input/output port definitions
 input  WE, CLK, IDDQ , RE;
 input [7:0] SVOP;
-input [255:0] WD;
+input [129:0] WD;
 input [6:0] RA, WA;
-output [255:0] RD;
+output [129:0] RD;
 input [7:0] SLEEP_EN;
 
 input RET_EN , clobber_array , clobber_flops ; 
@@ -882,31 +882,31 @@ input RET_EN , clobber_array , clobber_flops ;
     assign fuseien = 0;
 
 //io part
-	wire [255:0] WDQ;
-	wire [255:0] WDBQ;
-	wire [255:0] WMNexp;
-	wire [255:0] WMNQ;
+	wire [129:0] WDQ;
+	wire [129:0] WDBQ;
+	wire [129:0] WMNexp;
+	wire [129:0] WMNQ;
 
 // Expand the fuse predec to 512 bits . It follows the 8x8x8 repeat pattern
 // We will use only the ones needed for this particular ram configuration and ignore the rest
 	wire [511:0] PDEC2 = {{64{fusePDEC2[7]}}, {64{fusePDEC2[6]}}, {64{fusePDEC2[5]}}, {64{fusePDEC2[4]}}, {64{fusePDEC2[3]}}, {64{fusePDEC2[2]}}, {64{fusePDEC2[1]}}, {64{fusePDEC2[0]}}};
 	wire [511:0] PDEC1 = {8{{8{fusePDEC1[7]}}, {8{fusePDEC1[6]}}, {8{fusePDEC1[5]}}, {8{fusePDEC1[4]}}, {8{fusePDEC1[3]}}, {8{fusePDEC1[2]}}, {8{fusePDEC1[1]}}, {8{fusePDEC1[0]}}}};
 	wire [511:0] PDEC0 = {64{fusePDEC0[7:0]}};
-	wire [255:0] BADBIT, SHFT;
+	wire [129:0] BADBIT, SHFT;
 
 // SHIFT<*> == 1 --> No repair at that bit , 0 --> repair at that bit .
 // SHIFT<X> == not(and Pdec*<X>) & SHIFT<X-1>
-    assign BADBIT = {256{1'b0}};
-    assign SHFT   = {256{1'b1}};
+    assign BADBIT = {130{1'b0}};
+    assign SHFT   = {130{1'b1}};
 
-    reg [255:0] WDQ_pr;
-    wire [255:0] WDBQ_pr;
+    reg [129:0] WDQ_pr;
+    wire [129:0] WDBQ_pr;
 
-    assign WMNexp = {256{1'b1}};
+    assign WMNexp = {130{1'b1}};
 
     always @(posedge WRDCLK) begin
 // Flop write data
-		WDQ_pr[255:0]    <= WD & WMNexp;
+		WDQ_pr[129:0]    <= WD & WMNexp;
 	end
 
     assign WDBQ_pr = ~WDQ_pr;
@@ -915,14 +915,14 @@ input RET_EN , clobber_array , clobber_flops ;
 	assign WDQ  = WDQ_pr;
 	assign WDBQ = WDBQ_pr;
 
-    reg [255:0] dout;
-	wire [255:0] RD;
+    reg [129:0] dout;
+	wire [129:0] RD;
 	wire RD_rdnt0,RD_rdnt1;
 
-	wire [255:0] sel_normal, sel_redun;
+	wire [129:0] sel_normal, sel_redun;
 
 // Read bypass is not used for non custom ram
-	wire [255:0] RDBYPASS = {256{1'b0}};
+	wire [129:0] RDBYPASS = {130{1'b0}};
 
 
 // Read bypass will override redunancy mux .
@@ -946,11 +946,11 @@ input RET_EN , clobber_array , clobber_flops ;
 // It is a legal input address if it does not fall in the empty space.
     assign legal = tiedvalid & ~empadd ;
     
-    wire [255:0] force_x;
+    wire [129:0] force_x;
 `ifndef SYNTHESIS
-    assign force_x = {256{1'bx}};
+    assign force_x = {130{1'bx}};
 `else 
-    assign force_x = {256{1'b0}};
+    assign force_x = {130{1'b0}};
 `endif 
 
 // Generate the read and write clocks for the various CM banks
@@ -961,23 +961,23 @@ input RET_EN , clobber_array , clobber_flops ;
     
     assign WrClk0 = WECLK & legal;
     
-    wire [255:0] rmuxd0;
-    wire [255:0] dout0;
+    wire [129:0] rmuxd0;
+    wire [129:0] dout0;
     
 // Mux the way reads onto the final read busa
 // Output X's if the address is invalid    
-	//assign rmuxd0 = legal ? {256{RdClk0}} & ~dout0 : force_x;
-	assign rmuxd0 = {256{RdClk0}} & ~dout0 ;
+	//assign rmuxd0 = legal ? {130{RdClk0}} & ~dout0 : force_x;
+	assign rmuxd0 = {130{RdClk0}} & ~dout0 ;
     always @(RECLK or rmuxd0)
     begin
         if (RECLK)
 	    begin
-            dout[255:0] <= (rmuxd0[255:0]); // spyglass disable W18 
+            dout[129:0] <= (rmuxd0[129:0]); // spyglass disable W18 
         end
     end
 
 // Instantiate the memory banks. One for each CM .
-    RAMPDP_32X256_GL_M1_D2_ram # (32, 256, 7) iow0 (
+    RAMPDP_32X130_GL_M1_D2_ram # (32, 130, 7) iow0 (
 		WAFF[6:0],
 		WrClk0,
         WMNQ,
@@ -993,8 +993,8 @@ input RET_EN , clobber_array , clobber_flops ;
 //VCS coverage off    
 task mem_write_bank;
   input [4:0] addr;
-  input [255:0] data;
-  reg   [255:0] wdat;
+  input [129:0] data;
+  reg   [129:0] wdat;
   begin
     wdat = data;
     iow0.mem_wr_raw_subbank(addr[4:0],wdat);
@@ -1002,9 +1002,9 @@ task mem_write_bank;
 endtask
 
 // Ramgen function for reading the arrays 
-function [255:0] mem_read_bank;
+function [129:0] mem_read_bank;
 input [4:0] addr;
-reg [255:0] memout;
+reg [129:0] memout;
   begin
     memout = iow0.mem_read_raw_subbank(addr);
     mem_read_bank = memout;
@@ -1020,7 +1020,7 @@ endmodule
 
 `ifndef RAM_INTERFACE
 `ifndef EMULATION
-module RAMPDP_32X256_GL_M1_D2_ram (
+module RAMPDP_32X130_GL_M1_D2_ram (
    wadr,
    wrclk,
    wrmaskn,
@@ -1031,7 +1031,7 @@ module RAMPDP_32X256_GL_M1_D2_ram (
 
 // default parameters
 parameter  words =  32;
-parameter  bits  =  256;
+parameter  bits  =  130;
 parameter  addrs =  7;
 
 // Write address
@@ -1212,14 +1212,14 @@ assign  rout_B = rdarr;
 //VCS coverage off    
 task mem_wr_raw_subbank;
   input [addrs-1:0] addr;
-  input [255:0] data;
+  input [129:0] data;
   begin
     arr[addr] = data;
   end
 endtask
 
 // function for array read
-function [255:0] mem_read_raw_subbank;
+function [129:0] mem_read_raw_subbank;
 input [addrs-1:0] addr;
 	mem_read_raw_subbank = arr[addr];
 endfunction

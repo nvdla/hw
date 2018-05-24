@@ -645,12 +645,12 @@ assign info_Yin_pd  = {
 assign dat_info_in = {info_Yin_pd,info_Xin_pd};
 
 assign info_in_pd = dat_info_in;
-NV_NVDLA_CDP_DP_intpinfo_fifo u_intpinfo_sync_fifo (
+//: my $s = NVDLA_CDP_THROUGHPUT*4;
+//: print " NV_NVDLA_CDP_DP_intpinfo_fifo_20x${s} u_intpinfo_sync_fifo (    \n";
    .nvdla_core_clk          (nvdla_core_clk)                        //|< i
   ,.nvdla_core_rstn         (nvdla_core_rstn)                       //|< i
   ,.intpinfo_wr_prdy        (info_in_rdy)                           //|> w
   ,.intpinfo_wr_pvld        (info_in_vld)                           //|< w
-  //,.intpinfo_wr_pd          ({48'd0,info_in_pd})                      //|< w
   ,.intpinfo_wr_pd          (info_in_pd)                      //|< w
   ,.intpinfo_rd_prdy        (info_o_rdy)                            //|< w
   ,.intpinfo_rd_pvld        (info_o_vld)                            //|> w

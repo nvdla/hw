@@ -84,7 +84,8 @@ assign info_pd  = cvt2sync_pd[NVDLA_CDP_THROUGHPUT * NVDLA_CDP_ICVTO_BWPE+16:NVD
 //////////////////////////////////////////////
 //////////////////////////////////////////////
 
-NV_NVDLA_CDP_DP_data_fifo u_data_sync_fifo (
+//: my $dbw = NVDLA_CDP_THROUGHPUT * NVDLA_CDP_ICVTO_BWPE;
+//: print " NV_NVDLA_CDP_DP_data_fifo_80x${dbw} u_data_sync_fifo (    \n";
    .nvdla_core_clk  (nvdla_core_clk)        //|< i
   ,.nvdla_core_rstn (nvdla_core_rstn)       //|< i
   ,.data_wr_prdy    (data_sync_wr_prdy)     //|> w
@@ -116,7 +117,8 @@ assign sync2ocvt_pvld = info_sync_rd_pvld;
 assign info_sync_rd_prdy = sync2ocvt_prdy;
 
 ///////////////////////////////////////////
-NV_NVDLA_CDP_DP_sumpd_fifo u_sumpd_sync_fifo (
+//: my $bw=NVDLA_CDP_THROUGHPUT*(NVDLA_CDP_ICVTO_BWPE*2+3);
+//: print " NV_NVDLA_CDP_DP_sumpd_fifo_60x${bw} u_sumpd_sync_fifo ( \n";
    .nvdla_core_clk  (nvdla_core_clk)        //|< i
   ,.nvdla_core_rstn (nvdla_core_rstn)       //|< i
   ,.sumpd_wr_prdy   (sum2sync_prdy)         //|> o

@@ -1171,17 +1171,22 @@ NV_NVDLA_DMAIF_rdrsp NV_NVDLA_PDP_RDMA_rdrsp(
 //: my $dmaif = NVDLA_CDMA_DMAIF_BW;
 //: my $atmm8 = 8 * (NVDLA_MEMORY_ATOMIC_SIZE * NVDLA_CDMA_BPE);
 //: my $fifo_depth = int( $atmm8/$dmaif );
-//: my $fifo_width = $dmaif;
-// 
-NV_NVDLA_CDMA_WT_8ATMM_fifo u_8atmm_fifo(
+//: my $fifo_width = NVDLA_CDMA_MEM_RD_RSP;
+//: print " NV_NVDLA_CDMA_WT_8ATMM_fifo_${fifo_width}x${fifo_depth} u_8atmm_fifo(   \n";
      .nvdla_core_clk      (nvdla_core_clk  )
     ,.nvdla_core_rstn     (nvdla_core_rstn ) 
-    ,.atmm8_wr_prdy       (dmaif_rd_rsp_prdy) 
-    ,.atmm8_wr_pvld       (dmaif_rd_rsp_pvld) 
-    ,.atmm8_wr_pd         (dmaif_rd_rsp_pd) 
-    ,.atmm8_rd_prdy       (dma_rd_rsp_rdy   ) 
-    ,.atmm8_rd_pvld       (dma_rd_rsp_vld  ) 
-    ,.atmm8_rd_pd         (dma_rd_rsp_pd  ) 
+    ,.lat_wr_prdy           (dmaif_rd_rsp_prdy)
+    ,.lat_wr_pvld           (dmaif_rd_rsp_pvld)
+    ,.lat_wr_pd             (dmaif_rd_rsp_pd) 
+    ,.lat_rd_prdy           (dma_rd_rsp_rdy   )
+    ,.lat_rd_pvld           (dma_rd_rsp_vld  ) 
+    ,.lat_rd_pd             (dma_rd_rsp_pd  ) 
+    //,.atmm8_wr_prdy       (dmaif_rd_rsp_prdy) 
+    //,.atmm8_wr_pvld       (dmaif_rd_rsp_pvld) 
+    //,.atmm8_wr_pd         (dmaif_rd_rsp_pd) 
+    //,.atmm8_rd_prdy       (dma_rd_rsp_rdy   ) 
+    //,.atmm8_rd_pvld       (dma_rd_rsp_vld  ) 
+    //,.atmm8_rd_pd         (dma_rd_rsp_pd  ) 
     ,.pwrbus_ram_pd       (32'd0) 
     );
 

@@ -284,7 +284,7 @@ assign dp2wdma_rdy = dp2wdma_vld & (dp2wdma_b_sync ? (dat_fifo_wr_rdy & cmd_fifo
 //:        wire                 dat${pos}_fifo${chn}_rd_pvld;
 //:        assign dat${pos}_fifo${chn}_wr_pvld = ((!dp2wdma_b_sync) || (dp2wdma_b_sync & cmd_fifo_wr_prdy)) & dp2wdma_vld & (dp2wdma_pos_c==$chn) & (dp2wdma_pos_w_bit0==$pos);
 //:        assign dat${pos}_fifo${chn}_wr_pd   = dp2wdma_data;
-//:        NV_NVDLA_CDP_WDMA_dat_fifo u_dat${pos}_fifo${chn} (
+//:        NV_NVDLA_CDP_WDMA_dat_fifo_32x${tp} u_dat${pos}_fifo${chn} (
 //:           .nvdla_core_clk      (nvdla_core_clk                 ) 
 //:          ,.nvdla_core_rstn     (nvdla_core_rstn                )
 //:          ,.dat_fifo_wr_prdy    (dat${pos}_fifo${chn}_wr_prdy   )

@@ -231,7 +231,12 @@ assign dma_rd_rsp_type   = reg2dp_src_ram_type;
 //==============
 // Latency FIFO to buffer return DATA
 //==============
-NV_NVDLA_CDP_RDMA_lat_fifo u_lat_fifo (
+//: my $k=NVDLA_CDP_DMAIF_BW;
+//: my $jx = NVDLA_MEMORY_ATOMIC_SIZE*NVDLA_BPE; ##atomic_m BW
+//: my $M = $k/$jx;  ##atomic_m number per dma transaction
+//: my $s = $k + $M;
+//: my $depth = NVDLA_VMOD_CDP_RDMA_LETENCY_FIFO_DEPTH;
+//: print " NV_NVDLA_CDP_RDMA_lat_fifo_${s}x${depth} u_lat_fifo (  \n";
    .nvdla_core_clk      (nvdla_core_clk)          //|< i
   ,.nvdla_core_rstn     (nvdla_core_rstn)         //|< i
   ,.lat_wr_prdy         (dma_rd_rsp_rdy)          //|> w
@@ -281,7 +286,7 @@ assign lat_rd_prdy = lat_rd_pvld
 //:        foreach my $f (0..$F-1) {
 //:            my $r = $F * $m  + $f;
 //:            print " assign ro${r}_wr_pd  = lat_rd_data[${tp}*${r}+${tp}-1:${tp}*${r}];  \n";
-//:            print " NV_NVDLA_CDP_RDMA_ro_fifo u_ro${r}_fifo(     \n";
+//:            print " NV_NVDLA_CDP_RDMA_ro_fifo_32x${tp} u_ro${r}_fifo(     \n";
 //:            print "  .nvdla_core_clk      (nvdla_core_clk)       \n";
 //:            print " ,.nvdla_core_rstn     (nvdla_core_rstn)      \n";
 //:            print " ,.ro_wr_prdy          (ro${m}_wr_rdys[$f])   \n";
