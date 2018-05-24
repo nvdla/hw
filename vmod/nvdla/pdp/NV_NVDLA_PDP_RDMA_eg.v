@@ -250,7 +250,7 @@ assign lat_rd_prdy = lat_rd_pvld
 //: print " ; \n";
 //:
 //:
-//: my $tp = NVDLA_CDP_THROUGHPUT*NVDLA_BPE;     ##throughput BW
+//: my $tp = NVDLA_PDP_THROUGHPUT*NVDLA_BPE;     ##throughput BW
 //: my $atmm = NVDLA_MEMORY_ATOMIC_SIZE*NVDLA_BPE; ##atomic_m BW
 //: my $k = NVDLA_PRIMARY_MEMIF_WIDTH/$tp;  ##total fifo num
 //: my $M = NVDLA_PRIMARY_MEMIF_WIDTH/$atmm;  ##atomic_m number per dma transaction
@@ -274,7 +274,7 @@ assign lat_rd_prdy = lat_rd_pvld
 //:        foreach my $f (0..$F-1) {
 //:            my $r = $F * $m  + $f;
 //:            print " assign ro${r}_wr_pd  = lat_rd_data[${tp}*${r}+${tp}-1:${tp}*${r}];  \n";
-//:            print " NV_NVDLA_PDP_RDMA_ro_fifo u_ro${r}_fifo(     \n";
+//:            print " NV_NVDLA_PDP_RDMA_ro_fifo_32x${tp} u_ro${r}_fifo(     \n";
 //:            print "  .nvdla_core_clk      (nvdla_core_clk)       \n";
 //:            print " ,.nvdla_core_rstn     (nvdla_core_rstn)      \n";
 //:            print " ,.ro_wr_prdy          (ro${m}_wr_rdys[$f])   \n";
@@ -342,7 +342,7 @@ assign tran_num[13:0] = cq2eg_pvld ? (ig2eg_size + 1) : 14'b0;
 assign tran_cnt_idle = (tran_cnt==0);
 assign is_last_tran  = (tran_cnt==1);
 assign is_last_beat  = (beat_cnt==1);
-//:  my $kx = NVDLA_CDP_THROUGHPUT*NVDLA_PDP_BWPE;     ##throughput BW
+//:  my $kx = NVDLA_PDP_THROUGHPUT*NVDLA_PDP_BWPE;     ##throughput BW
 //:  my $jx = NVDLA_MEMORY_ATOMIC_SIZE*NVDLA_PDP_BWPE; ##atomic_m BW
 //:  my $k = NVDLA_PRIMARY_MEMIF_WIDTH/$kx;       ##total fifo num
 //:  my $M = NVDLA_PRIMARY_MEMIF_WIDTH/$jx;       ##atomic_m number per dma trans
@@ -705,7 +705,7 @@ end
 assign is_b_sync = is_last_beat & is_last_tran & dp_rdy;
 
 assign {mon_dp_pos_w[10:0],dp_pos_w[3:0]}   = width_cnt - beat_cnt;
-//:  my $F = NVDLA_MEMORY_ATOMIC_SIZE/NVDLA_CDP_THROUGHPUT;
+//:  my $F = NVDLA_MEMORY_ATOMIC_SIZE/NVDLA_PDP_THROUGHPUT;
 //:  my $cmax = int( log($F)/log(2));
 //:  print qq(
 //:     assign dp_pos_c[4:0] = fifo_sel[${cmax}-1:0];

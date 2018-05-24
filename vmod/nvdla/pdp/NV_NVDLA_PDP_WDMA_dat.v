@@ -409,7 +409,7 @@ assign dp2wdma_rdy = dat_fifo_wr_prdy;
 //:            assign dat${posw}_fifo${posb}_wr_pd   = dp2wdma_dat_pd;
 //:            
 //:            // DATA FIFO INSTANCE
-//:            NV_NVDLA_PDP_WDMA_DAT_fifo u_dat${posw}_fifo${posb} (
+//:            NV_NVDLA_PDP_WDMA_DAT_fifo_32x${pdpbw} u_dat${posw}_fifo${posb} (
 //:               .nvdla_core_clk   (nvdla_core_clk) 
 //:              ,.nvdla_core_rstn  (nvdla_core_rstn) 
 //:              ,.dat_fifo_wr_prdy (dat${posw}_fifo${posb}_wr_prdy) 

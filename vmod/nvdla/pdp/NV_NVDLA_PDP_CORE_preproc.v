@@ -248,7 +248,7 @@ assign sdp2pdp_valid_use = sdp2pdp_valid_use_f & sdp2pdp_en_sync;
 //:         print "; \n";
 //:         print qq(
 //:             assign ro_wr_pd_$i = sdp2pdp_pd_use[${pdpbw}*${i}+${pdpbw}-1:${pdpbw}*${i}];
-//:             NV_NVDLA_PDP_SDPIN_ro_fifo u_ro_fifo_${i} (
+//:             NV_NVDLA_PDP_SDPIN_ro_fifo_4x${pdpbw} u_ro_fifo_${i} (
 //:                .nvdla_core_clk  (nvdla_core_clk)      
 //:               ,.nvdla_core_rstn (nvdla_core_rstn)     
 //:               ,.ro_wr_prdy      (ro_wr_rdy[$i])        
