@@ -400,7 +400,7 @@ constraint nvdla_cc_dp_resource::c_ias_datain_ext {
 
 constraint nvdla_cc_dp_resource::c_ias_weight_data {
     if(weight_format == weight_format_UNCOMPRESSED) { // non-compression mode
-        weight_bytes == ((weight_width_ext+1)*(weight_height_ext+1)*(weight_channel_ext+1)*((proc_precision == proc_precision_INT8)?1:2)*(weight_kernel+1)+NVDLA_CBUF_ENTRY_BYTE_WIDTH-1)/NVDLA_CBUF_ENTRY_BYTE_WIDTH*NVDLA_CBUF_ENTRY_BYTE_WIDTH;
+        weight_bytes == ((weight_width_ext+1)*(weight_height_ext+1)*(weight_channel_ext+1)*(`NVDLA_BPE/8)*(weight_kernel+1)+NVDLA_CBUF_ENTRY_BYTE_WIDTH-1)/NVDLA_CBUF_ENTRY_BYTE_WIDTH*NVDLA_CBUF_ENTRY_BYTE_WIDTH;
     }
     else {
         // depends on surface generated memory, will be configured in sequence
@@ -447,22 +447,22 @@ constraint nvdla_cc_dp_resource::c_ias_reuse_mode {
         (conv_mode == conv_mode_WINOGRAD) -> { (rls_slices+1) % 4 == 0; }
     }
 
-    if((((((weight_width_ext+1)*(weight_height_ext+1)*(weight_channel_ext+1)*((proc_precision==proc_precision_INT8)?1:2)*(weight_kernel+1)+NVDLA_CBUF_ENTRY_BYTE_WIDTH-1) / NVDLA_CBUF_ENTRY_BYTE_WIDTH ) + `NVDLA_CBUF_BANK_DEPTH-1) / `NVDLA_CBUF_BANK_DEPTH) + (data_bank+1) > ((weight_format==weight_format_COMPRESSED)?(`NVDLA_CBUF_BANK_NUMBER - 1):`NVDLA_CBUF_BANK_NUMBER)) {// can't work in full weight mode
+    if((((((weight_width_ext+1)*(weight_height_ext+1)*(weight_channel_ext+1)*(`NVDLA_BPE/8)*(weight_kernel+1)+NVDLA_CBUF_ENTRY_BYTE_WIDTH-1) / NVDLA_CBUF_ENTRY_BYTE_WIDTH ) + `NVDLA_CBUF_BANK_DEPTH-1) / `NVDLA_CBUF_BANK_DEPTH) + (data_bank+1) > ((weight_format==weight_format_COMPRESSED)?(`NVDLA_CBUF_BANK_NUMBER - 1):`NVDLA_CBUF_BANK_NUMBER)) {// can't work in full weight mode
         skip_weight_rls == skip_weight_rls_DISABLE;
     }
-    if((((((weight_width_ext+1)*(weight_height_ext+1)*(weight_channel_ext+1)*((proc_precision==proc_precision_INT8)?1:2)*(weight_kernel+1)+NVDLA_CBUF_ENTRY_BYTE_WIDTH-1) / NVDLA_CBUF_ENTRY_BYTE_WIDTH ) + `NVDLA_CBUF_BANK_DEPTH-1) / `NVDLA_CBUF_BANK_DEPTH) > (weight_bank+1)) {// can't work in full weight mode
+    if((((((weight_width_ext+1)*(weight_height_ext+1)*(weight_channel_ext+1)*(`NVDLA_BPE/8)*(weight_kernel+1)+NVDLA_CBUF_ENTRY_BYTE_WIDTH-1) / NVDLA_CBUF_ENTRY_BYTE_WIDTH ) + `NVDLA_CBUF_BANK_DEPTH-1) / `NVDLA_CBUF_BANK_DEPTH) > (weight_bank+1)) {// can't work in full weight mode
         skip_weight_rls == skip_weight_rls_DISABLE;
     }
 
     // if enable skip_weight_rls, means work in full weight mode
     if(weight_format == weight_format_UNCOMPRESSED) { // non-compression mode
         if(skip_weight_rls == skip_weight_rls_ENABLE) { // Must work in full weight mode
-            (weight_bank+1) >= ((((weight_width_ext+1)*(weight_height_ext+1)*(weight_channel_ext+1)*(weight_kernel+1)*((proc_precision==proc_precision_INT8)?1:2) + `SPECIAL_MARGIN +NVDLA_CBUF_ENTRY_BYTE_WIDTH-1) / NVDLA_CBUF_ENTRY_BYTE_WIDTH ) + `NVDLA_CBUF_BANK_DEPTH-1) / `NVDLA_CBUF_BANK_DEPTH;
+            (weight_bank+1) >= ((((weight_width_ext+1)*(weight_height_ext+1)*(weight_channel_ext+1)*(weight_kernel+1)*(`NVDLA_BPE/8) + `SPECIAL_MARGIN +NVDLA_CBUF_ENTRY_BYTE_WIDTH-1) / NVDLA_CBUF_ENTRY_BYTE_WIDTH ) + `NVDLA_CBUF_BANK_DEPTH-1) / `NVDLA_CBUF_BANK_DEPTH;
         }
         else {
             // weight_bank >= min_weight_bank
             if((proc_precision == proc_precision_INT8 && weight_kernel < `NVDLA_MAC_ATOMIC_K_SIZE) || (proc_precision!=proc_precision_INT8 && weight_kernel < `NVDLA_MAC_ATOMIC_K_SIZE)) {
-                (weight_bank+1) >= ((((weight_width_ext+1)*(weight_height_ext+1)*(weight_channel_ext+1)*((proc_precision==proc_precision_INT8)?1:2)*(weight_kernel+1)+`SPECIAL_MARGIN+NVDLA_CBUF_ENTRY_BYTE_WIDTH-1) / NVDLA_CBUF_ENTRY_BYTE_WIDTH) + `NVDLA_CBUF_BANK_DEPTH-1) / `NVDLA_CBUF_BANK_DEPTH;
+                (weight_bank+1) >= ((((weight_width_ext+1)*(weight_height_ext+1)*(weight_channel_ext+1)*(`NVDLA_BPE/8)*(weight_kernel+1)+`SPECIAL_MARGIN+NVDLA_CBUF_ENTRY_BYTE_WIDTH-1) / NVDLA_CBUF_ENTRY_BYTE_WIDTH) + `NVDLA_CBUF_BANK_DEPTH-1) / `NVDLA_CBUF_BANK_DEPTH;
             }
             else {
                 (weight_bank+1) >= ((((weight_width_ext+1)*(weight_height_ext+1)*(weight_channel_ext+1)*`NVDLA_MAC_ATOMIC_K_SIZE+`SPECIAL_MARGIN+NVDLA_CBUF_ENTRY_BYTE_WIDTH-1) / NVDLA_CBUF_ENTRY_BYTE_WIDTH) + `NVDLA_CBUF_BANK_DEPTH-1) / `NVDLA_CBUF_BANK_DEPTH;
@@ -476,12 +476,12 @@ constraint nvdla_cc_dp_resource::c_ias_reuse_mode {
         }
         //(weight_bank+1) >= ((weight_width_ext+1)*(weight_height_ext+1)*(weight_channel_ext+1)*`NVDLA_MAC_ATOMIC_K_SIZE*weight_none_zero_rate/1000-1) / (NVDLA_CBUF_ENTRY_BYTE_WIDTH*`NVDLA_CBUF_BANK_DEPTH) + 1;
         if(skip_weight_rls == skip_weight_rls_ENABLE) { // Must work in full weight mode
-            (weight_bank+1) >= ((((weight_width_ext+1)*(weight_height_ext+1)*(weight_channel_ext+1)*((proc_precision==proc_precision_INT8)?1:2)*(weight_kernel+1)*weight_none_zero_rate/1000+NVDLA_CBUF_ENTRY_BYTE_WIDTH-1) / NVDLA_CBUF_ENTRY_BYTE_WIDTH ) + `NVDLA_CBUF_BANK_DEPTH-1) / `NVDLA_CBUF_BANK_DEPTH;
+            (weight_bank+1) >= ((((weight_width_ext+1)*(weight_height_ext+1)*(weight_channel_ext+1)*(`NVDLA_BPE/8)*(weight_kernel+1)*weight_none_zero_rate/1000+NVDLA_CBUF_ENTRY_BYTE_WIDTH-1) / NVDLA_CBUF_ENTRY_BYTE_WIDTH ) + `NVDLA_CBUF_BANK_DEPTH-1) / `NVDLA_CBUF_BANK_DEPTH;
         }
         else {
             // weight_bank >= min_weight_bank
             if((proc_precision == proc_precision_INT8 && weight_kernel < `NVDLA_MAC_ATOMIC_K_SIZE) || (proc_precision!=proc_precision_INT8 && weight_kernel < `NVDLA_MAC_ATOMIC_K_SIZE)) {
-                (weight_bank+1) >= ((((weight_width_ext+1)*(weight_height_ext+1)*(weight_channel_ext+1)*((proc_precision==proc_precision_INT8)?1:2)*(weight_kernel+1)*weight_none_zero_rate/1000+NVDLA_CBUF_ENTRY_BYTE_WIDTH-1) / NVDLA_CBUF_ENTRY_BYTE_WIDTH) + 1 + `NVDLA_CBUF_BANK_DEPTH-1) / `NVDLA_CBUF_BANK_DEPTH;
+                (weight_bank+1) >= ((((weight_width_ext+1)*(weight_height_ext+1)*(weight_channel_ext+1)*(`NVDLA_BPE/8)*(weight_kernel+1)*weight_none_zero_rate/1000+NVDLA_CBUF_ENTRY_BYTE_WIDTH-1) / NVDLA_CBUF_ENTRY_BYTE_WIDTH) + 1 + `NVDLA_CBUF_BANK_DEPTH-1) / `NVDLA_CBUF_BANK_DEPTH;
             }
             else {
                 (weight_bank+1) >= ((((weight_width_ext+1)*(weight_height_ext+1)*(weight_channel_ext+1)*`NVDLA_MAC_ATOMIC_K_SIZE*weight_none_zero_rate/1000+NVDLA_CBUF_ENTRY_BYTE_WIDTH-1) / NVDLA_CBUF_ENTRY_BYTE_WIDTH) + 1 + `NVDLA_CBUF_BANK_DEPTH-1) / `NVDLA_CBUF_BANK_DEPTH;

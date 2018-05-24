@@ -683,7 +683,7 @@ constraint nvdla_cdma_resource::c_ias_datain_winograd {
         (datain_width_ext+1)  > 4;
         (datain_height_ext+1) > 4;
 
-        ((datain_channel+1) * ((in_precision==in_precision_INT8)?1:2)) % 32 == 0;
+        (datain_channel+1) % atomic_m == 0;
     }
 `endif
 }
@@ -725,16 +725,16 @@ constraint nvdla_cdma_resource::c_ias_stride_size {
             (line_stride >= (pixel_x_offset+datain_width+64'h1)*(datain_channel+1));
         }
         else if(pixel_format >= pixel_format_T_Y8___U8V8_N444) { // semi-planar
-            (line_stride - (pixel_x_offset+datain_width+64'h1)*((in_precision == in_precision_INT8)?1:2))/`NVDLA_MEMORY_ATOMIC_SIZE dist { 0:=48, ['h1:'hF]:=48, ['h10:'h7F]:=2, ['h80:'hFF]:=2};
-            (line_stride >= (pixel_x_offset+datain_width+64'h1)*((in_precision == in_precision_INT8)?1:2));
+            (line_stride - (pixel_x_offset+datain_width+64'h1)*(`NVDLA_BPE/8))/`NVDLA_MEMORY_ATOMIC_SIZE dist { 0:=48, ['h1:'hF]:=48, ['h10:'h7F]:=2, ['h80:'hFF]:=2};
+            (line_stride >= (pixel_x_offset+datain_width+64'h1)*(`NVDLA_BPE/8));
             // Semi-planar, add contraint to the second surface
             // line_uv_stride only valide in semi-planar mode && pitch linear
             uv_line_stride * (datain_height + 1) / `NVDLA_MEMORY_ATOMIC_SIZE <= 64'h800_0000;
             uv_line_stride == (line_stride * 2);
         }
         else {
-            (line_stride - (pixel_x_offset+datain_width+64'h1)*((in_precision == in_precision_INT8)?1:2)*(datain_channel+1))/`NVDLA_MEMORY_ATOMIC_SIZE dist { 0:=48, ['h1:'hF]:=48, ['h10:'h7F]:=2, ['h80:'hFF]:=2};
-            (line_stride >= (pixel_x_offset+datain_width+64'h1)*((in_precision == in_precision_INT8)?1:2)*(datain_channel+1));
+            (line_stride - (pixel_x_offset+datain_width+64'h1)*(`NVDLA_BPE/8)*(datain_channel+1))/`NVDLA_MEMORY_ATOMIC_SIZE dist { 0:=48, ['h1:'hF]:=48, ['h10:'h7F]:=2, ['h80:'hFF]:=2};
+            (line_stride >= (pixel_x_offset+datain_width+64'h1)*(`NVDLA_BPE/8)*(datain_channel+1));
         }
         line_stride * (datain_height + 1) / `NVDLA_MEMORY_ATOMIC_SIZE <= 64'h800_0000;
     }
@@ -762,8 +762,8 @@ constraint nvdla_cdma_resource::c_ias_multi_batch {
 `ifdef NVDLA_BATCH_ENABLE
         if(batches > 0) {
             batch_stride * batches <= 64'h100_0000;
-            (batch_stride >= surf_stride*((datain_channel+1-1)/((in_precision==in_precision_INT8)?32:16) + 64'h1));
-            (batch_stride - surf_stride*((datain_channel+1-1)/((in_precision==in_precision_INT8)?32:16) + 64'h1))/32 dist { 24'h0:=40, [24'h1:24'hF]:=50, [24'h10:24'hFF]:=10, [24'h100:24'hFF_FFFF]:=0 };
+            (batch_stride >= surf_stride*((datain_channel+1-1)/atomic_m + 64'h1));
+            (batch_stride - surf_stride*((datain_channel+1-1)/atomic_m + 64'h1))/32 dist { 24'h0:=40, [24'h1:24'hF]:=50, [24'h10:24'hFF]:=10, [24'h100:24'hFF_FFFF]:=0 };
         }
 `endif
     }
@@ -802,7 +802,7 @@ constraint nvdla_cdma_resource::c_ias_entries {
             }
         }
         else { // winograd
-            (entries+1) == (((datain_width+1+pad_left+pad_right) / (4*(conv_x_stride+1)))*((((datain_channel+1)*((proc_precision==proc_precision_INT8)?1:2) + 31) / 32)*(conv_x_stride+1)*(conv_y_stride+1)));
+            (entries+1) == (((datain_width+1+pad_left+pad_right) / (4*(conv_x_stride+1)))*((((datain_channel+1) + atomic_m-1) / atomic_m)*(conv_x_stride+1)*(conv_y_stride+1)));
         }
     }
 }
@@ -902,8 +902,8 @@ constraint nvdla_cdma_resource::c_ias_reuse_mode {
     // weight_bank > total_weight_bank: full weight mode
     // weight_bank > 2*min_weight_bank: ping-pong weight mode
     // weight_bank > min_weight_bank: normal weight mode
-    // total_weight_banks = ((((weight_width_ext+1)*(weight_height_ext+1)*(weight_channel_ext+1)*((proc_precision==proc_precision_INT8)?1:2)*(weight_kernel+1)+127) / 128 ) + 255) / 256;
-    // min_weight_banks = ((((weight_width_ext+1)*(weight_height_ext+1)*(weight_channel_ext+1)*((proc_precision==proc_precision_INT8)?1:2)*kernel_per_group+127) / 128) + 255) / 256;
+    // total_weight_banks = ((((weight_width_ext+1)*(weight_height_ext+1)*(weight_channel_ext+1)*(`NVDLA_BPE/8)*(weight_kernel+1)+127) / 128 ) + 255) / 256;
+    // min_weight_banks = ((((weight_width_ext+1)*(weight_height_ext+1)*(weight_channel_ext+1)*(`NVDLA_BPE/8)*kernel_per_group+127) / 128) + 255) / 256;
     // bug 200312556, weiht bank must be able to hold one max kernel group + 128 bytes
 
     if (prev_skip_data_rls == skip_data_rls_DISABLE) {

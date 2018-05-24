@@ -284,7 +284,7 @@ constraint nvdla_pdp_resource::c_ias_cube_size {
     solve pad_top              before cube_out_height;
     solve pad_bottom           before cube_out_height;
     solve kernel_stride_height before cube_out_height;
-    (cube_out_height+1) == ((cube_in_height+1) + pad_top + pad_bottom - (kernel_height+1) + (kernel_stride_height+1)) / (kernel_stride_height+1);
+    (cube_out_height+64'h1) == ((cube_in_height+64'h1) + pad_top + pad_bottom - (kernel_height+1) + (kernel_stride_height+1)) / (kernel_stride_height+1);
 
     solve cube_in_channel before cube_out_channel;
     cube_in_channel == cube_out_channel;
@@ -441,15 +441,18 @@ constraint nvdla_pdp_resource::c_ias_pad_value {
     solve pad_value_1x before pad_value_7x;
     if(pooling_method == pooling_method_POOLING_METHOD_AVERAGE) {
         if(input_data == input_data_INT8) {
+            // Signal Bits: [18:7]
             if(pad_value_1x[7]==0) { pad_value_1x[18:8] == 11'h0; }
             else if(pad_value_1x[7]==1) { pad_value_1x[18:8] == 11'h7FF; }
         }
 `ifdef NVDLA_FEATURE_DATA_TYPE_INT16_FP16
         else if(input_data == input_data_INT16) {
+            // Signal Bits: [18:15]
             if(pad_value_1x[15]==0) { pad_value_1x[18:16] == 3'h0; }
             else if(pad_value_1x[15]==1) { pad_value_1x[18:16] == 3'h7; }
         }
-        else { // FP16 (using FP17 format, only +0/-0)
+        else if(input_data == input_data_FP16) {
+            // FP16 (using FP17 format, only +0/-0)
             pad_value_1x inside {19'h0, 19'h7_0000};
         }
 `endif
@@ -466,9 +469,11 @@ constraint nvdla_pdp_resource::c_ias_pad_value {
 
 constraint nvdla_pdp_resource::c_ias_src_mem {
     // memory stride size control
+    src_line_stride / `NVDLA_MEMORY_ATOMIC_SIZE >= (cube_in_width+64'h1);
     (src_line_stride / `NVDLA_MEMORY_ATOMIC_SIZE - (cube_in_width+1))                     dist { 0:=30, ['h1:'hF]:=45, ['h10:'h7F]:=20, ['h80:'hFF]:=5};
+    src_surface_stride >= src_line_stride*(cube_in_height+64'h1);
     (src_surface_stride - src_line_stride*(cube_in_height+1)) / `NVDLA_MEMORY_ATOMIC_SIZE dist { 0:=30, ['h1:'hF]:=45, ['h10:'h7F]:=20, ['h80:'hFF]:=5};
-    64'(src_surface_stride*((cube_in_channel+`NVDLA_MEMORY_ATOMIC_SIZE) / `NVDLA_MEMORY_ATOMIC_SIZE)) <= 64'h10_0000;
+    64'(src_surface_stride*((cube_in_channel+1+`NVDLA_MEMORY_ATOMIC_SIZE-1) / `NVDLA_MEMORY_ATOMIC_SIZE)) <= 64'h10_0000;
 
 }
 
@@ -480,7 +485,7 @@ constraint nvdla_pdp_resource::c_ias_dst_mem {
     (dst_line_stride / `NVDLA_MEMORY_ATOMIC_SIZE - (cube_out_width+1)) dist { 0:=30, ['h1:'hF]:=45, ['h10:'h7F]:=20, ['h80:'hFF]:=5};
     64'(dst_surface_stride) >= 64'(dst_line_stride*(cube_out_height+64'h1));
     (dst_surface_stride - dst_line_stride*(cube_out_height+1)) / `NVDLA_MEMORY_ATOMIC_SIZE dist { 0:=30, ['h1:'hF]:=45, ['h10:'h7F]:=20, ['h80:'hFF]:=5};
-    64'(dst_surface_stride*((cube_out_channel+`NVDLA_MEMORY_ATOMIC_SIZE) / `NVDLA_MEMORY_ATOMIC_SIZE)) <= 64'h10_0000;
+    64'(dst_surface_stride*((cube_out_channel+1+`NVDLA_MEMORY_ATOMIC_SIZE-1) / `NVDLA_MEMORY_ATOMIC_SIZE)) <= 64'h10_0000;
 
 }
 

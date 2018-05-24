@@ -252,7 +252,7 @@ constraint nvdla_cc_sdprdma_sdp_scenario::c_ias_cc {
         (cc_dp.datain_width_ext +1) > 4;
         (cc_dp.datain_height_ext+1) > 4;
 
-        ((cdma.datain_channel+1) * ((cdma.in_precision==nvdla_cdma_resource::in_precision_INT8)?1:2)) % 32 == 0;
+        ((cdma.datain_channel+1) * (`NVDLA_BPE/8)) % `NVDLA_MEMORY_ATOMIC_SIZE == 0;
     }
 `endif
 
@@ -297,7 +297,7 @@ constraint nvdla_cc_sdprdma_sdp_scenario::c_ias_cc {
 
     //weight data
     // byte_per_kernel works both in compressed/uncompressed mode
-    (cdma.byte_per_kernel+1) == (cc_dp.weight_width_ext+1)*(cc_dp.weight_height_ext+1)*(cc_dp.weight_channel_ext+1)*((cdma.proc_precision==nvdla_cdma_resource::proc_precision_INT8)?1:2);
+    (cdma.byte_per_kernel+1) == (cc_dp.weight_width_ext+1)*(cc_dp.weight_height_ext+1)*(cc_dp.weight_channel_ext+1)*(`NVDLA_BPE/8);
 
     // conv_stride
     if(cdma.conv_mode != nvdla_cdma_resource::conv_mode_WINOGRAD) {
