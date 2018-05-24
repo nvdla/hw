@@ -817,7 +817,7 @@ void NV_NVDLA_cvif::ReadResp_cvif2cdp() {
             delete[] axi_atom_ptr;
         }
 
-        assert(sizeof(dma_rd_rsp_payload->pd.dma_read_data.data) == DMAIF_WIDTH);
+        //assert(sizeof(dma_rd_rsp_payload->pd.dma_read_data.data) == DMAIF_WIDTH);
         cslDebug((70, "NV_NVDLA_cvif::ReadResp_cvif2cdp, dma_rd_rsp_payload->pd.dma_read_data.mask is 0x%x\x0A", uint32_t(dma_rd_rsp_payload->pd.dma_read_data.mask)));
         cslDebug((70, "NV_NVDLA_cvif::ReadResp_cvif2cdp, dma_rd_rsp_payload->pd.dma_read_data.data are :\x0A"));
         for (idx = 0; idx < sizeof(dma_rd_rsp_payload->pd.dma_read_data.data)/sizeof(dma_rd_rsp_payload->pd.dma_read_data.data[0]); idx++) {
