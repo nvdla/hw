@@ -190,6 +190,13 @@ assign vld = rdma2dp_valid_rebuild;
 assign load_din = vld & nvdla_cdp_rdma2dp_ready;
 assign load_din_full = rdma2dp_valid_rebuild & rdma2dp_ready_normal;
 ///////////////////////////////////////////////////
+//: my $atmm = NVDLA_MEMORY_ATOMIC_SIZE;
+//: my $tp = NVDLA_CDP_THROUGHPUT;
+//: my $tp_num = ($atmm/$tp)-1;
+//: print qq(
+//:     assign is_last_pos_c = (is_pos_c == ${tp_num});
+//: );
+
 localparam WAIT = 3'b000;
 localparam NORMAL_C = 3'b001;
 localparam FIRST_C = 3'b010;
@@ -202,9 +209,14 @@ localparam CUBE_END = 3'b100;
     begin
       casez (stat_cur)
         WAIT: begin
-          if ((is_b_sync & (is_pos_c==3'd0) & load_din)) begin
+          //if ((is_b_sync & (is_pos_c==3'd0) & load_din)) begin
+          //  stat_nex = NORMAL_C; 
+          if (is_b_sync & (is_pos_c==3'd0) & is_last_pos_c & is_last_h & is_last_w & load_din)
+            stat_nex = CUBE_END; 
+          else if ((is_b_sync & (is_pos_c==3'd0) & (!is_last_pos_c) & load_din))
             stat_nex = NORMAL_C; 
-          end
+          else if ((is_b_sync & is_last_c & (is_pos_c==3'd0) & is_last_pos_c & (~(is_last_h & is_last_w)) & load_din))
+            stat_nex = FIRST_C; 
         end
         NORMAL_C: begin
           if ((is_b_sync & (is_pos_c==3'd3) & is_last_c & is_last_h & is_last_w & load_din)) begin
@@ -216,14 +228,29 @@ localparam CUBE_END = 3'b100;
           end
         end
         FIRST_C: begin
+          //if (((is_pos_w == is_width) & (~more2less) & load_din)
+          //        ||(more2less & (width_pre_cnt == width_pre) & hold_here & rdma2dp_ready_normal)) begin
+          //  stat_nex = SECOND_C; 
           if (((is_pos_w == is_width) & (~more2less) & load_din)
                   ||(more2less & (width_pre_cnt == width_pre) & hold_here & rdma2dp_ready_normal)) begin
-            stat_nex = SECOND_C; 
+              if(is_last_c & is_last_h & is_last_w & is_last_pos_c)
+                    stat_nex = CUBE_END;
+              else if(is_last_c & (!(is_last_h & is_last_w)) & is_last_pos_c)
+                    stat_nex = FIRST_C;
+              else
+                    stat_nex = SECOND_C; 
           end
         end
         SECOND_C: begin
+          //if (is_b_sync & load_din) begin
+          //  stat_nex = NORMAL_C; 
           if (is_b_sync & load_din) begin
-            stat_nex = NORMAL_C; 
+                if(is_last_c & is_last_h & is_last_w & is_last_pos_c)
+                    stat_nex = CUBE_END;
+                else if(is_last_c & (!(is_last_h & is_last_w)) & is_last_pos_c)
+                    stat_nex = FIRST_C;
+                else
+                    stat_nex = NORMAL_C; 
           end
         end
         CUBE_END: begin
