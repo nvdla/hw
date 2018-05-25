@@ -44,12 +44,12 @@
 
 
 //
-#if ( NVDLA_MEMORY_ATOMIC_SIZE  ==  32 )
-    #define IMG_LARGE
-#endif
-#if ( NVDLA_MEMORY_ATOMIC_SIZE == 8 )
-    #define IMG_SMALL
-#endif
+// #if ( NVDLA_MEMORY_ATOMIC_SIZE  ==  32 )
+//     #define IMG_LARGE
+// #endif
+// #if ( NVDLA_MEMORY_ATOMIC_SIZE == 8 )
+//     #define IMG_SMALL
+// #endif
 //DorisL-E----------------
 //--------------------------------------------------
 #endif

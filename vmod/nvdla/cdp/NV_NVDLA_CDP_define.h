@@ -16,11 +16,11 @@
 
 ///////////////////////////////////////////////////
 
-#ifdef NVDLA_FEATURE_DATA_TYPE_INT8
-#if ( NVDLA_CDP_THROUGHPUT  ==  8 )
-    #define LARGE_FIFO_RAM
-#endif
-#if ( NVDLA_CDP_THROUGHPUT == 1 )
-    #define SMALL_FIFO_RAM
-#endif
-#endif
+//#ifdef NVDLA_FEATURE_DATA_TYPE_INT8
+//#if ( NVDLA_CDP_THROUGHPUT  ==  8 )
+//    #define LARGE_FIFO_RAM
+//#endif
+//#if ( NVDLA_CDP_THROUGHPUT == 1 )
+//    #define SMALL_FIFO_RAM
+//#endif
+//#endif
