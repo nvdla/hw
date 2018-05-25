@@ -648,11 +648,19 @@ always @(
   ) begin
     dma_wr_req_pd[NVDLA_DMA_WR_REQ-2:0] = 0;
     if (cmd_en) begin
+    #if (NVDLA_DMA_WR_CMD < NVDLA_DMA_WR_REQ -1)
         dma_wr_req_pd[NVDLA_DMA_WR_REQ-2:0] = {{(NVDLA_DMA_WR_REQ-NVDLA_DMA_WR_CMD-1){1'b0}},dma_wr_cmd_pd};
+    #else 
+        dma_wr_req_pd[NVDLA_DMA_WR_REQ-2:0] = dma_wr_cmd_pd;
+    #endif
     end else begin
+    //#if (NVDLA_DMA_WR_DAT < NVDLA_DMA_WR_REQ -1)
+    //    dma_wr_req_pd[NVDLA_DMA_WR_REQ-2:0] = {{(NVDLA_DMA_WR_REQ-NVDLA_DMA_WR_DAT-1){1'b0}},dma_wr_dat_pd};
+    //#else 
         dma_wr_req_pd[NVDLA_DMA_WR_REQ-2:0] = dma_wr_dat_pd;
+    //#endif
     end
-    dma_wr_req_pd[NVDLA_DMA_WR_REQ-1] = cmd_en ? 1'd0  : 1'd1 ;
+        dma_wr_req_pd[NVDLA_DMA_WR_REQ-1] = cmd_en ? 1'd0  : 1'd1 ;
 end
 
 
