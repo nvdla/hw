@@ -923,7 +923,7 @@ end
 //==============
 // DMA Interface
 //==============
-NV_NVDLA_DMAIF_rdreq NV_NVDLA_PDP_RDMA_rdreq(
+NV_NVDLA_DMAIF_rdreq NV_NVDLA_CDP_RDMA_rdreq(
   .nvdla_core_clk         (nvdla_core_clk     )
  ,.nvdla_core_rstn        (nvdla_core_rstn    )
  ,.reg2dp_src_ram_type    (reg2dp_src_ram_type)

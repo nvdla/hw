@@ -190,7 +190,7 @@ wire           tran_vld;
 //==============
 // DMA Interface
 //==============
-NV_NVDLA_DMAIF_rdrsp NV_NVDLA_PDP_RDMA_rdrsp(
+NV_NVDLA_DMAIF_rdrsp NV_NVDLA_CDP_RDMA_rdrsp(
    .nvdla_core_clk     (nvdla_core_clk   ) 
   ,.nvdla_core_rstn    (nvdla_core_rstn  ) 
   #ifdef NVDLA_SECONDARY_MEMIF_ENABLE

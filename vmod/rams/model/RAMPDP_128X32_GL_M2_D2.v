@@ -23,8 +23,8 @@
 `timescale 10ps/1ps
 `endif 
 `celldefine
-module RAMPDP_128X60_GL_M1_D2 (  WE,  CLK, IDDQ, SVOP_0, SVOP_1, SVOP_2, SVOP_3, SVOP_4, SVOP_5, SVOP_6, SVOP_7 
-,WD_59, WD_58, WD_57, WD_56, WD_55, WD_54, WD_53, WD_52, WD_51, WD_50, WD_49, WD_48, WD_47, WD_46, WD_45, WD_44, WD_43, WD_42, WD_41, WD_40, WD_39, WD_38, WD_37, WD_36, WD_35, WD_34, WD_33, WD_32, WD_31, WD_30, WD_29, WD_28, WD_27, WD_26, WD_25, WD_24, WD_23, WD_22, WD_21, WD_20, WD_19, WD_18, WD_17, WD_16, WD_15, WD_14, WD_13, WD_12, WD_11, WD_10, WD_9, WD_8, WD_7, WD_6, WD_5, WD_4, WD_3, WD_2, WD_1, WD_0,RD_59, RD_58, RD_57, RD_56, RD_55, RD_54, RD_53, RD_52, RD_51, RD_50, RD_49, RD_48, RD_47, RD_46, RD_45, RD_44, RD_43, RD_42, RD_41, RD_40, RD_39, RD_38, RD_37, RD_36, RD_35, RD_34, RD_33, RD_32, RD_31, RD_30, RD_29, RD_28, RD_27, RD_26, RD_25, RD_24, RD_23, RD_22, RD_21, RD_20, RD_19, RD_18, RD_17, RD_16, RD_15, RD_14, RD_13, RD_12, RD_11, RD_10, RD_9, RD_8, RD_7, RD_6, RD_5, RD_4, RD_3, RD_2, RD_1, RD_0, RE
+module RAMPDP_128X32_GL_M2_D2 (  WE,  CLK, IDDQ, SVOP_0, SVOP_1, SVOP_2, SVOP_3, SVOP_4, SVOP_5, SVOP_6, SVOP_7 
+,WD_31, WD_30, WD_29, WD_28, WD_27, WD_26, WD_25, WD_24, WD_23, WD_22, WD_21, WD_20, WD_19, WD_18, WD_17, WD_16, WD_15, WD_14, WD_13, WD_12, WD_11, WD_10, WD_9, WD_8, WD_7, WD_6, WD_5, WD_4, WD_3, WD_2, WD_1, WD_0,RD_31, RD_30, RD_29, RD_28, RD_27, RD_26, RD_25, RD_24, RD_23, RD_22, RD_21, RD_20, RD_19, RD_18, RD_17, RD_16, RD_15, RD_14, RD_13, RD_12, RD_11, RD_10, RD_9, RD_8, RD_7, RD_6, RD_5, RD_4, RD_3, RD_2, RD_1, RD_0, RE
 , RADR_6, RADR_5, RADR_4, RADR_3, RADR_2, RADR_1, RADR_0, WADR_6, WADR_5, WADR_4, WADR_3, WADR_2, WADR_1, WADR_0, SLEEP_EN_7, SLEEP_EN_6, SLEEP_EN_5, SLEEP_EN_4, SLEEP_EN_3, SLEEP_EN_2, SLEEP_EN_1, SLEEP_EN_0, RET_EN
 );
 
@@ -33,9 +33,9 @@ module RAMPDP_128X60_GL_M1_D2 (  WE,  CLK, IDDQ, SVOP_0, SVOP_1, SVOP_2, SVOP_3,
 `ifndef RAM_INTERFACE
 `ifndef SYNTHESIS
 // Physical ram size defined as localparam
-parameter phy_rows = 128;
-parameter phy_cols = 60;
-parameter phy_rcols_pos = 60'b000000000000000000000000000000000000000000000000000000000000;
+parameter phy_rows = 64;
+parameter phy_cols = 64;
+parameter phy_rcols_pos = 64'b0000000000000000000000000000000000000000000000000000000000000000;
 
 `endif //SYNTHESIS
 `endif //RAM_INTERFACE
@@ -47,9 +47,9 @@ input CLK;
 // SVOP ports
 input SVOP_0, SVOP_1, SVOP_2, SVOP_3, SVOP_4, SVOP_5, SVOP_6, SVOP_7;
 // Write data ports
-input WD_59, WD_58, WD_57, WD_56, WD_55, WD_54, WD_53, WD_52, WD_51, WD_50, WD_49, WD_48, WD_47, WD_46, WD_45, WD_44, WD_43, WD_42, WD_41, WD_40, WD_39, WD_38, WD_37, WD_36, WD_35, WD_34, WD_33, WD_32, WD_31, WD_30, WD_29, WD_28, WD_27, WD_26, WD_25, WD_24, WD_23, WD_22, WD_21, WD_20, WD_19, WD_18, WD_17, WD_16, WD_15, WD_14, WD_13, WD_12, WD_11, WD_10, WD_9, WD_8, WD_7, WD_6, WD_5, WD_4, WD_3, WD_2, WD_1, WD_0;
+input WD_31, WD_30, WD_29, WD_28, WD_27, WD_26, WD_25, WD_24, WD_23, WD_22, WD_21, WD_20, WD_19, WD_18, WD_17, WD_16, WD_15, WD_14, WD_13, WD_12, WD_11, WD_10, WD_9, WD_8, WD_7, WD_6, WD_5, WD_4, WD_3, WD_2, WD_1, WD_0;
 // Read data ports
-output RD_59, RD_58, RD_57, RD_56, RD_55, RD_54, RD_53, RD_52, RD_51, RD_50, RD_49, RD_48, RD_47, RD_46, RD_45, RD_44, RD_43, RD_42, RD_41, RD_40, RD_39, RD_38, RD_37, RD_36, RD_35, RD_34, RD_33, RD_32, RD_31, RD_30, RD_29, RD_28, RD_27, RD_26, RD_25, RD_24, RD_23, RD_22, RD_21, RD_20, RD_19, RD_18, RD_17, RD_16, RD_15, RD_14, RD_13, RD_12, RD_11, RD_10, RD_9, RD_8, RD_7, RD_6, RD_5, RD_4, RD_3, RD_2, RD_1, RD_0;
+output RD_31, RD_30, RD_29, RD_28, RD_27, RD_26, RD_25, RD_24, RD_23, RD_22, RD_21, RD_20, RD_19, RD_18, RD_17, RD_16, RD_15, RD_14, RD_13, RD_12, RD_11, RD_10, RD_9, RD_8, RD_7, RD_6, RD_5, RD_4, RD_3, RD_2, RD_1, RD_0;
 // Read enable ports
 input RE;
 // Write enable ports
@@ -100,18 +100,18 @@ wire GND  = 1'b0;
 //assemble & rename wires
 // Extend the MSB's of the read/write addresses to cover all the flop inputs
 // The number of address flops is fixed. Also combine all the individual *_* bits into one bus
-	wire [6:0] RA = {RADR_6, RADR_5, RADR_4, RADR_3, RADR_2, RADR_1, RADR_0};
-	wire [6:0] WA = {WADR_6, WADR_5, WADR_4, WADR_3, WADR_2, WADR_1, WADR_0};
+	wire [7:0] RA = {1'b0, RADR_6, RADR_5, RADR_4, RADR_3, RADR_2, RADR_1, RADR_0};
+	wire [7:0] WA = {1'b0, WADR_6, WADR_5, WADR_4, WADR_3, WADR_2, WADR_1, WADR_0};
 // Combine all the write data input bits
-	wire [59:0] WD = {WD_59, WD_58, WD_57, WD_56, WD_55, WD_54, WD_53, WD_52, WD_51, WD_50, WD_49, WD_48, WD_47, WD_46, WD_45, WD_44, WD_43, WD_42, WD_41, WD_40, WD_39, WD_38, WD_37, WD_36, WD_35, WD_34, WD_33, WD_32, WD_31, WD_30, WD_29, WD_28, WD_27, WD_26, WD_25, WD_24, WD_23, WD_22, WD_21, WD_20, WD_19, WD_18, WD_17, WD_16, WD_15, WD_14, WD_13, WD_12, WD_11, WD_10, WD_9, WD_8, WD_7, WD_6, WD_5, WD_4, WD_3, WD_2, WD_1, WD_0};
-	wire [59:0] RD;
+	wire [31:0] WD = {WD_31, WD_30, WD_29, WD_28, WD_27, WD_26, WD_25, WD_24, WD_23, WD_22, WD_21, WD_20, WD_19, WD_18, WD_17, WD_16, WD_15, WD_14, WD_13, WD_12, WD_11, WD_10, WD_9, WD_8, WD_7, WD_6, WD_5, WD_4, WD_3, WD_2, WD_1, WD_0};
+	wire [31:0] RD;
 // Expand the read data bus into individual output bits
-//	assign {RD_59, RD_58, RD_57, RD_56, RD_55, RD_54, RD_53, RD_52, RD_51, RD_50, RD_49, RD_48, RD_47, RD_46, RD_45, RD_44, RD_43, RD_42, RD_41, RD_40, RD_39, RD_38, RD_37, RD_36, RD_35, RD_34, RD_33, RD_32, RD_31, RD_30, RD_29, RD_28, RD_27, RD_26, RD_25, RD_24, RD_23, RD_22, RD_21, RD_20, RD_19, RD_18, RD_17, RD_16, RD_15, RD_14, RD_13, RD_12, RD_11, RD_10, RD_9, RD_8, RD_7, RD_6, RD_5, RD_4, RD_3, RD_2, RD_1, RD_0} = (outvalid) ? RD : 60'bx;
+//	assign {RD_31, RD_30, RD_29, RD_28, RD_27, RD_26, RD_25, RD_24, RD_23, RD_22, RD_21, RD_20, RD_19, RD_18, RD_17, RD_16, RD_15, RD_14, RD_13, RD_12, RD_11, RD_10, RD_9, RD_8, RD_7, RD_6, RD_5, RD_4, RD_3, RD_2, RD_1, RD_0} = (outvalid) ? RD : 32'bx;
 // Do the read data swizzing based on the number of words and bits. 
 `ifndef SYNTHESIS
-	assign {RD_59, RD_58, RD_57, RD_56, RD_55, RD_54, RD_53, RD_52, RD_51, RD_50, RD_49, RD_48, RD_47, RD_46, RD_45, RD_44, RD_43, RD_42, RD_41, RD_40, RD_39, RD_38, RD_37, RD_36, RD_35, RD_34, RD_33, RD_32, RD_31, RD_30, RD_29, RD_28, RD_27, RD_26, RD_25, RD_24, RD_23, RD_22, RD_21, RD_20, RD_19, RD_18, RD_17, RD_16, RD_15, RD_14, RD_13, RD_12, RD_11, RD_10, RD_9, RD_8, RD_7, RD_6, RD_5, RD_4, RD_3, RD_2, RD_1, RD_0} = (outvalid) ? RD & ~{60{clamp_rd}} : 60'bx;
+	assign {RD_31, RD_30, RD_29, RD_28, RD_27, RD_26, RD_25, RD_24, RD_23, RD_22, RD_21, RD_20, RD_19, RD_18, RD_17, RD_16, RD_15, RD_14, RD_13, RD_12, RD_11, RD_10, RD_9, RD_8, RD_7, RD_6, RD_5, RD_4, RD_3, RD_2, RD_1, RD_0} = (outvalid) ? RD & ~{32{clamp_rd}} : 32'bx;
 `else
-	assign {RD_59, RD_58, RD_57, RD_56, RD_55, RD_54, RD_53, RD_52, RD_51, RD_50, RD_49, RD_48, RD_47, RD_46, RD_45, RD_44, RD_43, RD_42, RD_41, RD_40, RD_39, RD_38, RD_37, RD_36, RD_35, RD_34, RD_33, RD_32, RD_31, RD_30, RD_29, RD_28, RD_27, RD_26, RD_25, RD_24, RD_23, RD_22, RD_21, RD_20, RD_19, RD_18, RD_17, RD_16, RD_15, RD_14, RD_13, RD_12, RD_11, RD_10, RD_9, RD_8, RD_7, RD_6, RD_5, RD_4, RD_3, RD_2, RD_1, RD_0} =  RD & ~{60{clamp_rd}};
+	assign {RD_31, RD_30, RD_29, RD_28, RD_27, RD_26, RD_25, RD_24, RD_23, RD_22, RD_21, RD_20, RD_19, RD_18, RD_17, RD_16, RD_15, RD_14, RD_13, RD_12, RD_11, RD_10, RD_9, RD_8, RD_7, RD_6, RD_5, RD_4, RD_3, RD_2, RD_1, RD_0} =  RD & ~{32{clamp_rd}};
 `endif
 	wire [7:0] SVOP = {SVOP_7, SVOP_6, SVOP_5, SVOP_4, SVOP_3, SVOP_2, SVOP_1, SVOP_0};
 
@@ -120,7 +120,7 @@ wire GND  = 1'b0;
 
 // Instantiate memory bank
 // This block defines the core functionality of the rams.
-	RAM_BANK_RAMPDP_128X60_GL_M1_D2 ITOP ( WE, CLK, IDDQ, SVOP, WD, RD, RE, RA, WA
+	RAM_BANK_RAMPDP_128X32_GL_M2_D2 ITOP ( WE, CLK, IDDQ, SVOP, WD, RD, RE, RA, WA
 , SLEEP_EN
 ,  RET_EN, clobber_array , clobber_flops 
 );
@@ -132,7 +132,7 @@ always  @(clobber_array) begin : clobber_array_block
     integer i;
     if (clobber_array) begin
 	    for (i=0; i<128; i=i+1) begin
-		     mem_wr_raw(i, {60{1'bx}});
+		     mem_wr_raw(i, {32{1'bx}});
 		end
     end
 end
@@ -144,11 +144,11 @@ always  @(clobber_flops) begin
       ITOP.RE_FF <= 1'bx;
       ITOP.WE_LATB <= 1'bx;
       ITOP.WE_FF <= 1'bx;
-      ITOP.RADR <= 7'bx;
-      ITOP.WADR <= 7'bx;
-      ITOP.WAFF <= 7'bx;
-      ITOP.WDQ_pr <= 60'bx;
-      ITOP.dout <= 60'bx;
+      ITOP.RADR <= 8'bx;
+      ITOP.WADR <= 8'bx;
+      ITOP.WAFF <= 8'bx;
+      ITOP.WDQ_pr <= 32'bx;
+      ITOP.dout <= 32'bx;
   end
 end  
 //VCS coverage on    
@@ -156,23 +156,26 @@ end
 //VCS coverage off    
 task mem_wr_raw;
   input [6:0] addr;
-  input [59:0] data;
+  input [31:0] data;
   begin
-        ITOP.iow0.mem_wr_raw_subbank(addr[6:0],data);
+    if (addr[0] == 1'b0) 
+        ITOP.iow0.mem_wr_raw_subbank(addr[6:1], data);
+    else if (addr[0] == 1'b1)
+        ITOP.iow1.mem_wr_raw_subbank(addr[6:1], data);
   end
 endtask
 
 // Ramgen function for writing the arrays 
 task mem_write;
   input [6:0] addr;
-  input [59:0] data;
+  input [31:0] data;
   begin
     ITOP.mem_write_bank(addr,data);
   end
 endtask
 
 // Ramgen function for reading the arrays 
-function [59:0] mem_read;
+function [31:0] mem_read;
 input [6:0] addr;
   begin
         mem_read = ITOP.mem_read_bank(addr);
@@ -186,11 +189,11 @@ endfunction
 
 
 task mem_fill_random;
-	reg [59:0] val;
+	reg [31:0] val;
 	integer i;
 	begin
 		for (i=0; i<128; i=i+1) begin
-		    val = {$random, $random};
+		    val = {$random};
 		    mem_wr_raw(i, val);
 		end
 	end 
@@ -199,10 +202,10 @@ endtask
 // Fill the memory with a given bit value 
 task mem_fill_value;
     input fill_bit;
-	reg [59:0] val;
+	reg [31:0] val;
     integer i;
     begin
-        val = {60{fill_bit}};
+        val = {32{fill_bit}};
         for (i=0; i<128; i=i+1) begin
 		    mem_wr_raw(i, val);
         end
@@ -212,7 +215,7 @@ endtask
 // read logical address and feed into salat
 task force_rd;
 input [6:0] addr;
-	reg [59:0] rd;
+	reg [31:0] rd;
 
 	`ifdef USE_RAMINIT_LIBS
 	reg raminit_active, raminit_argcheck, raminit_debug, raminit_enable, raminit_random, raminit_invert,
@@ -279,9 +282,9 @@ input [6:0] addr;
 	  #0; // wait for raminit variables to be set
 	  if (raminit_enable)
 	  begin : raminit_val_blk
-	    reg [60-1:0] raminit_fullval;
-	    if (raminit_random)  raminit_fullval = `ifdef NO_PLI {60 {1'b1}} `else { $RollPLI(0,{32{1'b1}}), $RollPLI(0,{28{1'b1}}) } `endif ;
-	    else                 raminit_fullval = {60 {raminit_val}};
+	    reg [32-1:0] raminit_fullval;
+	    if (raminit_random)  raminit_fullval = `ifdef NO_PLI {32 {1'b1}} `else { $RollPLI(0,{32{1'b1}}) } `endif ;
+	    else                 raminit_fullval = {32 {raminit_val}};
 	    if (raminit_invert)  raminit_fullval = ~raminit_fullval;
 	    if (raminit_use_force)  force rd = raminit_fullval;
 	    if (raminit_waitclock)  wait ( !== 1'bx);
@@ -301,16 +304,19 @@ input [6:0] addr;
 	`endif // `ifdef USE_RAMINIT_LIBS
 
 	begin
-        rd = ITOP.iow0.mem_read_raw_subbank(addr);
+        if (addr[0] == 1'b0) 
+            rd = ITOP.iow0.mem_read_raw_subbank(addr[6:1]);
+        else if (addr[0] == 1'b1)
+            rd = ITOP.iow1.mem_read_raw_subbank(addr[6:1]);
 		ITOP.dout = rd;
 	end
 endtask
 
 `ifdef MEM_PHYS_INFO
 //function for physical array read row, takes physical address
-function [59:0] mem_phys_read_padr;
-input [6:0] addr;
-	reg [59:0] rd_row;
+function [63:0] mem_phys_read_padr;
+input [5:0] addr;
+	reg [63:0] rd_row;
 
 	`ifdef USE_RAMINIT_LIBS
 	// init rd_row
@@ -319,9 +325,9 @@ input [6:0] addr;
 	  #0; // wait for raminit variables to be set
 	  if (raminit_enable)
 	  begin : raminit_val_blk
-	    reg [60-1:0] raminit_fullval;
-	    if (raminit_random)  raminit_fullval = `ifdef NO_PLI {60 {1'b1}} `else { $RollPLI(0,{32{1'b1}}), $RollPLI(0,{28{1'b1}}) } `endif ;
-	    else                 raminit_fullval = {60 {raminit_val}};
+	    reg [64-1:0] raminit_fullval;
+	    if (raminit_random)  raminit_fullval = `ifdef NO_PLI {64 {1'b1}} `else { $RollPLI(0,{32{1'b1}}), $RollPLI(0,{32{1'b1}}) } `endif ;
+	    else                 raminit_fullval = {64 {raminit_val}};
 	    if (raminit_invert)  raminit_fullval = ~raminit_fullval;
 	    if (raminit_use_force)  force rd_row = raminit_fullval;
 	    if (raminit_waitclock)  wait ( !== 1'bx);
@@ -340,22 +346,24 @@ input [6:0] addr;
 	`endif
 	`endif // `ifdef USE_RAMINIT_LIBS
 
-	reg [59:0] rd[0:0];
+	reg [31:0] rd[1:0];
 	integer i;
 	begin
         rd[0] = ITOP.iow0.mem_read_raw_subbank(addr);
-        for (i=0; i<=59; i=i+1) begin
-            rd_row[i*1+0] = rd[0][i];
+        rd[1] = ITOP.iow1.mem_read_raw_subbank(addr);
+        for (i=0; i<=31; i=i+1) begin
+            rd_row[i*2+0] = rd[0][i];
+            rd_row[i*2+1] = rd[1][i];
 		end
 		mem_phys_read_padr = rd_row;
 	end
 endfunction
 
 //function for physical array read row, takes logical address
-function [59:0] mem_phys_read_ladr;
+function [63:0] mem_phys_read_ladr;
 input [6:0] addr;
-    reg [6:0] paddr;
-	reg [59:0] rd_row;
+    reg [5:0] paddr;
+	reg [63:0] rd_row;
 
 	`ifdef USE_RAMINIT_LIBS
 	// init rd_row
@@ -364,9 +372,9 @@ input [6:0] addr;
 	  #0; // wait for raminit variables to be set
 	  if (raminit_enable)
 	  begin : raminit_val_blk
-	    reg [60-1:0] raminit_fullval;
-	    if (raminit_random)  raminit_fullval = `ifdef NO_PLI {60 {1'b1}} `else { $RollPLI(0,{32{1'b1}}), $RollPLI(0,{28{1'b1}}) } `endif ;
-	    else                 raminit_fullval = {60 {raminit_val}};
+	    reg [64-1:0] raminit_fullval;
+	    if (raminit_random)  raminit_fullval = `ifdef NO_PLI {64 {1'b1}} `else { $RollPLI(0,{32{1'b1}}), $RollPLI(0,{32{1'b1}}) } `endif ;
+	    else                 raminit_fullval = {64 {raminit_val}};
 	    if (raminit_invert)  raminit_fullval = ~raminit_fullval;
 	    if (raminit_use_force)  force rd_row = raminit_fullval;
 	    if (raminit_waitclock)  wait ( !== 1'bx);
@@ -385,13 +393,15 @@ input [6:0] addr;
 	`endif
 	`endif // `ifdef USE_RAMINIT_LIBS
 
-	reg [59:0] rd[0:0];
+	reg [31:0] rd[1:0];
 	integer i;
 	begin
-        paddr = (addr >> 0);
+        paddr = (addr >> 1);
         rd[0] = ITOP.iow0.mem_read_raw_subbank(paddr);
-        for (i=0; i<=59; i=i+1) begin
-            rd_row[i*1+0] = rd[0][i];
+        rd[1] = ITOP.iow1.mem_read_raw_subbank(paddr);
+        for (i=0; i<=31; i=i+1) begin
+            rd_row[i*2+0] = rd[0][i];
+            rd_row[i*2+1] = rd[1][i];
 		end
 		mem_phys_read_ladr = rd_row;
 	end
@@ -399,9 +409,9 @@ endfunction
 
 
 //function for physical array read row with column masking, takes logical address
-function [59:0] mem_phys_read_pmasked;
+function [63:0] mem_phys_read_pmasked;
 input [6:0] addr;
-   reg [59:0] rd_row;
+   reg [63:0] rd_row;
 
    `ifdef USE_RAMINIT_LIBS
    // init rd_row
@@ -410,9 +420,9 @@ input [6:0] addr;
      #0; // wait for raminit variables to be set
      if (raminit_enable)
      begin : raminit_val_blk
-       reg [60-1:0] raminit_fullval;
-       if (raminit_random)  raminit_fullval = `ifdef NO_PLI {60 {1'b1}} `else { $RollPLI(0,{32{1'b1}}), $RollPLI(0,{28{1'b1}}) } `endif ;
-       else                 raminit_fullval = {60 {raminit_val}};
+       reg [64-1:0] raminit_fullval;
+       if (raminit_random)  raminit_fullval = `ifdef NO_PLI {64 {1'b1}} `else { $RollPLI(0,{32{1'b1}}), $RollPLI(0,{32{1'b1}}) } `endif ;
+       else                 raminit_fullval = {64 {raminit_val}};
        if (raminit_invert)  raminit_fullval = ~raminit_fullval;
        if (raminit_use_force)  force rd_row = raminit_fullval;
        if (raminit_waitclock)  wait ( !== 1'bx);
@@ -431,33 +441,40 @@ input [6:0] addr;
    `endif
    `endif // `ifdef USE_RAMINIT_LIBS
 
-   reg [59:0] rd[0 : 0];
+   reg [31:0] rd[1 : 0];
    integer i;
    begin
-        rd_row = ITOP.iow0.mem_read_raw_subbank(addr);
+        rd[0] = (addr[0:0] === 0) ? ITOP.iow0.mem_read_raw_subbank(addr[6:1]) : 32'bx;
+        rd[1] = (addr[0:0] === 1) ? ITOP.iow1.mem_read_raw_subbank(addr[6:1]) : 32'bx;
+        for (i=0; i<=31; i=i+1) begin
+            rd_row[i*2+0] = rd[0][i];
+            rd_row[i*2+1] = rd[1][i];
+        end
         mem_phys_read_pmasked = rd_row;
     end
 endfunction
 
 //Task for physical array write row, takes physical address
 task mem_phys_write;
-input [6:0] addr;
-input [59:0] data;
-	reg [59:0] wr[0:0];
+input [5:0] addr;
+input [63:0] data;
+	reg [31:0] wr[1:0];
 	integer i;
 	begin
-        for (i=0; i<=59; i=i+1) begin
-            wr[0][i] = data[i*1+0];
+        for (i=0; i<=31; i=i+1) begin
+            wr[0][i] = data[i*2+0];
+            wr[1][i] = data[i*2+1];
 		end
         ITOP.iow0.mem_wr_raw_subbank(addr,wr[0]);
+        ITOP.iow1.mem_wr_raw_subbank(addr,wr[1]);
 	end
 endtask
 
 // Function to return a physical address given a logical address input.
-function [6:0] mem_log_to_phys_adr;
+function [5:0] mem_log_to_phys_adr;
 input [6:0] addr;
     begin
-        mem_log_to_phys_adr = (addr >> 0) ; 
+        mem_log_to_phys_adr = (addr >> 1) ; 
     end
 endfunction 
 `endif //MEM_PHYS_INFO
@@ -473,45 +490,51 @@ end
 task monitor_on;
     begin
 		ITOP.iow0.monitor_on = 1'b1;
+		ITOP.iow1.monitor_on = 1'b1;
    end
 endtask
 
 task monitor_off;
     begin
 		ITOP.iow0.monitor_on = 1'b0;
+		ITOP.iow1.monitor_on = 1'b0;
         dump_monitor_result = 1'b1;
     end
 endtask
 
 // read bit_written monitor row by physical address from subarray
-function [59:0] mon_bit_w;
-input [6:0] addr;
-	reg [59:0] mon_row;
-	reg [59:0] mon_word[0:0];
+function [63:0] mon_bit_w;
+input [5:0] addr;
+	reg [63:0] mon_row;
+	reg [31:0] mon_word[1:0];
 	integer i;
 	begin
 		// read all monitor words for a row
 		mon_word[0] = ITOP.iow0.bit_written[addr];
-		// combine all 1 words to a row
-		for (i=0; i<=59; i=i+1) begin
-			mon_row[i*1+0] = mon_word[0][i];
+		mon_word[1] = ITOP.iow1.bit_written[addr];
+		// combine all 2 words to a row
+		for (i=0; i<=31; i=i+1) begin
+			mon_row[i*2+0] = mon_word[0][i];
+			mon_row[i*2+1] = mon_word[1][i];
 		end
 		mon_bit_w = mon_row;
 	end
 endfunction
 
 // read bit_read monitor word by address from subarray
-function [59:0] mon_bit_r;
-input [6:0] addr;
-	reg [59:0] mon_row;
-	reg [59:0] mon_word[0:0];
+function [63:0] mon_bit_r;
+input [5:0] addr;
+	reg [63:0] mon_row;
+	reg [31:0] mon_word[1:0];
 	integer i;
 	begin
 		// read all monitor words for a row
 		mon_word[0] = ITOP.iow0.bit_read[addr];
-		// combine all 1 words to a row
-		for (i=0; i<=59; i=i+1) begin
-			mon_row[i*1+0] = mon_word[0][i];
+		mon_word[1] = ITOP.iow1.bit_read[addr];
+		// combine all 2 words to a row
+		for (i=0; i<=31; i=i+1) begin
+			mon_row[i*2+0] = mon_word[0][i];
+			mon_row[i*2+1] = mon_word[1][i];
 		end
 		mon_bit_r = mon_row;
 	end
@@ -519,72 +542,74 @@ endfunction
 
 // read word_written monitor row by physical address from subarray
 function  mon_word_w;
-input [6:0] addr;
-	reg mon_word[0:0];
+input [5:0] addr;
+	reg mon_word[1:0];
 	integer i;
 	begin
 		// read all monitor words for a row
 		mon_word[0] = ITOP.iow0.word_written[addr];
-		// combine all 1 words to a row
-		mon_word_w = mon_word[0]  ;
+		mon_word[1] = ITOP.iow1.word_written[addr];
+		// combine all 2 words to a row
+		mon_word_w = mon_word[0] | mon_word[1] ;
 	end
 endfunction
 
 // read word_read monitor row by physical address from subarray
 function  mon_word_r;
-input [6:0] addr;
-	reg mon_word[0:0];
+input [5:0] addr;
+	reg mon_word[1:0];
 	integer i;
 	begin
 		// read all monitor words for a row
 		mon_word[0] = ITOP.iow0.word_read[addr];
-		// combine all 1 words to a row
-		mon_word_r = mon_word[0]  ;
+		mon_word[1] = ITOP.iow1.word_read[addr];
+		// combine all 2 words to a row
+		mon_word_r = mon_word[0] | mon_word[1] ;
 	end
 endfunction
 
 always @(dump_monitor_result) begin : dump_monitor
 	integer i;
 	integer j;
-	reg [59:0] tmp_row;
+	reg [63:0] tmp_row;
     reg tmp_bit;
 	if (dump_monitor_result == 1'b1) begin
 	    $display("Exercised coverage summary:");
         $display("\t%m rows unwritten:");
-        for(i=0;i<=128;i=i+1) begin
+        for(i=0;i<=64;i=i+1) begin
 			tmp_bit = mon_word_w(i);
             if (tmp_bit !== 1) $display("\t\trow %d", i);
 		end
         $display("\t%m rows unread:");
-        for(i=0;i<=128;i=i+1) begin
+        for(i=0;i<=64;i=i+1) begin
 			tmp_bit = mon_word_r(i);
             if (tmp_bit !== 1) $display("\t\trow %d", i);
 		end
 		$display("\t%m bits not written as 0:");
-		for (i=0; i<128; i=i+1) begin
+		for (i=0; i<64; i=i+1) begin
 			tmp_row = mon_bit_w(i);
-			for (j=0; j<60; j=j+1) begin
+			for (j=0; j<64; j=j+1) begin
 				if (tmp_row[j] !== 1'b0 && tmp_row[j] !== 1'bz) $display("\t\t[row,bit] [%d,%d]", i, j);
 			end
 		end
 		$display("\t%m bits not written as 1:");
-		for (i=0; i<128; i=i+1) begin
+		for (i=0; i<64; i=i+1) begin
 			tmp_row = mon_bit_w(i);
-			for (j=0; j<60; j=j+1) begin
+			for (j=0; j<64; j=j+1) begin
 				if (tmp_row[j] !== 1'b1 && tmp_row[j] !== 1'bz) $display("\t\t[row,bit] [%d,%d]", i, j);
 			end
 		end
 		$display("\t%m bits not read as 0:");
-		for (i=0; i<128; i=i+1) begin
+		for (i=0; i<64; i=i+1) begin
 			tmp_row = mon_bit_r(i);
-			for (j=0; j<60; j=j+1) begin
+			for (j=0; j<64; j=j+1) begin
 				if (tmp_row[j] !== 1'b0 && tmp_row[j] !== 1'bz) $display("\t\t[row,bit] [%d,%d]", i, j);
 			end
 		end
 		$display("\t%m bits not read as 1:");
-		for (i=0; i<128; i=i+1) begin
+		for (i=0; i<64; i=i+1) begin
 			tmp_row = mon_bit_r(i);
-			for (j=0; j<60; j=j+1) begin
+			for (j=0; j<64; j=j+1) begin
 				if (tmp_row[j] !== 1'b1 && tmp_row[j] !== 1'bz) $display("\t\t[row,bit] [%d,%d]", i, j);
 			end
 		end
@@ -596,134 +621,134 @@ end
 `endif // MONITOR
 
 `ifdef NV_RAM_EXPAND_ARRAY
-wire [59:0] Q_0 = ITOP.iow0.arr[0];
-wire [59:0] Q_1 = ITOP.iow0.arr[1];
-wire [59:0] Q_2 = ITOP.iow0.arr[2];
-wire [59:0] Q_3 = ITOP.iow0.arr[3];
-wire [59:0] Q_4 = ITOP.iow0.arr[4];
-wire [59:0] Q_5 = ITOP.iow0.arr[5];
-wire [59:0] Q_6 = ITOP.iow0.arr[6];
-wire [59:0] Q_7 = ITOP.iow0.arr[7];
-wire [59:0] Q_8 = ITOP.iow0.arr[8];
-wire [59:0] Q_9 = ITOP.iow0.arr[9];
-wire [59:0] Q_10 = ITOP.iow0.arr[10];
-wire [59:0] Q_11 = ITOP.iow0.arr[11];
-wire [59:0] Q_12 = ITOP.iow0.arr[12];
-wire [59:0] Q_13 = ITOP.iow0.arr[13];
-wire [59:0] Q_14 = ITOP.iow0.arr[14];
-wire [59:0] Q_15 = ITOP.iow0.arr[15];
-wire [59:0] Q_16 = ITOP.iow0.arr[16];
-wire [59:0] Q_17 = ITOP.iow0.arr[17];
-wire [59:0] Q_18 = ITOP.iow0.arr[18];
-wire [59:0] Q_19 = ITOP.iow0.arr[19];
-wire [59:0] Q_20 = ITOP.iow0.arr[20];
-wire [59:0] Q_21 = ITOP.iow0.arr[21];
-wire [59:0] Q_22 = ITOP.iow0.arr[22];
-wire [59:0] Q_23 = ITOP.iow0.arr[23];
-wire [59:0] Q_24 = ITOP.iow0.arr[24];
-wire [59:0] Q_25 = ITOP.iow0.arr[25];
-wire [59:0] Q_26 = ITOP.iow0.arr[26];
-wire [59:0] Q_27 = ITOP.iow0.arr[27];
-wire [59:0] Q_28 = ITOP.iow0.arr[28];
-wire [59:0] Q_29 = ITOP.iow0.arr[29];
-wire [59:0] Q_30 = ITOP.iow0.arr[30];
-wire [59:0] Q_31 = ITOP.iow0.arr[31];
-wire [59:0] Q_32 = ITOP.iow0.arr[32];
-wire [59:0] Q_33 = ITOP.iow0.arr[33];
-wire [59:0] Q_34 = ITOP.iow0.arr[34];
-wire [59:0] Q_35 = ITOP.iow0.arr[35];
-wire [59:0] Q_36 = ITOP.iow0.arr[36];
-wire [59:0] Q_37 = ITOP.iow0.arr[37];
-wire [59:0] Q_38 = ITOP.iow0.arr[38];
-wire [59:0] Q_39 = ITOP.iow0.arr[39];
-wire [59:0] Q_40 = ITOP.iow0.arr[40];
-wire [59:0] Q_41 = ITOP.iow0.arr[41];
-wire [59:0] Q_42 = ITOP.iow0.arr[42];
-wire [59:0] Q_43 = ITOP.iow0.arr[43];
-wire [59:0] Q_44 = ITOP.iow0.arr[44];
-wire [59:0] Q_45 = ITOP.iow0.arr[45];
-wire [59:0] Q_46 = ITOP.iow0.arr[46];
-wire [59:0] Q_47 = ITOP.iow0.arr[47];
-wire [59:0] Q_48 = ITOP.iow0.arr[48];
-wire [59:0] Q_49 = ITOP.iow0.arr[49];
-wire [59:0] Q_50 = ITOP.iow0.arr[50];
-wire [59:0] Q_51 = ITOP.iow0.arr[51];
-wire [59:0] Q_52 = ITOP.iow0.arr[52];
-wire [59:0] Q_53 = ITOP.iow0.arr[53];
-wire [59:0] Q_54 = ITOP.iow0.arr[54];
-wire [59:0] Q_55 = ITOP.iow0.arr[55];
-wire [59:0] Q_56 = ITOP.iow0.arr[56];
-wire [59:0] Q_57 = ITOP.iow0.arr[57];
-wire [59:0] Q_58 = ITOP.iow0.arr[58];
-wire [59:0] Q_59 = ITOP.iow0.arr[59];
-wire [59:0] Q_60 = ITOP.iow0.arr[60];
-wire [59:0] Q_61 = ITOP.iow0.arr[61];
-wire [59:0] Q_62 = ITOP.iow0.arr[62];
-wire [59:0] Q_63 = ITOP.iow0.arr[63];
-wire [59:0] Q_64 = ITOP.iow0.arr[64];
-wire [59:0] Q_65 = ITOP.iow0.arr[65];
-wire [59:0] Q_66 = ITOP.iow0.arr[66];
-wire [59:0] Q_67 = ITOP.iow0.arr[67];
-wire [59:0] Q_68 = ITOP.iow0.arr[68];
-wire [59:0] Q_69 = ITOP.iow0.arr[69];
-wire [59:0] Q_70 = ITOP.iow0.arr[70];
-wire [59:0] Q_71 = ITOP.iow0.arr[71];
-wire [59:0] Q_72 = ITOP.iow0.arr[72];
-wire [59:0] Q_73 = ITOP.iow0.arr[73];
-wire [59:0] Q_74 = ITOP.iow0.arr[74];
-wire [59:0] Q_75 = ITOP.iow0.arr[75];
-wire [59:0] Q_76 = ITOP.iow0.arr[76];
-wire [59:0] Q_77 = ITOP.iow0.arr[77];
-wire [59:0] Q_78 = ITOP.iow0.arr[78];
-wire [59:0] Q_79 = ITOP.iow0.arr[79];
-wire [59:0] Q_80 = ITOP.iow0.arr[80];
-wire [59:0] Q_81 = ITOP.iow0.arr[81];
-wire [59:0] Q_82 = ITOP.iow0.arr[82];
-wire [59:0] Q_83 = ITOP.iow0.arr[83];
-wire [59:0] Q_84 = ITOP.iow0.arr[84];
-wire [59:0] Q_85 = ITOP.iow0.arr[85];
-wire [59:0] Q_86 = ITOP.iow0.arr[86];
-wire [59:0] Q_87 = ITOP.iow0.arr[87];
-wire [59:0] Q_88 = ITOP.iow0.arr[88];
-wire [59:0] Q_89 = ITOP.iow0.arr[89];
-wire [59:0] Q_90 = ITOP.iow0.arr[90];
-wire [59:0] Q_91 = ITOP.iow0.arr[91];
-wire [59:0] Q_92 = ITOP.iow0.arr[92];
-wire [59:0] Q_93 = ITOP.iow0.arr[93];
-wire [59:0] Q_94 = ITOP.iow0.arr[94];
-wire [59:0] Q_95 = ITOP.iow0.arr[95];
-wire [59:0] Q_96 = ITOP.iow0.arr[96];
-wire [59:0] Q_97 = ITOP.iow0.arr[97];
-wire [59:0] Q_98 = ITOP.iow0.arr[98];
-wire [59:0] Q_99 = ITOP.iow0.arr[99];
-wire [59:0] Q_100 = ITOP.iow0.arr[100];
-wire [59:0] Q_101 = ITOP.iow0.arr[101];
-wire [59:0] Q_102 = ITOP.iow0.arr[102];
-wire [59:0] Q_103 = ITOP.iow0.arr[103];
-wire [59:0] Q_104 = ITOP.iow0.arr[104];
-wire [59:0] Q_105 = ITOP.iow0.arr[105];
-wire [59:0] Q_106 = ITOP.iow0.arr[106];
-wire [59:0] Q_107 = ITOP.iow0.arr[107];
-wire [59:0] Q_108 = ITOP.iow0.arr[108];
-wire [59:0] Q_109 = ITOP.iow0.arr[109];
-wire [59:0] Q_110 = ITOP.iow0.arr[110];
-wire [59:0] Q_111 = ITOP.iow0.arr[111];
-wire [59:0] Q_112 = ITOP.iow0.arr[112];
-wire [59:0] Q_113 = ITOP.iow0.arr[113];
-wire [59:0] Q_114 = ITOP.iow0.arr[114];
-wire [59:0] Q_115 = ITOP.iow0.arr[115];
-wire [59:0] Q_116 = ITOP.iow0.arr[116];
-wire [59:0] Q_117 = ITOP.iow0.arr[117];
-wire [59:0] Q_118 = ITOP.iow0.arr[118];
-wire [59:0] Q_119 = ITOP.iow0.arr[119];
-wire [59:0] Q_120 = ITOP.iow0.arr[120];
-wire [59:0] Q_121 = ITOP.iow0.arr[121];
-wire [59:0] Q_122 = ITOP.iow0.arr[122];
-wire [59:0] Q_123 = ITOP.iow0.arr[123];
-wire [59:0] Q_124 = ITOP.iow0.arr[124];
-wire [59:0] Q_125 = ITOP.iow0.arr[125];
-wire [59:0] Q_126 = ITOP.iow0.arr[126];
-wire [59:0] Q_127 = ITOP.iow0.arr[127];
+wire [31:0] Q_0 = ITOP.iow0.arr[0];
+wire [31:0] Q_1 = ITOP.iow1.arr[0];
+wire [31:0] Q_2 = ITOP.iow0.arr[1];
+wire [31:0] Q_3 = ITOP.iow1.arr[1];
+wire [31:0] Q_4 = ITOP.iow0.arr[2];
+wire [31:0] Q_5 = ITOP.iow1.arr[2];
+wire [31:0] Q_6 = ITOP.iow0.arr[3];
+wire [31:0] Q_7 = ITOP.iow1.arr[3];
+wire [31:0] Q_8 = ITOP.iow0.arr[4];
+wire [31:0] Q_9 = ITOP.iow1.arr[4];
+wire [31:0] Q_10 = ITOP.iow0.arr[5];
+wire [31:0] Q_11 = ITOP.iow1.arr[5];
+wire [31:0] Q_12 = ITOP.iow0.arr[6];
+wire [31:0] Q_13 = ITOP.iow1.arr[6];
+wire [31:0] Q_14 = ITOP.iow0.arr[7];
+wire [31:0] Q_15 = ITOP.iow1.arr[7];
+wire [31:0] Q_16 = ITOP.iow0.arr[8];
+wire [31:0] Q_17 = ITOP.iow1.arr[8];
+wire [31:0] Q_18 = ITOP.iow0.arr[9];
+wire [31:0] Q_19 = ITOP.iow1.arr[9];
+wire [31:0] Q_20 = ITOP.iow0.arr[10];
+wire [31:0] Q_21 = ITOP.iow1.arr[10];
+wire [31:0] Q_22 = ITOP.iow0.arr[11];
+wire [31:0] Q_23 = ITOP.iow1.arr[11];
+wire [31:0] Q_24 = ITOP.iow0.arr[12];
+wire [31:0] Q_25 = ITOP.iow1.arr[12];
+wire [31:0] Q_26 = ITOP.iow0.arr[13];
+wire [31:0] Q_27 = ITOP.iow1.arr[13];
+wire [31:0] Q_28 = ITOP.iow0.arr[14];
+wire [31:0] Q_29 = ITOP.iow1.arr[14];
+wire [31:0] Q_30 = ITOP.iow0.arr[15];
+wire [31:0] Q_31 = ITOP.iow1.arr[15];
+wire [31:0] Q_32 = ITOP.iow0.arr[16];
+wire [31:0] Q_33 = ITOP.iow1.arr[16];
+wire [31:0] Q_34 = ITOP.iow0.arr[17];
+wire [31:0] Q_35 = ITOP.iow1.arr[17];
+wire [31:0] Q_36 = ITOP.iow0.arr[18];
+wire [31:0] Q_37 = ITOP.iow1.arr[18];
+wire [31:0] Q_38 = ITOP.iow0.arr[19];
+wire [31:0] Q_39 = ITOP.iow1.arr[19];
+wire [31:0] Q_40 = ITOP.iow0.arr[20];
+wire [31:0] Q_41 = ITOP.iow1.arr[20];
+wire [31:0] Q_42 = ITOP.iow0.arr[21];
+wire [31:0] Q_43 = ITOP.iow1.arr[21];
+wire [31:0] Q_44 = ITOP.iow0.arr[22];
+wire [31:0] Q_45 = ITOP.iow1.arr[22];
+wire [31:0] Q_46 = ITOP.iow0.arr[23];
+wire [31:0] Q_47 = ITOP.iow1.arr[23];
+wire [31:0] Q_48 = ITOP.iow0.arr[24];
+wire [31:0] Q_49 = ITOP.iow1.arr[24];
+wire [31:0] Q_50 = ITOP.iow0.arr[25];
+wire [31:0] Q_51 = ITOP.iow1.arr[25];
+wire [31:0] Q_52 = ITOP.iow0.arr[26];
+wire [31:0] Q_53 = ITOP.iow1.arr[26];
+wire [31:0] Q_54 = ITOP.iow0.arr[27];
+wire [31:0] Q_55 = ITOP.iow1.arr[27];
+wire [31:0] Q_56 = ITOP.iow0.arr[28];
+wire [31:0] Q_57 = ITOP.iow1.arr[28];
+wire [31:0] Q_58 = ITOP.iow0.arr[29];
+wire [31:0] Q_59 = ITOP.iow1.arr[29];
+wire [31:0] Q_60 = ITOP.iow0.arr[30];
+wire [31:0] Q_61 = ITOP.iow1.arr[30];
+wire [31:0] Q_62 = ITOP.iow0.arr[31];
+wire [31:0] Q_63 = ITOP.iow1.arr[31];
+wire [31:0] Q_64 = ITOP.iow0.arr[32];
+wire [31:0] Q_65 = ITOP.iow1.arr[32];
+wire [31:0] Q_66 = ITOP.iow0.arr[33];
+wire [31:0] Q_67 = ITOP.iow1.arr[33];
+wire [31:0] Q_68 = ITOP.iow0.arr[34];
+wire [31:0] Q_69 = ITOP.iow1.arr[34];
+wire [31:0] Q_70 = ITOP.iow0.arr[35];
+wire [31:0] Q_71 = ITOP.iow1.arr[35];
+wire [31:0] Q_72 = ITOP.iow0.arr[36];
+wire [31:0] Q_73 = ITOP.iow1.arr[36];
+wire [31:0] Q_74 = ITOP.iow0.arr[37];
+wire [31:0] Q_75 = ITOP.iow1.arr[37];
+wire [31:0] Q_76 = ITOP.iow0.arr[38];
+wire [31:0] Q_77 = ITOP.iow1.arr[38];
+wire [31:0] Q_78 = ITOP.iow0.arr[39];
+wire [31:0] Q_79 = ITOP.iow1.arr[39];
+wire [31:0] Q_80 = ITOP.iow0.arr[40];
+wire [31:0] Q_81 = ITOP.iow1.arr[40];
+wire [31:0] Q_82 = ITOP.iow0.arr[41];
+wire [31:0] Q_83 = ITOP.iow1.arr[41];
+wire [31:0] Q_84 = ITOP.iow0.arr[42];
+wire [31:0] Q_85 = ITOP.iow1.arr[42];
+wire [31:0] Q_86 = ITOP.iow0.arr[43];
+wire [31:0] Q_87 = ITOP.iow1.arr[43];
+wire [31:0] Q_88 = ITOP.iow0.arr[44];
+wire [31:0] Q_89 = ITOP.iow1.arr[44];
+wire [31:0] Q_90 = ITOP.iow0.arr[45];
+wire [31:0] Q_91 = ITOP.iow1.arr[45];
+wire [31:0] Q_92 = ITOP.iow0.arr[46];
+wire [31:0] Q_93 = ITOP.iow1.arr[46];
+wire [31:0] Q_94 = ITOP.iow0.arr[47];
+wire [31:0] Q_95 = ITOP.iow1.arr[47];
+wire [31:0] Q_96 = ITOP.iow0.arr[48];
+wire [31:0] Q_97 = ITOP.iow1.arr[48];
+wire [31:0] Q_98 = ITOP.iow0.arr[49];
+wire [31:0] Q_99 = ITOP.iow1.arr[49];
+wire [31:0] Q_100 = ITOP.iow0.arr[50];
+wire [31:0] Q_101 = ITOP.iow1.arr[50];
+wire [31:0] Q_102 = ITOP.iow0.arr[51];
+wire [31:0] Q_103 = ITOP.iow1.arr[51];
+wire [31:0] Q_104 = ITOP.iow0.arr[52];
+wire [31:0] Q_105 = ITOP.iow1.arr[52];
+wire [31:0] Q_106 = ITOP.iow0.arr[53];
+wire [31:0] Q_107 = ITOP.iow1.arr[53];
+wire [31:0] Q_108 = ITOP.iow0.arr[54];
+wire [31:0] Q_109 = ITOP.iow1.arr[54];
+wire [31:0] Q_110 = ITOP.iow0.arr[55];
+wire [31:0] Q_111 = ITOP.iow1.arr[55];
+wire [31:0] Q_112 = ITOP.iow0.arr[56];
+wire [31:0] Q_113 = ITOP.iow1.arr[56];
+wire [31:0] Q_114 = ITOP.iow0.arr[57];
+wire [31:0] Q_115 = ITOP.iow1.arr[57];
+wire [31:0] Q_116 = ITOP.iow0.arr[58];
+wire [31:0] Q_117 = ITOP.iow1.arr[58];
+wire [31:0] Q_118 = ITOP.iow0.arr[59];
+wire [31:0] Q_119 = ITOP.iow1.arr[59];
+wire [31:0] Q_120 = ITOP.iow0.arr[60];
+wire [31:0] Q_121 = ITOP.iow1.arr[60];
+wire [31:0] Q_122 = ITOP.iow0.arr[61];
+wire [31:0] Q_123 = ITOP.iow1.arr[61];
+wire [31:0] Q_124 = ITOP.iow0.arr[62];
+wire [31:0] Q_125 = ITOP.iow1.arr[62];
+wire [31:0] Q_126 = ITOP.iow0.arr[63];
+wire [31:0] Q_127 = ITOP.iow1.arr[63];
 `endif //NV_RAM_EXPAND_ARRAY
 `endif //SYNTHESIS
 
@@ -732,23 +757,26 @@ wire [59:0] Q_127 = ITOP.iow0.arr[127];
 // induce faults on columns
 //VCS coverage off    
 task mem_fault_no_write;
-input [59:0] fault_mask;
+input [31:0] fault_mask;
     begin
         ITOP.iow0.mem_fault_no_write_subbank(fault_mask);
+        ITOP.iow1.mem_fault_no_write_subbank(fault_mask);
     end
 endtask
 
 task mem_fault_stuck_0;
-input [59:0] fault_mask;
+input [31:0] fault_mask;
     begin
         ITOP.iow0.mem_fault_stuck_0_subbank(fault_mask);
+        ITOP.iow1.mem_fault_stuck_0_subbank(fault_mask);
     end
 endtask
 
 task mem_fault_stuck_1;
-input [59:0] fault_mask;
+input [31:0] fault_mask;
     begin
         ITOP.iow0.mem_fault_stuck_1_subbank(fault_mask);
+        ITOP.iow1.mem_fault_stuck_1_subbank(fault_mask);
     end
 endtask
 
@@ -758,7 +786,10 @@ input c;
 integer r;
 integer c;
 
-    ITOP.iow0.set_bit_fault_stuck_0_subbank(r, c);
+  if ( (r % 2) == 0) 
+    ITOP.iow0.set_bit_fault_stuck_0_subbank((r/2), c);
+  else if  ( (r % 2) == 1)
+    ITOP.iow1.set_bit_fault_stuck_0_subbank((r/2), c);
 
 endtask
 
@@ -768,7 +799,10 @@ input c;
 integer r;
 integer c;
  
-    ITOP.iow0.set_bit_fault_stuck_1_subbank(r, c);
+    if ( (r % 2) == 0) 
+    ITOP.iow0.set_bit_fault_stuck_1_subbank((r/2), c);
+  else if  ( (r % 2) == 1)
+    ITOP.iow1.set_bit_fault_stuck_1_subbank((r/2), c);
 
 endtask
 
@@ -778,7 +812,10 @@ input c;
 integer r;
 integer c;
 
-    ITOP.iow0.clear_bit_fault_stuck_0_subbank(r, c);
+  if ( (r % 2) == 0) 
+    ITOP.iow0.clear_bit_fault_stuck_0_subbank((r/2), c);
+  else if  ( (r % 2) == 1)
+    ITOP.iow1.clear_bit_fault_stuck_0_subbank((r/2), c);
 
 endtask
 
@@ -788,7 +825,10 @@ input c;
 integer r;
 integer c;
 
-    ITOP.iow0.clear_bit_fault_stuck_1_subbank(r, c);
+  if ( (r % 2) == 0) 
+    ITOP.iow0.clear_bit_fault_stuck_1_subbank((r/2), c);
+  else if  ( (r % 2) == 1)
+    ITOP.iow1.clear_bit_fault_stuck_1_subbank((r/2), c);
 
 endtask
 //VCS coverage on    
@@ -804,10 +844,10 @@ endtask
 // enables 
     reg RE_FF,WE_FF,RE_LAT,WE_LAT;
 // Addresses 
-    reg [6:0] RAFF,WAFF;
+    reg [7:0] RAFF,WAFF;
 // Data 
-    reg [59:0] WD_FF;
-    reg [59:0] RD_LAT;
+    reg [31:0] WD_FF;
+    reg [31:0] RD_LAT;
  
 // Latch the enables
 //spyglass disable_block IntClock,W18 
@@ -840,7 +880,7 @@ endtask
 
 
 // Memory 
-    reg [59:0] mem[127:0]; 
+    reg [31:0] mem[127:0]; 
 
 // write into the memory on negative edge of clock
    wire WRCLK = ~CLK & WE_FF ; //spyglass disable GatedClock
@@ -849,9 +889,9 @@ endtask
         mem[WAFF] <= WD_FF; //spyglass disable SYNTH_5130
 
 // Read 
-    wire [59:0] dout;
+    wire [31:0] dout;
     assign dout = mem[RAFF]; //spyglass disable SYNTH_5130
-    reg [59:0] dout_LAT;
+    reg [31:0] dout_LAT;
     always @(RECLK or dout) 
         if (RECLK) 
             dout_LAT <= dout; //spyglass disable W18
@@ -867,7 +907,7 @@ endmodule
 `ifndef EMULATION
 
 //memory bank block
-module RAM_BANK_RAMPDP_128X60_GL_M1_D2 ( WE, CLK, IDDQ, SVOP, WD, RD, RE, RA, WA
+module RAM_BANK_RAMPDP_128X32_GL_M2_D2 ( WE, CLK, IDDQ, SVOP, WD, RD, RE, RA, WA
 , SLEEP_EN
 , RET_EN , clobber_array , clobber_flops 
 );
@@ -875,9 +915,9 @@ module RAM_BANK_RAMPDP_128X60_GL_M1_D2 ( WE, CLK, IDDQ, SVOP, WD, RD, RE, RA, WA
 // Input/output port definitions
 input  WE, CLK, IDDQ , RE;
 input [7:0] SVOP;
-input [59:0] WD;
-input [6:0] RA, WA;
-output [59:0] RD;
+input [31:0] WD;
+input [7:0] RA, WA;
+output [31:0] RD;
 input [7:0] SLEEP_EN;
 
 input RET_EN , clobber_array , clobber_flops ; 
@@ -889,7 +929,7 @@ input RET_EN , clobber_array , clobber_flops ;
 // *_LATB --> inverted latch value
 // *_FF   --> Flopped version
 	reg RE_LATB, RE_FF, WE_LATB, WE_FF;
-	reg [6:0] RADR, WADR, WAFF;
+	reg [7:0] RADR, WADR, WAFF;
 
     // For non-pipelined rams , capture_dis is disabled
     wire CAPT_DIS = 1'b0;
@@ -963,9 +1003,9 @@ input RET_EN , clobber_array , clobber_flops ;
 
 
 // Force the MSB's to 0 in the SCRE mode. This makes sure that we will always read in from valid addresses for resetting the output latches.
-	wire [6:0] RADRSWI = RADR[6:0];
+	wire [7:0] RADRSWI = RADR[7:0];
 // Select the read address when CLK=1 and write addresses when CLK=0
-	wire [6:0] ADR = {7{RWSEL}} & WAFF | ~{7{RWSEL}} & RADRSWI;
+	wire [7:0] ADR = {8{RWSEL}} & WAFF | ~{8{RWSEL}} & RADRSWI;
 
 	wire [7:0] fusePDEC2;
 	wire [7:0] fusePDEC1;
@@ -978,31 +1018,31 @@ input RET_EN , clobber_array , clobber_flops ;
     assign fuseien = 0;
 
 //io part
-	wire [59:0] WDQ;
-	wire [59:0] WDBQ;
-	wire [59:0] WMNexp;
-	wire [59:0] WMNQ;
+	wire [31:0] WDQ;
+	wire [31:0] WDBQ;
+	wire [31:0] WMNexp;
+	wire [31:0] WMNQ;
 
 // Expand the fuse predec to 512 bits . It follows the 8x8x8 repeat pattern
 // We will use only the ones needed for this particular ram configuration and ignore the rest
 	wire [511:0] PDEC2 = {{64{fusePDEC2[7]}}, {64{fusePDEC2[6]}}, {64{fusePDEC2[5]}}, {64{fusePDEC2[4]}}, {64{fusePDEC2[3]}}, {64{fusePDEC2[2]}}, {64{fusePDEC2[1]}}, {64{fusePDEC2[0]}}};
 	wire [511:0] PDEC1 = {8{{8{fusePDEC1[7]}}, {8{fusePDEC1[6]}}, {8{fusePDEC1[5]}}, {8{fusePDEC1[4]}}, {8{fusePDEC1[3]}}, {8{fusePDEC1[2]}}, {8{fusePDEC1[1]}}, {8{fusePDEC1[0]}}}};
 	wire [511:0] PDEC0 = {64{fusePDEC0[7:0]}};
-	wire [59:0] BADBIT, SHFT;
+	wire [31:0] BADBIT, SHFT;
 
 // SHIFT<*> == 1 --> No repair at that bit , 0 --> repair at that bit .
 // SHIFT<X> == not(and Pdec*<X>) & SHIFT<X-1>
-    assign BADBIT = {60{1'b0}};
-    assign SHFT   = {60{1'b1}};
+    assign BADBIT = {32{1'b0}};
+    assign SHFT   = {32{1'b1}};
 
-    reg [59:0] WDQ_pr;
-    wire [59:0] WDBQ_pr;
+    reg [31:0] WDQ_pr;
+    wire [31:0] WDBQ_pr;
 
-    assign WMNexp = {60{1'b1}};
+    assign WMNexp = {32{1'b1}};
 
     always @(posedge WRDCLK) begin
 // Flop write data
-		WDQ_pr[59:0]    <= WD & WMNexp;
+		WDQ_pr[31:0]    <= WD & WMNexp;
 	end
 
     assign WDBQ_pr = ~WDQ_pr;
@@ -1011,14 +1051,14 @@ input RET_EN , clobber_array , clobber_flops ;
 	assign WDQ  = WDQ_pr;
 	assign WDBQ = WDBQ_pr;
 
-    reg [59:0] dout;
-	wire [59:0] RD;
-	wire RD_rdnt0,RD_rdnt1;
+    reg [31:0] dout;
+	wire [31:0] RD;
+	wire RD_rdnt;
 
-	wire [59:0] sel_normal, sel_redun;
+	wire [31:0] sel_normal, sel_redun;
 
 // Read bypass is not used for non custom ram
-	wire [59:0] RDBYPASS = {60{1'b0}};
+	wire [31:0] RDBYPASS = {32{1'b0}};
 
 
 // Read bypass will override redunancy mux .
@@ -1031,53 +1071,67 @@ input RET_EN , clobber_array , clobber_flops ;
 
 // FOR SIMULATION ONLY. REMOVE WHEN ASSERTIONS ARE AVAILABLE!
 // The following section figures out the unused address space and forces a X out on the reads/prevents writes
-// #unusedbits 0 #lowcmidx 0 #cmstep 1 #cm 1 #maxaddr 128
+// #unusedbits 1 #lowcmidx 1 #cmstep 1 #cm 2 #maxaddr 128
     wire legal, tiedvalid, empadd;
-    assign tiedvalid = 1'b1;
+// Tied off address bits
+// This should always be 1 if the tie-off logic at the top-level is correct. 
+    assign tiedvalid = ~(|ADR[7:7]);
 
 // Max address is 128 --> ['1', '1', '1', '1', '1', '1', '1']
     assign empadd = 1'b0;
 // It is a legal input address if it does not fall in the empty space.
     assign legal = tiedvalid & ~empadd ;
     
-    wire [59:0] force_x;
+    wire [31:0] force_x;
 `ifndef SYNTHESIS
-    assign force_x = {60{1'bx}};
+    assign force_x = {32{1'bx}};
 `else 
-    assign force_x = {60{1'b0}};
+    assign force_x = {32{1'b0}};
 `endif 
 
 // Generate the read and write clocks for the various CM banks
-    wire RdClk0;
-    wire WrClk0;
+    wire RdClk0,RdClk1;
+    wire WrClk0,WrClk1;
     
-    assign RdClk0 = RECLK;
+    assign RdClk0 = RECLK & ~RADRSWI[0];
+    assign RdClk1 = RECLK & RADRSWI[0];
     
-    assign WrClk0 = WECLK & legal;
+    assign WrClk0 = WECLK & ~WAFF[0] & legal;
+    assign WrClk1 = WECLK & WAFF[0] & legal;
     
-    wire [59:0] rmuxd0;
-    wire [59:0] dout0;
-    
+    wire [31:0] rmuxd0, rmuxd1;
+    wire [31:0] dout0, dout1;
+
 // Mux the way reads onto the final read busa
-// Output X's if the address is invalid    
-	//assign rmuxd0 = legal ? {60{RdClk0}} & ~dout0 : force_x;
-	assign rmuxd0 = {60{RdClk0}} & ~dout0 ;
-    always @(RECLK or rmuxd0)
+// Output X's if the address is invalid
+//    assign rmuxd0 = legal ? {32{RdClk0}} & ~dout0 : force_x;
+//    assign rmuxd1 = legal ? {32{RdClk1}} & ~dout1 : force_x;
+    assign rmuxd0 = {32{RdClk0}} & ~dout0 ;
+    assign rmuxd1 = {32{RdClk1}} & ~dout1 ;
+    always @(RECLK or rmuxd0 or rmuxd1)
     begin
         if (RECLK)
 	    begin
-            dout[59:0] <= (rmuxd0[59:0]); // spyglass disable W18 
+            dout[31:0] <= (rmuxd0[31:0] | rmuxd1[31:0]); // spyglass disable W18 
         end
     end
-
 // Instantiate the memory banks. One for each CM .
-    RAMPDP_128X60_GL_M1_D2_ram # (128, 60, 7) iow0 (
-		WAFF[6:0],
+    RAMPDP_128X32_GL_M2_D2_ram # (64, 32, 7) iow0 (
+		WAFF[7:1],
 		WrClk0,
         WMNQ,
 		WDQ,
-		RADRSWI[6:0],
+		RADRSWI[7:1],
 		dout0
+	);
+
+    RAMPDP_128X32_GL_M2_D2_ram # (64, 32, 7) iow1 (
+		WAFF[7:1],
+		WrClk1,
+        WMNQ,
+		WDQ,
+		RADRSWI[7:1],
+		dout1
 	);
 
  
@@ -1087,20 +1141,26 @@ input RET_EN , clobber_array , clobber_flops ;
 //VCS coverage off    
 task mem_write_bank;
   input [6:0] addr;
-  input [59:0] data;
-  reg   [59:0] wdat;
+  input [31:0] data;
+  reg   [31:0] wdat;
   begin
     wdat = data;
-    iow0.mem_wr_raw_subbank(addr[6:0],wdat);
+    if (addr[0] == 1'b0) 
+        iow0.mem_wr_raw_subbank(addr[6:1], wdat);
+    else if (addr[0] == 1'b1)
+        iow1.mem_wr_raw_subbank(addr[6:1], wdat);
   end
 endtask
 
 // Ramgen function for reading the arrays 
-function [59:0] mem_read_bank;
+function [31:0] mem_read_bank;
 input [6:0] addr;
-reg [59:0] memout;
+reg [31:0] memout;
   begin
-    memout = iow0.mem_read_raw_subbank(addr);
+    if (addr[0] == 1'b0) 
+        memout = iow0.mem_read_raw_subbank(addr[6:1]);
+    else if (addr[0] == 1'b1)
+        memout = iow1.mem_read_raw_subbank(addr[6:1]);
     mem_read_bank = memout;
   end
 endfunction
@@ -1114,7 +1174,7 @@ endmodule
 
 `ifndef RAM_INTERFACE
 `ifndef EMULATION
-module RAMPDP_128X60_GL_M1_D2_ram (
+module RAMPDP_128X32_GL_M2_D2_ram (
    wadr,
    wrclk,
    wrmaskn,
@@ -1124,8 +1184,8 @@ module RAMPDP_128X60_GL_M1_D2_ram (
 );
 
 // default parameters
-parameter  words =  128;
-parameter  bits  =  60;
+parameter  words =  64;
+parameter  bits  =  32;
 parameter  addrs =  7;
 
 // Write address
@@ -1306,14 +1366,14 @@ assign  rout_B = rdarr;
 //VCS coverage off    
 task mem_wr_raw_subbank;
   input [addrs-1:0] addr;
-  input [59:0] data;
+  input [31:0] data;
   begin
     arr[addr] = data;
   end
 endtask
 
 // function for array read
-function [59:0] mem_read_raw_subbank;
+function [31:0] mem_read_raw_subbank;
 input [addrs-1:0] addr;
 	mem_read_raw_subbank = arr[addr];
 endfunction
