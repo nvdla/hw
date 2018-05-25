@@ -46,6 +46,7 @@ class NvdlaBaseTest(object):
         #execfile(project_define_file_path, buffer_dict)
         exec(open(project_define_file_path).read(), buffer_dict)
         self._project_define_dict = dict(buffer_dict['PROJVAR'])
+        #print(self._project_define_dict)
 
     # Load manual from file
     def load_register_manual_file(self, manual_file_path):
@@ -56,14 +57,21 @@ class NvdlaBaseTest(object):
 
     def reg_write(self, block, register, value):
         block_reg_name = '.'.join([block, register])
-        self._trace_config.append('write(%s, %s);' % (block_reg_name, hex(value)))
+        self._trace_config.append('reg_write(%s, %s);' % (block_reg_name, hex(value)))
 
     def reg_read_check(self, block, register, value):
         block_reg_name = '.'.join([block, register])
-        write_mask  = self._register_manual_dict['registers'][block][register]['write_mask']
-        reset_mask  = self._register_manual_dict['registers'][block][register]['reset_mask']
-        read_mask   = self._register_manual_dict['registers'][block][register]['read_mask']
-        self._trace_config.append('read_check(%s, %s);' % (block_reg_name, hex(value & write_mask & read_mask)))
+        read_mask      = self._register_manual_dict['registers'][block][register]['read_mask']
+        self._trace_config.append('reg_read_check(%s, %s);' % (block_reg_name, hex(value&read_mask)))
+
+    def sync_notify(self, block, event_name):
+        self._trace_config.append('sync_notify(%s, %s);' % (block, event_name))
+
+    def check_nothing(self, event_name):
+        self._trace_config.append('check_nothing(%s);' % event_name)
+
+    def trace_comment(self, comment_str):
+        self._trace_config.append('// %s;' % comment_str)
 
     def compose_test(self):
         self._trace_config = [
@@ -79,7 +87,8 @@ class NvdlaBaseTest(object):
         # Generate directory
         origin_working_directory = os.getcwd()
         os.chdir(self._generated_trace_dir)
-        os.mkdir(self._name)
+        if not os.path.exists(self._name):
+            os.mkdir(self._name)
         os.chdir(self._name)
         # Dump configuration to file
         with open(self._name+'.cfg', 'w') as f:

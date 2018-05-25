@@ -9,6 +9,7 @@ import enum
 import time
 import fcntl
 from pprint import pprint
+from pathlib import Path
 import subprocess
 
 __DESCRIPTION__='''
@@ -109,29 +110,41 @@ class RunTest(object):
         self._dump_memory = self._config_dict['dump_memory']
 
     def _python_test_pre_process(self):
-        sys.path.append(os.path.join(self._tree_root , 'verif/tests/nvdla_test'))
-        test_path = ''
+        origin_dir = os.getcwd()
+        dst_test_dir_path = Path(self._output_dir, self._name)
+        if dst_test_dir_path.is_dir():
+            shutil.rmtree(dst_test_dir_path)
+        os.mkdir(dst_test_dir_path)
+        os.chdir(dst_test_dir_path)
+        test_path = Path(self._tree_root)
         test_file_name = self._name+'.py'
         if self._config_dict['trace_dir'] is not None:
             ## Trace dir has been specified
-            test_path = os.path.join(self._trace_dir, test_file_name)
+            test_path = test_path / 'verif/tests/nvdla_test' / test_file_name
         elif '_trace_root' in dir(self):
             ## Trace root has been specified
-            for root, dirs, files in os.walk(self._trace_root):
-                if self._name+'.py' in files:
-                    self._trace_dir = root
-                    test_path = os.path.join(root, test_file_name)
-                    break
-            if 0 == len(test_path):
+            try:
+                test_path = list(Path(self._trace_root).glob('**/'+test_file_name))[0]
+            except:
                 raise Exception('RunTest::_python_test_pre_process', 'Cannot found test %s under path %s' % (test_file_name, self._trace_root))
         print ("Test path is %s" % test_path)
-            #check file existence
-        if os.path.isfile(test_path) is False:
+        # check file existence
+        if not test_path.is_file():
             raise Exception('RunTest::_python_test_pre_process', 'test path %s is not a valid file path' % test_path)
-        ## Generate trace
-        sys.path.append(self._trace_dir)
-        py_test = __import__ (self._name)
-        py_test.run(self._project)
+        # generate trace dumper script
+        script = './run_trace_generator.sh'
+        with open(script, '+w') as cmd_fh:
+            python_interpreter = sys.executable
+            cmd = ' '.join([python_interpreter, str(test_path), self._project, self._output_dir])
+            cmd_fh.write ('\n'.join(['#!/bin/sh\n', cmd]))
+        subprocess.call('chmod 755 '+script, shell=True)
+        print("Start dumping trace file './%s/%s.cfg':\n  cmd = %s" % (self._name, self._name, cmd))
+        # Generate trace
+        try:
+            subprocess.call(script, shell=True)
+        except OSError:
+            raise Exception('RunTest::_python_test_pre_process', 'Failed to generate trace file')
+        os.chdir(origin_dir)
 
     def _trace_test_pre_process(self):
         test_path = ''
