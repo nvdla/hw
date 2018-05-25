@@ -1,5 +1,5 @@
 test_plan.load_test_list(os.path.join(test_plan_dir,'nvdla_test_list_common.py'))
-#test_plan.load_test_list(os.path.join(test_plan_dir,'nv_medium_1024_full_test_list_L0.py'))
+test_plan.load_test_list(os.path.join(test_plan_dir,'nv_medium_1024_full_test_list_L0.py'))
 #test_plan.load_test_list(os.path.join(test_plan_dir,'nv_medium_1024_full_test_list_L1.py'))
 #test_plan.load_test_list(os.path.join(test_plan_dir,'nv_medium_1024_full_test_list_L2.py'))
 test_plan.load_test_list(os.path.join(test_plan_dir,'nvdla_test_list_L10.py'))
