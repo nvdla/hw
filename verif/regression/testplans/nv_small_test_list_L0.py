@@ -1,4 +1,3 @@
-
 ############################################# Register Accessing ###################################
 add_test(name='nvdla_reg_accessing',
          tags=['L0'],

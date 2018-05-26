@@ -1,3 +1,11 @@
+############################################# Register Accessing ###################################
+add_test(name='nvdla_reg_accessing',
+         tags=['L0'],
+         module='nvdla_python_test',
+         args=[FIXED_SEED_ARG, DISABLE_COMPARE_ALL_UNITS_SB_ARG, '-uwm RTL_ONLY'],
+         config=['nvdla_utb'],
+         desc='''Check reset value''')
+
 ############################################# PDP ###################################
 add_test(name='pdp_3x3x33_2x2_ave_int8_0',
          tags=['L0', 'pdp'],
