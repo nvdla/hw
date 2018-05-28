@@ -400,7 +400,7 @@ void NV_NVDLA_cvif::ReadResp_cvif2bdma() {
             delete[] axi_atom_ptr;
         }
 
-        assert(sizeof(dma_rd_rsp_payload->pd.dma_read_data.data) == DMAIF_WIDTH);
+        //assert(sizeof(dma_rd_rsp_payload->pd.dma_read_data.data) == DMAIF_WIDTH);
         cslDebug((70, "NV_NVDLA_cvif::ReadResp_cvif2bdma, dma_rd_rsp_payload->pd.dma_read_data.mask is 0x%x\x0A", uint32_t(dma_rd_rsp_payload->pd.dma_read_data.mask)));
         cslDebug((70, "NV_NVDLA_cvif::ReadResp_cvif2bdma, dma_rd_rsp_payload->pd.dma_read_data.data are :\x0A"));
         for (idx = 0; idx < sizeof(dma_rd_rsp_payload->pd.dma_read_data.data)/sizeof(dma_rd_rsp_payload->pd.dma_read_data.data[0]); idx++) {
@@ -539,7 +539,7 @@ void NV_NVDLA_cvif::ReadResp_cvif2sdp() {
             delete[] axi_atom_ptr;
         }
 
-        assert(sizeof(dma_rd_rsp_payload->pd.dma_read_data.data) == DMAIF_WIDTH);
+        //assert(sizeof(dma_rd_rsp_payload->pd.dma_read_data.data) == DMAIF_WIDTH);
         cslDebug((70, "NV_NVDLA_cvif::ReadResp_cvif2sdp, dma_rd_rsp_payload->pd.dma_read_data.mask is 0x%x\x0A", uint32_t(dma_rd_rsp_payload->pd.dma_read_data.mask)));
         cslDebug((70, "NV_NVDLA_cvif::ReadResp_cvif2sdp, dma_rd_rsp_payload->pd.dma_read_data.data are :\x0A"));
         for (idx = 0; idx < sizeof(dma_rd_rsp_payload->pd.dma_read_data.data)/sizeof(dma_rd_rsp_payload->pd.dma_read_data.data[0]); idx++) {
@@ -678,7 +678,7 @@ void NV_NVDLA_cvif::ReadResp_cvif2pdp() {
             delete[] axi_atom_ptr;
         }
 
-        assert(sizeof(dma_rd_rsp_payload->pd.dma_read_data.data) == DMAIF_WIDTH);
+        //assert(sizeof(dma_rd_rsp_payload->pd.dma_read_data.data) == DMAIF_WIDTH);
         cslDebug((70, "NV_NVDLA_cvif::ReadResp_cvif2pdp, dma_rd_rsp_payload->pd.dma_read_data.mask is 0x%x\x0A", uint32_t(dma_rd_rsp_payload->pd.dma_read_data.mask)));
         cslDebug((70, "NV_NVDLA_cvif::ReadResp_cvif2pdp, dma_rd_rsp_payload->pd.dma_read_data.data are :\x0A"));
         for (idx = 0; idx < sizeof(dma_rd_rsp_payload->pd.dma_read_data.data)/sizeof(dma_rd_rsp_payload->pd.dma_read_data.data[0]); idx++) {
@@ -956,7 +956,7 @@ void NV_NVDLA_cvif::ReadResp_cvif2rbk() {
             delete[] axi_atom_ptr;
         }
 
-        assert(sizeof(dma_rd_rsp_payload->pd.dma_read_data.data) == DMAIF_WIDTH);
+        //assert(sizeof(dma_rd_rsp_payload->pd.dma_read_data.data) == DMAIF_WIDTH);
         cslDebug((70, "NV_NVDLA_cvif::ReadResp_cvif2rbk, dma_rd_rsp_payload->pd.dma_read_data.mask is 0x%x\x0A", uint32_t(dma_rd_rsp_payload->pd.dma_read_data.mask)));
         cslDebug((70, "NV_NVDLA_cvif::ReadResp_cvif2rbk, dma_rd_rsp_payload->pd.dma_read_data.data are :\x0A"));
         for (idx = 0; idx < sizeof(dma_rd_rsp_payload->pd.dma_read_data.data)/sizeof(dma_rd_rsp_payload->pd.dma_read_data.data[0]); idx++) {
@@ -1095,7 +1095,7 @@ void NV_NVDLA_cvif::ReadResp_cvif2sdp_b() {
             delete[] axi_atom_ptr;
         }
 
-        assert(sizeof(dma_rd_rsp_payload->pd.dma_read_data.data) == DMAIF_WIDTH);
+        //assert(sizeof(dma_rd_rsp_payload->pd.dma_read_data.data) == DMAIF_WIDTH);
         cslDebug((70, "NV_NVDLA_cvif::ReadResp_cvif2sdp_b, dma_rd_rsp_payload->pd.dma_read_data.mask is 0x%x\x0A", uint32_t(dma_rd_rsp_payload->pd.dma_read_data.mask)));
         cslDebug((70, "NV_NVDLA_cvif::ReadResp_cvif2sdp_b, dma_rd_rsp_payload->pd.dma_read_data.data are :\x0A"));
         for (idx = 0; idx < sizeof(dma_rd_rsp_payload->pd.dma_read_data.data)/sizeof(dma_rd_rsp_payload->pd.dma_read_data.data[0]); idx++) {
@@ -1234,7 +1234,7 @@ void NV_NVDLA_cvif::ReadResp_cvif2sdp_n() {
             delete[] axi_atom_ptr;
         }
 
-        assert(sizeof(dma_rd_rsp_payload->pd.dma_read_data.data) == DMAIF_WIDTH);
+        //assert(sizeof(dma_rd_rsp_payload->pd.dma_read_data.data) == DMAIF_WIDTH);
         cslDebug((70, "NV_NVDLA_cvif::ReadResp_cvif2sdp_n, dma_rd_rsp_payload->pd.dma_read_data.mask is 0x%x\x0A", uint32_t(dma_rd_rsp_payload->pd.dma_read_data.mask)));
         cslDebug((70, "NV_NVDLA_cvif::ReadResp_cvif2sdp_n, dma_rd_rsp_payload->pd.dma_read_data.data are :\x0A"));
         for (idx = 0; idx < sizeof(dma_rd_rsp_payload->pd.dma_read_data.data)/sizeof(dma_rd_rsp_payload->pd.dma_read_data.data[0]); idx++) {
@@ -1373,7 +1373,7 @@ void NV_NVDLA_cvif::ReadResp_cvif2sdp_e() {
             delete[] axi_atom_ptr;
         }
 
-        assert(sizeof(dma_rd_rsp_payload->pd.dma_read_data.data) == DMAIF_WIDTH);
+        //assert(sizeof(dma_rd_rsp_payload->pd.dma_read_data.data) == DMAIF_WIDTH);
         cslDebug((70, "NV_NVDLA_cvif::ReadResp_cvif2sdp_e, dma_rd_rsp_payload->pd.dma_read_data.mask is 0x%x\x0A", uint32_t(dma_rd_rsp_payload->pd.dma_read_data.mask)));
         cslDebug((70, "NV_NVDLA_cvif::ReadResp_cvif2sdp_e, dma_rd_rsp_payload->pd.dma_read_data.data are :\x0A"));
         for (idx = 0; idx < sizeof(dma_rd_rsp_payload->pd.dma_read_data.data)/sizeof(dma_rd_rsp_payload->pd.dma_read_data.data[0]); idx++) {
@@ -1512,7 +1512,7 @@ void NV_NVDLA_cvif::ReadResp_cvif2cdma_dat() {
             delete[] axi_atom_ptr;
         }
 
-        assert(sizeof(dma_rd_rsp_payload->pd.dma_read_data.data) == DMAIF_WIDTH);
+        //assert(sizeof(dma_rd_rsp_payload->pd.dma_read_data.data) == DMAIF_WIDTH);
         cslDebug((70, "NV_NVDLA_cvif::ReadResp_cvif2cdma_dat, dma_rd_rsp_payload->pd.dma_read_data.mask is 0x%x\x0A", uint32_t(dma_rd_rsp_payload->pd.dma_read_data.mask)));
         cslDebug((70, "NV_NVDLA_cvif::ReadResp_cvif2cdma_dat, dma_rd_rsp_payload->pd.dma_read_data.data are :\x0A"));
         for (idx = 0; idx < sizeof(dma_rd_rsp_payload->pd.dma_read_data.data)/sizeof(dma_rd_rsp_payload->pd.dma_read_data.data[0]); idx++) {
@@ -1651,7 +1651,7 @@ void NV_NVDLA_cvif::ReadResp_cvif2cdma_wt() {
             delete[] axi_atom_ptr;
         }
 
-        assert(sizeof(dma_rd_rsp_payload->pd.dma_read_data.data) == DMAIF_WIDTH);
+        //assert(sizeof(dma_rd_rsp_payload->pd.dma_read_data.data) == DMAIF_WIDTH);
         cslDebug((70, "NV_NVDLA_cvif::ReadResp_cvif2cdma_wt, dma_rd_rsp_payload->pd.dma_read_data.mask is 0x%x\x0A", uint32_t(dma_rd_rsp_payload->pd.dma_read_data.mask)));
         cslDebug((70, "NV_NVDLA_cvif::ReadResp_cvif2cdma_wt, dma_rd_rsp_payload->pd.dma_read_data.data are :\x0A"));
         for (idx = 0; idx < sizeof(dma_rd_rsp_payload->pd.dma_read_data.data)/sizeof(dma_rd_rsp_payload->pd.dma_read_data.data[0]); idx++) {
