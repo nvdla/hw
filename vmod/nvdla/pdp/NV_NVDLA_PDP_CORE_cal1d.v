@@ -98,7 +98,7 @@ input   [18:0] reg2dp_pad_value_4x_cfg;
 input   [18:0] reg2dp_pad_value_5x_cfg;
 input   [18:0] reg2dp_pad_value_6x_cfg;
 input   [18:0] reg2dp_pad_value_7x_cfg;
-input   [NVDLA_PDP_THROUGHPUT*NVDLA_BPE+11:0] sdp2pdp_pd;
+input   [NVDLA_PDP_THROUGHPUT*NVDLA_BPE+13:0] sdp2pdp_pd;
 input          sdp2pdp_valid;
 output         pdp_op_start;
 output         pdp_rdma2dp_ready;

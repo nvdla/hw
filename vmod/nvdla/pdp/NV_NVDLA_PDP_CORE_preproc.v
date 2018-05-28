@@ -438,7 +438,7 @@ end
 assign cube_end = split_end ;
 assign b_sync = line_end;
 
-assign pre2cal1d_info = {cube_end,split_end,surf_end,line_end,b_sync,pos_c[4:0],4'd0};// need update pos_c width into 5bits at final
+assign pre2cal1d_info = {cube_end,split_end,surf_end,line_end,b_sync,pos_c[4:0],4'd0};
 assign pre2cal1d_pd = {pre2cal1d_info,pre2cal1d_data};
 ////////////////////////////
 ////////////////////////////

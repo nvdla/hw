@@ -380,24 +380,22 @@ always @(*) begin
 //: my $p0_sft = int( log($atmm/$Byte_Per_Pixle)/log(2) );
 //: my $p0_mask = int( ($atmm/$Byte_Per_Pixle)-1 );
 //: print qq(
-//:     pixel_planar0_sft_nxt = 3'h${p0_sft};
-//:     pixel_planar1_sft_nxt = 3'h3;
-//:     pixel_planar0_mask_nxt = 5'h${p0_mask};
-//:     pixel_planar1_mask_nxt = 5'h7;
+//:     pixel_planar0_sft_nxt = 3'd${p0_sft};
+//:     pixel_planar1_sft_nxt = 3'd3;
+//:     pixel_planar0_mask_nxt = 5'd${p0_mask};
+//:     pixel_planar1_mask_nxt = 5'd7;
 //: );
     case(reg2dp_pixel_format)
     6'h0 :
 //               0    T_R8, 
     begin
-        //pixel_planar0_sft_nxt = 3'h5;
-        //pixel_planar0_mask_nxt = 5'h1f;
 //: my $atmm = NVDLA_MEMORY_ATOMIC_SIZE;
 //: my $Byte_Per_Pixle = 1;
 //: my $p0_sft = int( log($atmm/$Byte_Per_Pixle)/log(2) );
 //: my $p0_mask = int( ($atmm/$Byte_Per_Pixle)-1 );
 //: print qq(
-//:     pixel_planar0_sft_nxt = 3'h${p0_sft};
-//:     pixel_planar0_mask_nxt = 5'h${p0_mask};
+//:     pixel_planar0_sft_nxt = 3'd${p0_sft};
+//:     pixel_planar0_mask_nxt = 5'd${p0_mask};
 //: );
         //pixel_planar0_sft_nxt = 3'h3;
         //pixel_planar0_mask_nxt = 5'h7;
@@ -536,10 +534,10 @@ always @(*) begin
 //: my $p1_sft = int( log($atmm/$Byte_Per_Pixle_p1)/log(2) );
 //: my $p1_mask = int( ($atmm/$Byte_Per_Pixle_p1)-1 );
 //: print qq(
-//:     pixel_planar0_sft_nxt = 3'h${p0_sft};
-//:     pixel_planar1_sft_nxt = 3'h${p1_sft};
-//:     pixel_planar0_mask_nxt = 5'h${p0_mask};
-//:     pixel_planar1_mask_nxt = 5'h${p1_mask};
+//:     pixel_planar0_sft_nxt = 3'd${p0_sft};
+//:     pixel_planar1_sft_nxt = 3'd${p1_sft};
+//:     pixel_planar0_mask_nxt = 5'd${p0_mask};
+//:     pixel_planar1_mask_nxt = 5'd${p1_mask};
 //: );
         //pixel_planar0_sft_nxt = 3'h3;
         //pixel_planar1_sft_nxt = 3'h2;
@@ -558,10 +556,10 @@ always @(*) begin
 //: my $p1_sft = int( log($atmm/$Byte_Per_Pixle_p1)/log(2) );
 //: my $p1_mask = int( ($atmm/$Byte_Per_Pixle_p1)-1 );
 //: print qq(
-//:     pixel_planar0_sft_nxt = 3'h${p0_sft};
-//:     pixel_planar1_sft_nxt = 3'h${p1_sft};
-//:     pixel_planar0_mask_nxt = 5'h${p0_mask};
-//:     pixel_planar1_mask_nxt = 5'h${p1_mask};
+//:     pixel_planar0_sft_nxt = 3'd${p0_sft};
+//:     pixel_planar1_sft_nxt = 3'd${p1_sft};
+//:     pixel_planar0_mask_nxt = 5'd${p0_mask};
+//:     pixel_planar1_mask_nxt = 5'd${p1_mask};
 //: );
         //pixel_planar0_sft_nxt = 3'h3;
         //pixel_planar1_sft_nxt = 3'h2;

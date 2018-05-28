@@ -24,12 +24,12 @@ module NV_NVDLA_CDP_DP_bufferin (
 /////////////////////////////////////////////////////////////
 input          nvdla_core_clk;
 input          nvdla_core_rstn;
-input   [NVDLA_CDP_THROUGHPUT*NVDLA_CDP_ICVTO_BWPE+14:0] cdp_rdma2dp_pd;
+input   [NVDLA_CDP_THROUGHPUT*NVDLA_CDP_ICVTO_BWPE+16:0] cdp_rdma2dp_pd;
 input          cdp_rdma2dp_valid;
 input          normalz_buf_data_prdy;
 output         cdp_rdma2dp_ready;
 //output [NVDLA_CDP_THROUGHPUT*NVDLA_CDP_ICVTO_BWPE*3+14:0] normalz_buf_data;
-output [(NVDLA_CDP_THROUGHPUT+8)*NVDLA_CDP_ICVTO_BWPE+14:0] normalz_buf_data;
+output [(NVDLA_CDP_THROUGHPUT+8)*NVDLA_CDP_ICVTO_BWPE+16:0] normalz_buf_data;
 output         normalz_buf_data_pvld;
 /////////////////////////////////////////////////////////////
 reg            NormalC2CubeEnd;
@@ -42,7 +42,7 @@ reg            buffer_data_vld;
 reg            buffer_last_c;
 reg            buffer_last_h;
 reg            buffer_last_w;
-reg      [2:0] buffer_pos_c;
+reg      [4:0] buffer_pos_c;
 reg      [3:0] buffer_pos_w;
 //reg            buffer_ready;
 reg      [3:0] buffer_width;
@@ -95,8 +95,8 @@ reg      [3:0] last_width;
 reg            less2more_dly;
 reg            less2more_dly2;
 reg            more2less_dly;
-reg      [2:0] pos_c_align;
-reg      [2:0] pos_c_dly1;
+reg      [4:0] pos_c_align;
+reg      [4:0] pos_c_dly1;
 reg      [3:0] pos_w_align;
 reg      [3:0] pos_w_dly1;
 reg      [2:0] stat_cur;
@@ -117,7 +117,7 @@ wire           FIRST_C_end;
 wire           buf_dat_rdy;
 //: my $icvto = NVDLA_CDP_ICVTO_BWPE;
 //: my $tp = NVDLA_CDP_THROUGHPUT;
-//: my $k = (${tp}+8)*${icvto}+15;
+//: my $k = (${tp}+8)*${icvto}+17;
 //: print "wire    [${k}-1:0] buffer_pd;   \n";
 
 wire           buffer_valid;
@@ -130,14 +130,14 @@ wire     [NVDLA_CDP_THROUGHPUT*NVDLA_CDP_ICVTO_BWPE:0] dp_data;
 wire           dp_last_c;
 wire           dp_last_h;
 wire           dp_last_w;
-wire     [2:0] dp_pos_c;
+wire     [4:0] dp_pos_c;
 wire     [3:0] dp_pos_w;
 wire     [3:0] dp_width;
 wire           is_b_sync;
 wire           is_last_c;
 wire           is_last_h;
 wire           is_last_w;
-wire     [2:0] is_pos_c;
+wire     [4:0] is_pos_c;
 wire     [3:0] is_pos_w;
 wire     [3:0] is_width;
 wire     [3:0] is_width_f;
@@ -158,7 +158,7 @@ parameter cvt2buf_info_bw = 15;
 parameter cvt2buf_dp_bw = cvt2buf_data_bw + cvt2buf_info_bw;
 
 /////////////////////////////////////////////////////////////
-//: my $k = NVDLA_CDP_THROUGHPUT*NVDLA_CDP_ICVTO_BWPE+15;
+//: my $k = NVDLA_CDP_THROUGHPUT*NVDLA_CDP_ICVTO_BWPE+17;
 //: &eperl::pipe(" -is -wid $k -do nvdla_cdp_rdma2dp_pd -vo nvdla_cdp_rdma2dp_valid -ri nvdla_cdp_rdma2dp_ready -di cdp_rdma2dp_pd -vi cdp_rdma2dp_valid -ro cdp_rdma2dp_ready ");
 
 //==============
@@ -167,11 +167,11 @@ parameter cvt2buf_dp_bw = cvt2buf_data_bw + cvt2buf_info_bw;
 assign       dp_data[NVDLA_CDP_THROUGHPUT*NVDLA_CDP_ICVTO_BWPE-1:0] =    nvdla_cdp_rdma2dp_pd[NVDLA_CDP_THROUGHPUT*NVDLA_CDP_ICVTO_BWPE-1:0];
 assign       dp_pos_w[3:0] =    nvdla_cdp_rdma2dp_pd[NVDLA_CDP_THROUGHPUT*NVDLA_CDP_ICVTO_BWPE+3:NVDLA_CDP_THROUGHPUT*NVDLA_CDP_ICVTO_BWPE];
 assign       dp_width[3:0] =    nvdla_cdp_rdma2dp_pd[NVDLA_CDP_THROUGHPUT*NVDLA_CDP_ICVTO_BWPE+7:NVDLA_CDP_THROUGHPUT*NVDLA_CDP_ICVTO_BWPE+4];
-assign       dp_pos_c[2:0] =    nvdla_cdp_rdma2dp_pd[NVDLA_CDP_THROUGHPUT*NVDLA_CDP_ICVTO_BWPE+10:NVDLA_CDP_THROUGHPUT*NVDLA_CDP_ICVTO_BWPE+8];
-assign        dp_b_sync  =    nvdla_cdp_rdma2dp_pd[NVDLA_CDP_THROUGHPUT*NVDLA_CDP_ICVTO_BWPE+11];
-assign        dp_last_w  =    nvdla_cdp_rdma2dp_pd[NVDLA_CDP_THROUGHPUT*NVDLA_CDP_ICVTO_BWPE+12];
-assign        dp_last_h  =    nvdla_cdp_rdma2dp_pd[NVDLA_CDP_THROUGHPUT*NVDLA_CDP_ICVTO_BWPE+13];
-assign        dp_last_c  =    nvdla_cdp_rdma2dp_pd[NVDLA_CDP_THROUGHPUT*NVDLA_CDP_ICVTO_BWPE+14];
+assign       dp_pos_c[4:0] =    nvdla_cdp_rdma2dp_pd[NVDLA_CDP_THROUGHPUT*NVDLA_CDP_ICVTO_BWPE+12:NVDLA_CDP_THROUGHPUT*NVDLA_CDP_ICVTO_BWPE+8];
+assign        dp_b_sync  =    nvdla_cdp_rdma2dp_pd[NVDLA_CDP_THROUGHPUT*NVDLA_CDP_ICVTO_BWPE+13];
+assign        dp_last_w  =    nvdla_cdp_rdma2dp_pd[NVDLA_CDP_THROUGHPUT*NVDLA_CDP_ICVTO_BWPE+14];
+assign        dp_last_h  =    nvdla_cdp_rdma2dp_pd[NVDLA_CDP_THROUGHPUT*NVDLA_CDP_ICVTO_BWPE+15];
+assign        dp_last_c  =    nvdla_cdp_rdma2dp_pd[NVDLA_CDP_THROUGHPUT*NVDLA_CDP_ICVTO_BWPE+16];
 
 assign is_pos_w       = dp_pos_w;
 assign is_width_f     = dp_width[3:0];
@@ -211,19 +211,19 @@ localparam CUBE_END = 3'b100;
         WAIT: begin
           //if ((is_b_sync & (is_pos_c==3'd0) & load_din)) begin
           //  stat_nex = NORMAL_C; 
-          if (is_b_sync & (is_pos_c==3'd0) & is_last_pos_c & is_last_h & is_last_w & load_din)
+          if (is_b_sync & (is_pos_c==5'd0) & is_last_pos_c & is_last_h & is_last_w & load_din)
             stat_nex = CUBE_END; 
-          else if ((is_b_sync & (is_pos_c==3'd0) & (!is_last_pos_c) & load_din))
+          else if ((is_b_sync & (is_pos_c==5'd0) & (!is_last_pos_c) & load_din))
             stat_nex = NORMAL_C; 
-          else if ((is_b_sync & is_last_c & (is_pos_c==3'd0) & is_last_pos_c & (~(is_last_h & is_last_w)) & load_din))
+          else if ((is_b_sync & is_last_c & (is_pos_c==5'd0) & is_last_pos_c & (~(is_last_h & is_last_w)) & load_din))
             stat_nex = FIRST_C; 
         end
         NORMAL_C: begin
-          if ((is_b_sync & (is_pos_c==3'd3) & is_last_c & is_last_h & is_last_w & load_din)) begin
+          if ((is_b_sync & is_last_pos_c/*(is_pos_c==5'd3)*/ & is_last_c & is_last_h & is_last_w & load_din)) begin
             NormalC2CubeEnd = 1;
             stat_nex = CUBE_END; 
           end
-          else if ((is_b_sync & (is_pos_c==3'd3) & is_last_c) & (~(is_last_h & is_last_w) & load_din)) begin
+          else if ((is_b_sync & is_last_pos_c/*(is_pos_c==5'd3)*/ & is_last_c) & (~(is_last_h & is_last_w) & load_din)) begin
             stat_nex = FIRST_C; 
           end
         end
@@ -659,7 +659,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
     width_pre <= {4{1'b0}};
   end else begin
-    if((stat_cur==NORMAL_C) & is_last_c & is_b_sync & (is_pos_c==3'd3) & load_din)
+    if((stat_cur==NORMAL_C) & is_last_c & is_b_sync & is_last_pos_c/*(is_pos_c==3'd3)*/ & load_din)
         width_pre <= is_width;
   end
 end
@@ -1741,10 +1741,10 @@ end
 `endif // SPYGLASS_ASSERT_ON
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
-    pos_c_align <= {3{1'b0}};
+    pos_c_align <= {5{1'b0}};
   end else begin
     if(FIRST_C_end)
-        pos_c_align <= 3'd0;
+        pos_c_align <= 5'd0;
     else if(is_b_sync & load_din & (~FIRST_C_bf_end))
         pos_c_align <= is_pos_c;
   end
@@ -1794,7 +1794,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
     pos_w_dly1 <= {4{1'b0}};
     width_dly1 <= {4{1'b0}};
-    pos_c_dly1 <= {3{1'b0}};
+    pos_c_dly1 <= {5{1'b0}};
     b_sync_dly1 <= 1'b0;
     last_w_dly1 <= 1'b0;
     last_h_dly1 <= 1'b0;
@@ -1975,7 +1975,7 @@ end
 `endif // SPYGLASS_ASSERT_ON
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
-    buffer_pos_c <= {3{1'b0}};
+    buffer_pos_c <= {5{1'b0}};
   end else begin
   if ((data_shift_load_all) == 1'b1) begin
     buffer_pos_c <= pos_c_dly1;
@@ -2284,15 +2284,19 @@ end
 //: my $icvto = NVDLA_CDP_ICVTO_BWPE;
 //: my $tp = NVDLA_CDP_THROUGHPUT;
 //: my $k = (${tp}+8)*${icvto};
+//: if($tp ==4) {
+//:     print "  assign buffer_pd[${k}-1:0] = buffer_data;    \n";
+//: } else {
+//:     print "  assign buffer_pd[${k}-1:0] = buffer_data[${k}-1+4*${icvto}:4*${icvto}];    \n";
+//: }
 //: print qq(
-//:     assign buffer_pd[${k}-1:0] = buffer_data[${k}-1+4*${icvto}:4*${icvto}];
 //:     assign buffer_pd[${k}+3:${k}] =    buffer_pos_w[3:0];
 //:     assign buffer_pd[${k}+7:${k}+4] =    buffer_width[3:0];
-//:     assign buffer_pd[${k}+10:${k}+8] =    buffer_pos_c[2:0];
-//:     assign buffer_pd[${k}+11] =    buffer_b_sync ;
-//:     assign buffer_pd[${k}+12] =    buffer_last_w ;
-//:     assign buffer_pd[${k}+13] =    buffer_last_h ;
-//:     assign buffer_pd[${k}+14] =    buffer_last_c ;
+//:     assign buffer_pd[${k}+12:${k}+8] =    buffer_pos_c[4:0];
+//:     assign buffer_pd[${k}+13] =    buffer_b_sync ;
+//:     assign buffer_pd[${k}+14] =    buffer_last_w ;
+//:     assign buffer_pd[${k}+15] =    buffer_last_h ;
+//:     assign buffer_pd[${k}+16] =    buffer_last_c ;
 //: );
 
 /////////////////////////////////////////
@@ -2303,7 +2307,7 @@ assign buffer_valid = buffer_data_vld;
 
 //: my $icvto = NVDLA_CDP_ICVTO_BWPE;
 //: my $tp = NVDLA_CDP_THROUGHPUT;
-//: my $k = (${tp}+8)*${icvto}+15;
+//: my $k = (${tp}+8)*${icvto}+17;
 //: &eperl::pipe(" -is -wid $k -do normalz_buf_data -vo normalz_buf_data_pvld -ri normalz_buf_data_prdy -di buffer_pd -vi buffer_valid -ro buffer_ready ");
 
 assign buf_dat_rdy = buffer_ready;
