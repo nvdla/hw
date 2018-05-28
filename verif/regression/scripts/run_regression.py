@@ -191,7 +191,7 @@ if __name__ == '__main__':
         if 0 != ret:
             print("TREE_BUILD_FAIL")
             sys.exit(ret)
-    if (project_name in ['nv_small','nv_small_256', 'nv_large']):
+    if (project_name in ['nv_small','nv_small_256', 'nv_small_256_full', 'nv_medium_512', 'nv_medium_1024_full', 'nv_large']):
         time_str = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
         run_dir = 'nv_small_%s' % time_str
         try:
