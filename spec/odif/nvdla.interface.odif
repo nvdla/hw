@@ -35,3 +35,33 @@ interface cacc2sdp_if
 interface sdp2pdp_if
   flow valid_ready
   field pd[NVDLA_SDP_MAX_THROUGHPUT] NVDLA_BPE
+
+group DMA_READ_REQ
+  field addr NVDLA_MEMIF_WIDTH
+  field size NVDLA_DMA_RD_SIZE
+
+group DMA_READ_RSP
+  field data NVDLA_MEMIF_WIDTH
+  field mask NVDLA_DMA_MASK_BIT
+
+group DMA_WR_REQ
+  field data NVDLA_MEM_ADDRESS_WIDTH
+  field mask NVDLA_DMA_WR_MASK_BIT 
+
+interface nvdla_dma_rd_req
+    flow    valid_ready
+    packet  DMA_READ_REQ
+
+interface nvdla_dma_rd_rsp
+    flow    valid_ready
+    packet  DMA_READ_RSP
+
+interface nvdla_dma_wr_req
+    flow    valid_ready
+    packet  DMA_WR_REQ
+
+interface nvdla_dma_wr_rsp
+    field   complete 1
+
+
+
