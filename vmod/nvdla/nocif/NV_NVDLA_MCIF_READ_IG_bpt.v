@@ -62,6 +62,8 @@ wire         bpt2arb_ltran;
 wire         bpt2arb_odd;
 wire   [2:0] bpt2arb_size;
 wire         bpt2arb_swizzle;
+wire   [2:0] size_offset;
+wire   [2:0] stt_offset;
 wire   [2:0] end_offset;
 wire   [3:0] ftran_num;
 wire   [2:0] ftran_size;
@@ -93,8 +95,6 @@ wire         out_swizzle;
 wire         req_enable;
 wire         req_rdy;
 wire         req_vld;
-wire   [2:0] size_offset;
-wire   [2:0] stt_offset;
 
     
 NV_NVDLA_MCIF_READ_IG_BPT_pipe_p1 pipe_p1 (
@@ -176,9 +176,9 @@ assign in_size[NVDLA_DMA_RD_SIZE-1:0]       =  in_vld_pd[NVDLA_DMA_RD_REQ-1:NVDL
 
 
 #if (NVDLA_MCIF_BURST_SIZE > 1)
-assign stt_offset[NVDLA_MCIF_BURST_SIZE_LOG2-1:0]  = in_addr[NVDLA_MEMORY_ATOMIC_LOG2+NVDLA_MCIF_BURST_SIZE_LOG2-1:NVDLA_MEMORY_ATOMIC_LOG2];
-assign size_offset[NVDLA_MCIF_BURST_SIZE_LOG2-1:0] = in_size[NVDLA_MCIF_BURST_SIZE_LOG2-1:0];
-assign {mon_end_offset_c, end_offset[NVDLA_MCIF_BURST_SIZE_LOG2-1:0]} = stt_offset + size_offset;
+assign stt_offset[2:0]  = {{(3-NVDLA_MCIF_BURST_SIZE_LOG2){1'b0}},in_addr[NVDLA_MEMORY_ATOMIC_LOG2+NVDLA_MCIF_BURST_SIZE_LOG2-1:NVDLA_MEMORY_ATOMIC_LOG2]};
+assign size_offset[2:0] = {{(3-NVDLA_MCIF_BURST_SIZE_LOG2){1'b0}},in_size[NVDLA_MCIF_BURST_SIZE_LOG2-1:0]};
+assign {mon_end_offset_c, end_offset[2:0]} = stt_offset + size_offset;
 
 assign is_single_tran = (stt_offset + in_size) < NVDLA_MCIF_BURST_SIZE;
 
@@ -201,11 +201,11 @@ always @(
   or is_ftran
   ) begin
     if (is_single_tran) begin
-        slot_needed = (out_size>>1) + 1;                      //fixme
+        slot_needed = (out_size>>(NVDLA_DMA_MASK_BIT-1)) + 1;                      //fixme
     end else if (is_ltran) begin
-        slot_needed = ((out_size+out_swizzle)>>1) + 1;        //fixme
+        slot_needed = ((out_size+out_swizzle)>>(NVDLA_DMA_MASK_BIT-1)) + 1;        //fixme
     end else if (is_ftran) begin
-        slot_needed = (out_size+1)>>1;
+        slot_needed = (out_size+1)>>(NVDLA_DMA_MASK_BIT-1);
     end else begin
         slot_needed = NVDLA_PRIMARY_MEMIF_MAX_BURST_LENGTH;
     end
@@ -365,7 +365,7 @@ assign req_enable = (!lat_fifo_stall_enable) || ({{5{1'b0}}, slot_needed} <= lat
 //================
 // bsp out: swizzle
 //================
-#if (NVDLA_MCIF_BURST_SIZE > 1)
+#if (NVDLA_DMA_MASK_BIT==2)
 assign out_swizzle = (stt_offset[0]==1'b1);
 assign out_odd     = (in_size[0]==1'b0);
 #else
@@ -398,7 +398,7 @@ assign out_size = 3'h0;
 #endif
 
 
-#if (NVDLA_PRIMARY_MEMIF_WIDTH > NVDLA_MEMORY_ATOMIC_WIDTH)
+#if (NVDLA_MEMIF_WIDTH > NVDLA_MEMORY_ATOMIC_WIDTH)
 //================
 // bsp out: USER: SIZE
 //================
@@ -586,7 +586,7 @@ assign      bpt2arb_req_pd[NVDLA_MEM_ADDRESS_WIDTH+10] =    bpt2arb_ftran ;
 `endif
 //VCS coverage on
 
-#if (NVDLA_PRIMARY_MEMIF_WIDTH > NVDLA_MEMORY_ATOMIC_WIDTH)
+#if (NVDLA_MEMIF_WIDTH > NVDLA_MEMORY_ATOMIC_WIDTH)
 //VCS coverage off
 `ifndef DISABLE_FUNCPOINT
   `ifdef ENABLE_FUNCPOINT

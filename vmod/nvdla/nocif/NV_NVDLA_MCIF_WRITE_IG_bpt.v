@@ -417,9 +417,9 @@ NV_NVDLA_MCIF_WRITE_IG_BPT_dfifo u_dfifo (
 //==================
 // in_cmd analysis to determine how to pop data from dFIFO
 #if (NVDLA_MCIF_BURST_SIZE > 1)
-assign stt_offset[NVDLA_MCIF_BURST_SIZE_LOG2-1:0]  = in_cmd_addr[NVDLA_MEMORY_ATOMIC_LOG2+NVDLA_MCIF_BURST_SIZE_LOG2-1:NVDLA_MEMORY_ATOMIC_LOG2];
-assign size_offset[NVDLA_MCIF_BURST_SIZE_LOG2-1:0] = in_cmd_size[NVDLA_MCIF_BURST_SIZE_LOG2-1:0];
-assign {mon_end_offset_c, end_offset[NVDLA_MCIF_BURST_SIZE_LOG2-1:0]} = stt_offset + size_offset;
+assign stt_offset[2:0]  = {{(3-NVDLA_MCIF_BURST_SIZE_LOG2){1'b0}},in_cmd_addr[NVDLA_MEMORY_ATOMIC_LOG2+NVDLA_MCIF_BURST_SIZE_LOG2-1:NVDLA_MEMORY_ATOMIC_LOG2]};
+assign size_offset[2:0] = {{(3-NVDLA_MCIF_BURST_SIZE_LOG2){1'b0}},in_cmd_size[NVDLA_MCIF_BURST_SIZE_LOG2-1:0]};
+assign {mon_end_offset_c, end_offset[2:0]} = stt_offset + size_offset;
 
 // calculate how many trans to be split
 assign is_single_tran  = (stt_offset + in_cmd_size) < NVDLA_MCIF_BURST_SIZE;
