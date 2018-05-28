@@ -1265,8 +1265,8 @@ assign is_dat_req_addr_wrap = (dat_req_addr_sum >= {1'b0,data_bank, {LOG2_CBUF_B
 assign {mon_dat_req_addr_wrap,dat_req_addr_wrap} = dat_req_addr_sum[CBUF_ADDR_WIDTH:0] - {1'b0,data_bank, {LOG2_CBUF_BANK_DEPTH{1'b0}}};
 assign dat_req_addr_w = (layer_st | dat_req_dummy_d1) ? {CBUF_ADDR_WIDTH{1'b1}} : is_dat_req_addr_wrap ? dat_req_addr_wrap : dat_req_addr_sum[CBUF_ADDR_WIDTH-1:0]; //get the adress sends to cbuf
 assign {mon_dat_req_addr_minus1,dat_req_addr_minus1} = dat_req_addr_w-1'b1;
-assign is_dat_req_addr_minus1_wrap = (dat_req_addr_minus1 >= {1'b0,data_bank, {LOG2_CBUF_BANK_DEPTH{1'b0}}});   //only one case: 0-1=ffff would introduce wrap  
-assign dat_req_addr_minus1_wrap = {1'b0,data_bank, {LOG2_CBUF_BANK_DEPTH{1'b1}}}; 
+assign is_dat_req_addr_minus1_wrap = (dat_req_addr_minus1 >= {data_bank, {LOG2_CBUF_BANK_DEPTH{1'b0}}});   //only one case: 0-1=ffff would introduce wrap  
+assign dat_req_addr_minus1_wrap = {data_bank, {LOG2_CBUF_BANK_DEPTH{1'b1}}}; 
 assign dat_req_addr_minus1_real = is_dat_req_addr_minus1_wrap ? dat_req_addr_minus1_wrap : dat_req_addr_minus1;
 
 assign sc2buf_dat_rd_en_w = dat_req_valid_d1 & ((dat_req_addr_last != dat_req_addr_w) | pixel_force_fetch_d1);

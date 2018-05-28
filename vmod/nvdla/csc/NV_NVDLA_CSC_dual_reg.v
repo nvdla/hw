@@ -124,13 +124,13 @@ output        op_en_trigger;
 output [1:0]  y_extension;
 output [1:0]  pra_truncate;
 output [11:0] rls_slices;
-output [24:0] weight_bytes;
+output [31:0] weight_bytes;
 output        weight_format;
 output [4:0]  weight_height_ext;
 output [4:0]  weight_width_ext;
 output [12:0] weight_channel_ext;
 output [12:0] weight_kernel;
-output [20:0] wmb_bytes;
+output [27:0] wmb_bytes;
 output [4:0]  pad_left;
 output [4:0]  pad_top;
 output [15:0] pad_value;
@@ -174,14 +174,14 @@ reg    [11:0] rls_slices;
 reg           skip_data_rls;
 reg           skip_weight_rls;
 reg     [4:0] weight_bank;
-reg    [24:0] weight_bytes;
+reg    [31:0] weight_bytes;
 reg    [12:0] weight_channel_ext;
 reg           weight_format;
 reg     [4:0] weight_height_ext;
 reg    [12:0] weight_kernel;
 reg           weight_reuse;
 reg     [4:0] weight_width_ext;
-reg    [20:0] wmb_bytes;
+reg    [27:0] wmb_bytes;
 reg     [4:0] x_dilation_ext;
 reg     [4:0] y_dilation_ext;
 reg     [1:0] y_extension;
@@ -232,11 +232,11 @@ assign nvdla_csc_d_op_enable_0_out[31:0] = { 31'b0, op_en };
 assign nvdla_csc_d_post_y_extension_0_out[31:0] = { 30'b0, y_extension };
 assign nvdla_csc_d_pra_cfg_0_out[31:0] = { 30'b0, pra_truncate };
 assign nvdla_csc_d_release_0_out[31:0] = { 20'b0, rls_slices };
-assign nvdla_csc_d_weight_bytes_0_out[31:0] = { weight_bytes, 7'b0 };
+assign nvdla_csc_d_weight_bytes_0_out[31:0] = weight_bytes;
 assign nvdla_csc_d_weight_format_0_out[31:0] = { 31'b0, weight_format };
 assign nvdla_csc_d_weight_size_ext_0_0_out[31:0] = { 11'b0, weight_height_ext, 11'b0, weight_width_ext };
 assign nvdla_csc_d_weight_size_ext_1_0_out[31:0] = { 3'b0, weight_kernel, 3'b0, weight_channel_ext };
-assign nvdla_csc_d_wmb_bytes_0_out[31:0] = { 4'b0, wmb_bytes, 7'b0 };
+assign nvdla_csc_d_wmb_bytes_0_out[31:0] = { 4'b0, wmb_bytes};
 assign nvdla_csc_d_zero_padding_0_out[31:0] = { 11'b0, pad_top, 11'b0, pad_left };
 assign nvdla_csc_d_zero_padding_value_0_out[31:0] = { 16'b0, pad_value };
 
@@ -383,13 +383,13 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     y_extension[1:0] <= 2'b00;
     pra_truncate[1:0] <= 2'b00;
     rls_slices[11:0] <= 12'b000000000001;
-    weight_bytes[24:0] <= 25'b0000000000000000000000000;
+    weight_bytes[31:0] <= 32'b00000000000000000000000000000000;
     weight_format <= 1'b0;
     weight_height_ext[4:0] <= 5'b00000;
     weight_width_ext[4:0] <= 5'b00000;
     weight_channel_ext[12:0] <= 13'b0000000000000;
     weight_kernel[12:0] <= 13'b0000000000000;
-    wmb_bytes[20:0] <= 21'b000000000000000000000;
+    wmb_bytes[27:0] <= 28'b0000000000000000000000000000;
     pad_left[4:0] <= 5'b00000;
     pad_top[4:0] <= 5'b00000;
     pad_value[15:0] <= 16'b0000000000000000;
@@ -533,7 +533,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 
   // Register: NVDLA_CSC_D_WEIGHT_BYTES_0    Field: weight_bytes
   if (nvdla_csc_d_weight_bytes_0_wren) begin
-    weight_bytes[24:0] <= reg_wr_data[31:7];
+    weight_bytes[31:0] <= reg_wr_data[31:0];
   end
 
   // Register: NVDLA_CSC_D_WEIGHT_FORMAT_0    Field: weight_format
@@ -563,7 +563,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 
   // Register: NVDLA_CSC_D_WMB_BYTES_0    Field: wmb_bytes
   if (nvdla_csc_d_wmb_bytes_0_wren) begin
-    wmb_bytes[20:0] <= reg_wr_data[27:7];
+    wmb_bytes[27:0] <= reg_wr_data[27:0];
   end
 
   // Register: NVDLA_CSC_D_ZERO_PADDING_0    Field: pad_left
