@@ -27,66 +27,112 @@ This class is used to run official regression metrics report:
 
 class  RunMetrics(object):
 
-    def __init__(self, config):
-        self._cfg            = dict(config)
-        self._regr_sts_db    = {}
-        self._syndrome_db    = {}
-        self._x_axis         = {}
-        self._y_axis         = {}
-        self._test_db_files  = {}
-        self._proj_regr_dict = {}
+    '''
+    Generate metrics divs using dash and kick-off the app 
+    
+    Attributes:
+        FUNC:
+        run: create/run metrics app
+    '''
 
-    def natural_sort(self, text):
+    def __init__(self, config):
+        self._cfg = dict(config)
+
+    def run(self):
+        div_plot = DivPlot(self._cfg)
+        div_plot.dash_gen()
+        div_plot.run()
+
+class DataLoad(object):
+
+    '''
+    Load data for graph plotting usage:
+        1) load regression status database
+        2) load test status database
+        3) load syndrome database
+    of all projects / regressions
+
+    Attributes:
+        FUNC: 
+        load: load regression data base to x_axis/y_axis
+              load syndrome data base for triage usage
+        VAR:
+        x_axis:         x axis database, only including date time
+        y_axis:         y axis database, including passing rate/test num/coverage
+        regr_sts_db:    regression status data base
+        test_db_files:  test status data base files
+        synd_db:        error syndrome data base
+        projs:          all avaliable project list
+        db_dir:         metrics database root directory path
+        synd_dir:       syndrome database directory path
+        proj_regr_dict: dict with 'KEY': projects, 'value':regresions
+    '''
+
+    def __init__(self, config):
+        self.db_dir          = config['db_dir']
+        self.synd_dir        = config['syndrome_dir']
+        self.projs           = []
+        self.proj_regr_dict  = {}
+        self.regr_sts_db     = {}
+        self.synd_db         = {}
+        self.x_axis          = {}
+        self.y_axis          = {}
+        self.test_db_files   = {}
+
+    def _natural_sort(self, text):
         return int(re.sub('\D+','',text))
 
-    def load_db(self):
-        for proj in self._cfg['project']:
-            if not os.path.exists(os.path.join(self._cfg['db_dir'], proj)):
+    def _load_db(self):
+        self.projs = [x for x in os.listdir(self.db_dir) if x not in ['syndrome_db','NVlogo.png']]
+        for proj in self.projs:
+            if not os.path.exists(os.path.join(self.db_dir, proj)):
                 raise Exception('Select project: %0s not existed in database' % proj)
             else:
-                self._proj_regr_dict[proj] = []
-                regr_list = os.listdir(os.path.join(self._cfg['db_dir'],proj))
-                self._test_db_files[proj] = {}
-                self._regr_sts_db[proj] = {}
+                regr_list                 = os.listdir(os.path.join(self.db_dir,proj))
+                self.proj_regr_dict[proj] = []
+                self.test_db_files[proj]  = {}
+                self.regr_sts_db[proj]    = {}
                 for regr in regr_list:
-                    self._proj_regr_dict[proj].append(regr)
+                    self.proj_regr_dict[proj].append(regr)
                     # fetch all test status data files
-                    self._test_db_files[proj][regr] = [x for x in glob.glob('{}/test*.json'.format(os.path.join(self._cfg['db_dir'],proj,regr,'json_db')))]
-                    self._test_db_files[proj][regr].sort(key=self.natural_sort)
+                    sts_db_path = os.path.join(self.db_dir,proj,regr,'json_db')
+                    self.test_db_files[proj][regr] = glob.glob('{}/test*.json'.format(sts_db_path))
+                    self.test_db_files[proj][regr].sort(key=self._natural_sort)
                     # load regression status data
-                    regr_db_files = [x for x in glob.glob('{}/regr*.json'.format(os.path.join(self._cfg['db_dir'],proj,regr,'json_db')))]
-                    regr_db_files.sort(key=self.natural_sort)
-                    self._regr_sts_db[proj][regr] = []
+                    regr_db_files = glob.glob('{}/regr*.json'.format(sts_db_path))
+                    regr_db_files.sort(key=self._natural_sort)
+                    self.regr_sts_db[proj][regr] = []
                     for idx in range(len(regr_db_files)):
                         sts_file = regr_db_files[idx]
                         with open(sts_file, 'r') as fh:
                             db = json.load(fh)
-                        self._regr_sts_db[proj][regr].append(db)
-        with open(os.path.join(self._cfg['syndrome_dir'],'syndrome.json'), 'r') as syn_fh:
-            self._syndrome_db = json.load(syn_fh)
+                        self.regr_sts_db[proj][regr].append(db)
+        with open(os.path.join(self.synd_dir,'syndrome.json'), 'r') as syn_fh:
+            self.synd_db = json.load(syn_fh)
 
-    def load_x_axis(self):
-        for proj in self._regr_sts_db:
-            self._x_axis[proj] = {}
-            for regr in self._regr_sts_db[proj]:
-                self._x_axis[proj][regr] = []
-                db = self._regr_sts_db[proj][regr]
+    def _load_x_axis(self):
+        for proj in self.regr_sts_db:
+            self.x_axis[proj] = {}
+            for regr in self.regr_sts_db[proj]:
+                self.x_axis[proj][regr] = []
+                db                      = self.regr_sts_db[proj][regr]
                 for idx in range(len(db)):
                     time_str = db[idx]['start_time'].split('-')
-                    date = list(map(int, time_str)) 
-                    self._x_axis[proj][regr].append(datetime(date[0],date[1],date[2],date[3],date[4],date[5]))
+                    date     = list(map(int, time_str))
+                    date_str = datetime(date[0],date[1],date[2],date[3],date[4],date[5])
+                    self.x_axis[proj][regr].append(date_str)
 
-    def load_y_axis(self):
-        for proj in self._regr_sts_db:
-            self._y_axis[proj] = {}
-            for regr in self._regr_sts_db[proj]:
-                db = self._regr_sts_db[proj][regr]
-                self._y_axis[proj][regr] = []
-                passing_rate_dict = {'total':[]}
-                planned_test_num = []
-                running_test_num = []
-                code_cov = []
-                func_cov = []
+    def _load_y_axis(self):
+        for proj in self.regr_sts_db:
+            self.y_axis[proj] = {}
+            for regr in self.regr_sts_db[proj]:
+                db                       = self.regr_sts_db[proj][regr]
+                self.y_axis[proj][regr]  = []
+                passing_rate_dict        = {'total':[]}
+                planned_test_num         = []
+                running_test_num         = []
+                code_cov                 = []
+                func_cov                 = []
                 for idx in range(len(db)):
                     passing_rate_dict['total'].append(db[idx]['metrics_result']['passing_rate'])
                     if 'passing_rate' in db[idx]:
@@ -98,36 +144,64 @@ class  RunMetrics(object):
                     running_test_num.append(db[idx]['metrics_result']['running_test_number'])
                     code_cov.append(db[idx]['metrics_result']['code_coverage'])
                     func_cov.append(db[idx]['metrics_result']['functional_coverage'])
-                self._y_axis[proj][regr] = [passing_rate_dict, planned_test_num, running_test_num, code_cov, func_cov]
-
+                self.y_axis[proj][regr]  = [passing_rate_dict, planned_test_num, running_test_num]
+                self.y_axis[proj][regr] += [code_cov, func_cov]
+                
     def load(self):
-        self.load_db()
-        self.load_x_axis()
-        self.load_y_axis()
-
-    def run(self):
-        div_plot = DivPlot(self._proj_regr_dict)
-        div_plot.dash_gen(self._cfg['project'], self._x_axis, self._y_axis, self._regr_sts_db, self._test_db_files, self._syndrome_db, self._cfg['db_dir'], self._cfg['syndrome_dir'])
-        div_plot.run()
-
+        self._load_db()
+        self._load_x_axis()
+        self._load_y_axis()
 
 class DivPlot():
-    def __init__(self, proj_regr_dict):
-        self._proj_regr_dict                          = proj_regr_dict
+    
+    '''
+    Generate html DIVs for metrics system, create dash app and attach those html DIVs to the metrics
+    app. DIVs includs: regression status graphs, test status tables, syndrome tables and maintaining
+    cell. 
+    '''
+
+    def __init__(self, cfg):
         self._proj                                    = ''
         self._regr                                    = ''
+        self._loader                                  = DataLoad(cfg)
         self._app                                     = dash.Dash()
         self._app.scripts.config.serve_locally        = True,
         self._app.css.config.serve_locally            = True,
         self._app.config.suppress_callback_exceptions = True
 
-    def passing_rate_div(self, x_axis={}, y_axis={}):
-        divs = {}
-        for proj in self._proj_regr_dict:
+    def passing_rate_div(self):
+        divs   = {}
+        layout = Layout(
+            title         = 'Passing Rate',
+            titlefont     = dict(family = 'Courier New, monospace',size = 18,color = '#7f7f7f'),
+            xaxis         = dict(
+                type      = 'date',
+                linewidth = 2,
+                showline  = True,
+                tickwidth = 1,
+                dtick     = 86400000.0,
+                title     = 'Date',
+                titlefont = dict(family = 'Courier New, monospace',size = 18,color = '#7f7f7f')
+            ),
+            yaxis         = dict(
+                tickformat='.2%', 
+                linewidth=2, 
+                showline=True, 
+                range=[0,1], 
+                title='Rate',
+                titlefont = dict(family = 'Courier New, monospace',size = 18,color = '#7f7f7f')
+            ),
+            height        = '700',
+            legend        = dict(x=0, y=1),
+            paper_bgcolor = 'rgba(240,240,240,0.85)',
+            plot_bgcolor  = 'rgba(240,255,255,0.85)',
+            hovermode     = 'closet'
+        )
+        for proj in self._loader.proj_regr_dict:
             divs[proj] = {}
-            for regr in self._proj_regr_dict[proj]:
-                y_axis_v = y_axis[proj][regr][0]
-                div = html.Div(
+            for regr in self._loader.proj_regr_dict[proj]:
+                y_axis_v = self._loader.y_axis[proj][regr][0]
+                div      = html.Div(
                     id       = 'passing_rate_div', 
                     children = [
                         html.H3('PASSING RATE'),
@@ -137,38 +211,13 @@ class DivPlot():
                             figure = {
                                 'data'  : [
                                     Scatter(
-                                        x       = x_axis[proj][regr],
+                                        x       = self._loader.x_axis[proj][regr],
                                         y       = y_axis_v[i],
                                         text    = i,
                                         name    = re.sub('_passing_rate','',i)
                                     ) for i in y_axis_v.keys()
                                 ],
-                                'layout': Layout(
-                                    title         = 'Passing Rate',
-                                    titlefont     = dict(family = 'Courier New, monospace',size = 18,color = '#7f7f7f'),
-                                    xaxis         = dict(
-                                        type      = 'date',
-                                        linewidth = 2,
-                                        showline  = True,
-                                        tickwidth = 1,
-                                        dtick     = 86400000.0,
-                                        title     = 'Date',
-                                        titlefont = dict(family = 'Courier New, monospace',size = 18,color = '#7f7f7f')
-                                    ),
-                                    yaxis         = dict(
-                                        tickformat='.2%', 
-                                        linewidth=2, 
-                                        showline=True, 
-                                        range=[0,1], 
-                                        title='Rate',
-                                        titlefont = dict(family = 'Courier New, monospace',size = 18,color = '#7f7f7f')
-                                    ),
-                                    height        = '700',
-                                    legend        = dict(x=0, y=1),
-                                    paper_bgcolor = 'rgba(240,240,240,0.85)',
-                                    plot_bgcolor  = 'rgba(240,255,255,0.85)',
-                                    hovermode     = 'closet'
-                                )
+                                'layout': layout
                             }
                         )
                     ],
@@ -183,12 +232,38 @@ class DivPlot():
                 divs[proj][regr] = div
         return divs
 
-    def test_num_div(self, x_axis={}, y_axis={}):
-        divs = {}
-        for proj in self._proj_regr_dict:
+    def test_num_div(self):
+        divs   = {}
+        layout = Layout(
+            title         = 'Test Num',
+            titlefont     = dict(family = 'Courier New, monospace',size = 18,color = '#7f7f7f'),
+            xaxis         = dict(
+                type      = 'date',
+                linewidth = 2,
+                showline  = True,
+                tickwidth = 1,
+                dtick     = 86400000.0,
+                title     = 'Date',
+                titlefont = dict(family = 'Courier New, monospace',size = 18,color = '#7f7f7f')
+            ),
+            yaxis         = dict(
+                linewidth = 2,
+                showline  = True,
+                range     = [0,],
+                title     = 'Num',
+                titlefont = dict(family = 'Courier New, monospace',size = 18,color = '#7f7f7f')
+            ), 
+            height        = '700',
+            legend        = dict(x=0, y=1),
+            paper_bgcolor = 'rgba(240,240,240,0.85)',
+            plot_bgcolor  = 'rgba(240,255,255,0.85)',
+            hovermode     = 'closet'
+        )
+        for proj in self._loader.proj_regr_dict:
             divs[proj] = {}
-            for regr in self._proj_regr_dict[proj]:
-                y_axis_v = dict(PLANNED=y_axis[proj][regr][1],RUNNING=y_axis[proj][regr][2])
+            for regr in self._loader.proj_regr_dict[proj]:
+                y_axis_v = dict(PLANNED=self._loader.y_axis[proj][regr][1],
+                                RUNNING=self._loader.y_axis[proj][regr][2])
                 div = html.Div(
                     id       = 'test_num_div', 
                     children = [
@@ -199,37 +274,13 @@ class DivPlot():
                             figure = {
                                 'data'  : [
                                     Scatter(
-                                        x       = x_axis[proj][regr],
+                                        x       = self._loader.x_axis[proj][regr],
                                         y       = y_axis_v[i],
                                         text    = i,
                                         name    = i 
                                     ) for i in y_axis_v.keys()
                                 ],
-                                'layout': Layout(
-                                    title         = 'Test Num',
-                                    titlefont     = dict(family = 'Courier New, monospace',size = 18,color = '#7f7f7f'),
-                                    xaxis         = dict(
-                                        type      = 'date',
-                                        linewidth = 2,
-                                        showline  = True,
-                                        tickwidth = 1,
-                                        dtick     = 86400000.0,
-                                        title     = 'Date',
-                                        titlefont = dict(family = 'Courier New, monospace',size = 18,color = '#7f7f7f')
-                                    ),
-                                    yaxis         = dict(
-                                        linewidth = 2,
-                                        showline  = True,
-                                        range     = [0,],
-                                        title     = 'Num',
-                                        titlefont = dict(family = 'Courier New, monospace',size = 18,color = '#7f7f7f')
-                                    ), 
-                                    height        = '700',
-                                    legend        = dict(x=0, y=1),
-                                    paper_bgcolor = 'rgba(240,240,240,0.85)',
-                                    plot_bgcolor  = 'rgba(240,255,255,0.85)',
-                                    hovermode     = 'closet'
-                                )
+                                'layout': layout
                             }
                         )
                     ],
@@ -244,12 +295,33 @@ class DivPlot():
                 divs[proj][regr] = div
         return divs
     
-    def coverage_div(self, x_axis={}, y_axis={}):
-        divs = {}
-        for proj in self._proj_regr_dict:
+    def coverage_div(self):
+        divs   = {}
+        layout = Layout(
+            title         = 'Coverage',
+            titlefont     = dict(family = 'Courier New, monospace',size = 18,color = '#7f7f7f'),
+            xaxis         = dict(
+                type      = 'date',
+                linewidth = 2,
+                showline  = True,
+                tickwidth = 1,
+                dtick     = 86400000.0,
+                title     = 'Date',
+                titlefont = dict(family = 'Courier New, monospace',size = 18,color = '#7f7f7f'),
+            ),
+            yaxis         = dict(tickformat='.2%', linewidth=2, showline=True, range=[0,1], 
+                                 title='Value'),
+            height        = '700',
+            legend        = dict(x=0, y=1),
+            paper_bgcolor = 'rgba(240,240,240,0.85)',
+            plot_bgcolor  = 'rgba(240,255,255,0.85)',
+            hovermode     = 'closet'
+        )
+        for proj in self._loader.proj_regr_dict:
             divs[proj] = {}
-            for regr in self._proj_regr_dict[proj]:
-                y_axis_v = dict(CODE=y_axis[proj][regr][3],FUNC=y_axis[proj][regr][4])
+            for regr in self._loader.proj_regr_dict[proj]:
+                y_axis_v = dict(CODE=self._loader.y_axis[proj][regr][3],
+                                FUNC=self._loader.y_axis[proj][regr][4])
                 div = html.Div(
                     id       = 'coverage_div', 
                     children = [
@@ -260,31 +332,13 @@ class DivPlot():
                             figure = {
                                 'data'  : [
                                     Scatter(
-                                        x       = x_axis[proj][regr],
+                                        x       = self._loader.x_axis[proj][regr],
                                         y       = y_axis_v[i],
                                         text    = i,
                                         name    = i 
                                     ) for i in y_axis_v.keys()
                                 ],
-                                'layout': Layout(
-                                    title         = 'Coverage',
-                                    titlefont     = dict(family = 'Courier New, monospace',size = 18,color = '#7f7f7f'),
-                                    xaxis         = dict(
-                                        type      = 'date',
-                                        linewidth = 2,
-                                        showline  = True,
-                                        tickwidth = 1,
-                                        dtick     = 86400000.0,
-                                        title     = 'Date',
-                                        titlefont = dict(family = 'Courier New, monospace',size = 18,color = '#7f7f7f'),
-                                    ),
-                                    yaxis         = dict(tickformat='.2%', linewidth=2, showline=True, range=[0,1], title='Value'),
-                                    height        = '700',
-                                    legend        = dict(x=0, y=1),
-                                    paper_bgcolor = 'rgba(240,240,240,0.85)',
-                                    plot_bgcolor  = 'rgba(240,255,255,0.85)',
-                                    hovermode     = 'closet'
-                                )
+                                'layout': layout
                             }
                         )
                     ],
@@ -299,29 +353,35 @@ class DivPlot():
                 divs[proj][regr] = div
         return divs
     
-    def regr_table_div(self, regr_sts_db={}, db_dir=''):
+    def regr_table_div(self):
         divs = {}
-        for proj in self._proj_regr_dict:
+        for proj in self._loader.proj_regr_dict:
             divs[proj] = {}
-            for regr in self._proj_regr_dict[proj]:
+            for regr in self._loader.proj_regr_dict[proj]:
                 ROW = []
-                db = regr_sts_db[proj][regr]
+                db = self._loader.regr_sts_db[proj][regr]
                 for idx in range(len(db)):
-                    item                = {}
-                    item['Name']        = '_'.join((proj,regr))
-                    item['Date']        = db[idx]['start_time']
-                    item['Seed']        = db[idx]['plan_seed']
-                    item['CommitID']    = db[idx]['unique_id'][0:10]
-                    item['Status']      = db[idx]['status']
-                    cov_file = os.path.join(db_dir,proj,regr,'coverage/report','report_'+db[idx]['start_time'],'dashboard.html')
+                    item             = {}
+                    item['Name']     = '_'.join((proj,regr))
+                    item['Date']     = db[idx]['start_time']
+                    item['Seed']     = db[idx]['plan_seed']
+                    item['CommitID'] = db[idx]['unique_id'][0:10]
+                    item['Status']   = db[idx]['status']
+                    cov_file         = os.path.join(self._loader.db_dir,proj,regr,'coverage/report',
+                                                    'report_'+db[idx]['start_time'],'dashboard.html')
                     if os.path.exists(cov_file):
-                        item['Cov']         = html.A('Func:{:.2%} Code:{:.2%}'.format(float(db[idx]['metrics_result']['functional_coverage']),float(db[idx]['metrics_result']['code_coverage'])),
-                                                     href  = 'https://nvtegra/'+cov_file)
+                        item['Cov'] = html.A('Func:{:.2%} Code:{:.2%}'.format(
+                            float(db[idx]['metrics_result']['functional_coverage']),
+                            float(db[idx]['metrics_result']['code_coverage'])),
+                            href  = 'https://nvtegra/'+cov_file)
                     else:
-                        item['Cov']         = 'Func:{:.2%} Code:{:.2%}'.format(float(db[idx]['metrics_result']['functional_coverage']),float(db[idx]['metrics_result']['code_coverage']))
-                    item['PassingRate'] = dcc.Link('{:.2%}'.format(db[idx]['metrics_result']['passing_rate']), 
-                                                   href  = db[idx]['start_time'],
-                                                   style = {'color':'green','textDecoration':'underline','cursor':'pointer'})
+                        item['Cov'] = 'Func:{:.2%} Code:{:.2%}'.format(
+                            float(db[idx]['metrics_result']['functional_coverage']),
+                            float(db[idx]['metrics_result']['code_coverage']))
+                    item['PassingRate'] = dcc.Link(
+                        '{:.2%}'.format(db[idx]['metrics_result']['passing_rate']), 
+                        href  = db[idx]['start_time'],
+                        style = {'color':'green','textDecoration':'underline','cursor':'pointer'})
                     ROW.append(item)
                 ROW = sorted(ROW, key=lambda k:k['Date'])
                 ROW.reverse()
@@ -337,9 +397,9 @@ class DivPlot():
                             editable             = False,
                             enable_drag_and_drop = True,
                             row_selectable       = True,
-                            #resizable           = True,
+#                           resizable            = True,
                             sortable             = True,
-                            #column_width        = 200,
+#                           column_width         = 200,
                             row_height           = 30,
                             min_height           = 500,
                             selected_row_indices = [],
@@ -351,7 +411,7 @@ class DivPlot():
                         'width'     : '90%',
                         'display'   : 'inline-block',
                         'marginTop' : '10',
-                        #'fontSize'  : '13',
+#                       'fontSize'  : '13',
                     }
                 )
                 divs[proj][regr] = div
@@ -359,24 +419,25 @@ class DivPlot():
     
     def syndrome_table_div(self, test_db_files={}, synd_db={}):
         divs = {}
-        for proj in self._proj_regr_dict:
+        for proj in self._loader.proj_regr_dict:
             divs[proj] = {}
-            for regr in self._proj_regr_dict[proj]:
+            for regr in self._loader.proj_regr_dict[proj]:
                 divs[proj][regr] = {}
-                db = test_db_files[proj][regr]
+                db               = self._loader.test_db_files[proj][regr]
                 for idx in range(len(db)):
-                    name = re.sub('.json', '', os.path.basename(db[idx])).lstrip('test_status_') + '_syndrome'
+                    test_sts_name = os.path.basename(db[idx])
+                    name = re.sub('.json', '_syndrome', test_sts_name.lstrip('test_status_'))
                     with open(db[idx], 'r') as fh:
                         test_db = json.load(fh)
                     ROW = []
                     for idx,info in test_db.items():
                         if info['syndrome'] != '':
                             item = {}
-                            if info['syndrome'] in synd_db:
+                            if info['syndrome'] in self._loader.synd_db:
                                 item['Syndrome'] = info['syndrome']
-                                item['BugID']    = synd_db[info['syndrome']]['bugid']
-                                item['Pattern']  = synd_db[info['syndrome']]['pattern']
-                                item['Desc']     = synd_db[info['syndrome']]['desc']
+                                item['BugID']    = self._loader.synd_db[info['syndrome']]['bugid']
+                                item['Pattern']  = self._loader.synd_db[info['syndrome']]['pattern']
+                                item['Desc']     = self._loader.synd_db[info['syndrome']]['desc']
                             else:
                                 item['Syndrome'] = info['syndrome']
                                 item['BugID']    = ''
@@ -397,9 +458,9 @@ class DivPlot():
                                 editable             = False,
                                 enable_drag_and_drop = True,
                                 row_selectable       = True,
-                                #resizable           = True,
+#                               resizable            = True,
                                 sortable             = True,
-                                #column_width        = [50,320,100,200,400,400,],
+#                               column_width         = [50,320,100,200,400,400,],
                                 row_height           = 80,
                                 min_height           = 400,
                                 selected_row_indices = [],
@@ -417,13 +478,13 @@ class DivPlot():
                     divs[proj][regr][name] = div
         return divs
 
-    def test_table_div(self, test_db_files={}):
+    def test_table_div(self):
         divs = {}
-        for proj in self._proj_regr_dict:
+        for proj in self._loader.proj_regr_dict:
             divs[proj] = {}
-            for regr in self._proj_regr_dict[proj]:
+            for regr in self._loader.proj_regr_dict[proj]:
                 divs[proj][regr] = {}
-                db = test_db_files[proj][regr]
+                db               = self._loader.test_db_files[proj][regr]
                 for idx in range(len(db)):
                     name = re.sub('.json', '', os.path.basename(db[idx]))
                     with open(db[idx], 'r') as fh:
@@ -452,9 +513,9 @@ class DivPlot():
                                 editable             = False,
                                 enable_drag_and_drop = True,
                                 row_selectable       = True,
-                                #resizable           = True,
+#                               resizable            = True,
                                 sortable             = True,
-                                #column_width        = [50,320,100,200,400,400,],
+#                               column_width         = [50,320,100,200,400,400,],
                                 row_height           = 80,
                                 min_height           = 800,
                                 selected_row_indices = [],
@@ -466,13 +527,13 @@ class DivPlot():
                             'width'     : '90%',
                             'display'   : 'inline-block',
                             'fontSize'  : '12',
-                            #'marginTop' : '10',
+#                           'marginTop' : '10',
                         }
                     )
                     divs[proj][regr][name] = div
         return divs
     
-    def syndrome_div(self, synd_db={}):
+    def syndrome_div(self):
         div = html.Div(
             id       = 'syndrome_div',
             children = [
@@ -493,28 +554,72 @@ class DivPlot():
                     children = [
                         dcc.Dropdown(
                             id      = 'syn_dropdown',
-                            options = [{'label': i, 'value':i} for i in synd_db],
+                            options = [{'label': i, 'value':i} for i in self._loader.synd_db],
                             value   = '',
                             clearable = True,
                             multi = False,
                         ),
-                        dcc.Input(id='syndrome', type='text', style={'marginTop':'13','width':'100%','height':'30','color':'green'}),
-                        dcc.Input(id='bugid',    type='text', style={'marginTop':'13','width':'100%','height':'30','color':'green'}),
-                        dcc.Input(id='pattern',  type='text', style={'marginTop':'13','width':'100%','height':'30','color':'green'}),
-                        dcc.Input(id='desc',     type='text', style={'marginTop':'13','width':'100%','height':'30','color':'green'}),
-                        dcc.Input(id='status',  value='', type='text', style={'marginTop':'13','width':'100%','height':'30','color':'red'}),
+                        dcc.Input(
+                            id    = 'syndrome',
+                            type  = 'text',
+                            style = {'marginTop':'13','width':'100%','height':'30','color':'green'}
+                        ),
+                        dcc.Input(
+                            id    = 'bugid',
+                            type  = 'text',
+                            style = {'marginTop':'13','width':'100%','height':'30','color':'green'}
+                        ),
+                        dcc.Input(
+                            id    = 'pattern',
+                            type  = 'text',
+                            style = {'marginTop':'13','width':'100%','height':'30','color':'green'}
+                        ),
+                        dcc.Input(
+                            id    = 'desc',
+                            type  = 'text',
+                            style = {'marginTop':'13','width':'100%','height':'30','color':'green'}
+                        ),
+                        dcc.Input(
+                            id    = 'status',
+                            value = '',
+                            type  = 'text', 
+                            style = {'marginTop':'13','width':'100%','height':'30','color':'red'}
+                        ),
                     ],
-                    style = {'dispaly':'inline-block', 'width':'50%', 'marginLeft':'20','marginTop':'20', 'fontWeight':'bold', 'float':'left'}
+                    style = {
+                        'dispaly'    : 'inline-block',
+                        'width'      : '50%',
+                        'marginLeft' : '20',
+                        'marginTop'  : '20',
+                        'fontWeight' : 'bold',
+                        'float'      : 'left'
+                    }
                 ),
                 html.Button(
                     'Update',
                     id       = 'up_button',
-                    style    = {'backgroundColor' : '#F0F0F0', 'color':'green', 'marginLeft':'20%', 'marginTop':'15', 'fontSize':'18', 'fontWeight':'bold', 'dispaly':'inline-block'},
+                    style    = {
+                        'backgroundColor' : '#F0F0F0',
+                        'color'           : 'green',
+                        'marginLeft'      : '20%',
+                        'marginTop'       : '15',
+                        'fontSize'        : '18',
+                        'fontWeight'      : 'bold',
+                        'dispaly'         : 'inline-block'
+                    },
                 ),
                 html.Button(
                     'Delete',
                     id       = 'del_button',
-                    style    = {'backgroundColor' : '#F0F0F0', 'color':'green', 'marginLeft':'30', 'marginTop':'15', 'fontSize':'18', 'fontWeight':'bold', 'dispaly':'inline-block'},
+                    style    = {
+                        'backgroundColor' : '#F0F0F0',
+                        'color'           : 'green',
+                        'marginLeft'      : '30',
+                        'marginTop'       : '15',
+                        'fontSize'        : '18',
+                        'fontWeight'      : 'bold',
+                        'dispaly'         : 'inline-block'
+                    },
                 ),
             ],
             style = {
@@ -524,7 +629,7 @@ class DivPlot():
                 'display'   : 'inline-block',
                 'marginTop' : '50',
                 'fontSize'  : '15',
-                #'marginTop' : '10',
+#               'marginTop' : '10',
             }
         )
         return div
@@ -571,14 +676,13 @@ class DivPlot():
         ])
         return div
 
-    def dash_gen(self, project=[], x_axis={}, y_axis={}, regr_sts_db={}, test_db_files={}, synd_db={}, db_dir='', synd_dir=''):
-        passing_rate_divs   = self.passing_rate_div(x_axis,y_axis)
-        test_num_divs       = self.test_num_div(x_axis,y_axis)
-        coverage_divs       = self.coverage_div(x_axis,y_axis)
-        regr_table_divs     = self.regr_table_div(regr_sts_db,db_dir)
-        syndrome_table_divs = self.syndrome_table_div(test_db_files, synd_db)
-        test_table_divs     = self.test_table_div(test_db_files)
-        syndrome_div        = self.syndrome_div(synd_db)
+    def dash_gen(self):
+        self._loader.load()
+
+        project  = self._loader.projs
+        db_dir   = self._loader.db_dir
+        synd_dir = self._loader.synd_dir
+        synd_db  = self._loader.synd_db
     
         head_div = html.Div(
             id       = 'head_div',
@@ -623,7 +727,14 @@ class DivPlot():
                         clearable = True,
                         multi     = False,
                     ),
-                    style = {'dispaly':'inline-block', 'width':'15%', 'marginLeft':'3%','marginTop':'20', 'fontWeight':'bold', 'float':'left'}
+                    style = {
+                        'dispaly'    : 'inline-block',
+                        'width'      : '15%',
+                        'marginLeft' : '3%',
+                        'marginTop'  : '20',
+                        'fontWeight' : 'bold',
+                        'float'      : 'left'
+                    }
                 ),
                 html.Div(
                     html.H4('REGRESSION:  ', style={'marginTop':'30'}),
@@ -633,48 +744,65 @@ class DivPlot():
                     dcc.Dropdown(
                         id        = 'regr_dp',
                         options   = [],
-                        value     = self._proj_regr_dict[project[0]][0],
+                        value     = self._loader.proj_regr_dict[project[0]][0],
                         clearable = True,
                         multi     = False,
                     ),
-                    style = {'dispaly':'inline-block', 'width':'15%', 'marginLeft':'3%','marginTop':'20', 'fontWeight':'bold', 'float':'left'}
+                    style = {
+                        'dispaly'    : 'inline-block',
+                        'width'      : '15%',
+                        'marginLeft' : '3%',
+                        'marginTop'  : '20',
+                        'fontWeight' : 'bold',
+                        'float'      : 'left'
+                    }
                 ),
             ],
             style = {
-                'textAlign' : 'center',
-                'float'     : 'right',
-                'width'     : '90%',
-                'display'   : 'inline-block',
-                #'marginTop' : '50',
-                'fontSize'  : '17',
-                'fontWeight'  : 'bold',
+                'textAlign'  : 'center',
+                'float'      : 'right',
+                'width'      : '90%',
+                'display'    : 'inline-block',
+#               'marginTop'  : '50',
+                'fontSize'   : '17',
+                'fontWeight' : 'bold',
             }
         )
 
 
-        self._app.layout = html.Div(
-            id = 'full',
-            children = [
-                dcc.Location(id='url', pathname='', refresh=False),
-                head_div,
-                tab_div,
-                html.Div(
-                    id       = 'main',
-                    children = [
-                        #main_div,
-                        self.main_div_gen(project[0], self._proj_regr_dict[project[0]][0], passing_rate_divs, test_num_divs, coverage_divs, regr_table_divs),
-                    ]
-                ),
-            ],
-            style = {
-                'backgroundColor' : 'snow'
-            }
-        )
+        def full_div():
+            self._loader.load()
+            return html.Div(
+                id = 'full',
+                children = [
+                    dcc.Location(id='url', pathname='', refresh=False),
+                    head_div,
+                    tab_div,
+                    html.Div(
+                        id       = 'main',
+                        children = [
+                            self.main_div_gen(
+                                project[0], 
+                                self._loader.proj_regr_dict[project[0]][0], 
+                                self.passing_rate_div(), 
+                                self.test_num_div(), 
+                                self.coverage_div(), 
+                                self.regr_table_div()
+                            ),
+                        ]
+                    ),
+                ],
+                style = {
+                    'backgroundColor' : 'snow'
+                }
+            )
+        self._app.layout = full_div()
 
-        @self._app.callback(dash.dependencies.Output('regr_dp', 'options'), [dash.dependencies.Input('proj_dp', 'value')])
+        @self._app.callback(dash.dependencies.Output('regr_dp', 'options'), 
+                            [dash.dependencies.Input('proj_dp', 'value')])
         def display_content(selected_proj):
-            if selected_proj in self._proj_regr_dict:
-                regr_list = self._proj_regr_dict[selected_proj]
+            if selected_proj in self._loader.proj_regr_dict:
+                regr_list = self._loader.proj_regr_dict[selected_proj]
                 return [{'label':i, 'value':i} for i in regr_list]
             else:
                 return []
@@ -686,61 +814,74 @@ class DivPlot():
             return flask.send_from_directory(db_dir, image_name)
     
         @self._app.callback(dash.dependencies.Output('passing_rate_v', 'children'),
-                           [dash.dependencies.Input('proj_dp','value'), dash.dependencies.Input('regr_dp','value')])
+                            [dash.dependencies.Input('proj_dp',        'value'), 
+                             dash.dependencies.Input('regr_dp',        'value')])
         def show_passing_rate(proj,regr):
             self._proj = proj
             self._regr = regr
-            if proj in self._proj_regr_dict:
-                if regr in self._proj_regr_dict[proj]:
-                    return passing_rate_divs[proj][regr]
+            if proj in self._loader.proj_regr_dict:
+                if regr in self._loader.proj_regr_dict[proj]:
+                    return self.passing_rate_div()[proj][regr]
 
         @self._app.callback(dash.dependencies.Output('test_num_v', 'children'),
-                           [dash.dependencies.Input('proj_dp','value'), dash.dependencies.Input('regr_dp','value')])
+                            [dash.dependencies.Input('proj_dp',    'value'), 
+                             dash.dependencies.Input('regr_dp',    'value')])
         def show_test_num(proj,regr):
-            if proj in self._proj_regr_dict:
-                if regr in self._proj_regr_dict[proj]:
-                    return test_num_divs[proj][regr]
+            if proj in self._loader.proj_regr_dict:
+                if regr in self._loader.proj_regr_dict[proj]:
+                    return self.test_num_div()[proj][regr]
 
         @self._app.callback(dash.dependencies.Output('coverage_v', 'children'),
-                           [dash.dependencies.Input('proj_dp','value'), dash.dependencies.Input('regr_dp','value')])
+                            [dash.dependencies.Input('proj_dp',    'value'), 
+                             dash.dependencies.Input('regr_dp',    'value')])
         def show_coverage(proj,regr):
-            if proj in self._proj_regr_dict:
-                if regr in self._proj_regr_dict[proj]:
-                    return coverage_divs[proj][regr]
+            if proj in self._loader.proj_regr_dict:
+                if regr in self._loader.proj_regr_dict[proj]:
+                    return self.coverage_div()[proj][regr]
 
         @self._app.callback(dash.dependencies.Output('regr_table_v', 'children'),
-                           [dash.dependencies.Input('proj_dp','value'), dash.dependencies.Input('regr_dp','value')])
+                            [dash.dependencies.Input('proj_dp',      'value'), 
+                             dash.dependencies.Input('regr_dp',      'value')])
         def show_regr_table(proj,regr):
-            if proj in self._proj_regr_dict:
-                if regr in self._proj_regr_dict[proj]:
-                    return regr_table_divs[proj][regr]
+            if proj in self._loader.proj_regr_dict:
+                if regr in self._loader.proj_regr_dict[proj]:
+                    return self.regr_table_div()[proj][regr]
 
-        @self._app.callback(dash.dependencies.Output('synd_div', 'children'),
-                            [dash.dependencies.Input('regr_table','selected_row_indices'), dash.dependencies.Input('regr_table','rows'),])
+        @self._app.callback(dash.dependencies.Output('synd_div',   'children'),
+                            [dash.dependencies.Input('regr_table', 'selected_row_indices'), 
+                             dash.dependencies.Input('regr_table', 'rows'),])
         def display_syndrome(indices, rows):
-            if self._proj in self._proj_regr_dict:
-                if self._regr in self._proj_regr_dict[self._proj]:
+            if self._proj in self._loader.proj_regr_dict:
+                if self._regr in self._loader.proj_regr_dict[self._proj]:
                     if indices != []:
                         table_name = rows[indices[0]]['Date']+'_syndrome'
-                        return syndrome_table_divs[self._proj][self._regr][table_name]
+                        return self.syndrome_table_div()[self._proj][self._regr][table_name]
 
         @self._app.callback(dash.dependencies.Output('main', 'children'),
-                      [dash.dependencies.Input('url', 'pathname')])
+                            [dash.dependencies.Input('url',  'pathname')])
         def display_page(pathname):
+            self._loader.load()
             table_name = 'test_status_'+pathname.lstrip('/')
             if self._proj != '' and self._regr != '':
-                if table_name in test_table_divs[self._proj][self._regr]:
+                if table_name in self.test_table_div()[self._proj][self._regr]:
                     return html.Div([
-                        test_table_divs[self._proj][self._regr][table_name],
+                        self.test_table_div()[self._proj][self._regr][table_name],
                         html.Div(
                             children = [
-                                #html.A('BACK', href='/nvdla', style={'color':'green'}),
-                                #dcc.Link('BACK', href='/nvdla', style={'color':'green','textDecoration':'underline','cursor':'pointer'}),
+                                dcc.Link(
+                                    'BACK', 
+                                    href  = '/nvdla', 
+                                    style = {
+                                        'color'          : 'green',
+                                        'textDecoration' : 'underline',
+                                        'cursor'         : 'pointer'
+                                    }
+                                ),
                             ],
                             style = {
                                 'float'           : 'left',
-                                #'border'          : 'solid #F1F1F1',
-                                #'backgroundColor' : 'rgba(240,240,240,0.85)',
+#                               'border'          : 'solid #F1F1F1',
+#                               'backgroundColor' : 'rgba(240,240,240,0.85)',
                                 'marginTop'       : '10',
                                 'marginLeft'      : '10',
                                 'paddingLeft'     : '10',
@@ -749,41 +890,53 @@ class DivPlot():
                                 'paddingBottom'   : '10',
                             }
                         ),
-                        syndrome_div,
+                        self.syndrome_div(),
                     ])
                 else: 
-                    #return main_div
-                    return self.main_div_gen(self._proj, self._regr, passing_rate_divs, test_num_divs, coverage_divs, regr_table_divs),
+                    return self.main_div_gen(
+                        self._proj, 
+                        self._regr, 
+                        self.passing_rate_div(), 
+                        self.test_num_div(), 
+                        self.coverage_div(), 
+                        self.regr_table_div()
+                    )
             else:
-                #return main_div
-                return self.main_div_gen(project[0], self._proj_regr_dict[project[0]][0], passing_rate_divs, test_num_divs, coverage_divs, regr_table_divs),
+                return self.main_div_gen(
+                    project[0], 
+                    self._loader.proj_regr_dict[project[0]][0],
+                    self.passing_rate_div(), 
+                    self.test_num_div(), 
+                    self.coverage_div(), 
+                    self.regr_table_div()
+                )
 
-        @self._app.callback(dash.dependencies.Output('syndrome', 'value'),
-                      [dash.dependencies.Input('syn_dropdown', 'value')])
+        @self._app.callback(dash.dependencies.Output('syndrome',     'value'),
+                            [dash.dependencies.Input('syn_dropdown', 'value')])
         def show_synd_bugid(value):
             if value in synd_db:
                 return value
             else:
                 return ''
 
-        @self._app.callback(dash.dependencies.Output('pattern', 'value'),
-                      [dash.dependencies.Input('syn_dropdown', 'value')])
+        @self._app.callback(dash.dependencies.Output('pattern',      'value'),
+                            [dash.dependencies.Input('syn_dropdown', 'value')])
         def show_synd_bugid(value):
             if value in synd_db:
                 return ';'.join(synd_db[value]['pattern'])
             else:
                 return ''
 
-        @self._app.callback(dash.dependencies.Output('bugid', 'value'),
-                      [dash.dependencies.Input('syn_dropdown', 'value')])
+        @self._app.callback(dash.dependencies.Output('bugid',        'value'),
+                            [dash.dependencies.Input('syn_dropdown', 'value')])
         def show_synd_bugid(value):
             if value in synd_db:
                 return ';'.join(synd_db[value]['bugid'])
             else:
                 return ''
 
-        @self._app.callback(dash.dependencies.Output('desc', 'value'),
-                      [dash.dependencies.Input('syn_dropdown', 'value')])
+        @self._app.callback(dash.dependencies.Output('desc',         'value'),
+                            [dash.dependencies.Input('syn_dropdown', 'value')])
         def show_synd_bugid(value):
             if value in synd_db:
                 return synd_db[value]['desc']
@@ -791,16 +944,23 @@ class DivPlot():
                 return ''
 
         @self._app.callback(dash.dependencies.Output('syn_dropdown', 'options'),
-                            [dash.dependencies.Input('up_button', 'n_clicks'),dash.dependencies.Input('del_button', 'n_clicks')])
+                            [dash.dependencies.Input('up_button',    'n_clicks'),
+                             dash.dependencies.Input('del_button',   'n_clicks')])
         def up_db(up_num,del_num):
             return [{'label': i, 'value':i} for i in synd_db]
 
-        @self._app.callback(dash.dependencies.Output('status', 'value'),
-                            [dash.dependencies.Input('up_button', 'n_clicks'),dash.dependencies.Input('del_button', 'n_clicks'),dash.dependencies.Input('syndrome', 'value'),
-                            dash.dependencies.Input('bugid', 'value'),dash.dependencies.Input('pattern', 'value'),  dash.dependencies.Input('desc', 'value')])
+        @self._app.callback(dash.dependencies.Output('status',     'value'),
+                            [dash.dependencies.Input('up_button',  'n_clicks'),
+                             dash.dependencies.Input('del_button', 'n_clicks'),
+                             dash.dependencies.Input('syndrome',   'value'),
+                             dash.dependencies.Input('bugid',      'value'),
+                             dash.dependencies.Input('pattern',    'value'),
+                             dash.dependencies.Input('desc',       'value')])
         def on_click(up_num,del_num,synd,bugid='',pattern='',desc=''):
             if (int(up_num or 0) > int(del_num or 0)) and synd != '':
-                synd_info = dict(bugid=str(bugid).split(';'),pattern=str(pattern).split(';'),desc=desc)
+                synd_info = dict(bugid   = str(bugid).split(';'),
+                                 pattern = str(pattern).split(';'),
+                                 desc    = desc)
                 if synd not in synd_db:
                     synd_db[synd] = synd_info
                     with open(os.path.join(synd_dir,'syndrome.json'), 'w') as fh:
@@ -825,33 +985,35 @@ class DivPlot():
                 return ' '
 
         @self._app.callback(dash.dependencies.Output('up_button', 'n_clicks'),
-                            [dash.dependencies.Input('syndrome', 'value'),dash.dependencies.Input('bugid', 'value'),
-                             dash.dependencies.Input('pattern', 'value'), dash.dependencies.Input('desc', 'value')])
+                            [dash.dependencies.Input('syndrome',  'value'),
+                             dash.dependencies.Input('bugid',     'value'),
+                             dash.dependencies.Input('pattern',   'value'),
+                             dash.dependencies.Input('desc',      'value')])
         def clear_click(synd,bugid,pat,desc):
             return 0
 
         @self._app.callback(dash.dependencies.Output('del_button', 'n_clicks'),
-                            [dash.dependencies.Input('syndrome', 'value'),dash.dependencies.Input('bugid', 'value'),
-                             dash.dependencies.Input('pattern', 'value'), dash.dependencies.Input('desc', 'value')])
+                            [dash.dependencies.Input('syndrome',   'value'),
+                             dash.dependencies.Input('bugid',      'value'),
+                             dash.dependencies.Input('pattern',    'value'),
+                             dash.dependencies.Input('desc',       'value')])
         def clear_click(synd,bugid,pat,desc):
             return 0
 
 
     def run(self):
         self._app.run_server(debug=True)
-        #self._app.run_server(debug=True, host='172.20.213.206')
+#       self._app.run_server(debug=True, host='172.20.213.206')
 
 def main():
-    parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter, description=__DESCRIPTION__)
+    parser = argparse.ArgumentParser(formatter_class = argparse.RawDescriptionHelpFormatter, 
+                                     description     = __DESCRIPTION__)
     parser.add_argument('--db_dir', '-db_dir', dest='db_dir', required=False, default='.',
                         help='Specify regression status database direcotry for loading json file')
-    parser.add_argument('--syndrome_dir', '-syndrome_dir', dest='syndrome_dir', required=False, default='.',
-                        help='Specify direcotry for loading syndrome database')
-    parser.add_argument('--project','-P', dest='project', required=True, default=[],type=str, nargs='+',
-                        help='provide project name, can choose multiple projects')
-    config = vars(parser.parse_args())
+    parser.add_argument('--syndrome_dir', '-syndrome_dir', dest='syndrome_dir', required=False, 
+                        default='.', help='Specify direcotry for loading syndrome database')
+    config      = vars(parser.parse_args())
     run_metrics = RunMetrics(config)
-    run_metrics.load()
     run_metrics.run()
 
 
