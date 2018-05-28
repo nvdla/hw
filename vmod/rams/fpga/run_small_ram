@@ -16,6 +16,7 @@
  dla_ramgen -m  nv_ram_rws_64x1088
  dla_ramgen -m  nv_ram_rws_64x116
  dla_ramgen -m  nv_ram_rws_64x18
+ dla_ramgen -m  nv_ram_rwsp_8x65
  dla_ramgen -m  nv_ram_rwsp_128x11
  dla_ramgen -m  nv_ram_rwsp_128x6
  dla_ramgen -m  nv_ram_rwsp_160x16
