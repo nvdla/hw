@@ -1,8 +1,6 @@
 `ifndef MEM_DOMAIN_SVH
 `define MEM_DOMAIN_SVH
 
-// TODO: Add region release APIs
-
 class mem_domain extends uvm_report_object;
 
     /* public variables */
@@ -25,6 +23,10 @@ class mem_domain extends uvm_report_object;
         request_region_by_addr(string region_name,
                                bit [`MEM_ADDR_SIZE_MAX-1:0] base,
                                bit [`MEM_ADDR_SIZE_MAX-1:0] limit);
+
+    extern function mem_region release_region_by_name(string region_name);
+
+    extern function mem_region release_region_by_addr(bit [`MEM_ADDR_SIZE_MAX-1:0] addr);
 
     extern function string convert2string();
 
@@ -71,6 +73,8 @@ class mem_domain extends uvm_report_object;
         delete_region_from_free_list(mem_region region_to_delete);
 
     extern local function int get_num_regions();
+
+    extern local function void free_region(mem_region rgn_to_free);
 
     /* private variables */
 
@@ -135,6 +139,90 @@ mem_domain::request_region_by_addr(string region_name,
                                    bit [`MEM_ADDR_SIZE_MAX-1:0] base,
                                    bit [`MEM_ADDR_SIZE_MAX-1:0] limit);
     return reserve_region(region_name, base, limit);
+endfunction
+
+function mem_region mem_domain::release_region_by_name(string region_name);
+    mem_region rgn_to_release = null;
+
+    if (!named_region_map.exists(region_name)) begin
+        `uvm_fatal(get_name(), $sformatf("Unable to find region named %s", region_name))
+    end
+
+    rgn_to_release = named_region_map[region_name];
+    named_region_map.delete(region_name);
+
+    foreach (region_list[i]) begin
+        if (region_list[i].get_name() == region_name) begin
+            rgn_to_release = region_list[i];
+            `uvm_info(get_name(), {"Region is going to be released:\n", rgn_to_release.convert2string()}, UVM_NONE)
+            uvm_report_info(get_name(), {"Before release:\n", this.convert2string()}, UVM_HIGH);
+            region_list.delete(i);
+            free_region(rgn_to_release);
+            uvm_report_info(get_name(), {"After release:\n", this.convert2string()}, UVM_NONE);
+        end
+    end
+    return rgn_to_release;
+endfunction
+
+function mem_region mem_domain::release_region_by_addr(bit [`MEM_ADDR_SIZE_MAX-1:0] addr);
+    mem_region rgn_to_release = null;
+
+    foreach (region_list[i]) begin
+        if (region_list[i].has_addr(addr)) begin
+            rgn_to_release = region_list[i];
+            `uvm_info(get_name(), {"Region is going to be released:\n", rgn_to_release.convert2string()}, UVM_NONE)
+            uvm_report_info(get_name(), {"Before release:\n", this.convert2string()}, UVM_HIGH);
+            region_list.delete(i);
+            named_region_map.delete(rgn_to_release.get_name());
+            free_region(rgn_to_release);
+            uvm_report_info(get_name(), {"After release:\n", this.convert2string()}, UVM_NONE);
+        end
+    end
+    return rgn_to_release;
+endfunction
+
+function void mem_domain::free_region(mem_region rgn_to_free);
+    int prev_free_list_rgn_idx[$];
+    int next_free_list_rgn_idx[$];
+
+    // Handle inserting rgn_to_free in the free_list in the position where its base is higher
+    // than the limit of the region that preceeds it.
+    // Also, we must ensure that the limit is lower than the base of the next region
+    foreach (free_list[i]) begin
+        if (rgn_to_free.base > free_list[i].limit) begin
+            if ((i+1 < free_list.size()) && (rgn_to_free.limit < free_list[i+1].base)) begin
+                prev_free_list_rgn_idx.push_back(i);
+                break;
+            end
+        end
+    end
+
+    if (prev_free_list_rgn_idx.size() == 0) begin
+        // The region being freed will be first in the free list.
+        rgn_to_free.set_name(get_unique_name("free"));
+        free_list.insert(0, rgn_to_free);
+    end else if ((free_list[prev_free_list_rgn_idx[0]].limit + 1) == rgn_to_free.base) begin
+        // Region being freed is adjacent to the free_list region that precedes it.  Merge them
+        // by expanding the limit of the prev_ region.
+        free_list[prev_free_list_rgn_idx[0]].limit = rgn_to_free.limit;
+        // rgn_to_free is no longer needed.  Reassign it to the region we just expanded to the
+        // code block below  which merges the follow region works consistently.
+        rgn_to_free = free_list[prev_free_list_rgn_idx[0]];
+    end else begin
+        // Insert region being freed after the free_list region which preceeds it.
+        rgn_to_free.set_name(get_unique_name("free"));
+        free_list.insert(prev_free_list_rgn_idx[0]+1, rgn_to_free);
+    end
+
+    // Merge the freed region with the region that follows if their limit and base addresses are
+    // adjacent.
+    next_free_list_rgn_idx = free_list.find_first_index(rgn) with (rgn.base > rgn_to_free.limit);
+    if (next_free_list_rgn_idx.size() == 0) begin
+        // The freed region is last in the free list.
+    end else if ((rgn_to_free.limit + 1) == free_list[next_free_list_rgn_idx[0]].base) begin
+        rgn_to_free.limit = free_list[next_free_list_rgn_idx[0]].limit;
+        free_list.delete(next_free_list_rgn_idx[0]);
+    end
 endfunction
 
 function string mem_domain::convert2string();
@@ -261,11 +349,11 @@ mem_domain::reserve_region(string region_name,
 
     `uvm_info(tID,
         $sformatf("Reserved region '%s' with base=%#0x, limit=%#0x",
-        region_name, new_region.base, new_region.limit),
-        UVM_HIGH);
+        region_name, new_region.base, new_region.limit), UVM_HIGH);
 
     region_list.push_back(new_region);
     named_region_map[region_name] = new_region;
+    `uvm_info(get_name(), {"\n", this.convert2string()}, UVM_NONE);
 
     return new_region;
 endfunction

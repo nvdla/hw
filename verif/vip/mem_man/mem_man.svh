@@ -25,6 +25,12 @@ class mem_man extends uvm_report_object;
                                bit [`MEM_ADDR_SIZE_MAX-1:0] size,
                                bit [`MEM_ADDR_SIZE_MAX-1:0] align_mask);
 
+    extern function mem_region release_region_by_name(string domain_name,
+                                                      string region_name);
+
+    extern function mem_region release_region_by_addr(string domain_name,
+                                                      bit [`MEM_ADDR_SIZE_MAX-1:0] addr);
+
     extern function void display();
 
     /* private functions */
@@ -92,6 +98,26 @@ mem_man::request_region_by_size(string domain_name,
     end
 
     return tmp_domain.request_region_by_size(region_name, size, align_mask);
+endfunction
+
+function mem_region mem_man::release_region_by_name(string domain_name,
+                                                    string region_name);
+    mem_domain tmp_domain = get_domain(domain_name);
+    if (tmp_domain == null) begin
+        `uvm_fatal(tID, {"Could not find domain_name ", domain_name});
+    end
+
+    return tmp_domain.release_region_by_name(region_name);
+endfunction
+
+function mem_region mem_man::release_region_by_addr(string domain_name,
+                                                    bit [`MEM_ADDR_SIZE_MAX-1:0] addr);
+    mem_domain tmp_domain = get_domain(domain_name);
+    if (tmp_domain == null) begin
+        `uvm_fatal(tID, {"Could not find domain_name ", domain_name});
+    end
+
+    return tmp_domain.release_region_by_addr(addr);
 endfunction
 
 function void mem_man::display();
