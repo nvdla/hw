@@ -118,7 +118,10 @@ wire           dp_split_end;
 wire           dp_surf_end;
 wire           eccg_dma_rd_rsp_rdy;
 wire           eg2ig_done_f;
-wire     [7:0] fifo_rd_pvld;
+//:  my $kx = NVDLA_PDP_THROUGHPUT*NVDLA_PDP_BWPE;
+//:  my $k = NVDLA_PRIMARY_MEMIF_WIDTH/$kx;
+//:  print " wire     [${k}-1:0] fifo_rd_pvld;  \n";
+//wire     [7:0] fifo_rd_pvld;
 wire     [5:0] fifo_sel;
 wire           ig2eg_align;
 wire           ig2eg_cube_end;
@@ -352,8 +355,10 @@ assign is_last_beat  = (beat_cnt==1);
 //:    foreach my $r (0..$k-1) {
 //:       print " assign fifo_rd_pvld[$r] = (fifo_sel==${r}) & ro${r}_rd_pvld;  \n";
 //:    }
+//:  print " wire  fifo_rd_pvld_active; \n";
+//:  print " assign fifo_rd_pvld_active = |fifo_rd_pvld;    \n";
 
-assign tran_rdy = (tran_cnt_idle & (|fifo_rd_pvld)) || (is_last_tran & is_last_beat & dp_rdy);
+assign tran_rdy = (tran_cnt_idle & fifo_rd_pvld_active) || (is_last_tran & is_last_beat & dp_rdy);
 
 assign tran_accept = tran_vld & tran_rdy;
 
@@ -365,7 +370,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
             fifo_sel_cnt <= 6'd0;
     end else if (tran_rdy) begin
             fifo_sel_cnt <= 6'd0;
-    end else if (dp_rdy & |fifo_rd_pvld)
+    end else if (dp_rdy & fifo_rd_pvld_active)
 //:  my $kx = NVDLA_PDP_THROUGHPUT*NVDLA_PDP_BWPE;     ##throughput BW
 //:  my $k = NVDLA_PRIMARY_MEMIF_WIDTH/$kx;       ##total fifo num
 //:     print "   fifo_sel_cnt <= (fifo_sel_cnt==(6'd${k}-1))? 6'd0 : fifo_sel_cnt + 1; \n";
@@ -389,7 +394,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
             tran_cnt    <= 0;
             beat_cnt    <= 0;
         end
-    end else if (dp_rdy & |fifo_rd_pvld) begin
+    end else if (dp_rdy & fifo_rd_pvld_active) begin
         beat_cnt <= (beat_cnt==1)? width_cnt : beat_cnt - 1;
         if (is_last_beat) begin
             tran_cnt <= tran_cnt - 1;
