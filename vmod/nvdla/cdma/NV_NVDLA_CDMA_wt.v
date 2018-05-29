@@ -1234,7 +1234,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     end else if(wt_cbuf_wr_vld_w & (!sc_wt_updt)) begin
 //: my $atmc=NVDLA_MAC_ATOMIC_C_SIZE;
 //: my $dmaif=NVDLA_CDMA_DMAIF_BW / NVDLA_CDMA_BPE;
-//: if($dmaif = $atmc) {
+//: if($dmaif == $atmc) {
 //:     print qq(
 //:          wt_wr_dmatx_cnt <= wt_wr_dmatx_cnt + 1'b1;
 //:     );
