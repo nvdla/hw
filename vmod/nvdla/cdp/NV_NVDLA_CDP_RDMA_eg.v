@@ -235,7 +235,7 @@ assign dma_rd_rsp_type   = reg2dp_src_ram_type;
 //: my $jx = NVDLA_MEMORY_ATOMIC_SIZE*NVDLA_BPE; ##atomic_m BW
 //: my $M = $k/$jx;  ##atomic_m number per dma transaction
 //: my $s = $k + $M;
-//: my $depth = NVDLA_VMOD_CDP_RDMA_LETENCY_FIFO_DEPTH;
+//: my $depth = NVDLA_VMOD_CDP_RDMA_LATENCY_FIFO_DEPTH;
 //: print " NV_NVDLA_CDP_RDMA_lat_fifo_${s}x${depth} u_lat_fifo (  \n";
    .nvdla_core_clk      (nvdla_core_clk)          //|< i
   ,.nvdla_core_rstn     (nvdla_core_rstn)         //|< i

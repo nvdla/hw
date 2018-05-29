@@ -222,7 +222,7 @@ assign dma_rd_rsp_rdy = dma_rd_rsp_rdy_f;
 // Latency FIFO to buffer return DATA
 //==============
 //: my $s = NVDLA_PDP_MEM_RD_RSP;
-//: my $depth = NVDLA_VMOD_PDP_RDMA_LETENCY_FIFO_DEPTH;
+//: my $depth = NVDLA_VMOD_PDP_RDMA_LATENCY_FIFO_DEPTH;
 //: print " NV_NVDLA_PDP_RDMA_lat_fifo_${s}x${depth} u_lat_fifo (  \n";
    .nvdla_core_clk           (nvdla_core_clk)               //|< i
   ,.nvdla_core_rstn          (nvdla_core_rstn)              //|< i
