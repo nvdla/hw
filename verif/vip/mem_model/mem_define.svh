@@ -3,4 +3,6 @@
 
   `define MEM_ADDR_WIDTH    32
 
+  typedef bit[`MEM_ADDR_WIDTH-1:0] addr_t;
+
 `endif

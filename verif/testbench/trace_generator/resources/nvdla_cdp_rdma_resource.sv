@@ -8,7 +8,11 @@
 // @description: various hardware resources of cdp sub module
 //-------------------------------------------------------------------------------------
 
+typedef class nvdla_cdp_resource;
+
 class nvdla_cdp_rdma_resource extends nvdla_base_resource;
+    // singleton handle
+    static local nvdla_cdp_rdma_resource inst;
 
     string  cdp_rdma_surface_pattern    = "random";
     string  cdp_cube_size               = "NORMAL";
@@ -69,6 +73,7 @@ class nvdla_cdp_rdma_resource extends nvdla_base_resource;
         Methods
     */
     extern function         new(string name="nvdla_cdp_rdma_resource", uvm_component parent);
+    extern static function  nvdla_cdp_rdma_resource get_cdp_rdma(uvm_component parent);
     extern function void    trace_dump(int fh);
     extern function void    set_mem_addr();
     extern function void    surface_dump(int fh);
@@ -103,6 +108,13 @@ function nvdla_cdp_rdma_resource::new(string name="nvdla_cdp_rdma_resource", uvm
     `uvm_info(inst_name, $sformatf("Initialize resource %s ... ",inst_name),UVM_LOW);
 endfunction: new
 
+static function  nvdla_cdp_rdma_resource nvdla_cdp_rdma_resource::get_cdp_rdma(uvm_component parent);
+    if (null == inst) begin
+        inst = new("NVDLA_CDP_RDMA", parent);
+    end
+    return inst;
+endfunction: get_cdp_rdma
+
 function void nvdla_cdp_rdma_resource::surface_dump(int fh);
     surface_feature_config feature_cfg;
     surface_feature_config feature_cfg_output;
@@ -126,7 +138,8 @@ function void nvdla_cdp_rdma_resource::surface_dump(int fh);
     feature_cfg.precision = precision_e'(input_data);
     feature_cfg.pattern = cdp_rdma_surface_pattern;
     surface_gen.generate_memory_surface_feature(feature_cfg);
-    mem_load(fh,mem_domain_input,address,feature_cfg.name);
+    mem_load(fh, mem_domain_input,address,feature_cfg.name,sync_evt_queue[-2]);
+    mem_release(fh, mem_domain_input,address,sync_evt_queue[ 0]);
 endfunction: surface_dump
 
 function void nvdla_cdp_rdma_resource::set_mem_addr();
@@ -138,7 +151,7 @@ function void nvdla_cdp_rdma_resource::set_mem_addr();
 
     // RDMA
     mem_size = calc_mem_size(0, 0, channel+1, `NVDLA_MEMORY_ATOMIC_SIZE, src_surface_stride);
-    region = mm.request_region_by_size("PRI", $sformatf("%s_%0d", "CDP_RDMA", get_active_cnt()), mem_size, align_mask[0]);
+    region = mm.request_region_by_size("pri_mem", $sformatf("%s_%0d", "CDP_RDMA", get_active_cnt()), mem_size, align_mask[0]);
     {src_base_addr_high, src_base_addr_low} = region.get_start_offset();
 endfunction : set_mem_addr
 
@@ -150,9 +163,9 @@ function void nvdla_cdp_rdma_resource::trace_dump(int fh);
 
     surface_dump(fh);
 
-    // if both groups have been used, resource must wait for at least one group releases
-    if(sync_evt_queue.size()==2) begin
-        sync_wait(fh,inst_name,sync_evt_queue.pop_front());
+    // if both groups have been used, resource must wait for the group released
+    if (get_active_cnt() > 1) begin
+        sync_wait(fh,inst_name, sync_evt_queue[-2]);
     end
 
     reg_write(fh,{inst_name.toupper(),".S_POINTER"},group_to_use);

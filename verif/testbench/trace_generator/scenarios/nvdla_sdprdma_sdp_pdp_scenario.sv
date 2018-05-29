@@ -32,7 +32,6 @@ class nvdla_sdprdma_sdp_pdp_scenario extends nvdla_base_scenario;
     extern function void    trace_dump(int fh);
     extern function void    activate();
     extern function void    set_sync_evt_name();
-    extern function void    update_sync_evt_queue();
     extern function void    set_sim_constraint();
     /*
         phase
@@ -77,7 +76,6 @@ function void nvdla_sdprdma_sdp_pdp_scenario::trace_dump(int fh);
     sdp.trace_dump(fh);
     pdp.trace_dump(fh);
     check_nothing(fh,pdp.get_sync_evt_name);
-    update_sync_evt_queue();
     `uvm_info(inst_name, "Finish trace dumping ...", UVM_HIGH)
 
     if (fcov_en) begin
@@ -98,12 +96,6 @@ function void nvdla_sdprdma_sdp_pdp_scenario::activate();
     sdp.activate();
     pdp.activate();
 endfunction: activate
-
-function void nvdla_sdprdma_sdp_pdp_scenario::update_sync_evt_queue();
-    sdp.update_sync_evt_queue();
-    sdp_rdma.update_sync_evt_queue();
-    pdp.update_sync_evt_queue();
-endfunction: update_sync_evt_queue
 
 function void nvdla_sdprdma_sdp_pdp_scenario::set_sync_evt_name();
     string sdp_sync_evt_name;

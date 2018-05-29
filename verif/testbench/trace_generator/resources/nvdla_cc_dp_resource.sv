@@ -15,6 +15,7 @@ class nvdla_cc_dp_resource extends nvdla_base_resource;
     static local nvdla_cc_dp_resource       inst;
     string  cc_weight_cube_size             = "NORMAL";
     string  cc_output_cube_size             = "NORMAL";
+    string  csc_enabled_event_name;
 
     // enum define
     //:| import spec2constrain
@@ -217,6 +218,7 @@ class nvdla_cc_dp_resource extends nvdla_base_resource;
     */
     extern function         new(string name="nvdla_cc_dp_resource", uvm_component parent);
     extern static function  nvdla_cc_dp_resource get_cc_dp(uvm_component parent);
+    extern function string  get_csc_enabled_event_name();
     extern function void    trace_dump(int fh);
     extern function void    set_register();
     extern function void    record_rand_variable();
@@ -272,18 +274,21 @@ static function  nvdla_cc_dp_resource nvdla_cc_dp_resource::get_cc_dp(uvm_compon
     return inst;
 endfunction: get_cc_dp
 
+function string nvdla_cc_dp_resource::get_csc_enabled_event_name();
+    return {sync_evt_queue[0], "_csc_enable"};
+endfunction: get_csc_enabled_event_name
+
 function void nvdla_cc_dp_resource::trace_dump(int fh);
     if(fh==null) begin
         `uvm_fatal(inst_name, "Null handle of trace file ...")
     end
     `uvm_info(inst_name, "Start trace dumping ...", UVM_HIGH)
-    // if both groups have been used, resource must wait for at least one group releases
-    if(sync_evt_queue.size()==2) begin
-        string sync_wait_event = sync_evt_queue.pop_front();
-        sync_wait(fh,"NVDLA_CACC",   {sync_wait_event, $sformatf("_cc_dp_%0d",get_active_cnt()-2)});
-        sync_wait(fh,"NVDLA_CMAC_A", {sync_wait_event, $sformatf("_cc_dp_%0d",get_active_cnt()-2)});
-        sync_wait(fh,"NVDLA_CMAC_B", {sync_wait_event, $sformatf("_cc_dp_%0d",get_active_cnt()-2)});
-        sync_wait(fh,"NVDLA_CSC",    {sync_wait_event, $sformatf("_cc_dp_%0d",get_active_cnt()-2)});
+    // if both groups have been used, resource must wait for the group released
+    if (get_active_cnt() > 1) begin
+        sync_wait(fh,"NVDLA_CACC",   sync_evt_queue[-2]);
+        sync_wait(fh,"NVDLA_CMAC_A", sync_evt_queue[-2]);
+        sync_wait(fh,"NVDLA_CMAC_B", sync_evt_queue[-2]);
+        sync_wait(fh,"NVDLA_CSC",    sync_evt_queue[-2]);
     end
 
     reg_write(fh,"NVDLA_CSC.S_POINTER",group_to_use);
@@ -313,7 +318,7 @@ function void nvdla_cc_dp_resource::trace_dump(int fh);
         ral.nvdla.NVDLA_CSC.D_OP_ENABLE.set(1);
         reg_write(fh,"NVDLA_CSC.D_OP_ENABLE",1);
         // Make sure CSC enable is always before CDMA
-        sync_notify(fh, "NVDLA_CSC", {curr_sync_evt_name,"_csc_enable"});
+        sync_notify(fh, "NVDLA_CSC", get_csc_enabled_event_name());
     end
     begin
         uvm_reg        reg_q[$];
@@ -380,7 +385,7 @@ function void nvdla_cc_dp_resource::trace_dump(int fh);
         reg_write(fh,"NVDLA_CACC.D_OP_ENABLE",1);
         sync_notify(fh,"NVDLA_CACC",{inst_name,"_cacc_",$sformatf("%0d",active_cnt)});
     end
-    intr_notify(fh,{"CACC","_",$sformatf("%0d",group_to_use)},{curr_sync_evt_name, $sformatf("_cc_dp_%0d",get_active_cnt())});
+    intr_notify(fh, {$sformatf("CACC_%0d",group_to_use)}, sync_evt_queue[0]);
     `uvm_info(inst_name, "Finish trace dumping ...", UVM_HIGH)
 endfunction : trace_dump
 

@@ -121,9 +121,9 @@ function void nvdla_rbk_resource::trace_dump(int fh);
         `uvm_fatal(inst_name, "Null handle of trace file ...")
     end
     `uvm_info(inst_name, "Start trace dumping ...", UVM_HIGH)
-    // if both groups have been used, resource must wait for at least one group releases
-    if(sync_evt_queue.size()==2) begin
-        sync_wait(fh,inst_name,sync_evt_queue.pop_front());
+    // if both groups have been used, resource must wait for the group released
+    if (get_active_cnt() > 1) begin
+        sync_wait(fh,inst_name,sync_evt_queue[-2]);
     end
     
     reg_write(fh,{inst_name.toupper(),".S_POINTER"},group_to_use);
@@ -148,7 +148,7 @@ function void nvdla_rbk_resource::trace_dump(int fh);
     end
     ral.nvdla.NVDLA_RBK.D_OP_ENABLE.set(1);
     reg_write(fh,{inst_name.toupper(),".D_OP_ENABLE"},1);
-    intr_notify(fh,{"RUBIK_",$sformatf("%0d",group_to_use)},curr_sync_evt_name);
+    intr_notify(fh,{"RUBIK_",$sformatf("%0d",group_to_use)}, sync_evt_queue[0]);
     `uvm_info(inst_name, "Finish trace dumping ...", UVM_HIGH)
 endfunction : trace_dump
 

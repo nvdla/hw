@@ -9,6 +9,8 @@
 //-------------------------------------------------------------------------------------
 
 class nvdla_cdp_resource extends nvdla_base_resource;
+    // singleton handle
+    static local nvdla_cdp_resource inst;
 
     // LUT data pattern settings
     string cdp_lut_lo_data_pattern = "RANDOM";
@@ -185,6 +187,7 @@ class nvdla_cdp_resource extends nvdla_base_resource;
         Methods
     */
     extern function         new(string name="nvdla_cdp_resource", uvm_component parent);
+    extern static function  nvdla_cdp_resource get_cdp(uvm_component parent);
     extern function void    trace_dump(int fh);
     extern function void    set_lut();
 //  extern function void    set_mem_addr();
@@ -224,6 +227,13 @@ function nvdla_cdp_resource::new(string name="nvdla_cdp_resource", uvm_component
     `uvm_info(inst_name, $sformatf("Initialize resource %s ... ",inst_name),UVM_LOW);
 endfunction: new
 
+static function  nvdla_cdp_resource nvdla_cdp_resource::get_cdp(uvm_component parent);
+    if (null == inst) begin
+        inst = new("NVDLA_CDP", parent);
+    end
+    return inst;
+endfunction: get_cdp
+
 function void nvdla_cdp_resource::build_phase(uvm_phase phase);
     super.build_phase(phase);
 
@@ -248,14 +258,14 @@ function void nvdla_cdp_resource::lut_config_dump(int fh);
 
     if(cdp_lut_reuse == 0 || active_cnt < 1) begin  // NO LUT reuse
         $display("lut_reuse:%0d, active_cnt=%0d", cdp_lut_reuse, active_cnt);
-        // LUT is only configurable when there's no active layer running, in other case
-        // just (skip) waiting  (if not forced LUT_REUSE)
-        // foreach(sync_evt_queue[i]) begin
-        //     sync_wait(fh,inst_name,sync_evt_queue[i]);
-        // end
-        while(0 != sync_evt_queue.size()) begin
-            sync_wait(fh,inst_name,sync_evt_queue.pop_front());
+        // LUT is only configurable when there's no active layer running
+        if (get_active_cnt() > 0) begin
+            sync_wait(fh,inst_name,sync_evt_queue[-1]);
         end
+        if (get_active_cnt() > 1) begin
+            sync_wait(fh,inst_name,sync_evt_queue[-2]);
+        end
+
         // Configure LUT table
         ral.nvdla.NVDLA_CDP.S_LUT_ACCESS_CFG.LUT_ADDR.set(0);
         ral.nvdla.NVDLA_CDP.S_LUT_ACCESS_CFG.LUT_TABLE_ID.set(0);    // LE
@@ -366,9 +376,9 @@ function void nvdla_cdp_resource::trace_dump(int fh);
         `uvm_fatal(inst_name, "Null handle of trace file ...")
     end
     `uvm_info(inst_name, "Start trace dumping ...", UVM_HIGH)
-    // if both groups have been used, resource must wait for at least one group releases
-    if(sync_evt_queue.size()==2) begin
-        sync_wait(fh,inst_name,sync_evt_queue.pop_front());
+    // if both groups have been used, resource must wait for the same group released
+    if (get_active_cnt() > 1) begin
+        sync_wait(fh,inst_name,sync_evt_queue[-2]);
     end
 
     reg_write(fh,{inst_name.toupper(),".S_POINTER"},group_to_use);
@@ -400,7 +410,7 @@ function void nvdla_cdp_resource::trace_dump(int fh);
 
     ral.nvdla.NVDLA_CDP.D_OP_ENABLE.set(1);
     reg_write(fh,{inst_name.toupper(),".D_OP_ENABLE"},1);
-    intr_notify(fh,{"CDP_",$sformatf("%0d",group_to_use)},curr_sync_evt_name);
+    intr_notify(fh,{"CDP_",$sformatf("%0d",group_to_use)}, sync_evt_queue[0]);
     `uvm_info(inst_name, "Finish trace dumping ...", UVM_HIGH)
 endfunction : trace_dump
 
@@ -455,7 +465,7 @@ endfunction : set_lut
 //
 //     // WDMA
 //     mem_size = calc_mem_size(0, 0, channel+1, `NVDLA_MEMORY_ATOMIC_SIZE, dst_surface_stride);
-//     region = mm.request_region_by_size("PRI", $sformatf("%s_%0d", "CDP_WDMA", get_active_cnt()), mem_size, align_mask[0]);
+//     region = mm.request_region_by_size("pri_mem", $sformatf("%s_%0d", "CDP_WDMA", get_active_cnt()), mem_size, align_mask[0]);
 //     {dst_base_addr_high, dst_base_addr_low} = region.get_start_offset();
 // endfunction : set_mem_addr
 

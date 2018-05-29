@@ -250,7 +250,7 @@ task nvdla_tb_result_checker::warden_process();
                     `uvm_info(tID, $sformatf("No need to check on sync_id:%s.", cmd_item.sync_id), UVM_MEDIUM)
                 end else begin
                     `uvm_info(tID, $sformatf("Ready to send check command to memory model ..."), UVM_MEDIUM)
-                    if (PRIMARY_MEM == cmd_item.memory_type) begin
+                    if (PRI_MEM == cmd_item.memory_type) begin
                         primary_memory_check_command_port.write(cmd_item);
                     end else begin
                         secondary_memory_check_command_port.write(cmd_item);

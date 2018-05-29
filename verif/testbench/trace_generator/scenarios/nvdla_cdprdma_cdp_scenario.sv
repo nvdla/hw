@@ -17,7 +17,7 @@ class nvdla_cdprdma_cdp_scenario extends nvdla_base_scenario;
     rand nvdla_cdp_resource          cdp;
 
     /*
-        constraints: 
+        constraints:
             * ias_constraint: mandatory constraints from architecture requirement
             * sim_constraint: optional constraints for simulation only
     */
@@ -28,10 +28,9 @@ class nvdla_cdprdma_cdp_scenario extends nvdla_base_scenario;
     */
     extern function         new(string name, uvm_component parent);
     extern function void    trace_dump(int fh);
-    extern function void    set_output_mem_addr();
+    extern function void    set_output_mem_addr(int fh);
     extern function void    activate();
     extern function void    set_sync_evt_name();
-    extern function void    update_sync_evt_queue();
     extern function void    set_sim_constraint();
     /*
         phase
@@ -49,11 +48,11 @@ endfunction : new
 
 function void nvdla_cdprdma_cdp_scenario::build_phase(uvm_phase phase);
     super.build_phase(phase);
-    cdp = nvdla_cdp_resource::type_id::create("NVDLA_CDP", this);
-    cdp_rdma = nvdla_cdp_rdma_resource::type_id::create("NVDLA_CDP_RDMA", this);
+    cdp = nvdla_cdp_resource::get_cdp(this);
+    cdp_rdma = nvdla_cdp_rdma_resource::get_cdp_rdma(this);
 endfunction: build_phase
 
-function void nvdla_cdprdma_cdp_scenario::set_output_mem_addr();
+function void nvdla_cdprdma_cdp_scenario::set_output_mem_addr(int fh);
     mem_man             mm;
     mem_region          region;
     longint unsigned    mem_size;
@@ -62,10 +61,13 @@ function void nvdla_cdprdma_cdp_scenario::set_output_mem_addr();
 
     // WDMA
     mem_size = cdp.calc_mem_size(0, 0, cdp_rdma.channel+1, `NVDLA_MEMORY_ATOMIC_SIZE, cdp.dst_surface_stride);
-    region = mm.request_region_by_size("PRI", $sformatf("%s_%d", "CDP_WDMA", cdp.get_active_cnt()), mem_size, cdp.align_mask[0]);
+    region = mm.request_region_by_size("pri_mem", $sformatf("%s_%d", "CDP_WDMA", cdp.get_active_cnt()), mem_size, cdp.align_mask[0]);
     {cdp.dst_base_addr_high, cdp.dst_base_addr_low} = region.get_start_offset();
     cdp.ral.nvdla.NVDLA_CDP.D_DST_BASE_ADDR_HIGH.set(cdp.dst_base_addr_high);
     cdp.ral.nvdla.NVDLA_CDP.D_DST_BASE_ADDR_LOW.set(cdp.dst_base_addr_low);
+    // Reserve mem region to write into
+    mem_reserve(fh, "pri_mem", region.get_start_offset(), mem_size, cdp.sync_evt_queue[-2]);
+    mem_release(fh, "pri_mem", region.get_start_offset(), cdp.sync_evt_queue[0]);
 endfunction : set_output_mem_addr
 
 function void nvdla_cdprdma_cdp_scenario::trace_dump(int fh);
@@ -74,13 +76,12 @@ function void nvdla_cdprdma_cdp_scenario::trace_dump(int fh);
     end
     `uvm_info(inst_name, "Start trace dumping ...", UVM_HIGH)
     print_comment(fh, $sformatf("Scenario CDPRDMA_CDP:%0d start",active_cnt));
-    
+
     set_sync_evt_name();
-    set_output_mem_addr();
-    cdp.trace_dump(fh);
+    set_output_mem_addr(fh);
     cdp_rdma.trace_dump(fh);
+    cdp.trace_dump(fh);
     check_nothing(fh,sync_evt_name);
-    update_sync_evt_queue();
     `uvm_info(inst_name, "Finish trace dumping ...", UVM_HIGH)
 
     if (fcov_en) begin
@@ -100,16 +101,11 @@ function void nvdla_cdprdma_cdp_scenario::activate();
     cdp.activate();
 endfunction: activate
 
-function void nvdla_cdprdma_cdp_scenario::update_sync_evt_queue();
-    cdp.update_sync_evt_queue();
-    cdp_rdma.update_sync_evt_queue();
-endfunction: update_sync_evt_queue
-
 function void nvdla_cdprdma_cdp_scenario::set_sync_evt_name();
     sync_evt_name = {inst_name.tolower(),"_act",$sformatf("%0d",active_cnt)};
-    sync_evt_name = {sync_evt_name, "_",cdp.get_resource_name(),"_act",$sformatf("%0d",cdp.get_active_cnt())};
-    sync_evt_name = {sync_evt_name, "_",cdp_rdma.get_resource_name(),"_act",$sformatf("%0d",cdp_rdma.get_active_cnt())};
-    
+    sync_evt_name = {sync_evt_name, "_",cdp.get_resource_name()};
+    sync_evt_name = {sync_evt_name, "_",cdp_rdma.get_resource_name()};
+
     /*
         CDP_RDMA relies on CDP interrupt to show status, so always provide same sync evt to both resources
     */

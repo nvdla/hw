@@ -8,6 +8,8 @@
 // @description: various hardware resources of cdma sub module
 //-------------------------------------------------------------------------------------
 
+typedef class nvdla_cc_dp_resource;
+
 class nvdla_cdma_resource extends nvdla_base_resource;
 
     // singleton handle
@@ -15,6 +17,8 @@ class nvdla_cdma_resource extends nvdla_base_resource;
     string  cdma_feature_surface_pattern    = "random";
     string  cdma_image_surface_pattern      = "random";
     string  cdma_weight_surface_pattern     = "random";
+    string  data_sync_evt_queue[-2:0];
+    string  weight_sync_evt_queue[-2:0];
 
     string  cc_input_cube_size              = "NORMAL";
 
@@ -368,6 +372,7 @@ class nvdla_cdma_resource extends nvdla_base_resource;
     */
     extern function         new(string name="nvdla_cdma_resource", uvm_component parent);
     extern static function  nvdla_cdma_resource get_cdma(uvm_component parent);
+    extern function void    set_sync_evt_name(string sync_evt_name);
     extern function void    trace_dump(int fh);
     extern function void    set_mem_addr();
     extern function void    surface_dump(int fh);
@@ -436,6 +441,14 @@ static function  nvdla_cdma_resource nvdla_cdma_resource::get_cdma(uvm_component
     return inst;
 endfunction: get_cdma
 
+function void nvdla_cdma_resource::set_sync_evt_name(string sync_evt_name);
+    string data_sync_evt_name = $sformatf("%s__cdma_data_done_%0d", sync_evt_name, group_to_use);
+    string weight_sync_evt_name = $sformatf("%s__cdma_weight_done_%0d", sync_evt_name, group_to_use);
+
+    data_sync_evt_queue[-2:0] = {data_sync_evt_queue[-1:0], data_sync_evt_name};
+    weight_sync_evt_queue[-2:0] = {weight_sync_evt_queue[-1:0], weight_sync_evt_name};
+endfunction: set_sync_evt_name
+
 function void nvdla_cdma_resource::trace_dump(int fh);
     if(fh==null) begin
         `uvm_fatal(inst_name, "Null handle of trace file ...")
@@ -446,14 +459,13 @@ function void nvdla_cdma_resource::trace_dump(int fh);
         poll_reg_equal(fh, "NVDLA_CDMA.S_CBUF_FLUSH_STATUS", 1);
     end
     surface_dump(fh);
-    // if both groups have been used, resource must wait for at least one group releases
-    if(sync_evt_queue.size()==2) begin
+    // if both groups have been used, resource must wait for the same group released
+    if (get_active_cnt() >= 2) begin
         // There are two interrupt events needs to be waited
         //   Data done interrupt
         //   Weight done interrupt
-        string sync_wait_event = sync_evt_queue.pop_front();
-        sync_wait(fh,inst_name,{sync_wait_event, "_cdma_data_",$sformatf("%0d",group_to_use)});
-        sync_wait(fh,inst_name,{sync_wait_event, "_cdma_weight_",$sformatf("%0d",group_to_use)});
+        sync_wait(fh,inst_name, data_sync_evt_queue[-2]);
+        sync_wait(fh,inst_name, weight_sync_evt_queue[-2]);
     end
 
     reg_write(fh,"NVDLA_CDMA.S_POINTER",group_to_use);
@@ -478,13 +490,15 @@ function void nvdla_cdma_resource::trace_dump(int fh);
     end
     ral.nvdla.NVDLA_CDMA.D_OP_ENABLE.set(1);
     // Make sure CSC enable is always before CDMA
-    sync_wait(fh, "NVDLA_CDMA", {curr_sync_evt_name,"_csc_enable"});
+    begin
+        nvdla_cc_dp_resource cc_dp = nvdla_cc_dp_resource::get_cc_dp(this);
+        sync_wait(fh, "NVDLA_CDMA", cc_dp.get_csc_enabled_event_name());
+    end
     reg_write(fh,"NVDLA_CDMA.D_OP_ENABLE",1);
-    // There are two interrupt events needs to be waited
-    //   Data done interrupt
-    //   Weight done interrupt
-    intr_notify(fh,{"CDMA_DAT","_",$sformatf("%0d",group_to_use)},{curr_sync_evt_name,"_cdma_data_",$sformatf("%0d",group_to_use)});
-    intr_notify(fh,{"CDMA_WT","_",$sformatf("%0d",group_to_use)}, {curr_sync_evt_name,"_cdma_weight_",$sformatf("%0d",group_to_use)});
+
+    // Wait interrupt and then trigger interrupt sync events.
+    intr_notify(fh,$sformatf("CDMA_DAT_%0d", group_to_use), data_sync_evt_queue[0]);
+    intr_notify(fh,$sformatf("CDMA_WT_%0d" , group_to_use), weight_sync_evt_queue[0]);
     `uvm_info(inst_name, "Finish trace dumping ...", UVM_HIGH)
 endfunction : trace_dump
 
@@ -494,7 +508,7 @@ function void nvdla_cdma_resource::surface_dump(int fh);
             surface_feature_config feature_cfg;
             longint unsigned address;
             string mem_domain_input="pri_mem";
-            // Get surface setting fro resource register
+            // Get surface setting from resource register
             // string name;
             // int unsigned width; int unsigned height;int unsigned channel; int unsigned batch;
             // int unsigned line_stride; int unsigned surface_stride; int unsigned batch_stride=1;
@@ -512,7 +526,8 @@ function void nvdla_cdma_resource::surface_dump(int fh);
             feature_cfg.precision = precision_e'(in_precision);
             feature_cfg.pattern = cdma_feature_surface_pattern;
             surface_gen.generate_memory_surface_feature(feature_cfg);
-            mem_load(fh,mem_domain_input,address,feature_cfg.name);
+            mem_load(fh, mem_domain_input,address,feature_cfg.name,data_sync_evt_queue[-2]);
+            mem_release(fh, mem_domain_input,address,data_sync_evt_queue[ 0]);
         end else if (datain_format_PIXEL == datain_format) begin
             if(pixel_mapping_PITCH_LINEAR == pixel_mapping) begin
                 surface_image_pitch_config surface_cfg;
@@ -544,9 +559,11 @@ function void nvdla_cdma_resource::surface_dump(int fh);
                 // `uvm_info(inst_name, {"pixel_format.name ", pixel_format.name, " surface_cfg.pixel_format_name ", surface_cfg.pixel_format_name}, UVM_NONE)
                 surface_cfg.pattern = cdma_feature_surface_pattern;
                 surface_gen.generate_memory_surface_image_pitch(surface_cfg);
-                mem_load(fh,mem_domain_input,address_0,$sformatf("0x%0h.dat", address_0));
-                if(plane_number > 1) begin
-                    mem_load(fh,mem_domain_input,address_1,$sformatf("0x%0h.dat", address_1));
+                mem_load(fh, mem_domain_input,address_0,$sformatf("0x%0h.dat", address_0),data_sync_evt_queue[-2]);
+                mem_release(fh, mem_domain_input,address_0,data_sync_evt_queue[ 0]);
+                if (plane_number > 1) begin
+                    mem_load(fh, mem_domain_input,address_1,$sformatf("0x%0h.dat", address_1),data_sync_evt_queue[-2]);
+                    mem_release(fh, mem_domain_input,address_1,data_sync_evt_queue[ 0]);
                 end
             end
         end
@@ -1423,20 +1440,20 @@ function void nvdla_cdma_resource::set_mem_addr();
             mem_size = calc_mem_size(batches+1, batch_stride, datain_channel+1,
                                     `NVDLA_MEMORY_ATOMIC_SIZE, surf_stride);
             `uvm_info(inst_name, $sformatf("FEATURE_SIZE:feature byte size is: 0x%h", mem_size), UVM_HIGH)
-            region = mm.request_region_by_size("PRI", $sformatf("%s_%0d", "CDMA_DATA", get_active_cnt()), mem_size, align_mask[0]);
+            region = mm.request_region_by_size("pri_mem", $sformatf("%s_%0d", "CDMA_DATA", get_active_cnt()), mem_size, align_mask[0]);
             {datain_addr_high_0, datain_addr_low_0} = region.get_start_offset();
         end
         else begin
             // Image, plane 0
             mem_size = calc_mem_size_plane(datain_height+1, line_stride, `NVDLA_MEMORY_ATOMIC_SIZE);
             `uvm_info(inst_name, $sformatf("Image:plane 0 byte size is: 0x%h", mem_size), UVM_HIGH)
-            region = mm.request_region_by_size("PRI", $sformatf("%s_%0d", "CDMA_DATA_PLANE_0", get_active_cnt()), mem_size, align_mask[0]);
+            region = mm.request_region_by_size("pri_mem", $sformatf("%s_%0d", "CDMA_DATA_PLANE_0", get_active_cnt()), mem_size, align_mask[0]);
             {datain_addr_high_0, datain_addr_low_0} = region.get_start_offset();
             // Image, plane 1
             if(plane_number > 1) begin
                 mem_size = calc_mem_size_plane(datain_height+1, uv_line_stride, `NVDLA_MEMORY_ATOMIC_SIZE);
                 `uvm_info(inst_name, $sformatf("Image:plane 1 byte size is: 0x%h", mem_size), UVM_HIGH)
-                region = mm.request_region_by_size("PRI", $sformatf("%s_%0d", "CDMA_DATA_PLANE_1", get_active_cnt()), mem_size, align_mask[0]);
+                region = mm.request_region_by_size("pri_mem", $sformatf("%s_%0d", "CDMA_DATA_PLANE_1", get_active_cnt()), mem_size, align_mask[0]);
                 {datain_addr_high_1, datain_addr_low_1} = region.get_start_offset();
             end
         end
@@ -1446,18 +1463,18 @@ function void nvdla_cdma_resource::set_mem_addr();
         // Weight surface: uncompressed and comppressed
         mem_size = weight_bytes;
         `uvm_info(inst_name, $sformatf("WEIGHT_SIZE:weight byte size is: 0x%h", mem_size), UVM_HIGH)
-        region = mm.request_region_by_size("PRI", $sformatf("%s_%0d", "CDMA_WEIGHT", get_active_cnt()), mem_size, 'h7f);
+        region = mm.request_region_by_size("pri_mem", $sformatf("%s_%0d", "CDMA_WEIGHT", get_active_cnt()), mem_size, 'h7f);
         {weight_addr_high, weight_addr_low} = region.get_start_offset();
         if(weight_format_COMPRESSED == weight_format) begin
             // Weight mask surface
             mem_size = wmb_bytes;
             `uvm_info(inst_name, $sformatf("WMB_SIZE:weight mask byte size is: 0x%h", mem_size), UVM_HIGH)
-            region = mm.request_region_by_size("PRI", $sformatf("%s_%0d", "CDMA_WEIGHT", get_active_cnt()), mem_size, 'h7f);
+            region = mm.request_region_by_size("pri_mem", $sformatf("%s_%0d", "CDMA_WEIGHT", get_active_cnt()), mem_size, 'h7f);
             {wmb_addr_high, wmb_addr_low} = region.get_start_offset();
             // Weight group size surface
             mem_size = ((weight_kernel + `NVDLA_MAC_ATOMIC_K_SIZE)/`NVDLA_MAC_ATOMIC_K_SIZE + `NVDLA_MAC_ATOMIC_C_SIZE - 1)/`NVDLA_MAC_ATOMIC_C_SIZE * `NVDLA_MAC_ATOMIC_C_SIZE;
             `uvm_info(inst_name, $sformatf("WGS_SIZE:weight group byte size is: 0x%h", mem_size), UVM_HIGH)
-            region = mm.request_region_by_size("PRI", $sformatf("%s_%0d", "CDMA_WEIGHT", get_active_cnt()), mem_size, 'h7f);
+            region = mm.request_region_by_size("pri_mem", $sformatf("%s_%0d", "CDMA_WEIGHT", get_active_cnt()), mem_size, 'h7f);
             {wgs_addr_high, wgs_addr_low} = region.get_start_offset();
         end
     end

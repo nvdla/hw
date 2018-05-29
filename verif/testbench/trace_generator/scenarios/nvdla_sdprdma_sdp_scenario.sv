@@ -30,7 +30,6 @@ class nvdla_sdprdma_sdp_scenario extends nvdla_base_scenario;
     extern function void    trace_dump(int fh);
     extern function void    activate();
     extern function void    set_sync_evt_name();
-    extern function void    update_sync_evt_queue();
     extern function void    set_sim_constraint();
 
     /*
@@ -70,10 +69,9 @@ function void nvdla_sdprdma_sdp_scenario::trace_dump(int fh);
     // Get surface setting fro resource register
     // feature_cfg.width =
     // surface_generator.generate_memory_surface_feature(feature_cfg)
-    sdp.trace_dump(fh);
     sdp_rdma.trace_dump(fh);
+    sdp.trace_dump(fh);
     check_nothing(fh,sync_evt_name);
-    update_sync_evt_queue();
     `uvm_info(inst_name, "Finish trace dumping ...", UVM_HIGH)
 
     if (fcov_en) begin
@@ -92,11 +90,6 @@ function void nvdla_sdprdma_sdp_scenario::activate();
     sdp_rdma.activate();
     sdp.activate();
 endfunction: activate
-
-function void nvdla_sdprdma_sdp_scenario::update_sync_evt_queue();
-    sdp.update_sync_evt_queue();
-    sdp_rdma.update_sync_evt_queue();
-endfunction: update_sync_evt_queue
 
 function void nvdla_sdprdma_sdp_scenario::set_sync_evt_name();
     sync_evt_name = {inst_name.tolower(),"_act",$sformatf("%0d",active_cnt)};

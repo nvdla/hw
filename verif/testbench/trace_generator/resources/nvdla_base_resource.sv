@@ -40,7 +40,7 @@ class nvdla_base_resource extends uvm_component;
     */
     int                         active_cnt = `NEVER_BE_ACTIVE;
     /*
-        group_to_use: group ID to be configured. 
+        group_to_use: group ID to be configured.
         variable value is automatically determined by active_cnt value.
     */
     int                         group_to_use;
@@ -50,25 +50,23 @@ class nvdla_base_resource extends uvm_component;
     ral_sys_top                 ral;
     surface_generator           surface_gen;
     /*
-        curr_sync_evt_name: uniq sync event name for current scenario. 
-        variable value is automatically determined by each resource
+        sync_evt_queue: used to store sync_evt passed by scenario.
+        Always store latest 3 layers' interrupt sync event name
+         0: layer N (current to be executed layer)
+        -1: layer N-1
+        -2: layer N-2
     */
-    string                      curr_sync_evt_name;
-    /*
-        sync_evt_queue: used to store sync_evt passed by scenario
-    */
-    string                      sync_evt_queue[$:2];
+    string                      sync_evt_queue[-2:0];
 
-    /* 
+    /*
         Method
     */
-    extern function         new(string name="nvdla_base_resource", uvm_component parent);
-    extern function void    activate();
-    extern function void    update_sync_evt_queue();
-    extern function void    set_sync_evt_name(string sync_evt_name);
-    extern function string  get_sync_evt_name();
-    extern function int     get_active_cnt();
-    extern function string  get_resource_name();
+    extern protected function new(string name="nvdla_base_resource", uvm_component parent);
+    extern function void      activate();
+    extern virtual function   void set_sync_evt_name(string sync_evt_name);
+    extern function string    get_sync_evt_name(int index = 0);
+    extern function int       get_active_cnt();
+    extern function string    get_resource_name();
     extern function longint unsigned  calc_mem_size(int unsigned n_batch, int unsigned batch_stride,
                                                     int unsigned n_channel, int unsigned element_per_atom,
                                                     int unsigned surface_stride);
@@ -84,14 +82,24 @@ class nvdla_base_resource extends uvm_component;
     extern function void    reg_write(int fh,   string reg_name,    int reg_value );
     extern function void    poll_reg_equal(int fh,   string reg_name,    int reg_value );
     extern function void    intr_notify(int fh, string intr_id,     string sync_id);
-    extern function void    mem_load(int fh, string mem_domain, longint unsigned base_addr, string file_name);
+    extern function void    mem_reserve(int fh, string mem_domain, longint unsigned base_addr,
+                                        int size, string sync_id);
+    extern function void    mem_load(int fh, string mem_domain, longint unsigned base_addr,
+                                     string file_name, string sync_id);
+    extern function void    mem_init_by_pattern(int fh, string mem_domain, longint unsigned base_addr,
+                                                int size, string pattern, string sync_id);
+    extern function void    mem_init_by_file(int fh, string mem_domain, longint unsigned base_addr,
+                                             string file_name, string sync_id);
+    extern function void    mem_release(int fh, string mem_domain, longint unsigned base_addr, string sync_id);
     /*
         Phase
     */
     extern function void    connect_phase(uvm_phase phase);
     extern virtual function void set_sim_constraint();
-    `uvm_component_utils(nvdla_base_resource)
-    
+
+    `uvm_component_utils_begin(nvdla_base_resource)
+        `uvm_field_int(active_cnt, UVM_DEFAULT)
+    `uvm_component_utils_end
 endclass : nvdla_base_resource
 
 function nvdla_base_resource::new(string name="nvdla_base_resource", uvm_component parent);
@@ -132,20 +140,48 @@ function void nvdla_base_resource::intr_notify(int fh, string intr_id, string sy
     $fwrite(fh,"intr_notify(%s,%s);\n",intr_id,sync_id);
 endfunction: intr_notify
 
-function void nvdla_base_resource::mem_load(int fh, string mem_domain, longint unsigned base_addr, string file_name);
-    $fwrite(fh,"mem_load(%s,0x%0h,\"%s\");\n",mem_domain,base_addr,file_name);
+function void nvdla_base_resource::mem_reserve(int fh, string mem_domain, longint unsigned base_addr,
+                                               int size, string sync_id);
+    if (sync_id == "")
+        $fwrite(fh,"mem_reserve(%s,0x%0h,0x%h);\n", mem_domain, base_addr, size);
+    else
+        $fwrite(fh,"mem_reserve(%s,0x%0h,0x%0h,%s);\n", mem_domain, base_addr, size, sync_id);
+endfunction: mem_reserve
+
+function void nvdla_base_resource::mem_load(int fh, string mem_domain, longint unsigned base_addr,
+                                            string file_name, string sync_id);
+    if (sync_id == "")
+        $fwrite(fh,"mem_load(%s,0x%0h,\"%s\");\n", mem_domain, base_addr, file_name);
+    else
+        $fwrite(fh,"mem_load(%s,0x%0h,\"%s\",%s);\n", mem_domain, base_addr, file_name, sync_id);
 endfunction: mem_load
 
-function void nvdla_base_resource::update_sync_evt_queue();
-    sync_evt_queue.push_back(curr_sync_evt_name);
-endfunction: update_sync_evt_queue
+function void nvdla_base_resource::mem_init_by_pattern(int fh, string mem_domain, longint unsigned base_addr,
+                                                       int size, string pattern, string sync_id);
+    if (sync_id == "")
+        $fwrite(fh,"mem_init(%s,0x%0h,0x%0h,%s);\n", mem_domain, base_addr, size, pattern);
+    else
+        $fwrite(fh,"mem_init(%s,0x%0h,0x%0h,%s,%s);\n", mem_domain, base_addr, size, pattern, sync_id);
+endfunction: mem_init_by_pattern
+
+function void nvdla_base_resource::mem_init_by_file(int fh, string mem_domain, longint unsigned base_addr,
+                                                    string file_name, string sync_id);
+    if (sync_id == "")
+        $fwrite(fh,"mem_init(%s,0x%0h,\"%s\");\n", mem_domain, base_addr, file_name);
+    else
+        $fwrite(fh,"mem_init(%s,0x%0h,\"%s\",%s);\n", mem_domain, base_addr, file_name, sync_id);
+endfunction: mem_init_by_file
+
+function void nvdla_base_resource::mem_release(int fh, string mem_domain, longint unsigned base_addr, string sync_id);
+    $fwrite(fh,"mem_release(%s,0x%0h,%s);\n", mem_domain, base_addr, sync_id);
+endfunction: mem_release
 
 function void nvdla_base_resource::set_sync_evt_name(string sync_evt_name);
-    curr_sync_evt_name = sync_evt_name;
+    sync_evt_queue[-2:0] = {sync_evt_queue[-1:0], sync_evt_name};
 endfunction: set_sync_evt_name
 
-function string nvdla_base_resource::get_sync_evt_name();
-    return curr_sync_evt_name;
+function string nvdla_base_resource::get_sync_evt_name(int index = 0);
+    return sync_evt_queue[index];
 endfunction: get_sync_evt_name
 
 function int nvdla_base_resource::get_active_cnt();
@@ -186,8 +222,8 @@ function longint unsigned nvdla_base_resource::calc_mem_size_plane(int unsigned 
     return mem_size;
 endfunction : calc_mem_size_plane
 
-function void  nvdla_base_resource::lut_table_load( string         file, 
-                                                    ref bit [15:0] le_table[65], 
+function void  nvdla_base_resource::lut_table_load( string         file,
+                                                    ref bit [15:0] le_table[65],
                                                     ref bit [15:0] lo_table[257]);
     int       file_hdl;
     int       le_idx;
@@ -203,10 +239,10 @@ function void  nvdla_base_resource::lut_table_load( string         file,
         `uvm_error(inst_name, $sformatf("LUT table file open failed"))
     end
     while(is_file_end == 0) begin
-        code = $fscanf(file_hdl, "%s %d", lut_id, lut_data); 
+        code = $fscanf(file_hdl, "%s %d", lut_id, lut_data);
         `uvm_info(inst_name, $sformatf("LUT load line: lut_id:%0s, val:%0d", lut_id, lut_data), UVM_NONE)
         if(!code) begin
-            // discard unmatch lines 
+            // discard unmatch lines
             string discard;
             void'($fgets(discard,file_hdl));
             continue;

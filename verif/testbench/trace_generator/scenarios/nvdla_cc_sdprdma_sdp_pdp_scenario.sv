@@ -35,7 +35,6 @@ class nvdla_cc_sdprdma_sdp_pdp_scenario extends nvdla_base_scenario;
     extern function void    surface_dump(int fh);
     extern function void    activate();
     extern function void    set_sync_evt_name();
-    extern function void    update_sync_evt_queue();
     extern function void    set_sim_constraint();
     extern function void    pre_randomize();
     extern function void    post_randomize();
@@ -79,16 +78,16 @@ function void nvdla_cc_sdprdma_sdp_pdp_scenario::trace_dump(int fh);
     `uvm_info(inst_name, "Start trace dumping ...", UVM_HIGH)
     print_comment(fh, $sformatf("Scenario CC_SDPRDMA_SDP_PDP:%0d start",active_cnt));
 
+    set_sync_evt_name();
+
     surface_dump(fh);
 
-    set_sync_evt_name();
     cdma.trace_dump(fh);
     cc_dp.trace_dump(fh);
     sdp_rdma.trace_dump(fh);
     sdp.trace_dump(fh);
     pdp.trace_dump(fh);
     check_nothing(fh, pdp.get_sync_evt_name());
-    update_sync_evt_queue();
     `uvm_info(inst_name, "Finish trace dumping ...", UVM_HIGH)
 
     if (fcov_en) begin
@@ -137,10 +136,13 @@ function void nvdla_cc_sdprdma_sdp_pdp_scenario::surface_dump(int fh);
         surface_config.pattern = cdma_weight_surface_pattern;
         surface_config.comp_en = cc_dp.weight_format;
         surface_gen.generate_memory_surface_weight(surface_config);
-        mem_load(fh,mem_domain,address_weight,surface_config.weight_name);
-        if(surface_config.comp_en) begin
-            mem_load(fh,mem_domain,address_wmb,surface_config.weight_mask_name);
-            mem_load(fh,mem_domain,address_wgs,surface_config.weight_group_size_name);
+        mem_load(fh, mem_domain,address_weight,surface_config.weight_name,cdma.weight_sync_evt_queue[-2]);
+        mem_release(fh, mem_domain,address_weight,cdma.weight_sync_evt_queue[ 0]);
+        if (surface_config.comp_en) begin
+            mem_load(fh, mem_domain,address_wmb,surface_config.weight_mask_name,cdma.weight_sync_evt_queue[-2]);
+            mem_load(fh, mem_domain,address_wgs,surface_config.weight_group_size_name,cdma.weight_sync_evt_queue[-2]);
+            mem_release(fh, mem_domain,address_wmb,cdma.weight_sync_evt_queue[0]);
+            mem_release(fh, mem_domain,address_wgs,cdma.weight_sync_evt_queue[0]);
         end
     end
 endfunction: surface_dump
@@ -154,14 +156,6 @@ function void nvdla_cc_sdprdma_sdp_pdp_scenario::activate();
     pdp.activate();
 endfunction: activate
 
-function void nvdla_cc_sdprdma_sdp_pdp_scenario::update_sync_evt_queue();
-    cdma.update_sync_evt_queue();
-    cc_dp.update_sync_evt_queue();
-    sdp_rdma.update_sync_evt_queue();
-    sdp.update_sync_evt_queue();
-    pdp.update_sync_evt_queue();
-endfunction: update_sync_evt_queue
-
 function void nvdla_cc_sdprdma_sdp_pdp_scenario::set_sync_evt_name();
     string cdma_sync_evt_name;
     string cc_dp_sync_evt_name;
@@ -169,8 +163,6 @@ function void nvdla_cc_sdprdma_sdp_pdp_scenario::set_sync_evt_name();
     string pdp_sync_evt_name;
 
     sync_evt_name = {inst_name.tolower(), "_act", $sformatf("%0d",active_cnt)};
-    // cdma_sync_evt_name = {sync_evt_name, "_", cdma.get_resource_name(), "_act", $sformatf("%0d", cdma.get_active_cnt())};
-    // cc_dp_sync_evt_name = {sync_evt_name, "_", cc_dp.get_resource_name(), "_act", $sformatf("%0d", cc_dp.get_active_cnt())};
     cdma_sync_evt_name  = sync_evt_name;
     cc_dp_sync_evt_name = sync_evt_name;
     sdp_sync_evt_name = {sync_evt_name, "_", sdp.get_resource_name(),"_act", $sformatf("%0d",sdp.get_active_cnt()),
@@ -404,8 +396,8 @@ constraint nvdla_cc_sdprdma_sdp_pdp_scenario::c_ias_cc {
         else if(((cc_dp.weight_channel_ext+1) > `NVDLA_MAC_ATOMIC_C_SIZE/2) || ((cdma.conv_x_stride+1)*(cdma.datain_channel+1) > `NVDLA_MAC_ATOMIC_C_SIZE/2)) {
             cc_dp.y_extension == 0;
         }
-        else { 
-            cc_dp.y_extension inside {[0:1]}; 
+        else {
+            cc_dp.y_extension inside {[0:1]};
         }
     }
     else { cc_dp.y_extension == 0; }
@@ -443,7 +435,7 @@ constraint nvdla_cc_sdprdma_sdp_pdp_scenario::c_ias_cc {
         // direct feature weight size
         cc_dp.weight_channel_ext == cdma.datain_channel;
     }
-    else if(cdma.conv_mode == nvdla_cdma_resource::conv_mode_DIRECT && cdma.datain_format == nvdla_cdma_resource::datain_format_PIXEL){ 
+    else if(cdma.conv_mode == nvdla_cdma_resource::conv_mode_DIRECT && cdma.datain_format == nvdla_cdma_resource::datain_format_PIXEL){
         // direct image datain size
         (cdma.datain_width+1 +  cdma.pad_left + cdma.pad_right - ((cc_dp.weight_channel_ext+1)/(cdma.datain_channel+1))) >= 0;
         (cdma.datain_height+1 + cdma.pad_top +  cdma.pad_bottom - (cc_dp.weight_height_ext+1)) >= 0;

@@ -72,8 +72,8 @@ function nvdla_tg_core::new(string name="nvdla_tg_core", uvm_component parent);
 
     begin
         mem_man mm = mem_man::get_mem_man();
-        mm.register_domain("PRI", 'h0, {`NVDLA_MEM_ADDRESS_WIDTH{1'b1}}, mem_man_pkg::ALLOC_RANDOM);
-        mm.register_domain("SEC", 'h0, {`NVDLA_MEM_ADDRESS_WIDTH{1'b1}}, mem_man_pkg::ALLOC_RANDOM);
+        mm.register_domain("pri_mem", 'h0, {`NVDLA_MEM_ADDRESS_WIDTH{1'b1}}, mem_man_pkg::ALLOC_RANDOM);
+        mm.register_domain("sec_mem", 'h0, {`NVDLA_MEM_ADDRESS_WIDTH{1'b1}}, mem_man_pkg::ALLOC_RANDOM);
     end
 
     if ($test$plusargs("fcov_en")) begin

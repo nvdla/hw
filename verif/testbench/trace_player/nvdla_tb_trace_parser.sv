@@ -313,22 +313,33 @@ function void nvdla_tb_trace_parser::parse_trace();
         uint64_t        size;
         string          pattern;
         string          file_path;
+        string          sync_id;
+        string          line;
+
         fh = $fopen(mm_cmd_file_path,"r");
         if(!fh) begin
             `uvm_fatal(tID, $sformatf("Cannot open trace file %s\n", mm_cmd_file_path) );
         end
         while (!$feof(fh)) begin
-            //kind_name,memory_type,base_address,size,pattern,file_path
-            code = $fscanf(fh,"%s %s %h %h %s %s\n",kind_name,memory_type,base_address,size,pattern,file_path);
-            if(6 == code) begin
-                `uvm_info(tID,$sformatf("kind_name=%s, memory_type=%s, base_address=%h, size=%h, pattern=%s, file_path=%s",kind_name,memory_type,base_address,size,pattern,file_path), UVM_NONE);
+            void'($fgets(line, fh));
+            // memory model command without wait event, sync_id is optional:
+            //  - kind_name memory_type base_address size pattern file_path sync_id
+            code = $sscanf(line, "%s %s %h %h %s %s %s",
+                kind_name, memory_type, base_address, size, pattern, file_path, sync_id);
+            if (6 == code || 7 == code) begin
+                `uvm_info(tID,
+                    $sformatf("kind_name=%s, memory_type=%s, base_address=%0h, size=%0h, pattern=%s, file_path=%s, sync_id = %s",
+                    kind_name, memory_type, base_address, size, pattern, file_path, sync_id), UVM_NONE);
                 mm_cmd = new("memory_model_cmd");
                 kind_wrapper::from_name(kind_name, mm_cmd.kind);
+                mm_cmd.sync_id = (6 == code) ? "" : sync_id;
                 memory_type_wrapper::from_name(memory_type, mm_cmd.memory_type);
                 mm_cmd.base_address = base_address;
                 mm_cmd.size         = size;
                 mm_cmd.pattern      = pattern;
                 mm_cmd.file_path    = file_path;
+
+                if (mm_cmd.sync_id != "") global_event_pool.get(sync_id);
                 send_command_to_memory_model(mm_cmd);
             end
         end
@@ -413,7 +424,7 @@ endfunction : send_command_to_interrupt_handler
 
 function void nvdla_tb_trace_parser::send_command_to_memory_model(memory_model_command cmd);
     `uvm_info(tID, $sformatf("mem cmd:%0s", cmd.sprint()), UVM_MEDIUM)
-    if (PRIMARY_MEM == cmd.memory_type) begin
+    if (PRI_MEM == cmd.memory_type) begin
         primary_memory_model_command_port.write(cmd);
     end else begin
 `ifdef NVDLA_SECONDARY_MEMIF_ENABLE

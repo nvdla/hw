@@ -18,7 +18,20 @@ class TraceParser(object):
     re_interrupt_handler_command        = re.compile(r'^\s*intr_notify\s*\(\s*((?P<intr_id>\w+)\s*,\s*)?(?P<sync_id>\w+)\s*\)\s*;\s*(\/\/.*)*$')
     #re_result_checker_command           = re.compile(r'^\s*(?P<kind>(check_crc|check_file|check_nothing))\s*\(\s*(?P<sync_id>\w+)\s*,\s*(?P<memory_type>\w+)\s*,\s*(?P<base_addr>0x[0-9a-fA-F]+)\s*,\s*(?P<size>0x[0-9a-fA-F]+)\s*,\s*(?P<golden_crc>0x[0-9a-fA-F]+)\s*\)\s*;\s*(\/\/)*$')
     re_result_checker_command           = re.compile(r'^\s*(?P<kind>(check_crc|check_file|check_nothing))\s*\(\s*(?P<sync_id>\w+)\s*(,\s*(?P<memory_type>\w+)\s*,\s*(?P<base_addr>0x[0-9a-fA-F]+)\s*,\s*(?P<size>(0x[0-9a-fA-F]+)|(\d+))\s*,\s*((?P<golden_crc>0x[0-9a-fA-F]+)|"(?P<golden_file_path>[\w\.\/]+)")\s*)?\)\s*;\s*(\/\/.*)*$')
-    re_memory_model_command             = re.compile(r'^\s*(?P<kind>(mem_load|mem_init))\s*\(\s*(?P<memory_type>\w+)\s*,\s*(?P<base_addr>0x[0-9a-fA-F]+)\s*,\s*("(?P<file_path>[\w\.\/]+)"|(?P<size>(0x[0-9a-fA-F]+)|(\d+)))\s*(,\s*(?P<pattern>\w+)\s*)?\)\s*;\s*(\/\/.*)*$')
+
+    re_memory_model_command = re.compile(r'''
+        ^
+        \s*(?P<kind>(mem_reserve|mem_load|mem_init|mem_release))\s*
+        \(
+        \s*(?P<memory_type>\w+)\s*,
+        \s*(?P<base_addr>0x[0-9a-fA-F]+)\s*,
+        \s*( "(?P<file_path>[\w\.\/]+)" | (?P<size>(0x[0-9a-fA-F]+)|(\d+)) | (?P<release_sync_id>\w+) )\s*
+        (,\s*(?P<pattern>[A-Z_]+)\s*)?
+        (,\s*(?P<reserve_load_init_sync_id>\w+)\s*)?
+        \)\s*;
+        \s*(\/\/.*)*
+        $
+    ''', re.VERBOSE)
     re_sequence_command_poll_reg        = re.compile(r'^\s*(?P<kind>poll_reg_equal)\s*\(\s*(?P<name>[\w\.]+)\s*,\s*(?P<value>(\w+|\d+|0x[0-9a-fA-F]+))\s*\)\s*;\s*(\/\/.*)*$')
     
     #mem_load ( sec_mem, 0x8000, "python/over/perl.dat"); 
@@ -108,21 +121,72 @@ class TraceParser(object):
                 elif "check_file" == m.group('kind').lower():
                     f_rc_cmd.write("%s %s %s %X %X 0 %s\n" % (m.group('kind').upper(), m.group('sync_id'), m.group('memory_type').upper(), int(m.group('base_addr'),0), int(m.group('size'),0), os.path.join(trace_dir, m.group('golden_file_path')) ))
                 continue
+
+            ## Memory model
             m = self.re_memory_model_command.match(line)
             if m:
                 print (m.groupdict())
-                # kind             | memory_type   | base_addr     | size  | pattern   | file_path
-                if "mem_load" == m.group('kind').lower():
-                    f_mm_cmd.write("%s %s %X 0 NA %s\n" % (m.group('kind').upper(), m.group('memory_type').upper(), int(m.group('base_addr'),0), os.path.join(trace_dir, m.group('file_path')) ))
+                # kind | memory_type | base_addr | size | pattern | file_path | sync_id
+                format_str = "%(kind)s %(memory_type)s %(base_addr)X %(size)X %(pattern)s %(file_path)s %(sync_id)s\n"
+                if "mem_reserve" == m.group('kind').lower():
+                    ## Initialize memory from file
+                    f_mm_cmd.write(format_str % {
+                        'kind'        : m.group('kind').upper(),
+                        'memory_type' : m.group('memory_type').upper(),
+                        'base_addr'   : int(m.group('base_addr'),0),
+                        'size'        : int(m.group('size'),0),
+                        'pattern'     : 'NA',
+                        'file_path'   : 'NA',
+                        'sync_id'     : m.group('reserve_load_init_sync_id') if m.group('reserve_load_init_sync_id') is not None else ''
+                    })
+                elif "mem_load" == m.group('kind').lower():
+                    ## Initialize memory from file
+                    f_mm_cmd.write(format_str % {
+                        'kind'        : m.group('kind').upper(),
+                        'memory_type' : m.group('memory_type').upper(),
+                        'base_addr'   : int(m.group('base_addr'),0),
+                        'size'        : 0,
+                        'pattern'     : 'NA',
+                        'file_path'   : os.path.join(trace_dir, m.group('file_path')),
+                        'sync_id'     : m.group('reserve_load_init_sync_id') if m.group('reserve_load_init_sync_id') is not None else ''
+                    })
                 elif "mem_init" == m.group('kind').lower():
                     if m.group('size') is not None:
-                        ## Initialized memory by pattern
-                        f_mm_cmd.write("%s %s %X %X %s NA\n" % (m.group('kind').upper()+"_PATTERN", m.group('memory_type').upper(), int(m.group('base_addr'),0), int(m.group('size'),0), m.group('pattern') ))
+                        ## Initialize memory with pattern and size
+                        f_mm_cmd.write(format_str % {
+                            'kind'        : 'MEM_INIT_PATTERN',
+                            'memory_type' : m.group('memory_type').upper(),
+                            'base_addr'   : int(m.group('base_addr'),0),
+                            'size'        : int(m.group('size'),0),
+                            'pattern'     : m.group('pattern'),
+                            'file_path'   : 'NA',
+                            'sync_id'     : m.group('reserve_load_init_sync_id') if m.group('reserve_load_init_sync_id') is not None else ''
+                        })
                     else:
-                        ## Initialized memory by path
-                        f_mm_cmd.write("%s %s %X NA %s %s\n" % (m.group('kind').upper()+"_FILE", m.group('memory_type').upper(), int(m.group('base_addr'),0), m.group('pattern'), os.path.join(trace_dir, m.group('file_path')) ))
+                        ## Initialize memory with pattern and offset from file
+                        f_mm_cmd.write(format_str % {
+                            'kind'        : 'MEM_INIT_FILE',
+                            'memory_type' : m.group('memory_type').upper(),
+                            'base_addr'   : int(m.group('base_addr'),0),
+                            'size'        : 0,
+                            'pattern'     : m.group('pattern'),
+                            'file_path'   : os.path.join(trace_dir, m.group('file_path')),
+                            'sync_id'     : m.group('reserve_load_init_sync_id') if m.group('reserve_load_init_sync_id') is not None else ''
+                        })
+                elif "mem_release" == m.group('kind').lower():
+                    ## Release memory
+                    f_mm_cmd.write(format_str % {
+                        'kind'        : 'MEM_RELEASE',
+                        'memory_type' : m.group('memory_type').upper(),
+                        'base_addr'   : int(m.group('base_addr'),0),
+                        'size'        : 0,
+                        'pattern'     : 'NA',
+                        'file_path'   : 'NA',
+                        'sync_id'     : m.group('release_sync_id') if m.group('release_sync_id') is not None else ''
+                    })
 
                 continue
+
             m = self.re_sequence_command_poll_reg.match(line)
             if m:
                 print (m.groupdict())

@@ -32,7 +32,6 @@ class nvdla_cc_sdp_scenario extends nvdla_base_scenario;
     extern function void    surface_dump(int fh);
     extern function void    activate();
     extern function void    set_sync_evt_name();
-    extern function void    update_sync_evt_queue();
     extern function void    set_sim_constraint();
 
     /*
@@ -70,9 +69,10 @@ function void nvdla_cc_sdp_scenario::trace_dump(int fh);
     `uvm_info(inst_name, "Start trace dumping ...", UVM_HIGH)
     print_comment(fh, $sformatf("Scenario CC_SDP:%0d start",active_cnt));
 
+    set_sync_evt_name();
+
     surface_dump(fh);
 
-    set_sync_evt_name();
     // Get surface setting fro resource register
     // feature_cfg.width =
     // surface_generator.generate_memory_surface_feature(feature_cfg)
@@ -80,7 +80,6 @@ function void nvdla_cc_sdp_scenario::trace_dump(int fh);
     cc_dp.trace_dump(fh);
     sdp.trace_dump(fh);
     check_nothing(fh, sdp.get_sync_evt_name());
-    update_sync_evt_queue();
     `uvm_info(inst_name, "Finish trace dumping ...", UVM_HIGH)
 
     if (fcov_en) begin
@@ -127,10 +126,14 @@ function void nvdla_cc_sdp_scenario::surface_dump(int fh);
         surface_config.pattern = cdma_weight_surface_pattern;
         surface_config.comp_en = cc_dp.weight_format;
         surface_gen.generate_memory_surface_weight(surface_config);
-        mem_load(fh,mem_domain,address_weight,surface_config.weight_name);
-        if(surface_config.comp_en) begin
-            mem_load(fh,mem_domain,address_wmb,surface_config.weight_mask_name);
-            mem_load(fh,mem_domain,address_wgs,surface_config.weight_group_size_name);
+
+        mem_load(fh, mem_domain,address_weight,surface_config.weight_name,cdma.weight_sync_evt_queue[-2]);
+        mem_release(fh, mem_domain,address_weight,cdma.weight_sync_evt_queue[ 0]);
+        if (surface_config.comp_en) begin
+            mem_load(fh, mem_domain,address_wmb,surface_config.weight_mask_name,cdma.weight_sync_evt_queue[-2]);
+            mem_load(fh, mem_domain,address_wgs,surface_config.weight_group_size_name,cdma.weight_sync_evt_queue[-2]);
+            mem_release(fh, mem_domain,address_wmb,cdma.weight_sync_evt_queue[0]);
+            mem_release(fh, mem_domain,address_wgs,cdma.weight_sync_evt_queue[0]);
         end
     end
 endfunction: surface_dump
@@ -142,26 +145,18 @@ function void nvdla_cc_sdp_scenario::activate();
     sdp.activate();
 endfunction: activate
 
-function void nvdla_cc_sdp_scenario::update_sync_evt_queue();
-    cdma.update_sync_evt_queue();
-    cc_dp.update_sync_evt_queue();
-    sdp.update_sync_evt_queue();
-endfunction: update_sync_evt_queue
-
 function void nvdla_cc_sdp_scenario::set_sync_evt_name();
     string cdma_sync_evt_name;
     string cc_dp_sync_evt_name;
     string sdp_sync_evt_name;
 
-    sync_evt_name       = {inst_name.tolower(),"_act",$sformatf("%0d",active_cnt)};
-    // cdma_sync_evt_name  = {sync_evt_name, "_",cdma.get_resource_name(),"_act",$sformatf("%0d",cdma.get_active_cnt())};
-    // cc_dp_sync_evt_name = {sync_evt_name, "_",cc_dp.get_resource_name(),"_act",$sformatf("%0d",cc_dp.get_active_cnt())};
+    sync_evt_name       = $sformatf("%s_act%0d", inst_name.tolower(), active_cnt);
     cdma_sync_evt_name  = sync_evt_name;
     cc_dp_sync_evt_name = sync_evt_name;
-    sdp_sync_evt_name   = {sync_evt_name, "_",sdp.get_resource_name(),"_act",$sformatf("%0d",sdp.get_active_cnt())};
+    sdp_sync_evt_name   = $sformatf("%s__%s_act%0d", sync_evt_name, sdp.get_resource_name(), sdp.get_active_cnt());
 
     /*
-        // set individual sync evt for each resource
+        set individual sync evt for each resource
     */
     cdma.set_sync_evt_name(cdma_sync_evt_name);
     cc_dp.set_sync_evt_name(cc_dp_sync_evt_name);

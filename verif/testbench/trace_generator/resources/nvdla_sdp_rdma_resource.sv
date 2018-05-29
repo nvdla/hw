@@ -270,7 +270,8 @@ function void nvdla_sdp_rdma_resource::surface_dump(int fh);
         feature_cfg.pattern = sdp_mrdma_surface_pattern;
         `uvm_info(inst_name, "Generate surface for SDP_M_RDMA ...", UVM_NONE)
         surface_gen.generate_memory_surface_feature(feature_cfg);
-        mem_load(fh,mem_interface_name,address,feature_cfg.name);
+        mem_load(fh, mem_interface_name,address,feature_cfg.name,sync_evt_queue[-2]);
+        mem_release(fh, mem_interface_name,address,sync_evt_queue[ 0]);
     end
 `ifdef NVDLA_SDP_BS_ENABLE
     if(brdma_disable_NO == brdma_disable) begin
@@ -304,7 +305,8 @@ function void nvdla_sdp_rdma_resource::surface_dump(int fh);
         feature_cfg.pattern = sdp_brdma_surface_pattern;
         `uvm_info(inst_name, "Generate surface for SDP_B_RDMA ...", UVM_NONE)
         surface_gen.generate_memory_surface_feature(feature_cfg);
-        mem_load(fh,mem_interface_name,address,feature_cfg.name);
+        mem_load(fh, mem_interface_name,address,feature_cfg.name,sync_evt_queue[-2]);
+        mem_release(fh, mem_interface_name,address,sync_evt_queue[ 0]);
     end
 `endif
 `ifdef NVDLA_SDP_BN_ENABLE
@@ -339,7 +341,8 @@ function void nvdla_sdp_rdma_resource::surface_dump(int fh);
         feature_cfg.pattern = sdp_nrdma_surface_pattern;
         `uvm_info(inst_name, "Generate surface for SDP_N_RDMA ...", UVM_NONE)
         surface_gen.generate_memory_surface_feature(feature_cfg);
-        mem_load(fh,mem_interface_name,address,feature_cfg.name);
+        mem_load(fh, mem_interface_name,address,feature_cfg.name,sync_evt_queue[-2]);
+        mem_release(fh, mem_interface_name,address,sync_evt_queue[ 0]);
     end
 `endif
 `ifdef NVDLA_SDP_EW_ENABLE
@@ -374,7 +377,8 @@ function void nvdla_sdp_rdma_resource::surface_dump(int fh);
         feature_cfg.pattern = sdp_erdma_surface_pattern;
         `uvm_info(inst_name, "Generate surface for SDP_E_RDMA ...", UVM_NONE)
         surface_gen.generate_memory_surface_feature(feature_cfg);
-        mem_load(fh,mem_interface_name,address,feature_cfg.name);
+        mem_load(fh, mem_interface_name,address,feature_cfg.name,sync_evt_queue[-2]);
+        mem_release(fh, mem_interface_name,address,sync_evt_queue[ 0]);
     end
 `endif
 endfunction: surface_dump
@@ -387,9 +391,9 @@ function void nvdla_sdp_rdma_resource::trace_dump(int fh);
 
     surface_dump(fh);
 
-    // if both groups have been used, resource must wait for at least one group releases
-    if(sync_evt_queue.size()==2) begin
-        sync_wait(fh,inst_name,sync_evt_queue.pop_front());
+    // if both groups have been used, resource must wait for the group released
+    if (get_active_cnt() > 1) begin
+        sync_wait(fh,inst_name,sync_evt_queue[-2]);
     end
 
     reg_write(fh,{inst_name.toupper(),".S_POINTER"},group_to_use);
@@ -691,28 +695,28 @@ function void nvdla_sdp_rdma_resource::set_mem_addr();
     // M-RDMA
     if (flying_mode == flying_mode_OFF) begin
         mem_size = calc_mem_size(0, 0, channel+1, `NVDLA_MEMORY_ATOMIC_SIZE, src_surface_stride);
-        region = mm.request_region_by_size("PRI", $sformatf("%s_%0d", "SDP_M_RDMA", get_active_cnt()), mem_size, align_mask[0]);
+        region = mm.request_region_by_size("pri_mem", $sformatf("%s_%0d", "SDP_M_RDMA", get_active_cnt()), mem_size, align_mask[0]);
         {src_base_addr_high, src_base_addr_low} = region.get_start_offset();
     end
 
     // B-RDMA
     if (!brdma_disable) begin
         mem_size = calc_mem_size(0, 0, channel+1, `NVDLA_MEMORY_ATOMIC_SIZE, bs_surface_stride);
-        region = mm.request_region_by_size("PRI", $sformatf("%s_%0d", "SDP_B_RDMA", get_active_cnt()), mem_size, align_mask[1]);
+        region = mm.request_region_by_size("pri_mem", $sformatf("%s_%0d", "SDP_B_RDMA", get_active_cnt()), mem_size, align_mask[1]);
         {bs_base_addr_high, bs_base_addr_low} = region.get_start_offset();
     end
 
     // N-RDMA
     if (!nrdma_disable) begin
         mem_size = calc_mem_size(0, 0, channel+1, `NVDLA_MEMORY_ATOMIC_SIZE, bn_surface_stride);
-        region = mm.request_region_by_size("PRI", $sformatf("%s_%0d", "SDP_N_RDMA", get_active_cnt()), mem_size, align_mask[2]);
+        region = mm.request_region_by_size("pri_mem", $sformatf("%s_%0d", "SDP_N_RDMA", get_active_cnt()), mem_size, align_mask[2]);
         {bn_base_addr_high, bn_base_addr_low} = region.get_start_offset();
     end
 
     // E-RDMA
     if (!erdma_disable) begin
         mem_size = calc_mem_size(0, 0, channel+1, `NVDLA_MEMORY_ATOMIC_SIZE, ew_surface_stride);
-        region = mm.request_region_by_size("PRI", $sformatf("%s_%0d", "SDP_E_RDMA", get_active_cnt()), mem_size, align_mask[3]);
+        region = mm.request_region_by_size("pri_mem", $sformatf("%s_%0d", "SDP_E_RDMA", get_active_cnt()), mem_size, align_mask[3]);
         {ew_base_addr_high, ew_base_addr_low} = region.get_start_offset();
     end
 endfunction : set_mem_addr

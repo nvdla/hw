@@ -58,7 +58,15 @@ class nvdla_base_scenario extends uvm_component;
     extern function void post_randomize();
     
     extern function void print_comment(int fh, string comment);
-    extern function void mem_load(int fh, string mem_domain, longint unsigned base_addr, string file_name);
+    extern function void mem_reserve(int fh, string mem_domain, longint unsigned base_addr,
+                                        int size, string sync_id);
+    extern function void mem_load(int fh, string mem_domain, longint unsigned base_addr,
+                                  string file_name, string sync_id);
+    extern function void mem_init_by_pattern(int fh, string mem_domain, longint unsigned base_addr,
+                                             int size, string pattern, string sync_id);
+    extern function void mem_init_by_file(int fh, string mem_domain, longint unsigned base_addr,
+                                          string file_name, string sync_id);
+    extern function void mem_release(int fh, string mem_domain, longint unsigned base_addr, string sync_id);
 
     extern function void check_nothing(int fh, string event_name);
 
@@ -107,9 +115,41 @@ function void nvdla_base_scenario::print_comment(int fh, string comment);
     $fwrite(fh,"// %s\n", comment);
 endfunction: print_comment
 
-function void nvdla_base_scenario::mem_load(int fh, string mem_domain, longint unsigned base_addr, string file_name);
-    $fwrite(fh,"mem_load(%s,0x%0h,\"%s\");\n",mem_domain,base_addr,file_name);
+function void nvdla_base_scenario::mem_reserve(int fh, string mem_domain, longint unsigned base_addr,
+                                               int size, string sync_id);
+    if (sync_id == "")
+        $fwrite(fh,"mem_reserve(%s,0x%0h,0x%h);\n", mem_domain, base_addr, size);
+    else
+        $fwrite(fh,"mem_reserve(%s,0x%0h,0x%0h,%s);\n", mem_domain, base_addr, size, sync_id);
+endfunction: mem_reserve
+
+function void nvdla_base_scenario::mem_load(int fh, string mem_domain, longint unsigned base_addr,
+                                            string file_name, string sync_id);
+    if (sync_id == "")
+        $fwrite(fh,"mem_load(%s,0x%0h,\"%s\");\n", mem_domain, base_addr, file_name);
+    else
+        $fwrite(fh,"mem_load(%s,0x%0h,\"%s\",%s);\n", mem_domain, base_addr, file_name, sync_id);
 endfunction: mem_load
+
+function void nvdla_base_scenario::mem_init_by_pattern(int fh, string mem_domain, longint unsigned base_addr,
+                                                       int size, string pattern, string sync_id);
+    if (sync_id == "")
+        $fwrite(fh,"mem_init(%s,0x%0h,0x%0h,%s);\n", mem_domain, base_addr, size, pattern);
+    else
+        $fwrite(fh,"mem_init(%s,0x%0h,0x%0h,%s,%s);\n", mem_domain, base_addr, size, pattern, sync_id);
+endfunction: mem_init_by_pattern
+
+function void nvdla_base_scenario::mem_init_by_file(int fh, string mem_domain, longint unsigned base_addr,
+                                                    string file_name, string sync_id);
+    if (sync_id == "")
+        $fwrite(fh,"mem_init(%s,0x%0h,\"%s\");\n", mem_domain, base_addr, file_name);
+    else
+        $fwrite(fh,"mem_init(%s,0x%0h,\"%s\",%s);\n", mem_domain, base_addr, file_name, sync_id);
+endfunction: mem_init_by_file
+
+function void nvdla_base_scenario::mem_release(int fh, string mem_domain, longint unsigned base_addr, string sync_id);
+    $fwrite(fh,"mem_release(%s,0x%0h,%s);\n", mem_domain, base_addr, sync_id);
+endfunction: mem_release
 
 function void nvdla_base_scenario::check_nothing(int fh, string event_name);
     $fwrite(fh,"check_nothing(%s);\n",event_name);

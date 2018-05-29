@@ -17,7 +17,7 @@ class nvdla_pdprdma_pdp_scenario extends nvdla_base_scenario;
     rand nvdla_pdp_resource          pdp;
 
     /*
-        constraints: 
+        constraints:
             * ias_constraint: mandatory constraints from architecture requirement
             * sim_constraint: optional constraints for simulation only
     */
@@ -32,7 +32,6 @@ class nvdla_pdprdma_pdp_scenario extends nvdla_base_scenario;
     extern function void    trace_dump(int fh);
     extern function void    activate();
     extern function void    set_sync_evt_name();
-    extern function void    update_sync_evt_queue();
     extern function void    set_sim_constraint();
     extern function void    pre_randomize();
 
@@ -50,12 +49,11 @@ function nvdla_pdprdma_pdp_scenario::new(string name, uvm_component parent);
     super.new(name, parent);
     this.inst_name = name;
     pdp   = nvdla_pdp_resource::get_pdp(this);
+    pdp_rdma = nvdla_pdp_rdma_resource::get_pdp_rdma(this);
 endfunction : new
 
 function void nvdla_pdprdma_pdp_scenario::build_phase(uvm_phase phase);
     super.build_phase(phase);
-    // pdp = nvdla_pdp_resource::type_id::create("NVDLA_PDP", this);
-    pdp_rdma = nvdla_pdp_rdma_resource::type_id::create("NVDLA_PDP_RDMA", this);
 endfunction: build_phase
 
 function void nvdla_pdprdma_pdp_scenario::trace_dump(int fh);
@@ -64,12 +62,11 @@ function void nvdla_pdprdma_pdp_scenario::trace_dump(int fh);
     end
     `uvm_info(inst_name, "Start trace dumping ...", UVM_HIGH)
     print_comment(fh, $sformatf("Scenario PDPRDMA_PDP:%0d start",active_cnt));
-    
+
     set_sync_evt_name();
-    pdp.trace_dump(fh);
     pdp_rdma.trace_dump(fh);
+    pdp.trace_dump(fh);
     check_nothing(fh,sync_evt_name);
-    update_sync_evt_queue();
     `uvm_info(inst_name, "Finish trace dumping ...", UVM_HIGH)
 
     if (fcov_en) begin
@@ -86,16 +83,11 @@ function void nvdla_pdprdma_pdp_scenario::activate();
     pdp.activate();
 endfunction: activate
 
-function void nvdla_pdprdma_pdp_scenario::update_sync_evt_queue();
-    pdp.update_sync_evt_queue();
-    pdp_rdma.update_sync_evt_queue();
-endfunction: update_sync_evt_queue
-
 function void nvdla_pdprdma_pdp_scenario::set_sync_evt_name();
     sync_evt_name = {inst_name.tolower(),"_act",$sformatf("%0d",active_cnt)};
     sync_evt_name = {sync_evt_name, "_",pdp.get_resource_name(),"_act",$sformatf("%0d",pdp.get_active_cnt())};
     sync_evt_name = {sync_evt_name, "_",pdp_rdma.get_resource_name(),"_act",$sformatf("%0d",pdp_rdma.get_active_cnt())};
-    
+
     /*
         PDP_RDMA relies on PDP interrupt to show status, so always provide same sync evt to both resources
     */
@@ -124,16 +116,16 @@ constraint nvdla_pdprdma_pdp_scenario::sce_pdprdma_pdp_ias_constraint {
     pdp.cube_in_channel        == pdp_rdma.cube_in_channel;
     pdp.flying_mode            == int'(pdp_rdma.flying_mode);
     pdp.src_base_addr_low      == pdp_rdma.src_base_addr_low;
-    pdp.src_base_addr_high     == pdp_rdma.src_base_addr_high; 
+    pdp.src_base_addr_high     == pdp_rdma.src_base_addr_high;
     pdp.src_line_stride        == pdp_rdma.src_line_stride;
-    pdp.src_surface_stride     == pdp_rdma.src_surface_stride; 
+    pdp.src_surface_stride     == pdp_rdma.src_surface_stride;
     pdp.input_data             == int'(pdp_rdma.input_data);
     pdp.split_num              == pdp_rdma.split_num;
     pdp.kernel_width           == int'(pdp_rdma.kernel_width);
     pdp.kernel_stride_width    == pdp_rdma.kernel_stride_width;
     pdp.partial_width_in_first == pdp_rdma.partial_width_in_first;
     pdp.partial_width_in_mid   == pdp_rdma.partial_width_in_mid;
-    pdp.partial_width_in_last  == pdp_rdma.partial_width_in_last; 
+    pdp.partial_width_in_last  == pdp_rdma.partial_width_in_last;
 }
 
 constraint nvdla_pdprdma_pdp_scenario::sce_pdprdma_pdp_sim_solve_height_before_width {

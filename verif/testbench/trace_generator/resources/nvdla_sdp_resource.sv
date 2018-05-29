@@ -443,9 +443,13 @@ function void nvdla_sdp_resource::lut_config_dump(int fh);
     if(sdp_lut_reuse == 0 || pre_proc_precision == -1) begin  // NO LUT reuse
         // LUT is only configurable when there's no active layer running, in other case
         // just (skip) waiting  (if not forced LUT_REUSE)
-        while(0 != sync_evt_queue.size()) begin
-            sync_wait(fh,inst_name,sync_evt_queue.pop_front());
+        if (get_active_cnt() > 0) begin
+            sync_wait(fh,inst_name,sync_evt_queue[-1]);
         end
+        if (get_active_cnt() > 1) begin
+            sync_wait(fh,inst_name,sync_evt_queue[-2]);
+        end
+
         // Configure LUT table
         ral.nvdla.NVDLA_SDP.S_LUT_ACCESS_CFG.LUT_ADDR.set(0);
         ral.nvdla.NVDLA_SDP.S_LUT_ACCESS_CFG.LUT_TABLE_ID.set(0);    // LE
@@ -552,9 +556,9 @@ function void nvdla_sdp_resource::trace_dump(int fh);
         `uvm_fatal(inst_name, "Null handle of trace file ...")
     end
     `uvm_info(inst_name, "Start trace dumping ...", UVM_HIGH)
-    // if both groups have been used, resource must wait for at least one group releases
-    if(sync_evt_queue.size()==2) begin
-        sync_wait(fh,inst_name,sync_evt_queue.pop_front());
+    // if both groups have been used, resource must wait for the group released
+    if (get_active_cnt() > 1) begin
+        sync_wait(fh,inst_name,sync_evt_queue[-2]);
     end
 
     reg_write(fh,"NVDLA_SDP.S_POINTER",group_to_use);
@@ -606,7 +610,15 @@ function void nvdla_sdp_resource::trace_dump(int fh);
 
     ral.nvdla.NVDLA_SDP.D_OP_ENABLE.set(1);
     reg_write(fh,{inst_name.toupper(),".D_OP_ENABLE"},1);
-    intr_notify(fh,{"SDP_",$sformatf("%0d",group_to_use)},curr_sync_evt_name);
+    intr_notify(fh,{"SDP_",$sformatf("%0d",group_to_use)}, sync_evt_queue[0]);
+    if (output_dst == output_dst_MEM)  begin
+        // Reserve mem region to write into
+        longint unsigned mem_size;
+        mem_size = calc_mem_size(batch_number+1, dst_batch_stride, channel+1, `NVDLA_MEMORY_ATOMIC_SIZE, dst_surface_stride);
+        mem_reserve(fh, "pri_mem", {dst_base_addr_high, dst_base_addr_low}, mem_size, sync_evt_queue[-2]);
+        // Release mem region when write done
+        mem_release(fh, "pri_mem", {dst_base_addr_high, dst_base_addr_low}, sync_evt_queue[0]);
+    end
     `uvm_info(inst_name, "Finish trace dumping ...", UVM_HIGH)
 endfunction : trace_dump
 
@@ -1070,7 +1082,7 @@ function void nvdla_sdp_resource::set_mem_addr();
 
     // WDMA
     mem_size = calc_mem_size(batch_number+1, dst_batch_stride, channel+1, `NVDLA_MEMORY_ATOMIC_SIZE, dst_surface_stride);
-    region = mm.request_region_by_size("PRI", $sformatf("%s_%0d", "SDP_WDMA", get_active_cnt()), mem_size, align_mask[0]);
+    region = mm.request_region_by_size("pri_mem", $sformatf("%s_%0d", "SDP_WDMA", get_active_cnt()), mem_size, align_mask[0]);
     {dst_base_addr_high, dst_base_addr_low} = region.get_start_offset();
 endfunction : set_mem_addr
 

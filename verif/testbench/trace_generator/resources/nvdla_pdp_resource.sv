@@ -218,9 +218,9 @@ function void nvdla_pdp_resource::trace_dump(int fh);
         `uvm_fatal(inst_name, "Null handle of trace file ...")
     end
     `uvm_info(inst_name, "Start trace dumping ...", UVM_HIGH)
-    // if both groups have been used, resource must wait for at least one group releases
-    if(sync_evt_queue.size()==2) begin
-        sync_wait(fh,inst_name,sync_evt_queue.pop_front());
+    // if both groups have been used, resource must wait for the group released
+    if (get_active_cnt() > 1) begin
+        sync_wait(fh,inst_name,sync_evt_queue[-2]);
     end
 
     reg_write(fh,{inst_name.toupper(),".S_POINTER"},group_to_use);
@@ -245,7 +245,15 @@ function void nvdla_pdp_resource::trace_dump(int fh);
     end
     ral.nvdla.NVDLA_PDP.D_OP_ENABLE.set(1);
     reg_write(fh,{inst_name.toupper(),".D_OP_ENABLE"},1);
-    intr_notify(fh,{"PDP_",$sformatf("%0d",group_to_use)},curr_sync_evt_name);
+    intr_notify(fh,{"PDP_",$sformatf("%0d",group_to_use)}, sync_evt_queue[0]);
+    begin
+        // Reserve mem region to write into
+        longint unsigned mem_size;
+        mem_size = calc_mem_size(0, 0, cube_in_channel+1, `NVDLA_MEMORY_ATOMIC_SIZE, dst_surface_stride);
+        mem_reserve(fh, "pri_mem", {dst_base_addr_high, dst_base_addr_low}, mem_size, sync_evt_queue[-2]);
+        // Release mem region when write done
+        mem_release(fh, "pri_mem", {dst_base_addr_high, dst_base_addr_low}, sync_evt_queue[0]);
+    end
     `uvm_info(inst_name, "Finish trace dumping ...", UVM_HIGH)
 endfunction: trace_dump
 
@@ -643,15 +651,15 @@ function void nvdla_pdp_resource::set_fp16_padding();
 endfunction : set_fp16_padding
 
 function void nvdla_pdp_resource::set_mem_addr();
-    mem_man         mm;
-    mem_region      region;
-    longint unsigned       mem_size;
+    mem_man          mm;
+    mem_region       region;
+    longint unsigned mem_size;
 
     mm = mem_man::get_mem_man();
 
     // WDMA
     mem_size = calc_mem_size(0, 0, cube_in_channel+1, `NVDLA_MEMORY_ATOMIC_SIZE, dst_surface_stride);
-    region = mm.request_region_by_size("PRI", $sformatf("%s_%0d", "PDP_WDMA", get_active_cnt()), mem_size, align_mask[0]);
+    region = mm.request_region_by_size("pri_mem", $sformatf("%s_%0d", "PDP_WDMA", get_active_cnt()), mem_size, align_mask[0]);
     {dst_base_addr_high, dst_base_addr_low} = region.get_start_offset();
 endfunction : set_mem_addr
 

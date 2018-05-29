@@ -10,7 +10,7 @@ typedef int                 int32_t;
 typedef longint unsigned    uint64_t;
 typedef longint             int64_t;
 // define trace parser instruction command enum type
-typedef enum { WRITE
+typedef enum {   WRITE
                , NOTIFY
                , WAIT
                , READ
@@ -22,13 +22,15 @@ typedef enum { WRITE
                , CHECK_CRC
                , CHECK_FILE
                , CHECK_NOTHING
+               , MEM_RESERVE
                , MEM_LOAD
                , MEM_INIT_PATTERN
                , MEM_INIT_FILE
+               , MEM_RELEASE
              } kind_e;
 
-typedef enum { PRIMARY_MEM      = 0,
-               SECONDARY_MEM    = 1
+typedef enum { PRI_MEM    = 0,
+               SEC_MEM    = 1
              } memory_type_e;
 
 typedef uvm_enum_wrapper#(kind_e)           kind_wrapper;
@@ -122,14 +124,16 @@ endclass: result_checker_command
 // Class: memory model command
 //  usage: trace parser to memory model
 //--------------------------------------------------
-// kind             | memory_type   | base_addr     | size  | pattern   | file_path
-// MEM_LOAD         |  N.A          |  N.A          |  N.A  |  N.A      |  file_path
-// MEM_INIT_PATTERN |  memory_type  |  base_addr    |  size |  pattern  |  N.A
-// MEM_INIT_FILE    |  memory_type  |  base_addr    |  N.A  |  pattern  |  file_path
+// kind             | memory_type   | base_addr     | size  | pattern   | file_path  | sync_id
+// MEM_LOAD         |  N.A          |  N.A          |  N.A  |  N.A      |  file_path |  sync_id
+// MEM_INIT_PATTERN |  memory_type  |  base_addr    |  size |  pattern  |  N.A       |  sync_id
+// MEM_INIT_FILE    |  memory_type  |  base_addr    |  N.A  |  pattern  |  file_path |  sync_id
+// MEM_RELEASE_     |  memory_type  |  base_addr    |  size |  N.A      |  N.A       |  sync_id
+// MEM_RELEASE_FILE |  memory_type  |  base_addr    |  N.A  |  N.A      |  file_path |  sync_id
 //--------------------------------------------------
-//mem_load ( sec_mem, 0x8000, "python/over/perl.dat"); 
-//mem_init ( sec_mem, 0x5000, 0x2000, ALL_ZERO); 
-//mem_init ( pri_mem, 0x2000, "python/over/perl.dat", RANDOM); 
+//mem_load ( sec_mem, 0x8000, "python/over/perl.dat", cc_sdp_pdp_act0_nvdla_pdp_act0);
+//mem_init ( sec_mem, 0x5000, 0x2000, ALL_ZERO, cc_sdp_pdp_act0_nvdla_pdp_act0);
+//mem_init ( pri_mem, 0x2000, "python/over/perl.dat", RANDOM, cc_sdp_pdp_act0_nvdla_pdp_act0);
 class memory_model_command extends uvm_sequence_item;
     kind_e          kind;
     memory_type_e   memory_type;
@@ -137,6 +141,8 @@ class memory_model_command extends uvm_sequence_item;
     uint64_t        size;
     string          pattern;
     string          file_path;
+    string          sync_id;
+
     `uvm_object_utils_begin(memory_model_command)
         `uvm_field_enum(kind_e,        kind,        UVM_ALL_ON)
         `uvm_field_enum(memory_type_e, memory_type, UVM_ALL_ON)
@@ -144,11 +150,12 @@ class memory_model_command extends uvm_sequence_item;
         `uvm_field_int(size,                        UVM_ALL_ON)
         `uvm_field_string(pattern,                  UVM_ALL_ON)
         `uvm_field_string(file_path,                UVM_ALL_ON)
+        `uvm_field_string(sync_id,                  UVM_ALL_ON)
     `uvm_object_utils_end
+
     function new(string name="mem_model_cmd");
         super.new(name);
     endfunction
 endclass: memory_model_command
-
 
 `endif // __NVDLA_TB_TXN_SV__

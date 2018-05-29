@@ -9,8 +9,7 @@
 //-------------------------------------------------------------------------------------
 
 typedef class memory_model_command;
-typedef class surface_file_content;    
-typedef class surface_store_info;
+typedef class surface_file_content;
 
 class mem_core extends uvm_component;
 
@@ -20,14 +19,16 @@ class mem_core extends uvm_component;
 
     rand init_option_enum init_option = RANDOM;
     rand bit dont_store_uninitialized_vals = 0;
+    addr_t      base;
+    addr_t      limit;
 
-    surface_store_info ssi_queue[$];
-    
-    protected bit [7:0] m_mem[*];
+    protected bit [7:0] m_mem[addr_t];
 
     `uvm_component_utils_begin(mem_core)
         `uvm_field_enum(init_option_enum, init_option, UVM_DEFAULT)
         `uvm_field_int(dont_store_uninitialized_vals, UVM_DEFAULT)
+        `uvm_field_int(base, UVM_DEFAULT)
+        `uvm_field_int(limit, UVM_DEFAULT)
     `uvm_component_utils_end
 
     // Constructor
@@ -35,42 +36,42 @@ class mem_core extends uvm_component;
     extern function void build_phase(uvm_phase phase);
 
     // Read functions
-    extern function bit [1023:0] read(bit [`MEM_ADDR_WIDTH-1:0] addr, bit [10:0] size_in_bits);
-    extern function bit [7:0] read8(bit [`MEM_ADDR_WIDTH-1:0] addr);
-    extern function bit [15:0] read16(bit [`MEM_ADDR_WIDTH-1:0] addr);    
-    extern function bit [31:0] read32(bit [`MEM_ADDR_WIDTH-1:0] addr);
-    extern function bit [63:0] read64(bit [`MEM_ADDR_WIDTH-1:0] addr);
-    extern function bit [127:0] read128(bit [`MEM_ADDR_WIDTH-1:0] addr);
-    extern function bit [255:0] read256(bit [`MEM_ADDR_WIDTH-1:0] addr);
-    extern function bit [511:0] read512(bit [`MEM_ADDR_WIDTH-1:0] addr);    
-    extern function bit [1023:0] read1024(bit [`MEM_ADDR_WIDTH-1:0] addr);
+    extern function bit [1023:0] read(addr_t addr, bit [10:0] size_in_bits);
+    extern function bit [7:0] read8(addr_t addr);
+    extern function bit [15:0] read16(addr_t addr);
+    extern function bit [31:0] read32(addr_t addr);
+    extern function bit [63:0] read64(addr_t addr);
+    extern function bit [127:0] read128(addr_t addr);
+    extern function bit [255:0] read256(addr_t addr);
+    extern function bit [511:0] read512(addr_t addr);
+    extern function bit [1023:0] read1024(addr_t addr);
 
     // Write functions
-    extern function void write(bit [`MEM_ADDR_WIDTH-1:0] addr, bit [1023:0] data, bit [10:0] size_in_bits, bit [127:0] wstrb);
-    extern function void write8(bit [`MEM_ADDR_WIDTH-1:0] addr, bit [7:0] data, bit wstrb = 1'b1);
-    extern function void write16(bit [`MEM_ADDR_WIDTH-1:0] addr, bit [15:0] data, bit [1:0] wstrb = {2{1'b1}});
-    extern function void write32(bit [`MEM_ADDR_WIDTH-1:0] addr, bit [31:0] data, bit [3:0] wstrb = {4{1'b1}});
-    extern function void write64(bit [`MEM_ADDR_WIDTH-1:0] addr, bit [63:0] data, bit [7:0] wstrb = {8{1'b1}});
-    extern function void write128(bit [`MEM_ADDR_WIDTH-1:0] addr, bit [127:0] data, bit [15:0] wstrb = {16{1'b1}});
-    extern function void write256(bit [`MEM_ADDR_WIDTH-1:0] addr, bit [255:0] data, bit [31:0] wstrb = {32{1'b1}});
-    extern function void write512(bit [`MEM_ADDR_WIDTH-1:0] addr, bit [511:0] data, bit [63:0] wstrb = {64{1'b1}});
-    extern function void write1024(bit [`MEM_ADDR_WIDTH-1:0] addr, bit [1023:0] data, bit [127:0] wstrb = {128{1'b1}});
-    
-    // Surface Load & Dump functions
-    extern function void load_surface(string filename, bit [`MEM_ADDR_WIDTH-1:0] base);
-    extern function void dump_surface(string filename, bit [`MEM_ADDR_WIDTH-1:0] base, int unsigned len);
-    extern function void init_surface_with_pattern(bit [`MEM_ADDR_WIDTH-1:0] base, int unsigned len, string pattern);
-    extern function void init_surface_with_pattern_and_file(bit [`MEM_ADDR_WIDTH-1:0] base, string pattern, string filename);
+    extern function void write(addr_t addr, bit [1023:0] data, bit [10:0] size_in_bits, bit [127:0] wstrb);
+    extern function void write8(addr_t addr, bit [7:0] data, bit wstrb = 1'b1);
+    extern function void write16(addr_t addr, bit [15:0] data, bit [1:0] wstrb = {2{1'b1}});
+    extern function void write32(addr_t addr, bit [31:0] data, bit [3:0] wstrb = {4{1'b1}});
+    extern function void write64(addr_t addr, bit [63:0] data, bit [7:0] wstrb = {8{1'b1}});
+    extern function void write128(addr_t addr, bit [127:0] data, bit [15:0] wstrb = {16{1'b1}});
+    extern function void write256(addr_t addr, bit [255:0] data, bit [31:0] wstrb = {32{1'b1}});
+    extern function void write512(addr_t addr, bit [511:0] data, bit [63:0] wstrb = {64{1'b1}});
+    extern function void write1024(addr_t addr, bit [1023:0] data, bit [127:0] wstrb = {128{1'b1}});
+
+    // Surface Load, Dump & Release functions
+    extern function void load_surface(string filename, addr_t base);
+    extern function void dump_surface(string filename, addr_t base, int unsigned len);
+    extern function void init_surface_with_pattern(addr_t base, int unsigned len, string pattern);
+    extern function void init_surface_with_pattern_and_file(addr_t base, string pattern, string filename);
 
     // Other APIs
-    extern function bit mem_exists(bit [`MEM_ADDR_WIDTH-1:0] addr);
-    extern function int unsigned calc_surface_crc(bit [`MEM_ADDR_WIDTH-1:0] base, int len);
-    
+    extern function bit mem_exists(addr_t addr);
+    extern function bit has_addr(addr_t addr);
+    extern function int unsigned calc_surface_crc(addr_t base, int len);
+
     // Private utility functions
     extern protected function string m_trimed_string(string str);
     extern protected function int m_atov(string str);
     extern protected function void m_parse_surface_file(string filename, output surface_file_content content);
-    extern protected function void m_update_surface_store_info(bit [`MEM_ADDR_WIDTH-1:0] base, int unsigned len);    
 
 endclass
 
@@ -94,12 +95,13 @@ endfunction
 // Read functions
 // -----------------------------------------------------------------------------
 
-function bit [1023:0] mem_core::read(bit [`MEM_ADDR_WIDTH-1:0] addr, bit [10:0] size_in_bits);
+function bit [1023:0] mem_core::read(addr_t addr, bit [10:0] size_in_bits);
     int unsigned num_bytes;
     bit [1023:0] rdata;
-    
+
     if (size_in_bits%8 != 0)
-        `uvm_error("MEM/RD_SIZE", $sformatf("Trying to read a number of bits (%0d) which is not divisible by 8", size_in_bits))
+        `uvm_error("MEM/RD_SIZE",
+            $sformatf("Trying to read a number of bits (%0d) which is not divisible by 8", size_in_bits))
 
     num_bytes = size_in_bits/8;
     for (int i=0; i<num_bytes; i++) begin
@@ -121,51 +123,51 @@ function bit [1023:0] mem_core::read(bit [`MEM_ADDR_WIDTH-1:0] addr, bit [10:0] 
             if (!dont_store_uninitialized_vals)
                 write8(addr+i, data);
         end
-        `uvm_info("MEM/RD", $sformatf("Read %#2x from addr %#x", m_mem[addr+i], addr+i), UVM_FULL)        
+        `uvm_info("MEM/RD", $sformatf("Read %#2x from addr %#x", m_mem[addr+i], addr+i), UVM_FULL)
     end
 
     return rdata;
 endfunction
 
-function bit [7:0] mem_core::read8(bit [`MEM_ADDR_WIDTH-1:0] addr);
+function bit [7:0] mem_core::read8(addr_t addr);
     return read(addr, 8);
 endfunction
 
-function bit [15:0] mem_core::read16(bit [`MEM_ADDR_WIDTH-1:0] addr);
-    return read(addr, 16);    
+function bit [15:0] mem_core::read16(addr_t addr);
+    return read(addr, 16);
 endfunction
-    
-function bit [31:0] mem_core::read32(bit [`MEM_ADDR_WIDTH-1:0] addr);
-    return read(addr, 32);    
+
+function bit [31:0] mem_core::read32(addr_t addr);
+    return read(addr, 32);
 endfunction
-    
-function bit [63:0] mem_core::read64(bit [`MEM_ADDR_WIDTH-1:0] addr);
-    return read(addr, 64);    
+
+function bit [63:0] mem_core::read64(addr_t addr);
+    return read(addr, 64);
 endfunction
-    
-function bit [127:0] mem_core::read128(bit [`MEM_ADDR_WIDTH-1:0] addr);
-    return read(addr, 128);    
+
+function bit [127:0] mem_core::read128(addr_t addr);
+    return read(addr, 128);
 endfunction
-    
-function bit [255:0] mem_core::read256(bit [`MEM_ADDR_WIDTH-1:0] addr);
-    return read(addr, 256);    
+
+function bit [255:0] mem_core::read256(addr_t addr);
+    return read(addr, 256);
 endfunction
-    
-function bit [511:0] mem_core::read512(bit [`MEM_ADDR_WIDTH-1:0] addr);
-    return read(addr, 512);    
+
+function bit [511:0] mem_core::read512(addr_t addr);
+    return read(addr, 512);
 endfunction
-    
-function bit [1023:0] mem_core::read1024(bit [`MEM_ADDR_WIDTH-1:0] addr);
-    return read(addr, 1024);    
+
+function bit [1023:0] mem_core::read1024(addr_t addr);
+    return read(addr, 1024);
 endfunction
 
 // -----------------------------------------------------------------------------
 // Write functions
 // -----------------------------------------------------------------------------
 
-function void mem_core::write(bit [`MEM_ADDR_WIDTH-1:0] addr, bit [1023:0] data, bit [10:0] size_in_bits, bit [127:0] wstrb);
+function void mem_core::write(addr_t addr, bit [1023:0] data, bit [10:0] size_in_bits, bit [127:0] wstrb);
     int unsigned num_bytes;
-    
+
     if (size_in_bits%8 != 0)
         `uvm_error("MEM/WR_SIZE", $sformatf("Trying to write a number of bits (%0d) which is not divisible by 8", size_in_bits))
 
@@ -177,37 +179,37 @@ function void mem_core::write(bit [`MEM_ADDR_WIDTH-1:0] addr, bit [1023:0] data,
         end
     end
 endfunction
-    
-function void mem_core::write8(bit [`MEM_ADDR_WIDTH-1:0] addr, bit [7:0] data, bit wstrb = 1'b1);
+
+function void mem_core::write8(addr_t addr, bit [7:0] data, bit wstrb = 1'b1);
     write(addr, data, 8, wstrb);
 endfunction
-    
-function void mem_core::write16(bit [`MEM_ADDR_WIDTH-1:0] addr, bit [15:0] data, bit [1:0] wstrb = {2{1'b1}});
-    write(addr, data, 16, wstrb);    
+
+function void mem_core::write16(addr_t addr, bit [15:0] data, bit [1:0] wstrb = {2{1'b1}});
+    write(addr, data, 16, wstrb);
 endfunction
-    
-function void mem_core::write32(bit [`MEM_ADDR_WIDTH-1:0] addr, bit [31:0] data, bit [3:0] wstrb = {4{1'b1}});
+
+function void mem_core::write32(addr_t addr, bit [31:0] data, bit [3:0] wstrb = {4{1'b1}});
     write(addr, data, 32, wstrb);
 endfunction
 
-function void mem_core::write64(bit [`MEM_ADDR_WIDTH-1:0] addr, bit [63:0] data, bit [7:0] wstrb = {8{1'b1}});
-    write(addr, data, 64, wstrb);    
+function void mem_core::write64(addr_t addr, bit [63:0] data, bit [7:0] wstrb = {8{1'b1}});
+    write(addr, data, 64, wstrb);
 endfunction
-    
-function void mem_core::write128(bit [`MEM_ADDR_WIDTH-1:0] addr, bit [127:0] data, bit [15:0] wstrb = {16{1'b1}});
-    write(addr, data, 128, wstrb);    
+
+function void mem_core::write128(addr_t addr, bit [127:0] data, bit [15:0] wstrb = {16{1'b1}});
+    write(addr, data, 128, wstrb);
 endfunction
-    
-function void mem_core::write256(bit [`MEM_ADDR_WIDTH-1:0] addr, bit [255:0] data, bit [31:0] wstrb = {32{1'b1}});
-    write(addr, data, 256, wstrb);    
+
+function void mem_core::write256(addr_t addr, bit [255:0] data, bit [31:0] wstrb = {32{1'b1}});
+    write(addr, data, 256, wstrb);
 endfunction
-    
-function void mem_core::write512(bit [`MEM_ADDR_WIDTH-1:0] addr, bit [511:0] data, bit [63:0] wstrb = {64{1'b1}});
-    write(addr, data, 512, wstrb);    
+
+function void mem_core::write512(addr_t addr, bit [511:0] data, bit [63:0] wstrb = {64{1'b1}});
+    write(addr, data, 512, wstrb);
 endfunction
-    
-function void mem_core::write1024(bit [`MEM_ADDR_WIDTH-1:0] addr, bit [1023:0] data, bit [127:0] wstrb = {128{1'b1}});
-    write(addr, data, 1024, wstrb);    
+
+function void mem_core::write1024(addr_t addr, bit [1023:0] data, bit [127:0] wstrb = {128{1'b1}});
+    write(addr, data, 1024, wstrb);
 endfunction
 
 // -----------------------------------------------------------------------------
@@ -215,20 +217,24 @@ endfunction
 // -----------------------------------------------------------------------------
 
 // Surface file format: {addr:0x20, size:4, payload:0x00 0x10 0x20 0x30}
-function void mem_core::load_surface(string filename, bit [`MEM_ADDR_WIDTH-1:0] base);
+function void mem_core::load_surface(string filename, addr_t base);
     surface_file_content content;
 
     m_parse_surface_file(filename, content);
     foreach (content.offset[i])
         write8(base+content.offset[i], content.data[i]);
+    `uvm_info("MEM/LOAD",
+        $sformatf("%s is loaded to mem[%#0x:%#0x]", filename, base, base+content.end_offset-1), UVM_LOW)
 
-    m_update_surface_store_info(base, content.end_offset);
+    // It's possible that reserved a region first and then load to a sub-range of it.
+    this.base = max(this.base, base);
+    this.limit = max(this.limit, base+content.end_offset);
 endfunction
 
 // One segment is a continuous area, which can be divided into multiple payloads
 // when dumped to file.
 function void mem_core::dump_surface(string filename,
-                                     bit [`MEM_ADDR_WIDTH-1:0] base,
+                                     addr_t base,
                                      int unsigned len);
     int fh;
     int segment_start_offset;
@@ -240,8 +246,8 @@ function void mem_core::dump_surface(string filename,
     string q[$];
 
     `uvm_info("MEM/DUMP",
-        $sformatf("Dump surface stored in [%#x:%#x] to %s", base, base+len-1, filename), UVM_FULL)
-    
+        $sformatf("Dump mem[%#0x:%#0x] into file %s", base, base+len-1, filename), UVM_LOW)
+
     fh = $fopen(filename, "w");
     if (!fh) `uvm_fatal("FILE/OPEN/FAILED", {"Open ", filename, " failed!"})
 
@@ -257,7 +263,7 @@ function void mem_core::dump_surface(string filename,
             end
 
             // Print in a new line (a payload) every 16 bytes
-            segment_len = segment_end_offset - segment_start_offset;            
+            segment_len = segment_end_offset - segment_start_offset;
             num_payload = (segment_len%16 == 0) ? segment_len/16 : segment_len/16 + 1;
             `uvm_info("MEM/DUMP",
                 $sformatf("segment_start_offset = %#4x, segment_end_offset = %#4x, segment_len = %0d, num_payload = %0d",
@@ -267,7 +273,7 @@ function void mem_core::dump_surface(string filename,
                 if ((payload_idx == num_payload-1) && (segment_len%16 != 0))
                     payload_size = segment_len % 16;
                 else
-                    payload_size = 16;                    
+                    payload_size = 16;
 
                 q.push_back("  { ");
                 q.push_back($sformatf("offset:%#4x, size:%2d, payload:",
@@ -289,36 +295,38 @@ function void mem_core::dump_surface(string filename,
             s = {s.substr(0, s.len()-3), "\n"};
         q.push_back(s);
     end
-    
-    q.push_back("}");
+
+    q.push_back("}\n\n");
+    q.push_back($sformatf("# CRC = %#0x", calc_surface_crc(base, {len[31:2], 2'b00})));
 
     $fwrite(fh, `UVM_STRING_QUEUE_STREAMING_PACK(q));
     $fclose(fh);
 endfunction
 
-function void mem_core::init_surface_with_pattern(bit [`MEM_ADDR_WIDTH-1:0] base,
+function void mem_core::init_surface_with_pattern(addr_t base,
                                                   int unsigned len,
                                                   string pattern);
     bit [7:0]  data;
 
     for (int i=0; i<len; i++) begin
         case (pattern)
-            "RANDOM" : data = $urandom();
-            "ALL_ZERO"  : data = 8'h00;
-            "ONES"   : data = 8'hff;
-            "X"      : data = 8'hxx;
-            "AFIVE"  : data = 8'ha5;
-            "FIVEA"  : data = 8'h5a;
-            "ADDR"   : data = (base+i) & 'hff;
+            "RANDOM"   : data = $urandom();
+            "ALL_ZERO" : data = 8'h00;
+            "ONES"     : data = 8'hff;
+            "X"        : data = 8'hxx;
+            "AFIVE"    : data = 8'ha5;
+            "FIVEA"    : data = 8'h5a;
+            "ADDR"     : data = (base+i) & 'hff;
         endcase
         `uvm_info(tID, $sformatf("Init %#x to addr %#0x", data, base+i), UVM_HIGH)
         write8(base+i, data);
     end
 
-    m_update_surface_store_info(base, len);
+    this.base = max(this.base, base);
+    this.limit = max(this.limit, base+len);
 endfunction
 
-function void mem_core::init_surface_with_pattern_and_file(bit [`MEM_ADDR_WIDTH-1:0] base,
+function void mem_core::init_surface_with_pattern_and_file(addr_t base,
                                                            string pattern,
                                                            string filename);
     surface_file_content content;
@@ -326,17 +334,21 @@ function void mem_core::init_surface_with_pattern_and_file(bit [`MEM_ADDR_WIDTH-
     m_parse_surface_file(filename, content);
     init_surface_with_pattern(base, content.end_offset, pattern);
 endfunction
-    
+
 // -----------------------------------------------------------------------------
 // Other APIs
 // -----------------------------------------------------------------------------
 
-function bit mem_core::mem_exists(bit [`MEM_ADDR_WIDTH-1:0] addr);
+function bit mem_core::mem_exists(addr_t addr);
     return m_mem.exists(addr);
 endfunction
 
+function bit mem_core::has_addr(addr_t addr);
+    return (addr inside {[base:limit-1]});
+endfunction
+
 // CRC32 lookup table is generated by following code:
-// 
+//
 //|  int unsigned crc;
 //|  for (int i=0; i<256; i++) begin
 //|      crc = i;
@@ -346,7 +358,7 @@ endfunction
 //|      crc32_table[i] = crc;
 //|  end
 
-function int unsigned mem_core::calc_surface_crc(bit [`MEM_ADDR_WIDTH-1:0] base, int len);
+function int unsigned mem_core::calc_surface_crc(addr_t base, int len);
     static const int unsigned crc32_table[] = {32'h00000000,32'h77073096,32'hee0e612c,32'h990951ba,
                                                32'h076dc419,32'h706af48f,32'he963a535,32'h9e6495a3,
                                                32'h0edb8832,32'h79dcb8a4,32'he0d5e91e,32'h97d2d988,
@@ -412,17 +424,17 @@ function int unsigned mem_core::calc_surface_crc(bit [`MEM_ADDR_WIDTH-1:0] base,
                                                32'hb3667a2e,32'hc4614ab8,32'h5d681b02,32'h2a6f2b94,
                                                32'hb40bbe37,32'hc30c8ea1,32'h5a05df1b,32'h2d02ef8d};
 
-    bit [`MEM_ADDR_WIDTH-1:0] addr = base;
+    addr_t addr = base;
     int unsigned              result = ~0;
 
     if (0 != base%4)
-        `uvm_error("CRC/CALC", $sformatf("base (%0d) is not multiple of 4", base))
+        `uvm_error("CRC/CALC", $sformatf("base (%#0x) is not multiple of 4", base))
 
     if (0 != len%4)
-        `uvm_error("CRC/CALC", $sformatf("length (%0d) is not multiple of 4", len))
+        `uvm_error("CRC/CALC", $sformatf("length (%#0x) is not multiple of 4", len))
 
-    `uvm_info("MEM/CRC", $sformatf("Calculate CRC32 of memory range [%#x:%#x]", base, base+len), UVM_FULL)
-    
+    `uvm_info("MEM/CRC", $sformatf("Calculate CRC32 of memory range [%#x:%#x]", base, base+len-1), UVM_FULL)
+
     while (len >= 4) begin
         int unsigned d = mem_exists(addr) ? read32(addr) : 0;
         for (int i=0; i<32; i+=8 ) begin
@@ -432,7 +444,7 @@ function int unsigned mem_core::calc_surface_crc(bit [`MEM_ADDR_WIDTH-1:0] base,
         addr += 4;
         len -= 4;
     end
-    
+
     return ~result;
 endfunction
 
@@ -442,7 +454,7 @@ endfunction
 
 function string mem_core::m_trimed_string(string str);
     string s = str;
-    
+
     // Strip front spaces and '{' in a str
     while (s[0] inside {" ", "\t", "\n", "{"})
         s = s .substr(1);
@@ -450,7 +462,7 @@ function string mem_core::m_trimed_string(string str);
     // Strip tail spaces, '}' and ',' in a str
     while (s[s.len()-1] inside {" ", "\t", "\n", "}", ","})
         s = s.substr(0, s.len()-2);
-    
+
     return s;
 endfunction
 
@@ -476,23 +488,23 @@ function void mem_core::m_parse_surface_file(string filename, output surface_fil
     string payload_offset_str;
     string payload_size_str;
     string payload_str;
-    string payload_data_str;    
+    string payload_data_str;
     int    payload_offset;
     int    payload_size;
-    string split_vals[$];    
+    string split_vals[$];
 
     fh = $fopen(filename, "r");
     if (!fh) `uvm_fatal("FILE/OPEN/FAILED", {"Open ", filename, " failed!"})
 
     content = new();
-    
+
     while (!$feof(fh)) begin
         void'($fgets(line, fh));
         line = m_trimed_string(line);
 
         // Skip comments
         if (line[0] == "#") continue;
-        
+
         uvm_split_string(line, ",", split_vals);
         if (split_vals.size() != 3) continue;
 
@@ -525,7 +537,7 @@ function void mem_core::m_parse_surface_file(string filename, output surface_fil
         `uvm_info("PARSE/SURFACE_FILE", {payload_offset_str, ", ", payload_size_str, ", ", payload_str}, UVM_FULL)
 
         // Store file content
-        uvm_split_string(payload_data_str, " ", split_vals);        
+        uvm_split_string(payload_data_str, " ", split_vals);
         for (int i=0; i<payload_size; i++) begin
             content.offset.push_back(payload_offset+i);
             if (i < split_vals.size())
@@ -536,59 +548,38 @@ function void mem_core::m_parse_surface_file(string filename, output surface_fil
     end
 
     begin
-        bit [`MEM_ADDR_WIDTH-1:0] maxq[$];
-        bit [`MEM_ADDR_WIDTH-1:0] minq[$];
+        addr_t maxq[$];
+        addr_t minq[$];
 
         maxq = content.offset.max();
         minq = content.offset.min();
         content.start_offset = minq[0];
         content.end_offset = maxq[0] + 1;
-        `uvm_info("PARSE/SURFACE_FILE",
-            $sformatf("start_offset = %#0x, end_offset = %#0x", content.start_offset, content.end_offset), UVM_FULL)
+        `uvm_info("PARSE/SURFACE_FILE", {filename, ":\n", content.sprint()}, UVM_LOW)
     end
 
-    $fclose(fh);        
-endfunction
-
-function void mem_core::m_update_surface_store_info(bit [`MEM_ADDR_WIDTH-1:0] base, int unsigned len);
-    surface_store_info ssi;    
-
-    ssi = new(base, len);
-    ssi_queue.push_back(ssi);
-    `uvm_info("MEM/LOAD", ssi.convert2string(), UVM_FULL)
+    $fclose(fh);
 endfunction
 
 // ----------------------------------------------------------------------------
-// Utility class
-// ----------------------------------------------------------------------------    
+// Helper class
+// ----------------------------------------------------------------------------
 
-class surface_store_info;
-    int surface_id;
-    static local int m_surface_count = 0;
+class surface_file_content extends uvm_object;
+    addr_t      offset[$];
+    bit[7:0]    data[$];
 
-    bit [`MEM_ADDR_WIDTH-1:0] base;
-    int unsigned len;
+    addr_t      start_offset;
+    addr_t      end_offset; // offset guard, next of last valid offset.
 
-    function new(bit [`MEM_ADDR_WIDTH-1:0] base, int unsigned len);
-        this.surface_id = m_surface_count;
-        m_surface_count++;
-        this.base = base;
-        this.len = len;
-    endfunction
+    `uvm_object_utils_begin(surface_file_content)
+        `uvm_field_int(start_offset, UVM_DEFAULT)
+        `uvm_field_int(end_offset, UVM_DEFAULT)
+    `uvm_object_utils_end
 
-    function string convert2string();
-        string   s;
-        s = $sformatf("Surface %0d: base = %#x, len = %0d", surface_id, base, len);
-        return s;
+    function new(string name = "");
+        super.new(name);
     endfunction
 endclass
 
-class surface_file_content;
-    bit [`MEM_ADDR_WIDTH-1:0] offset[$];
-    bit [7:0]                 data[$];
-
-    bit [`MEM_ADDR_WIDTH-1:0] start_offset;
-    bit [`MEM_ADDR_WIDTH-1:0] end_offset; // offset guard, next of last valid offset.
-endclass
-    
 `endif // _MEM_CORE_SVH_
