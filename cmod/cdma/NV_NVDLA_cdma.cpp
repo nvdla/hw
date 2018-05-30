@@ -2412,7 +2412,7 @@ void NV_NVDLA_cdma::ImageConvDataResponseSequencerCommon() {
                     while (received_atoms < payload_atom_num) {
                         read_data_ptr = act_data_read_rsp_fifo_->read();
                         for (i = 0; i < atom_size;) {
-                            if (planar0_pixel_idx > (pixel_x_offset + cube_width))  // If not break, memcpy may access beyond the size of pitch_buffer[i], because the number of fetched pixel may be larger than the expected.
+                            if (planar0_pixel_idx >= (pixel_x_offset + cube_width))  // If not break, memcpy may access beyond the size of pitch_buffer[i], because the number of fetched pixel may be larger than the expected.
                                 break;                                              // The minimal size of a fetch is a 32B atom which may contains redundant data.
                             memcpy(&pitch_buffer[height_iter][planar0_pixel_idx * bytes_per_pixel] , &read_data_ptr[i], bytes_per_pixel_p0);
                             i += bytes_per_pixel_p0;
@@ -2438,7 +2438,7 @@ void NV_NVDLA_cdma::ImageConvDataResponseSequencerCommon() {
                     while (received_atoms < payload_atom_num) {
                         read_data_ptr = act_data_read_rsp_fifo_->read();
                         for (i = 0; i < atom_size;) {
-                            if (planar1_pixel_idx > (pixel_x_offset + cube_width))  // If not break, memcpy may access beyond the size of pitch_buffer[i], because the number of fetched pixel may be larger than the expected.
+                            if (planar1_pixel_idx >= (pixel_x_offset + cube_width))  // If not break, memcpy may access beyond the size of pitch_buffer[i], because the number of fetched pixel may be larger than the expected.
                                 break;                                              // The minimal size of a fetch is a 32B atom which may contains redundant data.
                             memcpy(&pitch_buffer[height_iter][planar1_pixel_idx * bytes_per_pixel+bytes_per_pixel_p0], &read_data_ptr[i], bytes_per_pixel_p1);
                             i += bytes_per_pixel_p1;

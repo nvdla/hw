@@ -7,12 +7,11 @@ add_test(name='nvdla_reg_accessing',
          desc='''Check reset value''')
 
 ############################################# PDP ###################################
-add_test(name='pdp_3x3x33_2x2_ave_int8_0',
+add_test(name='pdp_8x8x64_2x2_ave_int8_0',
          tags=['L0', 'pdp'],
-         unwritten = True,
          args=[FIXED_SEED_ARG, DISABLE_COMPARE_ALL_UNITS_SB_ARG],
          config=['nvdla_utb'],
-         desc='''copied from pdp_full_feature_14''')
+         desc='''kernel_stide 1x1, pad right 1, pad bottom 1''')
 
 ############################################# SDP ###################################
 add_test(name='sdp_13x4x29_ew_lut_int8',    #sdp_cmod_full_feature_7
