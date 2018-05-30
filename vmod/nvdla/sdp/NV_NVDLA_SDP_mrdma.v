@@ -192,8 +192,8 @@ assign dp2reg_done = eg_done;
  //=======================================
  // Context Queue: trace outstanding req, and pass info from Ig to Eg
  //---------------------------------------
-//: my $depth = NVDLA_VMOD_SDP_MRDMA_LATENCY_FIFO_DEPTH; 
-//: my $width = NVDLA_DMA_RD_RSP;
+//: my $depth = (NVDLA_VMOD_SDP_MRDMA_LATENCY_FIFO_DEPTH < 16) ? 16 : NVDLA_VMOD_SDP_MRDMA_LATENCY_FIFO_DEPTH;
+//: my $width = 14;
 //: print "NV_NVDLA_SDP_MRDMA_cq_${depth}x${width}  u_cq ( \n";
     .nvdla_core_clk                (nvdla_gated_clk)                   //|< w
    ,.nvdla_core_rstn               (nvdla_core_rstn)                   //|< i

@@ -197,7 +197,7 @@ NV_NVDLA_SDP_RDMA_ig  u_ig (
 
 
 //: my $depth = NVDLA_VMOD_SDP_NRDMA_LATENCY_FIFO_DEPTH; 
-//: my $width = NVDLA_DMA_RD_RSP;
+//: my $width = 16;
 //: print "NV_NVDLA_SDP_NRDMA_cq_${depth}x${width}  u_cq ( \n";
    .nvdla_core_clk                (nvdla_gated_clk)                //|< w
   ,.nvdla_core_rstn               (nvdla_core_rstn)                //|< i
