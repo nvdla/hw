@@ -346,6 +346,24 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 //:                     end
 //:                 );
 //:             }
+//: print " // reset all of un-used register in WAIT status  \n";
+//: my $reg_1stc_num = int(4/$tp);
+//:     foreach my $m  (0..7) {
+//:         foreach my $k  (0..$reg_1stc_num -1) {
+//:         print qq(
+//:                data_1stC_${k}${m} <= {${tp}*${bpe}{1'd0}};
+//:         );
+//:         }
+//:     }
+//: my $rest = $reg_num - $reg_1stc_num;
+//:     foreach my $m  (0..7) {
+//:         foreach my $k  (0..$rest -1) {
+//:         my $re = $k + $reg_1stc_num;
+//:         print qq(
+//:                 data_shift_${re}${m} <= {${tp}*${bpe}{1'd0}};
+//:         );
+//:         }
+//:     }
       end end
       NORMAL_C: begin
           if(load_din) begin
