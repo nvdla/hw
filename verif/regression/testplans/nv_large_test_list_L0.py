@@ -8,7 +8,7 @@ add_test(name='nvdla_reg_accessing',
 
 ############################################# PDP ###################################
 add_test(name='pdp_8x8x32_1x1_max_int8_0',
-         tags=['L0', 'pdp'],
+         tags=['L0', 'pdp','protection'],
          args=[FIXED_SEED_ARG, DISABLE_COMPARE_ALL_UNITS_SB_ARG],
          config=['nvdla_utb'],
          desc='''copied from pdp_passthrough_8x8x32_pack_inc_int8''')

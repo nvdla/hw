@@ -124,7 +124,11 @@ wire     [4:0] dp_pos_c;
 wire     [3:0] dp_pos_w;
 wire     [3:0] dp_width;
 wire           eg2ig_done_f;
-wire     [7:0] fifo_rd_pvld;
+//:  my $kx = NVDLA_CDP_THROUGHPUT*NVDLA_BPE;
+//:  my $k = NVDLA_CDP_DMAIF_BW/$kx;
+//:  print " wire     [${k}-1:0] fifo_rd_pvld;  \n";
+
+//wire     [7:0] fifo_rd_pvld;
 wire     [5:0] fifo_sel;
 wire           ig2eg_align;
 wire           ig2eg_last_c;
@@ -423,10 +427,11 @@ assign is_last_beat  = (beat_cnt==1);
 //:    foreach my $r (0..$k-1) {
 //:       print " assign fifo_rd_pvld[$r] = (fifo_sel==${r}) & ro${r}_rd_pvld;  \n";
 //:    }
+//: print "wire     fifo_rd_pvld_active = |fifo_rd_pvld;    \n";
 
 wire tran_accept;
 //the first cq_rd_prdy should start when fifo have data to be read
-assign tran_rdy = (tran_cnt_idle & (|fifo_rd_pvld)) || (is_last_tran & is_last_beat & dp_rdy);
+assign tran_rdy = (tran_cnt_idle & fifo_rd_pvld_active/*(|fifo_rd_pvld)*/) || (is_last_tran & is_last_beat & dp_rdy);
 assign tran_accept = tran_vld & tran_rdy;
 
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
@@ -446,7 +451,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
             tran_cnt    <= 0;
             beat_cnt    <= 0;
         end
-    end else if (dp_rdy & (|fifo_rd_pvld)) begin
+    end else if (dp_rdy & fifo_rd_pvld_active/*(|fifo_rd_pvld)*/) begin
         beat_cnt <= (beat_cnt==1)? width_cnt : beat_cnt - 1;
         if (is_last_beat) begin
             tran_cnt <= tran_cnt - 1;
@@ -460,7 +465,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   end else begin
     if (tran_rdy) begin
         beat_align <= 0;
-    end else if (dp_rdy & |fifo_rd_pvld) begin
+    end else if (dp_rdy & fifo_rd_pvld_active/*|fifo_rd_pvld*/) begin
         if (is_last_beat) begin
             beat_align <= 0;
         end else begin
