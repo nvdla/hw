@@ -126,7 +126,9 @@ wire   [3:0]   pfifo_wr_mask;
 assign dma_rd_rsp_ram_type     = reg2dp_src_ram_type;
 assign dma_rd_cdt_lat_fifo_pop = lat_ecc_rd_pvld & lat_ecc_rd_prdy;
 
-NV_NVDLA_SDP_MRDMA_EG_lat_fifo u_lat_fifo (
+//: my $depth = NVDLA_VMOD_SDP_MRDMA_LATENCY_FIFO_DEPTH; 
+//: my $width = NVDLA_DMA_RD_RSP;
+//: print "NV_NVDLA_SDP_MRDMA_EG_lat_fifo_${depth}x${width}  u_lat_fifo (\n";
    .nvdla_core_clk  (nvdla_core_clk)       
   ,.nvdla_core_rstn (nvdla_core_rstn)      
   ,.lat_wr_prdy     (dma_rd_rsp_rdy)       

@@ -194,7 +194,10 @@ NV_NVDLA_SDP_RDMA_ig u_ig (
   ,.dp2reg_rdma_stall             (dp2reg_erdma_stall[31:0])       //|> o
   );
 
-NV_NVDLA_SDP_ERDMA_cq u_cq (
+
+//: my $depth = NVDLA_VMOD_SDP_ERDMA_LATENCY_FIFO_DEPTH; 
+//: my $width = NVDLA_DMA_RD_RSP;
+//: print "NV_NVDLA_SDP_ERDMA_cq_${depth}x${width}  u_cq ( \n";
    .nvdla_core_clk                (nvdla_gated_clk)                //|< w
   ,.nvdla_core_rstn               (nvdla_core_rstn)                //|< i
   ,.pwrbus_ram_pd                 (pwrbus_ram_pd[31:0])            //|< i
@@ -238,7 +241,9 @@ NV_NVDLA_SDP_RDMA_eg  u_eg (
   );
 
 
-NV_NVDLA_SDP_ERDMA_lat_fifo  u_lat_fifo (
+//: my $depth = NVDLA_VMOD_SDP_ERDMA_LATENCY_FIFO_DEPTH; 
+//: my $width = NVDLA_DMA_RD_RSP;
+//: print "NV_NVDLA_SDP_ERDMA_lat_fifo_${depth}x${width}  u_lat_fifo (\n";
    .nvdla_core_clk                (nvdla_gated_clk)
   ,.nvdla_core_rstn               (nvdla_core_rstn)
   ,.pwrbus_ram_pd                 (pwrbus_ram_pd[31:0])
@@ -249,6 +254,7 @@ NV_NVDLA_SDP_ERDMA_lat_fifo  u_lat_fifo (
   ,.lat_rd_pvld                   (lat_fifo_rd_pvld)
   ,.lat_rd_pd                     (lat_fifo_rd_pd[NVDLA_DMA_RD_RSP-1:0])
   );
+
 
 NV_NVDLA_SDP_RDMA_dmaif u_NV_NVDLA_SDP_RDMA_dmaif (
    .nvdla_core_clk                (nvdla_gated_clk)                //|< i
