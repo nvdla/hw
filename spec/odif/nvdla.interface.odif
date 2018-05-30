@@ -37,7 +37,7 @@ interface sdp2pdp_if
   field pd[NVDLA_SDP_MAX_THROUGHPUT] NVDLA_BPE
 
 group DMA_READ_REQ
-  field addr NVDLA_MEMIF_WIDTH
+  field addr NVDLA_MEM_ADDRESS_WIDTH
   field size NVDLA_DMA_RD_SIZE
 
 group DMA_READ_RSP
@@ -45,8 +45,12 @@ group DMA_READ_RSP
   field mask NVDLA_DMA_MASK_BIT
 
 group DMA_WR_REQ
-  field data NVDLA_MEM_ADDRESS_WIDTH
-  field mask NVDLA_DMA_WR_MASK_BIT 
+  field addr NVDLA_MEM_ADDRESS_WIDTH
+  field size NVDLA_DMA_WR_SIZE
+
+group DMA_WR_DATA
+  field data NVDLA_MEMIF_WIDTH
+  field mask NVDLA_DMA_MASK_BIT
 
 interface nvdla_dma_rd_req
     flow    valid_ready
@@ -58,7 +62,7 @@ interface nvdla_dma_rd_rsp
 
 interface nvdla_dma_wr_req
     flow    valid_ready
-    packet  DMA_WR_REQ
+    packet  DMA_WR_REQ DMA_WR_DATA
 
 interface nvdla_dma_wr_rsp
     field   complete 1
