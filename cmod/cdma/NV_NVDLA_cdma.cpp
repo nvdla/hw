@@ -1920,8 +1920,6 @@ void NV_NVDLA_cdma::DirectConvWeightRequestSequencerCommon(){
         }
     }
 
-    if ((weight_byte_idx_planed_ % NVDLA_CBUF_BANK_WIDTH) != 0)
-        FAIL(("weight_byte_idx_planed_ should be multiple of NVDLA_CBUF_BANK_WIDTH at the end of layer\n"));
     cslInfo(("NV_NVDLA_cdma::DirectConvWeightRequestSequencerCommon, end\n"));
 }
 
