@@ -619,27 +619,29 @@ function void nvdla_tb_env::connect_phase(uvm_phase phase);
     //:| for dma in dma_list:
     //:|     for mem_if in mem_if_list:
     //:|         for kind in kind_list:
+    //:|             fifo = 'dut_init_fifo' if kind == 'request' else 'dut_cmpl_fifo'
+    //:|             port = 'port_req' if kind == 'request' else 'port'
     //:|             msg = '''
     //:|     case(%(dma)s_%(mem_if)s_%(kind)s_compare_mode)
     //:|         "COMPARE_MODE_DISABLE": begin
     //:|          end
     //:|         "COMPARE_MODE_RTL_AHEAD": begin
-    //:|              %(dma)s_%(mem_if)s_agt.slv_mon.mon_analysis_port_req.connect(sb.%(dma)s_%(mem_if)s_sb.dut_init_fifo.analysis_export);
+    //:|              %(dma)s_%(mem_if)s_agt.slv_mon.mon_analysis_%(port)s.connect(sb.%(dma)s_%(mem_if)s_sb.%(fifo)s.analysis_export);
     //:|          end
     //:|         "COMPARE_MODE_RTL_GATING_CMOD": begin
-    //:|              %(dma)s_%(mem_if)s_agt.slv_mon.mon_analysis_port_req.connect(sb.%(dma)s_%(mem_if)s_sb.dut_init_fifo.analysis_export);
+    //:|              %(dma)s_%(mem_if)s_agt.slv_mon.mon_analysis_%(port)s.connect(sb.%(dma)s_%(mem_if)s_sb.%(fifo)s.analysis_export);
     //:|          end
     //:|         "COMPARE_MODE_LOOSE_COMPARE": begin
-    //:|              %(dma)s_%(mem_if)s_agt.slv_mon.mon_analysis_port_req.connect(sb.%(dma)s_%(mem_if)s_sb.dut_init_fifo.analysis_export);
+    //:|              %(dma)s_%(mem_if)s_agt.slv_mon.mon_analysis_%(port)s.connect(sb.%(dma)s_%(mem_if)s_sb.%(fifo)s.analysis_export);
     //:|          end
     //:|         "COMPARE_MODE_COUNT_TXN_ONLY": begin
-    //:|              %(dma)s_%(mem_if)s_agt.slv_mon.mon_analysis_port_req.connect(sb.%(dma)s_%(mem_if)s_sb.dut_init_fifo.analysis_export);
+    //:|              %(dma)s_%(mem_if)s_agt.slv_mon.mon_analysis_%(port)s.connect(sb.%(dma)s_%(mem_if)s_sb.%(fifo)s.analysis_export);
     //:|         end
     //:|         default: begin
     //:|             `uvm_error(tID, {"Unsupported scoreboard working mode: ", %(dma)s_%(mem_if)s_%(kind)s_compare_mode})
     //:|         end
     //:|     endcase
-    //:| ''' % {'dma':dma, 'mem_if':mem_if, 'kind':kind}
+    //:| ''' % {'dma':dma, 'mem_if':mem_if, 'kind':kind, 'fifo':fifo, 'port':port}
     //:|             print(msg)
     //:) epython: generated_beg (DO NOT EDIT BELOW)
 
@@ -668,16 +670,16 @@ function void nvdla_tb_env::connect_phase(uvm_phase phase);
         "COMPARE_MODE_DISABLE": begin
          end
         "COMPARE_MODE_RTL_AHEAD": begin
-             cdma_wt_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.cdma_wt_pri_mem_sb.dut_init_fifo.analysis_export);
+             cdma_wt_pri_mem_agt.slv_mon.mon_analysis_port.connect(sb.cdma_wt_pri_mem_sb.dut_cmpl_fifo.analysis_export);
          end
         "COMPARE_MODE_RTL_GATING_CMOD": begin
-             cdma_wt_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.cdma_wt_pri_mem_sb.dut_init_fifo.analysis_export);
+             cdma_wt_pri_mem_agt.slv_mon.mon_analysis_port.connect(sb.cdma_wt_pri_mem_sb.dut_cmpl_fifo.analysis_export);
          end
         "COMPARE_MODE_LOOSE_COMPARE": begin
-             cdma_wt_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.cdma_wt_pri_mem_sb.dut_init_fifo.analysis_export);
+             cdma_wt_pri_mem_agt.slv_mon.mon_analysis_port.connect(sb.cdma_wt_pri_mem_sb.dut_cmpl_fifo.analysis_export);
          end
         "COMPARE_MODE_COUNT_TXN_ONLY": begin
-             cdma_wt_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.cdma_wt_pri_mem_sb.dut_init_fifo.analysis_export);
+             cdma_wt_pri_mem_agt.slv_mon.mon_analysis_port.connect(sb.cdma_wt_pri_mem_sb.dut_cmpl_fifo.analysis_export);
         end
         default: begin
             `uvm_error(tID, {"Unsupported scoreboard working mode: ", cdma_wt_pri_mem_response_compare_mode})
@@ -710,16 +712,16 @@ function void nvdla_tb_env::connect_phase(uvm_phase phase);
         "COMPARE_MODE_DISABLE": begin
          end
         "COMPARE_MODE_RTL_AHEAD": begin
-             cdma_dat_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.cdma_dat_pri_mem_sb.dut_init_fifo.analysis_export);
+             cdma_dat_pri_mem_agt.slv_mon.mon_analysis_port.connect(sb.cdma_dat_pri_mem_sb.dut_cmpl_fifo.analysis_export);
          end
         "COMPARE_MODE_RTL_GATING_CMOD": begin
-             cdma_dat_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.cdma_dat_pri_mem_sb.dut_init_fifo.analysis_export);
+             cdma_dat_pri_mem_agt.slv_mon.mon_analysis_port.connect(sb.cdma_dat_pri_mem_sb.dut_cmpl_fifo.analysis_export);
          end
         "COMPARE_MODE_LOOSE_COMPARE": begin
-             cdma_dat_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.cdma_dat_pri_mem_sb.dut_init_fifo.analysis_export);
+             cdma_dat_pri_mem_agt.slv_mon.mon_analysis_port.connect(sb.cdma_dat_pri_mem_sb.dut_cmpl_fifo.analysis_export);
          end
         "COMPARE_MODE_COUNT_TXN_ONLY": begin
-             cdma_dat_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.cdma_dat_pri_mem_sb.dut_init_fifo.analysis_export);
+             cdma_dat_pri_mem_agt.slv_mon.mon_analysis_port.connect(sb.cdma_dat_pri_mem_sb.dut_cmpl_fifo.analysis_export);
         end
         default: begin
             `uvm_error(tID, {"Unsupported scoreboard working mode: ", cdma_dat_pri_mem_response_compare_mode})
@@ -752,16 +754,16 @@ function void nvdla_tb_env::connect_phase(uvm_phase phase);
         "COMPARE_MODE_DISABLE": begin
          end
         "COMPARE_MODE_RTL_AHEAD": begin
-             sdp_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.sdp_pri_mem_sb.dut_init_fifo.analysis_export);
+             sdp_pri_mem_agt.slv_mon.mon_analysis_port.connect(sb.sdp_pri_mem_sb.dut_cmpl_fifo.analysis_export);
          end
         "COMPARE_MODE_RTL_GATING_CMOD": begin
-             sdp_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.sdp_pri_mem_sb.dut_init_fifo.analysis_export);
+             sdp_pri_mem_agt.slv_mon.mon_analysis_port.connect(sb.sdp_pri_mem_sb.dut_cmpl_fifo.analysis_export);
          end
         "COMPARE_MODE_LOOSE_COMPARE": begin
-             sdp_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.sdp_pri_mem_sb.dut_init_fifo.analysis_export);
+             sdp_pri_mem_agt.slv_mon.mon_analysis_port.connect(sb.sdp_pri_mem_sb.dut_cmpl_fifo.analysis_export);
          end
         "COMPARE_MODE_COUNT_TXN_ONLY": begin
-             sdp_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.sdp_pri_mem_sb.dut_init_fifo.analysis_export);
+             sdp_pri_mem_agt.slv_mon.mon_analysis_port.connect(sb.sdp_pri_mem_sb.dut_cmpl_fifo.analysis_export);
         end
         default: begin
             `uvm_error(tID, {"Unsupported scoreboard working mode: ", sdp_pri_mem_response_compare_mode})
@@ -794,16 +796,16 @@ function void nvdla_tb_env::connect_phase(uvm_phase phase);
         "COMPARE_MODE_DISABLE": begin
          end
         "COMPARE_MODE_RTL_AHEAD": begin
-             sdp_b_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.sdp_b_pri_mem_sb.dut_init_fifo.analysis_export);
+             sdp_b_pri_mem_agt.slv_mon.mon_analysis_port.connect(sb.sdp_b_pri_mem_sb.dut_cmpl_fifo.analysis_export);
          end
         "COMPARE_MODE_RTL_GATING_CMOD": begin
-             sdp_b_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.sdp_b_pri_mem_sb.dut_init_fifo.analysis_export);
+             sdp_b_pri_mem_agt.slv_mon.mon_analysis_port.connect(sb.sdp_b_pri_mem_sb.dut_cmpl_fifo.analysis_export);
          end
         "COMPARE_MODE_LOOSE_COMPARE": begin
-             sdp_b_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.sdp_b_pri_mem_sb.dut_init_fifo.analysis_export);
+             sdp_b_pri_mem_agt.slv_mon.mon_analysis_port.connect(sb.sdp_b_pri_mem_sb.dut_cmpl_fifo.analysis_export);
          end
         "COMPARE_MODE_COUNT_TXN_ONLY": begin
-             sdp_b_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.sdp_b_pri_mem_sb.dut_init_fifo.analysis_export);
+             sdp_b_pri_mem_agt.slv_mon.mon_analysis_port.connect(sb.sdp_b_pri_mem_sb.dut_cmpl_fifo.analysis_export);
         end
         default: begin
             `uvm_error(tID, {"Unsupported scoreboard working mode: ", sdp_b_pri_mem_response_compare_mode})
@@ -836,16 +838,16 @@ function void nvdla_tb_env::connect_phase(uvm_phase phase);
         "COMPARE_MODE_DISABLE": begin
          end
         "COMPARE_MODE_RTL_AHEAD": begin
-             sdp_n_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.sdp_n_pri_mem_sb.dut_init_fifo.analysis_export);
+             sdp_n_pri_mem_agt.slv_mon.mon_analysis_port.connect(sb.sdp_n_pri_mem_sb.dut_cmpl_fifo.analysis_export);
          end
         "COMPARE_MODE_RTL_GATING_CMOD": begin
-             sdp_n_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.sdp_n_pri_mem_sb.dut_init_fifo.analysis_export);
+             sdp_n_pri_mem_agt.slv_mon.mon_analysis_port.connect(sb.sdp_n_pri_mem_sb.dut_cmpl_fifo.analysis_export);
          end
         "COMPARE_MODE_LOOSE_COMPARE": begin
-             sdp_n_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.sdp_n_pri_mem_sb.dut_init_fifo.analysis_export);
+             sdp_n_pri_mem_agt.slv_mon.mon_analysis_port.connect(sb.sdp_n_pri_mem_sb.dut_cmpl_fifo.analysis_export);
          end
         "COMPARE_MODE_COUNT_TXN_ONLY": begin
-             sdp_n_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.sdp_n_pri_mem_sb.dut_init_fifo.analysis_export);
+             sdp_n_pri_mem_agt.slv_mon.mon_analysis_port.connect(sb.sdp_n_pri_mem_sb.dut_cmpl_fifo.analysis_export);
         end
         default: begin
             `uvm_error(tID, {"Unsupported scoreboard working mode: ", sdp_n_pri_mem_response_compare_mode})
@@ -878,16 +880,16 @@ function void nvdla_tb_env::connect_phase(uvm_phase phase);
         "COMPARE_MODE_DISABLE": begin
          end
         "COMPARE_MODE_RTL_AHEAD": begin
-             pdp_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.pdp_pri_mem_sb.dut_init_fifo.analysis_export);
+             pdp_pri_mem_agt.slv_mon.mon_analysis_port.connect(sb.pdp_pri_mem_sb.dut_cmpl_fifo.analysis_export);
          end
         "COMPARE_MODE_RTL_GATING_CMOD": begin
-             pdp_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.pdp_pri_mem_sb.dut_init_fifo.analysis_export);
+             pdp_pri_mem_agt.slv_mon.mon_analysis_port.connect(sb.pdp_pri_mem_sb.dut_cmpl_fifo.analysis_export);
          end
         "COMPARE_MODE_LOOSE_COMPARE": begin
-             pdp_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.pdp_pri_mem_sb.dut_init_fifo.analysis_export);
+             pdp_pri_mem_agt.slv_mon.mon_analysis_port.connect(sb.pdp_pri_mem_sb.dut_cmpl_fifo.analysis_export);
          end
         "COMPARE_MODE_COUNT_TXN_ONLY": begin
-             pdp_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.pdp_pri_mem_sb.dut_init_fifo.analysis_export);
+             pdp_pri_mem_agt.slv_mon.mon_analysis_port.connect(sb.pdp_pri_mem_sb.dut_cmpl_fifo.analysis_export);
         end
         default: begin
             `uvm_error(tID, {"Unsupported scoreboard working mode: ", pdp_pri_mem_response_compare_mode})
@@ -920,16 +922,16 @@ function void nvdla_tb_env::connect_phase(uvm_phase phase);
         "COMPARE_MODE_DISABLE": begin
          end
         "COMPARE_MODE_RTL_AHEAD": begin
-             cdp_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.cdp_pri_mem_sb.dut_init_fifo.analysis_export);
+             cdp_pri_mem_agt.slv_mon.mon_analysis_port.connect(sb.cdp_pri_mem_sb.dut_cmpl_fifo.analysis_export);
          end
         "COMPARE_MODE_RTL_GATING_CMOD": begin
-             cdp_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.cdp_pri_mem_sb.dut_init_fifo.analysis_export);
+             cdp_pri_mem_agt.slv_mon.mon_analysis_port.connect(sb.cdp_pri_mem_sb.dut_cmpl_fifo.analysis_export);
          end
         "COMPARE_MODE_LOOSE_COMPARE": begin
-             cdp_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.cdp_pri_mem_sb.dut_init_fifo.analysis_export);
+             cdp_pri_mem_agt.slv_mon.mon_analysis_port.connect(sb.cdp_pri_mem_sb.dut_cmpl_fifo.analysis_export);
          end
         "COMPARE_MODE_COUNT_TXN_ONLY": begin
-             cdp_pri_mem_agt.slv_mon.mon_analysis_port_req.connect(sb.cdp_pri_mem_sb.dut_init_fifo.analysis_export);
+             cdp_pri_mem_agt.slv_mon.mon_analysis_port.connect(sb.cdp_pri_mem_sb.dut_cmpl_fifo.analysis_export);
         end
         default: begin
             `uvm_error(tID, {"Unsupported scoreboard working mode: ", cdp_pri_mem_response_compare_mode})
