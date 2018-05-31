@@ -51,7 +51,8 @@ reg    [7:0] lat_count_cnt;
 reg    [0:0] lat_count_dec;
 
 reg   [NVDLA_MEM_ADDRESS_WIDTH-1:0] out_addr;
-reg    [2:0] out_size;
+wire   [2:0] out_size;
+reg    [2:0] out_size_tmp;
 reg    [2:0] slot_needed;
 wire   [1:0] beat_size;
 wire         bpt2arb_accept;
@@ -62,11 +63,14 @@ wire         bpt2arb_ltran;
 wire         bpt2arb_odd;
 wire   [2:0] bpt2arb_size;
 wire         bpt2arb_swizzle;
-wire   [2:0] size_offset;
-wire   [2:0] stt_offset;
-wire   [2:0] end_offset;
-wire   [3:0] ftran_num;
-wire   [2:0] ftran_size;
+wire   [NVDLA_MCIF_BURST_SIZE_LOG2-1:0] stt_offset;
+wire   [NVDLA_MCIF_BURST_SIZE_LOG2-1:0] end_offset;
+wire   [NVDLA_MCIF_BURST_SIZE_LOG2-1:0] size_offset;
+wire   [NVDLA_MCIF_BURST_SIZE_LOG2-1:0] ftran_size_tmp;
+wire   [NVDLA_MCIF_BURST_SIZE_LOG2-1:0] ltran_size_tmp;
+wire  [2:0]  ftran_size;
+wire  [2:0]  ltran_size;
+wire  [NVDLA_DMA_RD_SIZE-1:0] mtran_num;
 wire  [NVDLA_MEM_ADDRESS_WIDTH-1:0] in_addr;
 wire  [NVDLA_DMA_RD_REQ-1:0] in_pd;
 wire  [NVDLA_DMA_RD_REQ-1:0] in_pd_p;
@@ -83,12 +87,9 @@ wire         is_single_tran;
 wire   [2:0] lat_count_inc;
 wire   [7:0] lat_fifo_free_slot;
 wire         lat_fifo_stall_enable;
-wire   [3:0] ltran_num;
-wire   [2:0] ltran_size;
 wire         mon_end_offset_c;
 wire         mon_lat_fifo_free_slot_c;
 wire         mon_out_beats_c;
-wire  [14:0] mtran_num;
 wire         out_inc;
 wire         out_odd;
 wire         out_swizzle;
@@ -176,23 +177,29 @@ assign in_size[NVDLA_DMA_RD_SIZE-1:0]       =  in_vld_pd[NVDLA_DMA_RD_REQ-1:NVDL
 
 
 #if (NVDLA_MCIF_BURST_SIZE > 1)
-assign stt_offset[2:0]  = {{(3-NVDLA_MCIF_BURST_SIZE_LOG2){1'b0}},in_addr[NVDLA_MEMORY_ATOMIC_LOG2+NVDLA_MCIF_BURST_SIZE_LOG2-1:NVDLA_MEMORY_ATOMIC_LOG2]};
-assign size_offset[2:0] = {{(3-NVDLA_MCIF_BURST_SIZE_LOG2){1'b0}},in_size[NVDLA_MCIF_BURST_SIZE_LOG2-1:0]};
-assign {mon_end_offset_c, end_offset[2:0]} = stt_offset + size_offset;
+assign stt_offset[NVDLA_MCIF_BURST_SIZE_LOG2-1:0]  = in_addr[NVDLA_MEMORY_ATOMIC_LOG2+NVDLA_MCIF_BURST_SIZE_LOG2-1:NVDLA_MEMORY_ATOMIC_LOG2];
+assign size_offset[NVDLA_MCIF_BURST_SIZE_LOG2-1:0] = in_size[NVDLA_MCIF_BURST_SIZE_LOG2-1:0];
+assign {mon_end_offset_c, end_offset[NVDLA_MCIF_BURST_SIZE_LOG2-1:0]} = stt_offset + size_offset;
 
 assign is_single_tran = (stt_offset + in_size) < NVDLA_MCIF_BURST_SIZE;
 
-assign ftran_size[2:0] = is_single_tran ? size_offset : NVDLA_MCIF_BURST_SIZE -1 - stt_offset;
-assign ftran_num[3:0]  = ftran_size + 1;
+assign ftran_size_tmp[NVDLA_MCIF_BURST_SIZE_LOG2-1:0] = is_single_tran ? size_offset : NVDLA_MCIF_BURST_SIZE -1 - stt_offset;
+assign ltran_size_tmp[NVDLA_MCIF_BURST_SIZE_LOG2-1:0] = is_single_tran ? 0 : end_offset; 
 
-assign ltran_size[2:0] = is_single_tran ? 0 : end_offset; 
-assign ltran_num[3:0]  = is_single_tran ? 0 : end_offset+1;
-assign mtran_num = in_size + 1 - ftran_num - ltran_num;
+assign ftran_size[2:0] = {{(3-NVDLA_MCIF_BURST_SIZE_LOG2){1'b0}},ftran_size_tmp};
+assign ltran_size[2:0] = {{(3-NVDLA_MCIF_BURST_SIZE_LOG2){1'b0}},ltran_size_tmp};
+assign mtran_num = in_size - ftran_size - ltran_size - 1;
+#else
+assign ftran_size[2:0] = 3'b0; 
+assign ltran_size[2:0] = 3'b0;
+assign mtran_num = in_size - 1;
+#endif
 
 
 //================
 // check the empty entry of lat.fifo
 //================
+#if (NVDLA_MCIF_BURST_SIZE > 1)
 always @(
   is_single_tran
   or out_size
@@ -384,15 +391,16 @@ always @(
   or is_ltran
   or ltran_size
   ) begin
-    out_size = {3{`tick_x_or_0}};
+    out_size_tmp = {3{`tick_x_or_0}};
     if (is_ftran) begin
-        out_size = ftran_size;
+        out_size_tmp = ftran_size;
     end else if (is_mtran) begin
-        out_size = NVDLA_MCIF_BURST_SIZE-1;
+        out_size_tmp = NVDLA_MCIF_BURST_SIZE-1;
     end else if (is_ltran) begin
-        out_size = ltran_size;
+        out_size_tmp = ltran_size;
     end
 end
+assign out_size = out_size_tmp;
 #else 
 assign out_size = 3'h0;
 #endif
@@ -458,7 +466,7 @@ always @(posedge nvdla_core_clk) begin
     if (bpt2arb_accept) begin
         if (is_ftran) begin
         #if (NVDLA_MCIF_BURST_SIZE > 1)
-            out_addr <= in_addr + ((ftran_size+1)<<NVDLA_MEMORY_ATOMIC_LOG2);
+            out_addr <= in_addr + ((ftran_size+1) <<NVDLA_MEMORY_ATOMIC_LOG2);
         #else 
             out_addr <= in_addr + (1 <<NVDLA_MEMORY_ATOMIC_LOG2);
         #endif
@@ -483,7 +491,9 @@ always @(
     end
 end
 #else
-assign  req_num = in_size;
+always @(*) begin
+  req_num = in_size;
+end
 #endif
 
 

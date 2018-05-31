@@ -73,7 +73,8 @@ wire [NVDLA_MEMIF_WIDTH-1:0] dfifo_rd_data;
 wire         dfifo_rd_pvld;
 wire         dfifo_rd_prdy;
 reg   [NVDLA_MEM_ADDRESS_WIDTH-1:0] out_addr;
-reg    [2:0] out_size;
+wire   [2:0] out_size;
+reg    [2:0] out_size_tmp;
 reg   [NVDLA_DMA_WR_SIZE-1:0] req_count;
 reg   [NVDLA_DMA_WR_SIZE-1:0] req_num;
 reg    [2:0] beat_count;
@@ -121,11 +122,13 @@ wire         swizzle_dat0_mask;
 wire [NVDLA_MEMORY_ATOMIC_WIDTH-1:0] swizzle_dat1_data;
 wire         swizzle_dat1_mask;
 #endif
-wire   [2:0] stt_offset;
-wire   [2:0] size_offset;
-wire   [2:0] end_offset;
-wire   [2:0] ftran_size;
-wire   [2:0] ltran_size;
+wire   [NVDLA_MCIF_BURST_SIZE_LOG2-1:0] stt_offset;
+wire   [NVDLA_MCIF_BURST_SIZE_LOG2-1:0] size_offset;
+wire   [NVDLA_MCIF_BURST_SIZE_LOG2-1:0] end_offset;
+wire   [NVDLA_MCIF_BURST_SIZE_LOG2-1:0] ftran_size_tmp;
+wire   [NVDLA_MCIF_BURST_SIZE_LOG2-1:0] ltran_size_tmp;
+wire  [2:0]  ftran_size;
+wire  [2:0]  ltran_size;
 wire  [NVDLA_DMA_WR_SIZE-1:0] mtran_num;
 wire         in_size_is_even;
 wire         in_size_is_odd;
@@ -417,14 +420,17 @@ NV_NVDLA_MCIF_WRITE_IG_BPT_dfifo u_dfifo (
 //==================
 // in_cmd analysis to determine how to pop data from dFIFO
 #if (NVDLA_MCIF_BURST_SIZE > 1)
-assign stt_offset[2:0]  = {{(3-NVDLA_MCIF_BURST_SIZE_LOG2){1'b0}},in_cmd_addr[NVDLA_MEMORY_ATOMIC_LOG2+NVDLA_MCIF_BURST_SIZE_LOG2-1:NVDLA_MEMORY_ATOMIC_LOG2]};
-assign size_offset[2:0] = {{(3-NVDLA_MCIF_BURST_SIZE_LOG2){1'b0}},in_cmd_size[NVDLA_MCIF_BURST_SIZE_LOG2-1:0]};
-assign {mon_end_offset_c, end_offset[2:0]} = stt_offset + size_offset;
+assign stt_offset[NVDLA_MCIF_BURST_SIZE_LOG2-1:0]  = in_cmd_addr[NVDLA_MEMORY_ATOMIC_LOG2+NVDLA_MCIF_BURST_SIZE_LOG2-1:NVDLA_MEMORY_ATOMIC_LOG2];
+assign size_offset[NVDLA_MCIF_BURST_SIZE_LOG2-1:0] = in_cmd_size[NVDLA_MCIF_BURST_SIZE_LOG2-1:0];
+assign {mon_end_offset_c, end_offset[NVDLA_MCIF_BURST_SIZE_LOG2-1:0]} = stt_offset + size_offset;
 
 // calculate how many trans to be split
 assign is_single_tran  = (stt_offset + in_cmd_size) < NVDLA_MCIF_BURST_SIZE;
-assign ftran_size[2:0] = is_single_tran ? size_offset : NVDLA_MCIF_BURST_SIZE-1-stt_offset;
-assign ltran_size[2:0] = is_single_tran ? size_offset : end_offset;
+assign ftran_size_tmp[NVDLA_MCIF_BURST_SIZE_LOG2-1:0] = is_single_tran ? size_offset : NVDLA_MCIF_BURST_SIZE-1-stt_offset;
+assign ltran_size_tmp[NVDLA_MCIF_BURST_SIZE_LOG2-1:0] = is_single_tran ? size_offset : end_offset;
+
+assign ftran_size[2:0] = {{(3-NVDLA_MCIF_BURST_SIZE_LOG2){1'b0}},ftran_size_tmp};
+assign ltran_size[2:0] = {{(3-NVDLA_MCIF_BURST_SIZE_LOG2){1'b0}},ltran_size_tmp};
 assign mtran_num = in_cmd_size - ftran_size - ltran_size - 1;
 #else
 assign ftran_size[2:0] = 3'b0; 
@@ -625,6 +631,7 @@ assign is_last_beat = (beat_count==beat_size);
 //================
 // bsp out: size: this is in unit of 64B, including masked 32B data
 //================
+#if (NVDLA_MCIF_BURST_SIZE > 1)
 always @(
   is_ftran
   or ftran_size
@@ -632,15 +639,20 @@ always @(
   or is_ltran
   or ltran_size
   ) begin
-    out_size = {3{`tick_x_or_0}};
+    out_size_tmp = {3{`tick_x_or_0}};
     if (is_ftran) begin
-        out_size = ftran_size;
+        out_size_tmp = ftran_size;
     end else if (is_mtran) begin
-        out_size = NVDLA_MCIF_BURST_SIZE-1; //3'd7;
+        out_size_tmp = NVDLA_MCIF_BURST_SIZE-1; //3'd7;
     end else if (is_ltran) begin
-        out_size = ltran_size;
+        out_size_tmp = ltran_size;
     end
 end
+assign out_size = out_size_tmp;
+#else 
+assign out_size = 3'h0;
+#endif
+
 
 //================
 // bpt2arb: addr
