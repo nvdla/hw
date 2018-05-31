@@ -49,7 +49,7 @@ input [1:0]                 reg2dp_proc_precision;
 input [12:0]                reg2dp_dataout_width;
 input [12:0]                reg2dp_dataout_height;
 input [12:0]                reg2dp_dataout_channel;
-input [26:0]                reg2dp_dataout_addr;
+input [31-NVDLA_MEMORY_ATOMIC_LOG2:0]                reg2dp_dataout_addr;
 input [0:0]                 reg2dp_line_packed;
 input [0:0]                 reg2dp_surf_packed;
 input [4:0]                 reg2dp_batches;
@@ -88,14 +88,15 @@ wire         dlv_layer_end   =     dlv_pd[1];
 ///// register input signal from regfile                 /////
 //////////////////////////////////////////////////////////////
 wire  [CACC_CHANNEL_BITS-6:0]  cur_channel_w =  {reg2dp_dataout_channel[CACC_CHANNEL_BITS-1:5]} ;
-//: my $kk= CACC_CHANNEL_BITS-5;
+//: my $kk = CACC_CHANNEL_BITS-5;
+//: my $aw = 32-NVDLA_MEMORY_ATOMIC_LOG2;
 //: &eperl::flop(" -q  cur_op_en  -en wait_for_op_en & \"reg2dp_op_en\" -d  \"reg2dp_op_en\" -clk nvdla_core_clk -rst nvdla_core_rstn -rval 0"); 
 //: &eperl::flop(" -q  cur_conv_mode  -en \"wait_for_op_en & reg2dp_op_en\" -d  \"reg2dp_conv_mode\" -clk nvdla_core_clk -rst nvdla_core_rstn -rval 0"); 
 //: &eperl::flop("-wid 2 -q  cur_proc_precision  -en \"wait_for_op_en & reg2dp_op_en\" -d  \"reg2dp_proc_precision\" -clk nvdla_core_clk -rst nvdla_core_rstn -rval 0"); 
 //: &eperl::flop("-wid 13 -q  cur_width  -en \"wait_for_op_en & reg2dp_op_en\" -d  \"reg2dp_dataout_width\" -clk nvdla_core_clk -rst nvdla_core_rstn -rval 0"); 
 //: &eperl::flop("-wid 13 -q  cur_height  -en \"wait_for_op_en & reg2dp_op_en\" -d  \"reg2dp_dataout_height\" -clk nvdla_core_clk -rst nvdla_core_rstn -rval 0"); 
 //: &eperl::flop("-wid ${kk} -q  cur_channel  -en \"wait_for_op_en & reg2dp_op_en\" -d  \"cur_channel_w\" -clk nvdla_core_clk -rst nvdla_core_rstn -rval 0"); 
-//: &eperl::flop("-wid 27 -q  cur_dataout_addr  -en \"wait_for_op_en & reg2dp_op_en\" -d  \"reg2dp_dataout_addr\" -clk nvdla_core_clk -rst nvdla_core_rstn -rval 0"); 
+//: &eperl::flop("-wid $aw -q  cur_dataout_addr  -en \"wait_for_op_en & reg2dp_op_en\" -d  \"reg2dp_dataout_addr\" -clk nvdla_core_clk -rst nvdla_core_rstn -rval 0"); 
 //: &eperl::flop("-wid 5 -q  cur_batches  -en \"wait_for_op_en & reg2dp_op_en\" -d  \"reg2dp_batches\" -clk nvdla_core_clk -rst nvdla_core_rstn -rval 0"); 
 //: &eperl::flop("-wid 24 -q  cur_line_stride  -en \"wait_for_op_en & reg2dp_op_en\" -d  \"reg2dp_line_stride\" -clk nvdla_core_clk -rst nvdla_core_rstn -rval 0"); 
 //: &eperl::flop("-wid 24 -q  cur_surf_stride  -en \"wait_for_op_en & reg2dp_op_en\" -d  \"reg2dp_surf_stride\" -clk nvdla_core_clk -rst nvdla_core_rstn -rval 0"); 

@@ -116,7 +116,7 @@ wire   [4:0] reg2dp_batches;
 wire   [4:0] reg2dp_clip_truncate;
 wire   [0:0] reg2dp_conv_mode;
 wire  [31:0] reg2dp_cya;
-wire  [26:0] reg2dp_dataout_addr;
+wire  [31:0] reg2dp_dataout_addr;
 wire  [12:0] reg2dp_dataout_channel;
 wire  [12:0] reg2dp_dataout_height;
 wire  [12:0] reg2dp_dataout_width;
@@ -251,7 +251,7 @@ NV_NVDLA_CACC_delivery_ctrl u_delivery_ctrl (
   ,.reg2dp_dataout_width          (reg2dp_dataout_width)    //|< w
   ,.reg2dp_dataout_height         (reg2dp_dataout_height)   //|< w
   ,.reg2dp_dataout_channel        (reg2dp_dataout_channel)  //|< w
-  ,.reg2dp_dataout_addr           (reg2dp_dataout_addr)     //|< w
+  ,.reg2dp_dataout_addr           (reg2dp_dataout_addr[31:NVDLA_MEMORY_ATOMIC_LOG2])     //|< w
   ,.reg2dp_line_packed            (reg2dp_line_packed)         //|< w
   ,.reg2dp_surf_packed            (reg2dp_surf_packed)         //|< w
   ,.reg2dp_batches                (reg2dp_batches[4:0])           //|< w
