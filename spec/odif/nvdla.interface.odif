@@ -27,7 +27,7 @@ interface cmac2cacc_if
 
 interface cacc2sdp_if
   flow valid_ready
-  field pd[NVDLA_SDP_MAX_THROUGHPUT]  32
+  field pd[NVDLA_SDP_MAX_THROUGHPUT]  NVDLA_CACC_SDP_SINGLE_THROUGHPUT
   field pd_batch_end  1
   field pd_layer_end  1
 
