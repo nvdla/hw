@@ -29,7 +29,7 @@ typedef struct dma_write_cmd_s {
 #define _dma_write_data_struct_H_
 
 typedef struct dma_write_data_s {
-    uint64_t data [8] ; 
+    uint64_t data [8] ; //used in byte unit 
 } dma_write_data_t;
 
 #endif

@@ -16,7 +16,7 @@
 #define _dma_read_data_struct_H_
 
 typedef struct dma_read_data_s {
-    uint64_t data [8] ; 
+    uint64_t data [8] ; //used int byte unit
     uint8_t mask ; 
 } dma_read_data_t;
 

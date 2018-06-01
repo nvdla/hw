@@ -24,13 +24,13 @@ union nvdla_mac2accu_data_if_u {
 typedef struct nvdla_mac2accu_data_if_s {
     uint8_t mask ; 
     uint8_t mode ;
-    sc_int<22> data [(NVDLA_MAC_ATOMIC_K_SIZE / 2) * 4]; // RESULT_NUM_PER_MACELL = 4
+    sc_int<22> data [(NVDLA_MAC_ATOMIC_K_SIZE / 2) * 4]; // RESULT_NUM_PER_MACELL = 4, used in sc_int<22> element unit
     union nvdla_mac2accu_data_if_u pd ; 
 } nvdla_mac2accu_data_if_t;
 
 typedef struct nvdla_mac2accu_data_concat_if_s {
     uint16_t mask ; 
-    sc_int<22> data [NVDLA_MAC_ATOMIC_K_SIZE * 4]; // RESULT_NUM_PER_MACELL = 4
+    sc_int<22> data [NVDLA_MAC_ATOMIC_K_SIZE * 4]; // RESULT_NUM_PER_MACELL = 4, used in sc_int<22> element unit
     union nvdla_mac2accu_data_if_u pd ; 
 } nvdla_mac2accu_data_concat_if_t;
 

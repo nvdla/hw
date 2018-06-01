@@ -16,7 +16,7 @@
 #define _sdp2pdp_struct_H_
 
 typedef struct sdp2pdp_s {
-    uint16_t data [16]; 
+    uint16_t data [SDP_MAX_THROUGHPUT]; //used in byte unit 
 } sdp2pdp_t;
 
 #endif
