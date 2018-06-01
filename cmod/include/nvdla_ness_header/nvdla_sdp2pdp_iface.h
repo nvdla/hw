@@ -12,6 +12,8 @@
 #define _nvdla_sdp2pdp_iface_H_
 
 #include <stdint.h>
+#include "nvdla_config.h"
+
 #ifndef _sdp2pdp_struct_H_
 #define _sdp2pdp_struct_H_
 
