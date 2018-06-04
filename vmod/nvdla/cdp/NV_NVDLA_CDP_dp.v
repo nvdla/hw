@@ -324,9 +324,10 @@ assign cvtin_out_int8_ext = {
 //: my $k = NVDLA_CDP_THROUGHPUT;
 //: my $icvto = NVDLA_CDP_ICVTO_BWPE;
 //: if($k > 1) {
-//:   foreach my $m  (0..$k-1) {
+//:   foreach my $m  (0..$k-2) {
+//:     my $ss = $k -$m -1;
 //:     print qq(
-//:         {{(${icvto}+3){cvtin_out_int8_${m}[${icvto}-1]}}, cvtin_out_int8_${m}},
+//:         {{(${icvto}+3){cvtin_out_int8_${ss}[${icvto}-1]}}, cvtin_out_int8_${ss}},
 //:     );
 //:   }
 //: } 
