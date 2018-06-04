@@ -193,7 +193,7 @@ if __name__ == '__main__':
             sys.exit(ret)
     if (project_name in ['nv_small','nv_small_256', 'nv_small_256_full', 'nv_medium_512', 'nv_medium_1024_full', 'nv_large']):
         time_str = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-        run_dir = 'nv_small_%s' % time_str
+        run_dir = '%s_%s' % (project_name, time_str)
         try:
             if 'protection' == config['kind']:
                 ret=run_plan(config['project'], project_name, '-otag protection %s -run_dir %s' % (args, run_dir), lsf_cmd)
