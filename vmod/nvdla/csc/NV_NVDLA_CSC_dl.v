@@ -824,7 +824,15 @@ assign pixel_x_add_w = (reg2dp_y_extension == 2'h2) ? {pixel_x_stride_w, 2'b0} :
                        (reg2dp_y_extension == 2'h1) ? {1'b0, pixel_x_stride_w, 1'b0} : //*2
                        {2'b0, pixel_x_stride_w};
 assign pixel_x_byte_stride_w =  {1'b0, pixel_x_stride_w};
+`ifdef CC_ATOMC_DIV_ATOMK_EQUAL_1
 assign pixel_ch_stride_w = {{5-LOG2_ATOMK{1'b0}},pixel_x_stride_w, {LOG2_ATOMK+1{1'b0}}}; //stick to 2*atomK  no matter which config.  
+`endif
+`ifdef CC_ATOMC_DIV_ATOMK_EQUAL_2
+assign pixel_ch_stride_w = {{5-LOG2_ATOMK{1'b0}},pixel_x_stride_w, {LOG2_ATOMK+1{1'b0}}}; //stick to 2*atomK  no matter which config.  
+`endif
+`ifdef CC_ATOMC_DIV_ATOMK_EQUAL_4
+assign pixel_ch_stride_w = {{5-LOG2_ATOMK{1'b0}},pixel_x_stride_w, {LOG2_ATOMK+2{1'b0}}}; //stick to 4*atomK  no matter which config.  
+`endif
 assign conv_y_stride_w = (is_winograd) ? 4'b1 : reg2dp_conv_y_stride_ext + 1'b1;
 assign x_dilate_w = (is_winograd | is_img) ? 6'b1 : reg2dp_x_dilation_ext + 1'b1;
 assign y_dilate_w = (is_winograd | is_img) ? 6'b1 : reg2dp_y_dilation_ext + 1'b1;

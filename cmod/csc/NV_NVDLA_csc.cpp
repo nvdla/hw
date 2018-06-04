@@ -1071,8 +1071,8 @@ void NV_NVDLA_csc::SendWeightToMacSequencerDirectConvCommon() {
     read_payload_data_ptr = reinterpret_cast <uint8_t*> (sc2buf_wt_rd_payload.nvdla_ram_data_valid_DATA_WIDTH_1024_ECC_SIZE_1.data);
 
     if (image_in_mode) {
-        ideal_stripe_length   = NVDLA_MAC_ATOMIC_K_SIZE * 2;
-//      ideal_stripe_length   = (NVDLA_MAC_ATOMIC_C_SIZE / NVDLA_MAC_ATOMIC_K_SIZE == 4)? (NVDLA_MAC_ATOMIC_K_SIZE * 4) : (NVDLA_MAC_ATOMIC_K_SIZE * 2);
+//        ideal_stripe_length   = NVDLA_MAC_ATOMIC_K_SIZE * 2;
+      ideal_stripe_length   = (NVDLA_MAC_ATOMIC_C_SIZE / NVDLA_MAC_ATOMIC_K_SIZE == 4)? (NVDLA_MAC_ATOMIC_K_SIZE * 4) : (NVDLA_MAC_ATOMIC_K_SIZE * 2);
         channel_operation_num = (cube_out_width + ideal_stripe_length - 1) / ideal_stripe_length;
         out_line_num          = cube_out_height;
     }
@@ -1609,8 +1609,8 @@ void NV_NVDLA_csc::SendImageDataToMacSequencerConvCommon() {
     cbuf_entry_per_line     = csc_entries_ + 1;    // entries per line
     //cbuf_entry_for_data     = (csc_data_bank_+1) * NVDLA_CBUF_BANK_DEPTH;
     post_y_extension        = 1 << csc_y_extension_ ;   // Valid values: 1, 2, 4
-    ideal_stripe_length     = NVDLA_MAC_ATOMIC_K_SIZE * 2;
-//  ideal_stripe_length     = (NVDLA_MAC_ATOMIC_C_SIZE / NVDLA_MAC_ATOMIC_K_SIZE == 4)? (NVDLA_MAC_ATOMIC_K_SIZE * 4) : (NVDLA_MAC_ATOMIC_K_SIZE * 2);
+//    ideal_stripe_length     = NVDLA_MAC_ATOMIC_K_SIZE * 2;
+  ideal_stripe_length     = (NVDLA_MAC_ATOMIC_C_SIZE / NVDLA_MAC_ATOMIC_K_SIZE == 4)? (NVDLA_MAC_ATOMIC_K_SIZE * 4) : (NVDLA_MAC_ATOMIC_K_SIZE * 2);
 
     // Evaluated
     switch (precision) {

@@ -25,18 +25,16 @@
 #define NVDLA_CACC_D_MISC_CFG_0_PROC_PRECISION_INT8     2'h0
 #define CACC_CHANNEL_BITS                               12
 
-//#if(NVDLA_CC_ATOMC_DIV_ATOMK==1)
-//    #define CACC_ABUF_DEPTH                                 NVDLA_MAC_ATOMIC_K_SIZE*2  //2*atomK
-//    #define CACC_ABUF_AWIDTH                                NVDLA_MAC_ATOMIC_K_SIZE_LOG2+1   //log2(abuf_depth)
-//#elif(NVDLA_CC_ATOMC_DIV_ATOMK==2)
-//    #define CACC_ABUF_DEPTH                                 NVDLA_MAC_ATOMIC_K_SIZE*2  //2*atomK
-//    #define CACC_ABUF_AWIDTH                                NVDLA_MAC_ATOMIC_K_SIZE_LOG2+1   //log2(abuf_depth)
-//#elif(NVDLA_CC_ATOMC_DIV_ATOMK==4)
-//    #define CACC_ABUF_DEPTH                                 NVDLA_MAC_ATOMIC_K_SIZE*4  //4*atomK
-//    #define CACC_ABUF_AWIDTH                                NVDLA_MAC_ATOMIC_K_SIZE_LOG2+2   //log2(abuf_depth)
-//#endif
+#if(NVDLA_CC_ATOMC_DIV_ATOMK==1)
+    #define CACC_ABUF_DEPTH                                 NVDLA_MAC_ATOMIC_K_SIZE*2  //2*atomK
+    #define CACC_ABUF_AWIDTH                                NVDLA_MAC_ATOMIC_K_SIZE_LOG2+1   //log2(abuf_depth)
+#elif(NVDLA_CC_ATOMC_DIV_ATOMK==2)
+    #define CACC_ABUF_DEPTH                                 NVDLA_MAC_ATOMIC_K_SIZE*2  //2*atomK
+    #define CACC_ABUF_AWIDTH                                NVDLA_MAC_ATOMIC_K_SIZE_LOG2+1   //log2(abuf_depth)
+#elif(NVDLA_CC_ATOMC_DIV_ATOMK==4)
+    #define CACC_ABUF_DEPTH                                 NVDLA_MAC_ATOMIC_K_SIZE*4  //4*atomK,under image, stripe OP must begin from entry align place
+    #define CACC_ABUF_AWIDTH                                NVDLA_MAC_ATOMIC_K_SIZE_LOG2+2   //log2(abuf_depth)
+#endif
     
-#define CACC_ABUF_DEPTH                                 NVDLA_MAC_ATOMIC_K_SIZE*2  //2*atomK
-#define CACC_ABUF_AWIDTH                                NVDLA_MAC_ATOMIC_K_SIZE_LOG2+1   //log2(abuf_depth)
 #define CACC_DBUF_DEPTH                                 CACC_ABUF_DEPTH
 #define CACC_DBUF_AWIDTH                                CACC_ABUF_AWIDTH    //address width
