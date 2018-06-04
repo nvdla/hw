@@ -11,8 +11,10 @@ class cc_sdprdma_sdp_pdp_rtest_cc_sdprdma_sdp_pdp_scenario extends nvdla_cc_sdpr
     endfunction: new
 
     constraint sce_cc_sdprdma_sdp_pdp_sim_constraint_for_user_extend {
-        this.cdma.data_reuse   == nvdla_cdma_resource::data_reuse_DISABLE;
-        this.cdma.weight_reuse == nvdla_cdma_resource::weight_reuse_DISABLE;
+        this.cdma.data_reuse      == nvdla_cdma_resource::data_reuse_DISABLE;
+        this.cdma.weight_reuse    == nvdla_cdma_resource::weight_reuse_DISABLE;
+        this.cdma.skip_data_rls   == nvdla_cdma_resource::skip_data_rls_DISABLE;
+        this.cdma.skip_weight_rls == nvdla_cdma_resource::skip_weight_rls_DISABLE;
     }
     `uvm_component_utils(cc_sdprdma_sdp_pdp_rtest_cc_sdprdma_sdp_pdp_scenario)
 endclass: cc_sdprdma_sdp_pdp_rtest_cc_sdprdma_sdp_pdp_scenario

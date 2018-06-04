@@ -927,12 +927,24 @@ constraint nvdla_cdma_resource::c_ias_reuse_mode {
     // min_weight_banks = ((((weight_width_ext+1)*(weight_height_ext+1)*(weight_channel_ext+1)*(`NVDLA_BPE/8)*kernel_per_group+127) / 128) + 255) / 256;
     // bug 200312556, weiht bank must be able to hold one max kernel group + 128 bytes
 
-    if (prev_skip_data_rls == skip_data_rls_DISABLE) {
+    /* REUSE mode cfg
+     *   Layer       | Pre         | Cur
+     *   Data/Weight | release     | not_reuse
+     *   Data/Weight | not_release | reuse
+     *   Data/Weight | NULL        | not_reuse
+     */
+    if (prev_skip_data_rls == skip_data_rls_DISABLE || get_active_cnt() == 0) {
         data_reuse == data_reuse_DISABLE;
     }
+    else if (prev_skip_data_rls == skip_data_rls_ENABLE) {
+        data_reuse == data_reuse_ENABLE;
+    }
 
-    if (prev_skip_weight_rls == skip_weight_rls_DISABLE) {
+    if (prev_skip_weight_rls == skip_weight_rls_DISABLE || get_active_cnt() == 0) {
         weight_reuse == weight_reuse_DISABLE;
+    }
+    else if (prev_skip_weight_rls == skip_weight_rls_ENABLE) {
+        weight_reuse == weight_reuse_ENABLE;
     }
 
     // if(skip_data_rls == skip_data_rls_DISABLE) {
