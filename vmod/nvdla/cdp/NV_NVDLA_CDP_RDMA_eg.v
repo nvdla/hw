@@ -388,7 +388,8 @@ assign lat_rd_prdy = lat_rd_pvld
 //:                 print "               invalid_flag = {${tp}{ele_in_channel[${tpbw}-1:0]==${tpbw}'d0}} & {{(${tp}-1){1'b1}},1'b0}  \n";
 //:                 foreach my $i (0..$tp-2) {
 //:                 my $j = $i + 1;
-//:                     print "             | {${tp}{ele_in_channel[${tpbw}-1:0]==${tpbw}'d${j}}} & {{(${tp}-${j}){1'b1}},${j}'b0}  \n";
+//:                 my $s = $j + 1;
+//:                     print "             | {${tp}{ele_in_channel[${tpbw}-1:0]==${tpbw}'d${j}}} & {{(${tp}-${s}){1'b1}},${s}'b0}  \n";
 //:                 }
 //:                 print "     ;  \n";
 //:             }
