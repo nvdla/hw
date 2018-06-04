@@ -154,7 +154,7 @@ if __name__ == '__main__':
     parser.add_argument('--levenshtein_py_path', '-levenshtein_py_path', '--lpp', '-lpp', dest='levenshtein_py_path', type=str, default='', required=False,
                         help='Python version which contains levenshtein lib')
     parser.add_argument('--dry_run', '-dry_run', dest='dry_run', required=False, default=False, action='store_true',
-                        help='Python version which contains plotly lib')
+                        help='Print command only, will not execute any command')
     parser.add_argument('--en_cov', '-en_cov', dest='en_cov', required=False, default=False, action='store_true',
                         help='Enable coverage in project build process')
     config = vars( parser.parse_args() )
