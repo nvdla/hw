@@ -290,6 +290,7 @@ class RunTest(object):
         cmd_fh = open(script, '+w')
         cmd_fh.write('#!/bin/sh\n\n')
         cmd_fh.write("export VCS_HOME=%s\n\n" % os.environ['VCS_HOME'])
+        cmd_fh.write("export VERDI_HOME=%s\n\n" % os.environ['VERDI_HOME'])
         cmd_fh.write("export NOVAS_HOME=%s\n\n" % os.environ['NOVAS_HOME'])
         cmd_fh.write("export LD_LIBRARY_PATH=%s\n\n" % os.environ['LD_LIBRARY_PATH'])
         cmd_fh.write("export PATH=%s\n\n" % os.environ['PATH'])
