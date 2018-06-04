@@ -49,6 +49,8 @@ class cc_pitch_line_stride_1_ctest_cc_sdp_scenario extends nvdla_cc_sdp_scenario
     constraint sce_cc_sdp_sim_constraint_for_user_extend {
         cdma.data_reuse     == nvdla_cdma_resource::data_reuse_DISABLE;
         cdma.weight_reuse   == nvdla_cdma_resource::weight_reuse_DISABLE;
+        cdma.skip_data_rls  == nvdla_cdma_resource::skip_data_rls_DISABLE;
+        cdma.skip_weight_rls== nvdla_cdma_resource::skip_weight_rls_DISABLE;
         cdma.datain_format  == nvdla_cdma_resource::datain_format_PIXEL;
         cdma.pixel_format   == nvdla_cdma_resource::pixel_format_t'(this.pixel_format);
         cdma.datain_height  == 0;

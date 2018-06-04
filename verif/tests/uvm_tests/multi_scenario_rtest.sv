@@ -13,6 +13,8 @@ class multi_scenario_rtest_cc_sdp_scenario extends nvdla_cc_sdp_scenario;
     constraint sce_cc_sdp_sim_constraint_for_user_extend {
         this.cdma.data_reuse        == nvdla_cdma_resource::data_reuse_DISABLE;
         this.cdma.weight_reuse      == nvdla_cdma_resource::weight_reuse_DISABLE;
+        this.cdma.skip_data_rls     == nvdla_cdma_resource::skip_data_rls_DISABLE;
+        this.cdma.skip_weight_rls   == nvdla_cdma_resource::skip_weight_rls_DISABLE;
     }
     `uvm_component_utils(multi_scenario_rtest_cc_sdp_scenario)
 endclass: multi_scenario_rtest_cc_sdp_scenario
