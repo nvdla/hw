@@ -5,8 +5,6 @@ package mem_pkg;
 
     import uvm_pkg::*;
 
-    let max(a, b) = (a > b) ? a : b;
-
     `include "nvdla_tb_txn.sv"
 
     `include "mem_define.svh"

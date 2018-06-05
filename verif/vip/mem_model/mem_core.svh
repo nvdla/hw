@@ -227,7 +227,7 @@ function void mem_core::load_surface(string filename, addr_t base);
         $sformatf("%s is loaded to mem[%#0x:%#0x]", filename, base, base+content.end_offset-1), UVM_LOW)
 
     // It's possible that reserved a region first and then load to a sub-range of it.
-    this.base = max(this.base, base);
+    this.base = (this.base == 0) ? base : min(this.base, base);
     this.limit = max(this.limit, base+content.end_offset);
 endfunction
 
@@ -322,7 +322,7 @@ function void mem_core::init_surface_with_pattern(addr_t base,
         write8(base+i, data);
     end
 
-    this.base = max(this.base, base);
+    this.base = (this.base == 0) ? base : min(this.base, base);
     this.limit = max(this.limit, base+len);
 endfunction
 
