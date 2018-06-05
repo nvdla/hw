@@ -349,7 +349,7 @@ wire    [4:0] weight_s_up_cnt_w;
 wire    [4:0] weight_width_cmp_w;
 wire          wt_bank_change;
 wire          wt_cbuf_ready;
-wire    [4:0] wt_cycles;
+wire    [5:0] wt_cycles;
 wire    [5:0] wt_max_cycles;
 wire          wt_pending_clr_w;
 wire          wt_pending_req_w;
@@ -775,10 +775,10 @@ assign dat_stripe_length_w = is_img_d1 ? dat_stripe_img_length_w : {1'b0, dat_st
 assign dat_max_cycles = ~dat_pop_ready ? 7'b0 :
                         (dat_stripe_length < CSC_MIN_STRIPE ) ? CSC_MIN_STRIPE  :
                         dat_stripe_length;
-assign wt_cycles = sg2wt_kernel_size[4:0];
+assign wt_cycles = sg2wt_kernel_size[5:0];
 assign wt_max_cycles = ~wt_pop_ready ? 6'b0 :
-                       ((wt_cycles <= 5'b1) & (pop_cnt <= 6'b1)) ? 6'h2 :
-                       ({1'b0, wt_cycles} > pop_cnt) ? {1'b0, wt_cycles} :
+                       ((wt_cycles <= 6'b1) & (pop_cnt <= 6'b1)) ? 6'h2 :
+                       (wt_cycles > pop_cnt) ?  wt_cycles :
                        pop_cnt;
 
 assign {mon_max_cycles, max_cycles} = (dat_max_cycles >= {1'b0, wt_max_cycles}) ? (dat_max_cycles - 1'b1) : ({1'b0, wt_max_cycles} - 1'b1);
