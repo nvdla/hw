@@ -30,9 +30,9 @@ typedef struct {
 } sc2mac_data_payload_t;
 
 typedef struct {
-    bit  [CSC_WT_DS-1:0]        mask;
+    bit [CSC_WT_DS-1:0]         mask;
     byte                        data[CSC_WT_DS];
-    byte                        wt_sel;
+    bit [CMAC_DS-1:0]           wt_sel;
 } sc2mac_weight_payload_t;
 
 typedef struct {

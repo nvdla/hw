@@ -273,7 +273,7 @@ extern "C" void parse_sc2mac_data_transaction(
     uint8_t                 *src_uint8_ptr;
     uint32_t                copy_idx;
     uint32_t                copy_size;
-    uint32_t                mask;
+    uint64_t                mask;
     byte_ptr = reinterpret_cast <uint8_t *> (svGetArrayPtr(tlm_gp_data_ptr));
     sc_ptr = reinterpret_cast <nvdla_sc2mac_data_monitor_t *> (&byte_ptr[1]);
     sv_ptr = reinterpret_cast <uint8_t *> (svGetArrayPtr(parsed_data_ptr));
@@ -335,7 +335,7 @@ extern "C" void parse_sc2mac_weight_transaction(
     uint8_t                     *src_uint8_ptr;
     uint32_t                    copy_idx;
     uint32_t                    copy_size;
-    uint32_t                    mask;
+    uint64_t                    mask;
 
     byte_ptr = reinterpret_cast <uint8_t *> (svGetArrayPtr(tlm_gp_data_ptr));
     sc_ptr = reinterpret_cast <nvdla_sc2mac_weight_monitor_t *> (&byte_ptr[1]);
@@ -361,8 +361,7 @@ extern "C" void parse_sc2mac_weight_transaction(
     }
 
     // Transfer wt_sel
-//  copy_size     = sizeof(sc_ptr->sel);
-    copy_size     = 1;
+    copy_size     = NVDLA_MAC_ATOMIC_K_SIZE/2 < 8 ? 1 : NVDLA_MAC_ATOMIC_K_SIZE/2/8;
     src_uint8_ptr = reinterpret_cast <uint8_t *> (&sc_ptr->sel);
     for (copy_idx = 0; copy_idx < copy_size; copy_idx++) {
 //      printf("[DEBUG] parse_sc2mac_weight_transaction: wsel[%0d] = %#x: sv_ptr_byte_idx=%0d\n", copy_idx, src_uint8_ptr[copy_size-1-copy_idx], sv_ptr_byte_idx);
