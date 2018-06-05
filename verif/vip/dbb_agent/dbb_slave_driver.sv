@@ -937,13 +937,15 @@ class dbb_slave_driver #(int MEM_DATA_WIDTH=512, type REQ = uvm_tlm_gp, RSP = RE
     endfunction: set_stream_id
 
     // Function to unpack an array of bytes into array of bits.
-    function bit [MEM_DATA_WIDTH-1:0] byte_to_bit (uvm_tlm_gp tr);
+    function bit [MEM_DATA_WIDTH-1:0] byte_to_bit (uvm_tlm_gp tr, int n_beat);
         int i;
         byte unsigned p[];
+        int byte_per_beat;
         tr.get_data(p);
+        byte_per_beat = $clog2(MEM_DATA_WIDTH);
         byte_to_bit = MEM_DATA_WIDTH-1'b0; //Just in case p is less than width/8
         // Needs to be constant compile time expression, but if it's too big and not sized right then the last index of p is overwritten with any byte after n=length bytes
-        for(i=0; i<tr.get_data_length();i++) begin
+        for(i=byte_per_beat*n_beat; i<byte_per_beat*(n_beat+1);i++) begin
             byte_to_bit[i*8+:8] = p[i];
         end
     endfunction
@@ -1709,18 +1711,21 @@ task dbb_slave_driver::read_data_channel();
                     `CAST_DBB_EXT(,active_rdd_txn,ctrl)
                     `CAST_DBB_EXT(,active_rdd_txn,helper)
                     if (active_rdd_txn_helper.n_data == 0) begin           // Indicate data starting
-                      uvm_tlm_time tlm_time = new("tlm_time");
-                      active_rdd_txn_ctrl.DATA_STARTED.trigger();
-                      `uvm_info("DBB/SLV/DRV/RD_DATA", $psprintf("Starting pre_send_checks for above tr.", active_rdd_txn_helper.print(active_rdd_txn)),UVM_FULL)
-                      active_rdd_txn_helper.pre_send_checks(active_rdd_txn);
+                        uvm_tlm_time tlm_time = new("tlm_time");
+                        active_rdd_txn_ctrl.DATA_STARTED.trigger();
+                        `uvm_info("DBB/SLV/DRV/RD_DATA", $psprintf("Starting pre_send_checks for above tr. \n%s", active_rdd_txn.sprint()),UVM_FULL)
+                        active_rdd_txn_helper.pre_send_checks(active_rdd_txn);
 `ifdef DBB_AGENT_TEST
 `else
-                      active_rdd_txn.set_response_status(UVM_TLM_INCOMPLETE_RESPONSE);
-                      // Delay of 0 for now
-                      mem_initiator.b_transport(active_rdd_txn,tlm_time);
+                        active_rdd_txn.set_response_status(UVM_TLM_INCOMPLETE_RESPONSE);
+                        // Delay of 0 for now
+                        mem_initiator.b_transport(active_rdd_txn,tlm_time);
 `endif
+                        `uvm_info("DBB/SLV/DRV/RD_DATA", $psprintf("After read memory data.\n%s", active_rdd_txn.sprint()),UVM_FULL)
                     end
+                    // `uvm_info("DBB/SLV/DRV/RD_DATA", $psprintf("Before drive_read_data_channel.\n%s", active_rdd_txn.sprint()),UVM_NONE)
                     drive_read_data_channel(active_rdd_txn);// Drive data beat
+                    // `uvm_info("DBB/SLV/DRV/RD_DATA", $psprintf("After drive_read_data_channel.\n%s", active_rdd_txn.sprint()),UVM_NONE)
                 end
             end
         end
@@ -1763,14 +1768,14 @@ task dbb_slave_driver::drive_read_data_channel(uvm_tlm_gp tr);
         beat_data = mem.read(addr, 8*tr_bus.get_size());
 `else
         // Mem model read moved to read_data_channel once when n_data is 0
-        beat_data = byte_to_bit(tr);
+        beat_data = byte_to_bit(tr, tr_helper.n_data);
 `endif
         `uvm_info("DBB/SLV/DRV/RD_DATA_CHAN", $psprintf("addr:%x .. busdata:%x .. size:%x",addr, beat_data, tr_bus.get_size()), UVM_DEBUG)
 
         // If this is an unaligned beat, shift out the unwanted data
         beat_data >>= misalignment_offset(tr, tr_helper.n_data);
         `uvm_info("DBB/SLV/DRV/RD_DATA_CHAN", $psprintf("addr:%x .. busdata:%x .. size:%x",addr, beat_data, tr_bus.get_size()), UVM_FULL)
-        set_bit_data_for_beat(tr, tr_helper.n_data,beat_data);
+        // set_bit_data_for_beat(tr, tr_helper.n_data,beat_data);
     end
     else begin
         bit [MEM_DATA_WIDTH-1:0] bus_data;

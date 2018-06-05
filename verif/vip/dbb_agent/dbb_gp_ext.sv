@@ -754,9 +754,8 @@ function string dbb_helper_ext::print(uvm_tlm_gp tr);
 
     //If tr has mon extension, use its size_txn_arrays function
     $cast(tr_mon,tr.get_extension(dbb_mon_ext::ID));
-    //if (tr_mon != null)
-    //  tr_mon.print();
-    `uvm_info("DBB/TXN/GP/PRINT", $sformatf("tr_mon:%0s", tr_mon.sprint()), UVM_HIGH)
+    if (tr_mon != null)
+        `uvm_info("DBB/TXN/GP/PRINT", $sformatf("tr_mon:%0s", tr_mon.sprint()), UVM_HIGH)
 
 endfunction : print
 
