@@ -198,14 +198,14 @@ wire [11:0] reg2dp_rls_slices;
 wire  [0:0] reg2dp_skip_data_rls;
 wire  [0:0] reg2dp_skip_weight_rls;
 wire  [4:0] reg2dp_weight_bank;
-wire [24:0] reg2dp_weight_bytes;
+wire [31:0] reg2dp_weight_bytes;
 wire [12:0] reg2dp_weight_channel_ext;
 wire  [0:0] reg2dp_weight_format;
 wire  [4:0] reg2dp_weight_height_ext;
 wire [12:0] reg2dp_weight_kernel;
 wire  [0:0] reg2dp_weight_reuse;
 wire  [4:0] reg2dp_weight_width_ext;
-wire [20:0] reg2dp_wmb_bytes;
+wire [27:0] reg2dp_wmb_bytes;
 wire  [4:0] reg2dp_x_dilation_ext;
 wire  [4:0] reg2dp_y_dilation_ext;
 wire  [1:0] reg2dp_y_extension;
@@ -259,14 +259,14 @@ NV_NVDLA_CSC_regfile u_regfile (
   ,.reg2dp_skip_data_rls          (reg2dp_skip_data_rls)            //|> w
   ,.reg2dp_skip_weight_rls        (reg2dp_skip_weight_rls)          //|> w
   ,.reg2dp_weight_bank            (reg2dp_weight_bank[4:0])         //|> w
-  ,.reg2dp_weight_bytes           (reg2dp_weight_bytes[24:0])       //|> w
+  ,.reg2dp_weight_bytes           (reg2dp_weight_bytes[31:0])       //|> w
   ,.reg2dp_weight_channel_ext     (reg2dp_weight_channel_ext[12:0]) //|> w
   ,.reg2dp_weight_format          (reg2dp_weight_format)            //|> w
   ,.reg2dp_weight_height_ext      (reg2dp_weight_height_ext[4:0])   //|> w
   ,.reg2dp_weight_kernel          (reg2dp_weight_kernel[12:0])      //|> w
   ,.reg2dp_weight_reuse           (reg2dp_weight_reuse)             //|> w
   ,.reg2dp_weight_width_ext       (reg2dp_weight_width_ext[4:0])    //|> w
-  ,.reg2dp_wmb_bytes              (reg2dp_wmb_bytes[20:0])          //|> w
+  ,.reg2dp_wmb_bytes              (reg2dp_wmb_bytes[27:0])          //|> w
   ,.reg2dp_x_dilation_ext         (reg2dp_x_dilation_ext[4:0])      //|> w
   ,.reg2dp_y_dilation_ext         (reg2dp_y_dilation_ext[4:0])      //|> w
   ,.reg2dp_y_extension            (reg2dp_y_extension[1:0])         //|> w
@@ -378,8 +378,8 @@ NV_NVDLA_CSC_wl u_wl (
   ,.reg2dp_weight_reuse           (reg2dp_weight_reuse[0])          //|< w
   ,.reg2dp_skip_weight_rls        (reg2dp_skip_weight_rls[0])       //|< w
   ,.reg2dp_weight_format          (reg2dp_weight_format[0])         //|< w
-  ,.reg2dp_weight_bytes           (reg2dp_weight_bytes[24:0])       //|< w
-  ,.reg2dp_wmb_bytes              (reg2dp_wmb_bytes[20:0])          //|< w
+  ,.reg2dp_weight_bytes           (reg2dp_weight_bytes[31:0])       //|< w
+  ,.reg2dp_wmb_bytes              (reg2dp_wmb_bytes[27:0])          //|< w
   ,.reg2dp_data_bank              (reg2dp_data_bank[4:0])           //|< w
   ,.reg2dp_weight_bank            (reg2dp_weight_bank[4:0])         //|< w
   );
