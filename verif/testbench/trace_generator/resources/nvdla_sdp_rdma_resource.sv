@@ -256,93 +256,96 @@ function void nvdla_sdp_rdma_resource::surface_dump(int fh);
     if(flying_mode_OFF == flying_mode) begin
         // SDP M-RDMA
         surface_feature_config feature_cfg;
-        longint unsigned address;
-        string mem_interface_name="pri_mem";
-        address = {src_base_addr_high, src_base_addr_low};
+        longint unsigned       address;
+        string                 mem_domain_input;
+        address                    = {src_base_addr_high, src_base_addr_low};
         $sformat(feature_cfg.name, "0x%0h.dat", address);
-        feature_cfg.width   = width+1;
-        feature_cfg.height  = height+1;
-        feature_cfg.channel = channel+1;
-        feature_cfg.line_stride = src_line_stride;
+        mem_domain_input           = (src_ram_type_MC==src_ram_type) ? "pri_mem":"sec_mem";
+        feature_cfg.width          = width+1;
+        feature_cfg.height         = height+1;
+        feature_cfg.channel        = channel+1;
+        feature_cfg.line_stride    = src_line_stride;
         feature_cfg.surface_stride = src_surface_stride;
-        feature_cfg.atomic_memory = `NVDLA_MEMORY_ATOMIC_SIZE;
-        feature_cfg.precision = precision_e'(in_precision);
-        feature_cfg.pattern = sdp_mrdma_surface_pattern;
+        feature_cfg.atomic_memory  = `NVDLA_MEMORY_ATOMIC_SIZE;
+        feature_cfg.precision      = precision_e'(in_precision);
+        feature_cfg.pattern        = sdp_mrdma_surface_pattern;
         `uvm_info(inst_name, "Generate surface for SDP_M_RDMA ...", UVM_NONE)
         surface_gen.generate_memory_surface_feature(feature_cfg);
-        mem_load(fh, mem_interface_name,address,feature_cfg.name,sync_evt_queue[-2]);
-        mem_release(fh, mem_interface_name,address,sync_evt_queue[ 0]);
+        mem_load(fh, mem_domain_input,address,feature_cfg.name,sync_evt_queue[-2]);
+        mem_release(fh, mem_domain_input,address,sync_evt_queue[ 0]);
     end
 `ifdef NVDLA_SDP_BS_ENABLE
     if(brdma_disable_NO == brdma_disable) begin
         // SDP B-RDMA
         surface_feature_config feature_cfg;
-        longint unsigned address;
-        string mem_interface_name="pri_mem";
-        address = {bs_base_addr_high, bs_base_addr_low};
+        longint unsigned       address;
+        string                 mem_domain_input;
+        address                            = {bs_base_addr_high, bs_base_addr_low};
         $sformat(feature_cfg.name, "0x%0h.dat", address);
+        mem_domain_input                   = (brdma_ram_type_MC==brdma_ram_type) ? "pri_mem":"sec_mem";
         if(brdma_data_mode == brdma_data_mode_PER_ELEMENT) begin
-            feature_cfg.width   = width+1;
-            feature_cfg.height  = height+1;
+            feature_cfg.width              = width+1;
+            feature_cfg.height             = height+1;
         end else begin
-            feature_cfg.width   = 1;
-            feature_cfg.height  = 1;
+            feature_cfg.width              = 1;
+            feature_cfg.height             = 1;
         end
-        feature_cfg.channel = channel+1;
-        feature_cfg.line_stride = bs_line_stride;
-        feature_cfg.surface_stride = bs_surface_stride;
-        feature_cfg.atomic_memory = `NVDLA_MEMORY_ATOMIC_SIZE;
-        feature_cfg.component_per_element = (brdma_data_use_BOTH==brdma_data_use?2:1);
+        feature_cfg.channel                = channel+1;
+        feature_cfg.line_stride            = bs_line_stride;
+        feature_cfg.surface_stride         = bs_surface_stride;
+        feature_cfg.atomic_memory          = `NVDLA_MEMORY_ATOMIC_SIZE;
+        feature_cfg.component_per_element  = (brdma_data_use_BOTH == brdma_data_use?2:1);
         if(proc_precision_FP16 == proc_precision) begin
-            feature_cfg.precision = precision_e'(proc_precision);
+            feature_cfg.precision          = precision_e'(proc_precision);
         end else begin
             if(brdma_data_size_ONE_BYTE == brdma_data_size) begin
-                feature_cfg.precision = INT8;
+                feature_cfg.precision      = INT8;
             end else begin
-                feature_cfg.precision = INT16;
+                feature_cfg.precision      = INT16;
             end
         end
-        feature_cfg.pattern = sdp_brdma_surface_pattern;
+        feature_cfg.pattern                = sdp_brdma_surface_pattern;
         `uvm_info(inst_name, "Generate surface for SDP_B_RDMA ...", UVM_NONE)
         surface_gen.generate_memory_surface_feature(feature_cfg);
-        mem_load(fh, mem_interface_name,address,feature_cfg.name,sync_evt_queue[-2]);
-        mem_release(fh, mem_interface_name,address,sync_evt_queue[ 0]);
+        mem_load(fh, mem_domain_input,address,feature_cfg.name,sync_evt_queue[-2]);
+        mem_release(fh, mem_domain_input,address,sync_evt_queue[ 0]);
     end
 `endif
 `ifdef NVDLA_SDP_BN_ENABLE
     if(nrdma_disable_NO == nrdma_disable) begin
         // SDP N-RDMA
         surface_feature_config feature_cfg;
-        longint unsigned address;
-        string mem_interface_name="pri_mem";
-        address = {bn_base_addr_high, bn_base_addr_low};
+        longint unsigned       address;
+        string                 mem_domain_input;
+        address                            = {bn_base_addr_high, bn_base_addr_low};
         $sformat(feature_cfg.name, "0x%0h.dat", address);
+        mem_domain_input                   = (nrdma_ram_type_MC==nrdma_ram_type) ? "pri_mem":"sec_mem";
         if(nrdma_data_mode == nrdma_data_mode_PER_ELEMENT) begin
-            feature_cfg.width   = width+1;
-            feature_cfg.height  = height+1;
+            feature_cfg.width              = width+1;
+            feature_cfg.height             = height+1;
         end else begin
-            feature_cfg.width   = 1;
-            feature_cfg.height  = 1;
+            feature_cfg.width              = 1;
+            feature_cfg.height             = 1;
         end
-        feature_cfg.channel = channel+1;
-        feature_cfg.line_stride = bn_line_stride;
-        feature_cfg.surface_stride = bn_surface_stride;
-        feature_cfg.atomic_memory = `NVDLA_MEMORY_ATOMIC_SIZE;
-        feature_cfg.component_per_element = (nrdma_data_use_BOTH==nrdma_data_use?2:1);
+        feature_cfg.channel                = channel+1;
+        feature_cfg.line_stride            = bn_line_stride;
+        feature_cfg.surface_stride         = bn_surface_stride;
+        feature_cfg.atomic_memory          = `NVDLA_MEMORY_ATOMIC_SIZE;
+        feature_cfg.component_per_element  = (nrdma_data_use_BOTH==nrdma_data_use?2:1);
         if(proc_precision_FP16 == proc_precision) begin
-            feature_cfg.precision = precision_e'(proc_precision);
+            feature_cfg.precision          = precision_e'(proc_precision);
         end else begin
             if(nrdma_data_size_ONE_BYTE == nrdma_data_size) begin
-                feature_cfg.precision = INT8;
+                feature_cfg.precision      = INT8;
             end else begin
-                feature_cfg.precision = INT16;
+                feature_cfg.precision      = INT16;
             end
         end
-        feature_cfg.pattern = sdp_nrdma_surface_pattern;
+        feature_cfg.pattern                = sdp_nrdma_surface_pattern;
         `uvm_info(inst_name, "Generate surface for SDP_N_RDMA ...", UVM_NONE)
         surface_gen.generate_memory_surface_feature(feature_cfg);
-        mem_load(fh, mem_interface_name,address,feature_cfg.name,sync_evt_queue[-2]);
-        mem_release(fh, mem_interface_name,address,sync_evt_queue[ 0]);
+        mem_load(fh, mem_domain_input,address,feature_cfg.name,sync_evt_queue[-2]);
+        mem_release(fh, mem_domain_input,address,sync_evt_queue[ 0]);
     end
 `endif
 `ifdef NVDLA_SDP_EW_ENABLE
@@ -350,35 +353,36 @@ function void nvdla_sdp_rdma_resource::surface_dump(int fh);
         // SDP E-RDMA
         surface_feature_config feature_cfg;
         longint unsigned address;
-        string mem_interface_name="pri_mem";
-        address = {ew_base_addr_high, ew_base_addr_low};
+        string mem_domain_input;
+        address                            = {ew_base_addr_high, ew_base_addr_low};
         $sformat(feature_cfg.name, "0x%0h.dat", address);
+        mem_domain_input                   = (erdma_ram_type_MC==erdma_ram_type) ? "pri_mem":"sec_mem";
         if(erdma_data_mode == erdma_data_mode_PER_ELEMENT) begin
-            feature_cfg.width   = width+1;
-            feature_cfg.height  = height+1;
+            feature_cfg.width              = width+1;
+            feature_cfg.height             = height+1;
         end else begin
-            feature_cfg.width   = 1;
-            feature_cfg.height  = 1;
+            feature_cfg.width              = 1;
+            feature_cfg.height             = 1;
         end
-        feature_cfg.channel = channel+1;
-        feature_cfg.line_stride = ew_line_stride;
-        feature_cfg.surface_stride = ew_surface_stride;
-        feature_cfg.atomic_memory = `NVDLA_MEMORY_ATOMIC_SIZE;
-        feature_cfg.component_per_element = (erdma_data_use_BOTH==erdma_data_use?2:1);
+        feature_cfg.channel                = channel+1;
+        feature_cfg.line_stride            = ew_line_stride;
+        feature_cfg.surface_stride         = ew_surface_stride;
+        feature_cfg.atomic_memory          = `NVDLA_MEMORY_ATOMIC_SIZE;
+        feature_cfg.component_per_element  = (erdma_data_use_BOTH==erdma_data_use?2:1);
         if(proc_precision_FP16 == proc_precision) begin
-            feature_cfg.precision = precision_e'(proc_precision);
+            feature_cfg.precision          = precision_e'(proc_precision);
         end else begin
             if(erdma_data_size_ONE_BYTE == erdma_data_size) begin
-                feature_cfg.precision = INT8;
+                feature_cfg.precision      = INT8;
             end else begin
-                feature_cfg.precision = INT16;
+                feature_cfg.precision      = INT16;
             end
         end
-        feature_cfg.pattern = sdp_erdma_surface_pattern;
+        feature_cfg.pattern                = sdp_erdma_surface_pattern;
         `uvm_info(inst_name, "Generate surface for SDP_E_RDMA ...", UVM_NONE)
         surface_gen.generate_memory_surface_feature(feature_cfg);
-        mem_load(fh, mem_interface_name,address,feature_cfg.name,sync_evt_queue[-2]);
-        mem_release(fh, mem_interface_name,address,sync_evt_queue[ 0]);
+        mem_load(fh, mem_domain_input,address,feature_cfg.name,sync_evt_queue[-2]);
+        mem_release(fh, mem_domain_input,address,sync_evt_queue[ 0]);
     end
 `endif
 endfunction: surface_dump
@@ -634,9 +638,12 @@ constraint nvdla_sdp_rdma_resource::c_ias_dut_por_requirement {
     proc_precision == proc_precision_INT8;
     out_precision  == out_precision_INT8 ;
     erdma_disable  == erdma_disable_YES  ;
+`ifndef NVDLA_SECONDARY_MEMIF_ENABLE
     brdma_ram_type == brdma_ram_type_MC  ;
     nrdma_ram_type == nrdma_ram_type_MC  ;
+    erdma_ram_type == erdma_ram_type_MC  ;
     src_ram_type   == src_ram_type_MC    ;
+`endif
     batch_number   == 0                  ;
 }
 
@@ -686,37 +693,54 @@ function void nvdla_sdp_rdma_resource::post_randomize();
 endfunction : post_randomize
 
 function void nvdla_sdp_rdma_resource::set_mem_addr();
-    mem_man         mm;
-    mem_region      region;
-    longint unsigned       mem_size;
+    mem_man          mm;
+    mem_region       region;
+    longint unsigned mem_size;
+    string           mem_domain_input;
 
     mm = mem_man::get_mem_man();
 
     // M-RDMA
     if (flying_mode == flying_mode_OFF) begin
-        mem_size = calc_mem_size(0, 0, channel+1, `NVDLA_MEMORY_ATOMIC_SIZE, src_surface_stride);
-        region = mm.request_region_by_size("pri_mem", $sformatf("%s_%0d", "SDP_M_RDMA", get_active_cnt()), mem_size, align_mask[0]);
+        mem_domain_input = (src_ram_type_MC==src_ram_type) ? "pri_mem":"sec_mem";
+        mem_size         = calc_mem_size(0, 0, channel+1, `NVDLA_MEMORY_ATOMIC_SIZE, src_surface_stride);
+        region           = mm.request_region_by_size( mem_domain_input, 
+                                                      $sformatf("%s_%0d", "SDP_M_RDMA", get_active_cnt()), 
+                                                      mem_size, 
+                                                      align_mask[0]);
         {src_base_addr_high, src_base_addr_low} = region.get_start_offset();
     end
 
     // B-RDMA
     if (!brdma_disable) begin
-        mem_size = calc_mem_size(0, 0, channel+1, `NVDLA_MEMORY_ATOMIC_SIZE, bs_surface_stride);
-        region = mm.request_region_by_size("pri_mem", $sformatf("%s_%0d", "SDP_B_RDMA", get_active_cnt()), mem_size, align_mask[1]);
+        mem_domain_input = (brdma_ram_type_MC==brdma_ram_type) ? "pri_mem":"sec_mem";
+        mem_size         = calc_mem_size(0, 0, channel+1, `NVDLA_MEMORY_ATOMIC_SIZE, bs_surface_stride);
+        region           = mm.request_region_by_size( mem_domain_input, 
+                                                      $sformatf("%s_%0d", "SDP_B_RDMA", get_active_cnt()),
+                                                      mem_size, 
+                                                      align_mask[1]);
         {bs_base_addr_high, bs_base_addr_low} = region.get_start_offset();
     end
 
     // N-RDMA
     if (!nrdma_disable) begin
-        mem_size = calc_mem_size(0, 0, channel+1, `NVDLA_MEMORY_ATOMIC_SIZE, bn_surface_stride);
-        region = mm.request_region_by_size("pri_mem", $sformatf("%s_%0d", "SDP_N_RDMA", get_active_cnt()), mem_size, align_mask[2]);
+        mem_domain_input = (nrdma_ram_type_MC==nrdma_ram_type) ? "pri_mem":"sec_mem";
+        mem_size         = calc_mem_size(0, 0, channel+1, `NVDLA_MEMORY_ATOMIC_SIZE, bn_surface_stride);
+        region           = mm.request_region_by_size( mem_domain_input, 
+                                                      $sformatf("%s_%0d", "SDP_N_RDMA", get_active_cnt()), 
+                                                      mem_size, 
+                                                      align_mask[2]);
         {bn_base_addr_high, bn_base_addr_low} = region.get_start_offset();
     end
 
     // E-RDMA
     if (!erdma_disable) begin
-        mem_size = calc_mem_size(0, 0, channel+1, `NVDLA_MEMORY_ATOMIC_SIZE, ew_surface_stride);
-        region = mm.request_region_by_size("pri_mem", $sformatf("%s_%0d", "SDP_E_RDMA", get_active_cnt()), mem_size, align_mask[3]);
+        mem_domain_input = (erdma_ram_type_MC==erdma_ram_type) ? "pri_mem":"sec_mem";
+        mem_size         = calc_mem_size(0, 0, channel+1, `NVDLA_MEMORY_ATOMIC_SIZE, ew_surface_stride);
+        region           = mm.request_region_by_size( mem_domain_input, 
+                                                      $sformatf("%s_%0d", "SDP_E_RDMA", get_active_cnt()), 
+                                                      mem_size, 
+                                                      align_mask[3]);
         {ew_base_addr_high, ew_base_addr_low} = region.get_start_offset();
     end
 endfunction : set_mem_addr

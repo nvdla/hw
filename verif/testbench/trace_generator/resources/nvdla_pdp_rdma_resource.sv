@@ -176,8 +176,8 @@ endfunction: trace_dump
 function void nvdla_pdp_rdma_resource::surface_dump(int fh);
     surface_feature_config feature_cfg;
     surface_feature_config feature_cfg_output;
-    longint unsigned address;
-    string mem_domain_input="pri_mem";
+    longint unsigned       address;
+    string                 mem_domain_input;
     // Get surface setting fro resource register
     // string name;
     // int unsigned width; int unsigned height;int unsigned channel; int unsigned batch;
@@ -185,31 +185,37 @@ function void nvdla_pdp_rdma_resource::surface_dump(int fh);
     // int unsigned atomic_memory=8; int unsigned component_per_element=1;
     // precision_e precision=INT8;
     // string pattern="random";
-    address = {src_base_addr_high, src_base_addr_low};
+    address                    = {src_base_addr_high, src_base_addr_low};
     $sformat(feature_cfg.name, "0x%0h.dat", address);
-    feature_cfg.width   = cube_in_width+1;
-    feature_cfg.height  = cube_in_height+1;
-    feature_cfg.channel = cube_in_channel+1;
-    feature_cfg.line_stride = src_line_stride;
+    mem_domain_input           = (src_ram_type_MC == src_ram_type) ? "pri_mem":"sec_mem";
+    feature_cfg.width          = cube_in_width+1;
+    feature_cfg.height         = cube_in_height+1;
+    feature_cfg.channel        = cube_in_channel+1;
+    feature_cfg.line_stride    = src_line_stride;
     feature_cfg.surface_stride = src_surface_stride;
-    feature_cfg.atomic_memory = `NVDLA_MEMORY_ATOMIC_SIZE;
-    feature_cfg.precision = precision_e'(input_data);
-    feature_cfg.pattern = pdp_rdma_surface_pattern;
+    feature_cfg.atomic_memory  = `NVDLA_MEMORY_ATOMIC_SIZE;
+    feature_cfg.precision      = precision_e'(input_data);
+    feature_cfg.pattern        = pdp_rdma_surface_pattern;
     surface_gen.generate_memory_surface_feature(feature_cfg);
     mem_load(fh, mem_domain_input,address,feature_cfg.name,sync_evt_queue[-2]);
     mem_release(fh, mem_domain_input,address,sync_evt_queue[ 0]);
 endfunction: surface_dump
 
 function void nvdla_pdp_rdma_resource::set_mem_addr();
-    mem_man         mm;
-    mem_region      region;
-    longint unsigned       mem_size;
+    mem_man          mm;
+    mem_region       region;
+    longint unsigned mem_size;
+    string           mem_domain_input;
 
     mm = mem_man::get_mem_man();
 
     // RDMA
-    mem_size = calc_mem_size(0, 0, cube_in_channel+1, `NVDLA_MEMORY_ATOMIC_SIZE, src_surface_stride);
-    region = mm.request_region_by_size("pri_mem", $sformatf("%s_%0d", "PDP_RDMA", get_active_cnt()), mem_size, align_mask[0]);
+    mem_domain_input = (src_ram_type_MC == src_ram_type) ? "pri_mem":"sec_mem";
+    mem_size         = calc_mem_size(0, 0, cube_in_channel+1, `NVDLA_MEMORY_ATOMIC_SIZE, src_surface_stride);
+    region           = mm.request_region_by_size( mem_domain_input, 
+                                                  $sformatf("%s_%0d", "PDP_RDMA", get_active_cnt()), 
+                                                  mem_size, 
+                                                  align_mask[0]);
     {src_base_addr_high, src_base_addr_low} = region.get_start_offset();
 endfunction : set_mem_addr
 
@@ -237,7 +243,9 @@ constraint nvdla_pdp_rdma_resource::c_ias_kernel_size {
 }
 
 constraint nvdla_pdp_rdma_resource::c_ias_dut_por_requirement {
+`ifndef NVDLA_SECONDARY_MEMIF_ENABLE
     src_ram_type == src_ram_type_MC ;
+`endif
     input_data   == input_data_INT8 ;
 }
 

@@ -507,7 +507,8 @@ function void nvdla_cdma_resource::surface_dump(int fh);
         if(datain_format_FEATURE == datain_format) begin
             surface_feature_config feature_cfg;
             longint unsigned address;
-            string mem_domain_input="pri_mem";
+            string           mem_domain_input;
+
             // Get surface setting from resource register
             // string name;
             // int unsigned width; int unsigned height;int unsigned channel; int unsigned batch;
@@ -515,8 +516,10 @@ function void nvdla_cdma_resource::surface_dump(int fh);
             // int unsigned atomic_memory=8; int unsigned component_per_element=1;
             // precision_e precision=INT8;
             // string pattern="random";
+
             address = {datain_addr_high_0, datain_addr_low_0};
             $sformat(feature_cfg.name, "0x%0h.dat", address);
+            mem_domain_input = (datain_ram_type_MCIF==datain_ram_type) ? "pri_mem":"sec_mem";
             feature_cfg.width   = datain_width+1;
             feature_cfg.height  = datain_height+1;
             feature_cfg.channel = datain_channel+1;
@@ -532,7 +535,7 @@ function void nvdla_cdma_resource::surface_dump(int fh);
             if(pixel_mapping_PITCH_LINEAR == pixel_mapping) begin
                 surface_image_pitch_config surface_cfg;
                 longint unsigned address_0, address_1;
-                string mem_domain_input="pri_mem";
+                string           mem_domain_input;
                 // Get surface setting fro resource register
                 // string name;
                 // int unsigned width=1; int unsigned height=1;int unsigned channel=1;
@@ -547,6 +550,7 @@ function void nvdla_cdma_resource::surface_dump(int fh);
                 address_0 = {datain_addr_high_0, datain_addr_low_0};
                 address_1 = {datain_addr_high_1, datain_addr_low_1};
                 $sformat(surface_cfg.name, "0x%0h.dat,0x%0h.dat", address_0, address_1);
+                mem_domain_input = (datain_ram_type_MCIF==datain_ram_type) ? "pri_mem":"sec_mem";
                 surface_cfg.width   = datain_width+1;
                 surface_cfg.height  = datain_height+1;
                 surface_cfg.channel = datain_channel+1;
@@ -1118,8 +1122,10 @@ constraint nvdla_cdma_resource::c_ias_dut_por_requirement {
     proc_precision  == proc_precision_INT8 ;
     weight_format   == weight_format_UNCOMPRESSED ;
     pixel_mapping   == pixel_mapping_PITCH_LINEAR ;
+`ifndef NVDLA_SECONDARY_MEMIF_ENABLE
     datain_ram_type == datain_ram_type_MCIF;
     weight_ram_type == weight_ram_type_MCIF;
+`endif
     batches         == 0;
 }
 constraint nvdla_cdma_resource::c_ias_cbuf_size_limit_por_requirement {
@@ -1429,52 +1435,73 @@ function void nvdla_cdma_resource::set_sim_constraint();
 endfunction: set_sim_constraint
 
 function void nvdla_cdma_resource::set_mem_addr();
-    mem_man    mm;
-    mem_region region;
-    longint unsigned       mem_size;
+    mem_man          mm;
+    mem_region       region;
+    longint unsigned mem_size;
+    string           mem_domain_input;
 
     mm = mem_man::get_mem_man();
     if(data_reuse_DISABLE == data_reuse) begin
+        mem_domain_input = (datain_ram_type_MCIF==datain_ram_type) ? "pri_mem":"sec_mem";
         if(datain_format_FEATURE == datain_format) begin
             // Feature
             mem_size = calc_mem_size(batches+1, batch_stride, datain_channel+1,
                                     `NVDLA_MEMORY_ATOMIC_SIZE, surf_stride);
             `uvm_info(inst_name, $sformatf("FEATURE_SIZE:feature byte size is: 0x%h", mem_size), UVM_HIGH)
-            region = mm.request_region_by_size("pri_mem", $sformatf("%s_%0d", "CDMA_DATA", get_active_cnt()), mem_size, align_mask[0]);
+            region = mm.request_region_by_size( mem_domain_input, 
+                                                $sformatf("%s_%0d", "CDMA_DATA", get_active_cnt()), 
+                                                mem_size, 
+                                                align_mask[0]);
             {datain_addr_high_0, datain_addr_low_0} = region.get_start_offset();
         end
         else begin
             // Image, plane 0
             mem_size = calc_mem_size_plane(datain_height+1, line_stride, `NVDLA_MEMORY_ATOMIC_SIZE);
             `uvm_info(inst_name, $sformatf("Image:plane 0 byte size is: 0x%h", mem_size), UVM_HIGH)
-            region = mm.request_region_by_size("pri_mem", $sformatf("%s_%0d", "CDMA_DATA_PLANE_0", get_active_cnt()), mem_size, align_mask[0]);
+            region = mm.request_region_by_size( mem_domain_input, 
+                                                $sformatf("%s_%0d", "CDMA_DATA_PLANE_0", get_active_cnt()), 
+                                                mem_size, 
+                                                align_mask[0]);
             {datain_addr_high_0, datain_addr_low_0} = region.get_start_offset();
             // Image, plane 1
             if(plane_number > 1) begin
                 mem_size = calc_mem_size_plane(datain_height+1, uv_line_stride, `NVDLA_MEMORY_ATOMIC_SIZE);
                 `uvm_info(inst_name, $sformatf("Image:plane 1 byte size is: 0x%h", mem_size), UVM_HIGH)
-                region = mm.request_region_by_size("pri_mem", $sformatf("%s_%0d", "CDMA_DATA_PLANE_1", get_active_cnt()), mem_size, align_mask[0]);
+                region = mm.request_region_by_size( mem_domain_input, 
+                                                    $sformatf("%s_%0d", "CDMA_DATA_PLANE_1", get_active_cnt()),
+                                                    mem_size, 
+                                                    align_mask[0]);
                 {datain_addr_high_1, datain_addr_low_1} = region.get_start_offset();
             end
         end
     end
 
     if(weight_reuse_DISABLE == weight_reuse) begin
+        mem_domain_input = (weight_ram_type_MCIF==weight_ram_type) ? "pri_mem":"sec_mem";
         // Weight surface: uncompressed and comppressed
         mem_size = weight_bytes;
         `uvm_info(inst_name, $sformatf("WEIGHT_SIZE:weight byte size is: 0x%h", mem_size), UVM_HIGH)
-        region = mm.request_region_by_size("pri_mem", $sformatf("%s_%0d", "CDMA_WEIGHT", get_active_cnt()), mem_size, 'h7f);
+        region = mm.request_region_by_size( mem_domain_input, 
+                                            $sformatf("%s_%0d", "CDMA_WEIGHT", get_active_cnt()), 
+                                            mem_size, 
+                                            'h7f);
         {weight_addr_high, weight_addr_low} = region.get_start_offset();
         if(weight_format_COMPRESSED == weight_format) begin
             // Weight mask surface
             mem_size = wmb_bytes;
             `uvm_info(inst_name, $sformatf("WMB_SIZE:weight mask byte size is: 0x%h", mem_size), UVM_HIGH)
-            region = mm.request_region_by_size("pri_mem", $sformatf("%s_%0d", "CDMA_WEIGHT", get_active_cnt()), mem_size, 'h7f);
+            region = mm.request_region_by_size( mem_domain_input, 
+                                                $sformatf("%s_%0d", "CDMA_WEIGHT", get_active_cnt()), 
+                                                mem_size, 
+                                                'h7f);
             {wmb_addr_high, wmb_addr_low} = region.get_start_offset();
             // Weight group size surface
             mem_size = ((weight_kernel + `NVDLA_MAC_ATOMIC_K_SIZE)/`NVDLA_MAC_ATOMIC_K_SIZE + `NVDLA_MAC_ATOMIC_C_SIZE - 1)/`NVDLA_MAC_ATOMIC_C_SIZE * `NVDLA_MAC_ATOMIC_C_SIZE;
             `uvm_info(inst_name, $sformatf("WGS_SIZE:weight group byte size is: 0x%h", mem_size), UVM_HIGH)
-            region = mm.request_region_by_size("pri_mem", $sformatf("%s_%0d", "CDMA_WEIGHT", get_active_cnt()), mem_size, 'h7f);
+            region = mm.request_region_by_size( mem_domain_input,
+                                                $sformatf("%s_%0d", "CDMA_WEIGHT", get_active_cnt()), 
+                                                mem_size, 
+                                                'h7f);
             {wgs_addr_high, wgs_addr_low} = region.get_start_offset();
         end
     end

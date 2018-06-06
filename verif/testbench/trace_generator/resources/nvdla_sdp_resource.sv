@@ -614,10 +614,13 @@ function void nvdla_sdp_resource::trace_dump(int fh);
     if (output_dst == output_dst_MEM)  begin
         // Reserve mem region to write into
         longint unsigned mem_size;
-        mem_size = calc_mem_size(batch_number+1, dst_batch_stride, channel+1, `NVDLA_MEMORY_ATOMIC_SIZE, dst_surface_stride);
-        mem_reserve(fh, "pri_mem", {dst_base_addr_high, dst_base_addr_low}, mem_size, sync_evt_queue[-2]);
+        string           mem_domain_output;
+        mem_domain_output = (dst_ram_type_MC == dst_ram_type) ? "pri_mem":"sec_mem";
+        mem_size          = calc_mem_size(batch_number+1, dst_batch_stride, channel+1, 
+                                          `NVDLA_MEMORY_ATOMIC_SIZE, dst_surface_stride);
+        mem_reserve(fh, mem_domain_output, {dst_base_addr_high,dst_base_addr_low}, mem_size, sync_evt_queue[-2]);
         // Release mem region when write done
-        mem_release(fh, "pri_mem", {dst_base_addr_high, dst_base_addr_low}, sync_evt_queue[0]);
+        mem_release(fh, mem_domain_output, {dst_base_addr_high,dst_base_addr_low}, sync_evt_queue[0]);
     end
     `uvm_info(inst_name, "Finish trace dumping ...", UVM_HIGH)
 endfunction : trace_dump
@@ -888,7 +891,9 @@ constraint nvdla_sdp_resource::c_ias_feature {
 constraint nvdla_sdp_resource::c_ias_dut_por_requirement {
     ew_bypass      == ew_bypass_YES      ;
     winograd       == winograd_OFF       ;
+`ifndef NVDLA_SECONDARY_MEMIF_ENABLE
     dst_ram_type   == dst_ram_type_MC    ;
+`endif
     proc_precision == proc_precision_INT8;
     out_precision  == out_precision_INT8 ;
     batch_number   == 0                  ;
@@ -1077,12 +1082,18 @@ function void nvdla_sdp_resource::set_mem_addr();
     mem_man             mm;
     mem_region          region;
     longint unsigned    mem_size;
+    string              mem_domain_output;
 
     mm = mem_man::get_mem_man();
 
     // WDMA
-    mem_size = calc_mem_size(batch_number+1, dst_batch_stride, channel+1, `NVDLA_MEMORY_ATOMIC_SIZE, dst_surface_stride);
-    region = mm.request_region_by_size("pri_mem", $sformatf("%s_%0d", "SDP_WDMA", get_active_cnt()), mem_size, align_mask[0]);
+    mem_domain_output = (dst_ram_type_MC==dst_ram_type) ? "pri_mem":"sec_mem";
+    mem_size          = calc_mem_size( batch_number+1, dst_batch_stride, channel+1, 
+                                       `NVDLA_MEMORY_ATOMIC_SIZE, dst_surface_stride);
+    region            = mm.request_region_by_size( mem_domain_output, 
+                                                   $sformatf("%s_%0d", "SDP_WDMA", get_active_cnt()),
+                                                   mem_size, 
+                                                   align_mask[0]);
     {dst_base_addr_high, dst_base_addr_low} = region.get_start_offset();
 endfunction : set_mem_addr
 

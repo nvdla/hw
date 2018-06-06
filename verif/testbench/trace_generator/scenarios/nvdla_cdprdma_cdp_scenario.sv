@@ -56,18 +56,23 @@ function void nvdla_cdprdma_cdp_scenario::set_output_mem_addr(int fh);
     mem_man             mm;
     mem_region          region;
     longint unsigned    mem_size;
+    string              mem_domain;
 
     mm = mem_man::get_mem_man();
 
     // WDMA
-    mem_size = cdp.calc_mem_size(0, 0, cdp_rdma.channel+1, `NVDLA_MEMORY_ATOMIC_SIZE, cdp.dst_surface_stride);
-    region = mm.request_region_by_size("pri_mem", $sformatf("%s_%d", "CDP_WDMA", cdp.get_active_cnt()), mem_size, cdp.align_mask[0]);
+    mem_domain = (nvdla_cdp_resource::dst_ram_type_MC==cdp.dst_ram_type) ? "pri_mem":"sec_mem";
+    mem_size   = cdp.calc_mem_size(0, 0, cdp_rdma.channel+1, `NVDLA_MEMORY_ATOMIC_SIZE, cdp.dst_surface_stride);
+    region     = mm.request_region_by_size( mem_domain, 
+                                            $sformatf("%s_%d", "CDP_WDMA", cdp.get_active_cnt()), 
+                                            mem_size, 
+                                            cdp.align_mask[0]);
     {cdp.dst_base_addr_high, cdp.dst_base_addr_low} = region.get_start_offset();
     cdp.ral.nvdla.NVDLA_CDP.D_DST_BASE_ADDR_HIGH.set(cdp.dst_base_addr_high);
     cdp.ral.nvdla.NVDLA_CDP.D_DST_BASE_ADDR_LOW.set(cdp.dst_base_addr_low);
     // Reserve mem region to write into
-    mem_reserve(fh, "pri_mem", region.get_start_offset(), mem_size, cdp.sync_evt_queue[-2]);
-    mem_release(fh, "pri_mem", region.get_start_offset(), cdp.sync_evt_queue[0]);
+    mem_reserve(fh, mem_domain, region.get_start_offset(), mem_size, cdp.sync_evt_queue[-2]);
+    mem_release(fh, mem_domain, region.get_start_offset(), cdp.sync_evt_queue[0]);
 endfunction : set_output_mem_addr
 
 function void nvdla_cdprdma_cdp_scenario::trace_dump(int fh);

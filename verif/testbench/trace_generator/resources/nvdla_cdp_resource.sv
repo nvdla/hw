@@ -736,7 +736,9 @@ constraint nvdla_cdp_resource::c_ias_cvt {
 }
 
 constraint nvdla_cdp_resource::c_ias_dut_por_requirement {
+`ifndef NVDLA_SECONDARY_MEMIF_ENABLE
     dst_ram_type    == dst_ram_type_MC ;
+`endif
     input_data_type == input_data_type_INT8;
 }
 

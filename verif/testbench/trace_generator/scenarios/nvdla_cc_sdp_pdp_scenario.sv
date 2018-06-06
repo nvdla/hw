@@ -101,8 +101,10 @@ endfunction: trace_dump
 function void nvdla_cc_sdp_pdp_scenario::surface_dump(int fh);
     if(nvdla_cdma_resource::weight_reuse_DISABLE == cdma.weight_reuse) begin
         surface_weight_config surface_config;
-        longint unsigned address_weight, address_wmb, address_wgs;
-        string mem_domain="pri_mem";
+        longint unsigned      address_weight;
+        longint unsigned      address_wmb;
+        longint unsigned      address_wgs;
+        string                mem_domain;
         // Get surface setting fro resource register
         // string weight_name; string weight_mask_name; string weight_group_size_name;
         // int unsigned width;int unsigned height;int unsigned channel;int unsigned kernel;
@@ -120,6 +122,8 @@ function void nvdla_cc_sdp_pdp_scenario::surface_dump(int fh);
         $sformat(surface_config.weight_name, "0x%0h.dat", address_weight);
         $sformat(surface_config.weight_mask_name, "0x%0h.dat", address_wmb);
         $sformat(surface_config.weight_group_size_name, "0x%0h.dat", address_wgs);
+        mem_domain             = (nvdla_cdma_resource::weight_ram_type_MCIF==cdma.weight_ram_type) ? 
+                                 "pri_mem":"sec_mem";
         surface_config.width   = cc_dp.weight_width_ext+1;
         surface_config.height  = cc_dp.weight_height_ext+1;
         surface_config.channel = cc_dp.weight_channel_ext+1;
@@ -128,14 +132,16 @@ function void nvdla_cc_sdp_pdp_scenario::surface_dump(int fh);
         surface_config.atomic_kernel  = `NVDLA_MAC_ATOMIC_K_SIZE;
         surface_config.cbuf_entry_byte_size = `NVDLA_CBUF_ENTRY_WIDTH / 8;  // FIXME, NVDLA_CBUF_ENTRY_WIDTH is bit width
         surface_config.precision = precision_e'(cc_dp.proc_precision);
-        surface_config.pattern = cdma_weight_surface_pattern;
-        surface_config.comp_en = cc_dp.weight_format;
+        surface_config.pattern   = cdma_weight_surface_pattern;
+        surface_config.comp_en   = cc_dp.weight_format;
         surface_gen.generate_memory_surface_weight(surface_config);
         mem_load(fh, mem_domain,address_weight,surface_config.weight_name,cdma.weight_sync_evt_queue[-2]);
         mem_release(fh, mem_domain,address_weight,cdma.weight_sync_evt_queue[ 0]);
         if (surface_config.comp_en) begin
-            mem_load(fh, mem_domain,address_wmb,surface_config.weight_mask_name,cdma.weight_sync_evt_queue[-2]);
-            mem_load(fh, mem_domain,address_wgs,surface_config.weight_group_size_name,cdma.weight_sync_evt_queue[-2]);
+            mem_load( fh, mem_domain,address_wmb,surface_config.weight_mask_name,
+                      cdma.weight_sync_evt_queue[-2]);
+            mem_load( fh, mem_domain,address_wgs,surface_config.weight_group_size_name,
+                      cdma.weight_sync_evt_queue[-2]);
             mem_release(fh, mem_domain,address_wmb,cdma.weight_sync_evt_queue[0]);
             mem_release(fh, mem_domain,address_wgs,cdma.weight_sync_evt_queue[0]);
         end
