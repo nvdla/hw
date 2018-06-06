@@ -669,9 +669,9 @@ task scoreboard_template::request_trans_check();
                 end
                 else if(tID == "SEC_MEM_SB") begin
                     dbb_bus_ext dbb_ext;
-                    uvm_tlm_gp tlm_gp_handler;
-                    $cast(tlm_gp_handler, act_tr);
-                    tlm_gp_handler.get_extension(dbb_ext);
+                    uvm_tlm_gp gp;
+                    $cast(gp, act_tr);
+                    $cast(dbb_ext, gp.get_extension(dbb_bus_ext::ID()));
                     sec_mem_rd_os_cnt = sec_mem_rd_os_cnt + dbb_ext.get_length();
                     `uvm_info(tID, $sformatf("sec_mem_rd_os_cnt=%0d", sec_mem_rd_os_cnt),UVM_FULL)
                     if(sec_mem_rd_os_cnt <= (sec_mem_rd_os_cnt_cfg+1) && sec_mem_rd_os_cnt > (sec_mem_rd_os_cnt_cfg-3)) begin
@@ -712,9 +712,9 @@ task scoreboard_template::request_trans_check();
                 end
                 else if(tID == "SEC_MEM_SB") begin
                     dbb_bus_ext dbb_ext;
-                    uvm_tlm_gp tlm_gp_handler;
-                    $cast(tlm_gp_handler, act_tr);
-                    tlm_gp_handler.get_extension(dbb_ext);
+                    uvm_tlm_gp gp;
+                    $cast(gp, act_tr);
+                    $cast(dbb_ext, gp.get_extension(dbb_bus_ext::ID()));
                     sec_mem_wt_os_cnt = sec_mem_wt_os_cnt + dbb_ext.get_length();
                     `uvm_info(tID, $sformatf("sec_mem_wt_os_cnt=%0d", sec_mem_wt_os_cnt),UVM_FULL)
                     if(sec_mem_wt_os_cnt <= (sec_mem_wt_os_cnt_cfg+1) && sec_mem_wt_os_cnt >(sec_mem_wt_os_cnt_cfg-3)) begin
@@ -928,9 +928,9 @@ task scoreboard_template::response_trans_check();
                 end
                 else if(tID == "SEC_MEM_SB") begin
                     dbb_bus_ext dbb_ext;
-                    uvm_tlm_gp tlm_gp_handler;
-                    $cast(tlm_gp_handler, act_tr);
-                    tlm_gp_handler.get_extension(dbb_ext);
+                    uvm_tlm_gp gp;
+                    $cast(gp, act_tr);
+                    $cast(dbb_ext, gp.get_extension(dbb_bus_ext::ID()));
                     sec_mem_wt_os_cnt = sec_mem_wt_os_cnt - dbb_ext.get_length();
                     `uvm_info(tID, $sformatf("sec_mem_wt_os_cnt=%0d", sec_mem_wt_os_cnt),UVM_FULL)
                 end
@@ -958,9 +958,9 @@ task scoreboard_template::response_trans_check();
                 end
                 else if(tID == "SEC_MEM_SB") begin
                     dbb_bus_ext dbb_ext;
-                    uvm_tlm_gp tlm_gp_handler;
-                    $cast(tlm_gp_handler, act_tr);
-                    tlm_gp_handler.get_extension(dbb_ext);
+                    uvm_tlm_gp gp;
+                    $cast(gp, act_tr);
+                    $cast(dbb_ext, gp.get_extension(dbb_bus_ext::ID()));
                     sec_mem_rd_os_cnt = sec_mem_rd_os_cnt - dbb_ext.get_length();
                     `uvm_info(tID, $sformatf("sec_mem_rd_os_cnt=%0d", sec_mem_rd_os_cnt),UVM_FULL)
                 end
