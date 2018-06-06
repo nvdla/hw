@@ -611,7 +611,8 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     if(stat_cur==CUBE_END) begin
         if(rdma2dp_ready_normal) begin
             if(cube_end_width_cnt == last_width)
-                cube_end_c_cnt <= cube_end_c_cnt + NVDLA_CDP_THROUGHPUT;
+                //cube_end_c_cnt <= cube_end_c_cnt + NVDLA_CDP_THROUGHPUT;
+                cube_end_c_cnt <= cube_end_c_cnt + 1'b1;
         end
     end else
         cube_end_c_cnt <= 3'd0;
