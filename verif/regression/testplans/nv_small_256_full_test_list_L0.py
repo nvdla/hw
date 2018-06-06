@@ -1,6 +1,6 @@
 ############################################# Register Accessing ###################################
 add_test(name='nvdla_reg_accessing',
-         tags=['L0'],
+         tags=['L0','protection'],
          module='nvdla_python_test',
          args=[FIXED_SEED_ARG, DISABLE_COMPARE_ALL_UNITS_SB_ARG, '-uwm RTL_ONLY'],
          config=['nvdla_utb'],
@@ -14,7 +14,7 @@ add_test(name='pdp_8x8x32_1x1_int8_0',
          desc='''pdp_passthrough_8x8x32_pack_all_zero_int8''')
 
 add_test(name='pdp_8x8x32_1x1_int8_1',
-         tags=['L0', 'pdp','protection'],
+         tags=['L0', 'pdp'],
          args=[FIXED_SEED_ARG, DISABLE_COMPARE_ALL_UNITS_SB_ARG],
          config=['nvdla_utb'],
          desc='''pdp_passthrough_8x8x32_pack_inc_int8''')
@@ -26,26 +26,26 @@ add_test(name='pdp_8x8x64_2x2_int8',
          desc='''basic test, max. kernel_size=2x2''')
 
 add_test(name='pdp_7x9x10_3x3_int8',
-         tags=['L0', 'pdp','protection'],
+         tags=['L0', 'pdp'],
          args=[FIXED_SEED_ARG, DISABLE_COMPARE_ALL_UNITS_SB_ARG],
          config=['nvdla_utb'],
          desc='''basic test, max. kernel_size=3x3''')
 
 ############################################# SDP ###################################
 add_test(name='sdp_8x8x32_bypass_int8_1',
-         tags=['L0', 'sdp','protection'],
+         tags=['L0', 'sdp'],
          args=[FIXED_SEED_ARG, DISABLE_COMPARE_ALL_UNITS_SB_ARG],
          config=['nvdla_utb'],
          desc='''sdp_passthrough_8x8x32_pack_inc_int8''')
 
 add_test(name='sdp_8x8x32_bypass_int8_0',
-         tags=['L0', 'sdp','protection'],
+         tags=['L0', 'sdp'],
          args=[FIXED_SEED_ARG, DISABLE_COMPARE_ALL_UNITS_SB_ARG],
          config=['nvdla_utb'],
          desc='''sdp_passthrough_8x8x32_pack_all_zero_int8''')
 
 add_test(name='sdp_4x22x42_bypass_int8',
-         tags=['L0', 'sdp','protection'],
+         tags=['L0', 'sdp'],
          args=[FIXED_SEED_ARG, DISABLE_COMPARE_ALL_UNITS_SB_ARG],
          config=['nvdla_utb'],
          desc='''basic test''')
@@ -65,7 +65,7 @@ add_test(name='cdp_8x8x32_lrn3_int8_0',
          desc='''cdp_passthrough_8x8x32_pack_zero_int8''')
 
 add_test(name='cdp_8x8x32_lrn3_int8_1',
-         tags=['L0', 'cdp','protection'],
+         tags=['L0', 'cdp'],
          args=[FIXED_SEED_ARG, DISABLE_COMPARE_ALL_UNITS_SB_ARG],
          config=['nvdla_utb'],
          desc='''cdp_passthrough_8x8x32_pack_inc_int8''')
@@ -77,7 +77,7 @@ add_test(name='cdp_8x8x32_lrn3_int8_2',
          desc='''basic test, lrn=3''')
 
 add_test(name='cdp_8x8x64_lrn9_int8',
-         tags=['L0', 'cdp','protection'],
+         tags=['L0', 'cdp'],
          args=[FIXED_SEED_ARG, DISABLE_COMPARE_ALL_UNITS_SB_ARG],
          config=['nvdla_utb'],
          desc='''basic test, lrn=9''')
@@ -91,7 +91,7 @@ add_test(name='dc_8x16x128_3x3x128x32_int8',    #cc_full_feature_0
          desc='''copied from cc_small_full_feature_0, kernel stride 1x1, unpacked, pad L/T/B, no clip truncate, partial weight''')
 
 add_test(name='dc_24x33x55_5x5x55x25_int8_0',
-         tags=['L0','cc','protection'],
+         tags=['L0','cc'],
          args=[FIXED_SEED_ARG, DISABLE_COMPARE_ALL_UNITS_SB_ARG],
          config=['nvdla_utb'],
          desc='''copied from cc_small_full_feature_5, kernel stride 4x3, unpacked, pad L/R/T/B, clip truncate 4, full weight''')

@@ -44,25 +44,9 @@ if __name__ == '__main__':
                         help='Specify project name')
     config = vars( parser.parse_args() )
     #pprint (config)
-    if ('nv_small' == config['project']):
-        ret=run_plan(config['project'], 'nv_small', '-atag protection -no_lsf -monitor -timeout 20')
+    if (config['project'] in ['nv_small', 'nv_small_256', 'nv_small_256_full', 'nv_medium_512', 'nv_medium_1024_full', 'nv_large']):
+        ret=run_plan(config['project'], config['project'], '-atag protection -no_lsf -monitor -timeout 20')
         if 0 == ret:
             print ("verif_protection_pass")
         sys.exit(ret)
-    elif ('nv_small_256' == config['project']):
-        # Wait until CC protection test pass, begin
-        #  ret=run_plan(config['project'], 'nv_small_256', '-atag protection -no_lsf -monitor -timeout 20')
-        #  if 0 == ret:
-        #      print ("verif_protection_pass")
-        # Wait until CC protection test pass, end
-        print ("verif_protection_pass")
-        sys.exit(0)
-    elif ('nv_large' == config['project']):
-        ret = run_test(config['project'], 'dc_8x8x32_1x1x32x32_int8_0', '-uwm cmod_only -v nvdla_utb -rtlarg +UVM_VERBOSITY=UVM_NONE')
-        if 0 == ret:
-            print ("verif_protection_pass")
-        sys.exit(ret)
-    elif (config['project'] in ['nv_small_256_full', 'nv_medium_512', 'nv_medium_1024_full']):
-        print ("verif_protection_pass")
-        sys.exit(0)
     sys.exit('Unexpected project name')
