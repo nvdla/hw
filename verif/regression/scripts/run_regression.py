@@ -8,8 +8,8 @@ import time
 import shutil
 import glob
 import json
-from pprint import pprint
-from datetime import datetime
+from   pprint   import pprint
+from   datetime import datetime
 
 __DESCRIPTION__='''
 Use for running regression
@@ -157,6 +157,8 @@ if __name__ == '__main__':
                         help='Print command only, will not execute any command')
     parser.add_argument('--en_cov', '-en_cov', dest='en_cov', required=False, default=False, action='store_true',
                         help='Enable coverage in project build process')
+    parser.add_argument('--extra_args', '-extra_args', dest='extra_args', required=False, type=str, default='',
+                        help='Extra arguments which will be appended to run_plan command line')
     config = vars( parser.parse_args() )
     config['and_tag_list'] = [] if config['and_tag_list'] is None else [item for sublist in config['and_tag_list'] for item in sublist]
     config['or_tag_list'] = [] if config['or_tag_list'] is None else [item for sublist in config['or_tag_list'] for item in sublist]
@@ -183,7 +185,8 @@ if __name__ == '__main__':
     if config['not_tag_list']:
         args_list.append("-ntag %s" % ' '.join(config['not_tag_list']))
     args_list.append("-seed %d" % config['seed'])
-    args = ' '.join(args_list)
+    args  = ' '.join(args_list)
+    args += ' '+config['extra_args']
     #pprint (config)
     project_name = config['project']
     if not config['skip_build']:
@@ -202,10 +205,10 @@ if __name__ == '__main__':
                 ret=run_plan(config['project'], project_name, '-otag L0 L1 L2 %s -run_dir %s' % (args, run_dir), lsf_cmd, dry_run)
                 ret=run_report(run_dir, publish_dir, '-monitor_timeout %d' % max_regression_time, 'passing_rate:L0 passing_rate:L1 passing_rate:L2', dry_run)
             elif 'random' == config['kind']:
-                ret=run_plan(config['project'], project_name, '-otag L10 L11 -l_num 4 -r_num 5 %s -run_dir %s' % (args, run_dir), lsf_cmd, dry_run)
+                ret=run_plan(config['project'], project_name, '-otag L10 L11 %s -run_dir %s' % (args, run_dir), lsf_cmd, dry_run)
                 ret=run_report(run_dir, publish_dir, '-monitor_timeout %d' % max_regression_time, 'passing_rate:L10 passing_rate:L11', dry_run)
             elif 'coverage' == config['kind']:
-                ret=run_plan(config['project'], project_name, '-otag L0 L1 L2 L10 L11 L20 L21 -l_num 4 -r_num 4 %s -run_dir %s -en_cov' % (args, run_dir), lsf_cmd, dry_run)
+                ret=run_plan(config['project'], project_name, '-otag L0 L1 L2 L10 L11 L20 L21 %s -run_dir %s -en_cov' % (args, run_dir), lsf_cmd, dry_run)
                 ret=run_report(run_dir, publish_dir, '-monitor_timeout %d' % max_regression_time, 'passing_rate:L0 passing_rate:L1 passing_rate:L2 passing_rate:L10 passing_rate:L11 passing_rate:L20 passing_rate:L21', dry_run)
                 regr_sts_file = ''.join(glob.glob('{}/regression_status_*.json'.format(run_dir)))
                 with open(regr_sts_file, 'r') as fh:
@@ -216,7 +219,7 @@ if __name__ == '__main__':
                 shutil.move(cov_vdb_dir, run_dir)
                 shutil.move(cov_report_dir, run_dir)
             elif 'all' == config['kind']:
-                ret=run_plan(config['project'], project_name, '-l_num 5 -r_num 10 %s -run_dir %s' % (args, run_dir), lsf_cmd, dry_run)
+                ret=run_plan(config['project'], project_name, '%s -run_dir %s' % (args, run_dir), lsf_cmd, dry_run)
                 ret=run_report(run_dir, publish_dir, '-monitor_timeout %d' % max_regression_time, 'passing_rate:L0 passing_rate:L1 passing_rate:L2 passing_rate:L10 passing_rate:L11', dry_run)
             if 0 == ret:
                 print ("REGRESSION_PASS")
