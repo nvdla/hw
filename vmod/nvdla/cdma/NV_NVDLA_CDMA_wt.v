@@ -1908,12 +1908,12 @@ assign {mon_incr_wt_cnt, incr_wt_cnt} = wt_fetched_cnt - pre_wt_fetched_cnt;
 //: } elsif($dmaif > $atmc) {
 //:     my $k = int(log($dmaif/$atmc)/log(2));
 //:     print qq(
-//:         assign incr_wt_entries_w = {incr_wt_cnt[12:0],{${k}{1'b0}}};
+//:         assign incr_wt_entries_w = {incr_wt_cnt[15-${k}-1:0],{${k}{1'b0}}};
 //:     );
 //: } elsif($dmaif < $atmc) {
 //:     my $k = int(log($atmc/$dmaif)/log(2));
 //:     print qq(
-//:         assign incr_wt_entries_w = {{(2+${k}){1'b0}},incr_wt_cnt[12:${k}]};
+//:         assign incr_wt_entries_w = {incr_wt_cnt[15+${k}-1:${k}]};
 //:     );
 //: }
 
