@@ -220,7 +220,7 @@ wire          dat_push_ready;
 wire          dat_push_req;
 wire          dat_release;
 wire          dat_reuse_release;
-wire    [5:0] dat_stripe_batch_size_w;
+wire    [6:0] dat_stripe_batch_size_w;
 wire    [6:0] dat_stripe_img_length_w;
 wire    [6:0] dat_stripe_img_size_w;
 wire    [6:0] dat_stripe_length_w;
@@ -759,17 +759,17 @@ assign {mon_sg2wt_kernel_size_inc, sg2wt_kernel_size_inc} = sg2wt_kernel_size + 
 #ifdef NVDLA_BATCH_ENABLE
 assign {mon_dat_stripe_batch_size_w, dat_stripe_batch_size_w} = sg2dat_stripe_length * data_batch;
 #else
-assign {mon_dat_stripe_batch_size_w[0], dat_stripe_batch_size_w} = sg2dat_stripe_length;
+assign dat_stripe_batch_size_w = sg2dat_stripe_length;
 #endif
 assign dat_stripe_img_size_w = sg2dat_stripe_length;
-assign dat_stripe_size_w = is_img_d1 ? dat_stripe_img_size_w : {1'b0, dat_stripe_batch_size_w};
+assign dat_stripe_size_w = is_img_d1 ? dat_stripe_img_size_w :  dat_stripe_batch_size_w;
 assign {mon_dat_stripe_img_length_w,
         dat_stripe_img_length_w} = ~is_img_d1 ? 8'b0 :
                                   (reg2dp_y_extension == 2'h2) ? ((sg2dat_stripe_length + 2'h3) & 8'hfc) :
                                   (reg2dp_y_extension == 2'h1) ? ((sg2dat_stripe_length + 2'h1) & 8'hfe) :
                                   {1'b0, sg2dat_stripe_length};
 
-assign dat_stripe_length_w = is_img_d1 ? dat_stripe_img_length_w : {1'b0, dat_stripe_batch_size_w};
+assign dat_stripe_length_w = is_img_d1 ? dat_stripe_img_length_w : dat_stripe_batch_size_w;
 
 //delay for one cycle
 assign dat_max_cycles = ~dat_pop_ready ? 7'b0 :
