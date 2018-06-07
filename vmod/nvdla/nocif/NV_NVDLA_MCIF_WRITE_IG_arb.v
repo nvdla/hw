@@ -85,6 +85,7 @@ wire     [2:0] arb_cmd_size;
 wire     [4:0] src_cmd_vlds;
 wire     [4:0] src_dat_gnts;
 wire           src_dat_vld;
+wire           src_dat_rdy;
 wire     [4:0] src_dat_vlds;
 wire     [7:0] wt0;
 wire     [7:0] wt1;
@@ -122,8 +123,8 @@ wire     [7:0] wt4;
 //: print "\n";
 //: print qq(
 //:   assign src_cmd${i}_size= {3{src_cmd${i}_vld}} & src_cmd${i}_pd[NVDLA_MEM_ADDRESS_WIDTH+7:NVDLA_MEM_ADDRESS_WIDTH+5]; 
-//:   assign src_cmd${i}_rdy = is_last_beat & src_dat_gnts[$i];
-//:   assign src_dat${i}_rdy = all_gnts[${i}];
+//:   assign src_cmd${i}_rdy = is_last_beat & src_dat_rdy & src_dat_gnts[$i];
+//:   assign src_dat${i}_rdy = src_dat_rdy & all_gnts[${i}];
 //:   assign src_cmd${i}_beats = src_cmd${i}_size;
 //:   assign src_cmd${i}_camp_vld = src_cmd${i}_vld & (dfifo${i}_wr_count > src_cmd${i}_beats);
 //: );
@@ -190,12 +191,12 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     sticky <= 1'b0;
   end else begin
     if (any_arb_gnt) begin
-        if (src_dat_vld & is_last_beat) begin
+        if (src_dat_vld & src_dat_rdy & is_last_beat) begin
             sticky <= 0;
         end else begin
             sticky <= 1;
         end
-    end else if (src_dat_vld & is_last_beat) begin
+    end else if (src_dat_vld & src_dat_rdy & is_last_beat) begin
         sticky <= 0;
     end
   end
@@ -209,7 +210,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
     gnt_count <= {3{1'b0}};
   end else begin
-    if (src_dat_vld) begin
+    if (src_dat_vld & src_dat_rdy) begin
         if (is_last_beat) begin
             gnt_count <= 0;
         end else begin
@@ -274,6 +275,7 @@ assign arb2spt_dat_pd = arb_dat_pd;
 
 assign arb2spt_cmd_valid = any_arb_gnt;
 assign arb2spt_dat_valid = src_dat_vld;
+assign src_dat_rdy = arb2spt_dat_ready;
 
 assign spt_is_busy = !(arb2spt_cmd_ready & arb2spt_dat_ready);   //fixme
 
