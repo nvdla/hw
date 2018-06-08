@@ -66,8 +66,8 @@ class RunPlan(object):
 
     def load_config(self, config):
         #global test_plan
-        self._test_plan = TestPlan()
         self.config=dict(config)
+        self._test_plan = TestPlan(self.config['project'])
         #print 'runplan::load_config:before, begin'
         #print dir()
         #print globals()

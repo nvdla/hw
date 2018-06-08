@@ -12,8 +12,15 @@
 /*
     SDP test lsit
 */
-`include "sdp_bs_rtest.sv"
-`include "sdp_bn_rtest.sv"
+`ifdef NVDLA_SDP_BN_ENABLE
+    `include "sdp_bn_rtest.sv"
+`endif
+`ifdef NVDLA_SDP_BS_ENABLE
+    `include "sdp_bs_rtest.sv"
+`endif
+`ifdef NVDLA_SDP_EW_ENABLE
+    `include "sdp_ew_rtest.sv"
+`endif
 `include "sdp_rtest.sv"
 
 /*

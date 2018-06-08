@@ -889,7 +889,9 @@ constraint nvdla_sdp_resource::c_ias_feature {
 }
 
 constraint nvdla_sdp_resource::c_ias_dut_por_requirement {
+`ifndef NVDLA_SDP_EW_ENABLE
     ew_bypass      == ew_bypass_YES      ;
+`endif
     winograd       == winograd_OFF       ;
 `ifndef NVDLA_SECONDARY_MEMIF_ENABLE
     dst_ram_type   == dst_ram_type_MC    ;

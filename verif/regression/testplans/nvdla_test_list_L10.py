@@ -70,19 +70,29 @@ for i in range(plan_arguments['RUN_NUM']):
 
     ############################################# SDP #############################################
 
-    add_test(name='sdp_bs_rtest',
-             tags=['L10', 'sdp'],
-             args=[' -rtlarg +uvm_set_config_int=uvm_test_top,layers,%d ' % plan_arguments['LAYER_NUM'], get_seed_args(), DISABLE_COMPARE_ALL_UNITS_SB_ARG],
-             module='nvdla_uvm_test',
-             config=['nvdla_utb'],
-             desc=''' SDP offline random case, with BS enabled and not bypassed ''')
+    if 'NVDLA_SDP_BS_ENABLE' in project.PROJVAR and project.PROJVAR['NVDLA_SDP_BS_ENABLE'] is True:
+        add_test(name='sdp_bs_rtest',
+                 tags=['L10', 'sdp'],
+                 args=[' -rtlarg +uvm_set_config_int=uvm_test_top,layers,%d ' % plan_arguments['LAYER_NUM'], get_seed_args(), DISABLE_COMPARE_ALL_UNITS_SB_ARG],
+                 module='nvdla_uvm_test',
+                 config=['nvdla_utb'],
+                 desc=''' SDP offline random case, with BS enabled and not bypassed ''')
 
-    add_test(name='sdp_bn_rtest',
-             tags=['L10', 'sdp'],
-             args=[' -rtlarg +uvm_set_config_int=uvm_test_top,layers,%d ' % plan_arguments['LAYER_NUM'], get_seed_args(), DISABLE_COMPARE_ALL_UNITS_SB_ARG],
-             module='nvdla_uvm_test',
-             config=['nvdla_utb'],
-             desc=''' SDP offline random case, with BN enabled and not bypassed ''')
+    if 'NVDLA_SDP_BN_ENABLE' in project.PROJVAR and project.PROJVAR['NVDLA_SDP_BN_ENABLE'] is True:
+        add_test(name='sdp_bn_rtest',
+                 tags=['L10', 'sdp'],
+                 args=[' -rtlarg +uvm_set_config_int=uvm_test_top,layers,%d ' % plan_arguments['LAYER_NUM'], get_seed_args(), DISABLE_COMPARE_ALL_UNITS_SB_ARG],
+                 module='nvdla_uvm_test',
+                 config=['nvdla_utb'],
+                 desc=''' SDP offline random case, with BN enabled and not bypassed ''')
+
+    if 'NVDLA_SDP_EW_ENABLE' in project.PROJVAR and project.PROJVAR['NVDLA_SDP_EW_ENABLE'] is True:
+        add_test(name='sdp_ew_rtest',
+                 tags=['L10', 'sdp'],
+                 args=[' -rtlarg +uvm_set_config_int=uvm_test_top,layers,%d ' % plan_arguments['LAYER_NUM'], get_seed_args(), DISABLE_COMPARE_ALL_UNITS_SB_ARG],
+                 module='nvdla_uvm_test',
+                 config=['nvdla_utb'],
+                 desc=''' SDP offline random case, with EW enabled and not bypassed ''')
 
     add_test(name='sdp_rtest',
              tags=['L10', 'sdp'],

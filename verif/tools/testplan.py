@@ -3,6 +3,9 @@
 import imp
 import argparse
 from pprint import pprint
+import os
+import sys
+
 __DESCRIPTION__='''
 This class is used to execute a test plan:
     1. Load test plan file
@@ -22,12 +25,15 @@ This class is used to execute a test plan:
 '''
 
 class TestPlan():
-    def __init__(self):
+    def __init__(self, project):
+        self.project = project
         self.test_list = []
         self.log_checker_dict = {}
         self.test_bench_list = []
         self.plan_arguments = {}
         self.user_variables = dict(add_test=self.add_test)
+        self.defs_path = os.path.join(self.get_abs_path_to_tree_root(), 'outdir', self.project, 'spec/defs')
+        sys.path.append(self.defs_path)
 
     def set_plan_arguments(self, attr_dict):
         assert(type(attr_dict)==dict)
@@ -111,6 +117,17 @@ class TestPlan():
 
     def update_test_list_by_test_bench(self):
         self.test_list = self.get_test_list(test_selector_with_test_bench, test_bench_list=self.test_bench_list)
+
+    def get_ref_path_to_tree_root(self, rel_path_to_tree_root = '.'):
+        # there is a file named LICENSE, it's the marker of tree root
+        tree_root_marker_path = os.path.join(rel_path_to_tree_root, 'LICENSE')
+        if os.path.isfile(tree_root_marker_path) is False:
+            rel_path_to_tree_root = os.path.join('..', rel_path_to_tree_root)
+            rel_path_to_tree_root = self.get_ref_path_to_tree_root(rel_path_to_tree_root)
+        return rel_path_to_tree_root
+
+    def get_abs_path_to_tree_root(self):
+        return os.path.abspath(self.get_ref_path_to_tree_root())
 
 def test_selector_pri_mem(testDict):
     ##print "test_selector_pri_mem:testDict"

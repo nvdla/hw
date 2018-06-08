@@ -1,4 +1,5 @@
 import random
+import project
 
 def get_next_seed(min=1,max=100000):
     return random.randint(min, max)
