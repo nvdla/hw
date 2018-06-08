@@ -262,22 +262,25 @@ reg            pending_req_d1;
 //bw of below two signals
 reg    [0:0] pre_gen_sel;
 reg    [0:0] req_csm_sel;
+//: my $req_cur_atomic_size=CDMA_GRAIN_MAX_BIT;
 //: foreach my $i (0..1){
 //:     print qq(
 //:     wire           pre_reg_en_d2_g${i};
-//:     reg     [13:0] req_atomic_${i}_d3;
+//:     reg     [${req_cur_atomic_size}:0] req_atomic_${i}_d3;
 //:     reg     [17:0] req_entry_${i}_d3;
 //:     reg            req_pre_valid_${i}_d3;
 //:     );
 //: }
+//: print qq(
+//:     reg   [${req_cur_atomic_size}:0] req_atomic_d2;
+//:     reg   [${req_cur_atomic_size}:0] req_atm_cnt_0;
+//:     reg   [${req_cur_atomic_size}:0] req_atm_cnt_1;
+//:     reg   [${req_cur_atomic_size}:0] req_atm_cnt_2;
+//:     reg   [${req_cur_atomic_size}:0] req_atm_cnt_3;
+//: );
 reg            pre_valid_d1;
 reg            pre_valid_d2;
-reg     [13:0] req_atm_cnt_0;
-reg     [13:0] req_atm_cnt_1;
-reg     [13:0] req_atm_cnt_2;
-reg     [13:0] req_atm_cnt_3;
 reg      [1:0] req_atm_sel;
-reg     [13:0] req_atomic_d2;
 reg      [4:0] req_batch_cnt;
 reg     [10:0] req_ch_cnt;
 reg            mon_req_ch_cnt;
@@ -541,14 +544,18 @@ wire           rd_req_rdyi;
 //:     reg     [12+31-${atmbw}:0] grain_addr;
 //:     wire    [2+31-${atmbw}:0] req_addr_ch_base_add;
 //: );
-wire    [13:0] req_atm;
-wire    [13:0] req_atm_cnt;
-wire    [13:0] req_atm_cnt_0_w;
-wire    [13:0] req_atm_cnt_1_w;
-wire    [13:0] req_atm_cnt_2_w;
-wire    [13:0] req_atm_cnt_3_w;
-wire    [13:0] req_atm_cnt_inc;
-wire    [13:0] req_atm_left;
+
+//: my $req_cur_atomic_size=CDMA_GRAIN_MAX_BIT;
+//: print qq(
+//:     reg   [${req_cur_atomic_size}:0] req_atm;
+//:     reg   [${req_cur_atomic_size}:0] req_atm_cnt;
+//:     reg   [${req_cur_atomic_size}:0] req_atm_cnt_0_w;
+//:     reg   [${req_cur_atomic_size}:0] req_atm_cnt_1_w;
+//:     reg   [${req_cur_atomic_size}:0] req_atm_cnt_2_w;
+//:     reg   [${req_cur_atomic_size}:0] req_atm_cnt_3_w;
+//:     reg   [${req_cur_atomic_size}:0] req_atm_cnt_inc;
+//:     reg   [${req_cur_atomic_size}:0] req_atm_left;
+//: );
 wire           req_atm_reg_en;
 wire           req_atm_reg_en_0;
 wire           req_atm_reg_en_1;
@@ -561,7 +568,10 @@ wire           req_batch_reg_en;
 wire    [10:0] req_ch_left_w;
 wire     [2:0] req_ch_mode;
 wire           req_ch_reg_en;
-wire    [13:0] req_cur_atomic;
+//: my $req_cur_atomic_size=CDMA_GRAIN_MAX_BIT;
+//: print qq(
+//:     wire   [${req_cur_atomic_size}:0] req_cur_atomic;
+//: );
 wire    [13:0] req_cur_grain_w;
 wire    [14:0] req_entry;
 wire           req_grain_reg_en;
@@ -960,7 +970,7 @@ assign pre_reg_en_d1 = pre_valid_d1 & pre_ready_d1;
 
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     if (!nvdla_core_rstn) begin
-        req_atomic_d2 <= {14{1'b0}};
+        req_atomic_d2 <= 0;
     end else begin
         if ((pre_reg_en_d1) == 1'b1) begin
             req_atomic_d2 <= req_cur_atomic;
@@ -1018,7 +1028,7 @@ assign pre_reg_en_d2_last = pre_valid_d2 & pre_ready_d2 & is_req_grain_last_d2;
 
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     if (!nvdla_core_rstn) begin
-        req_atomic_0_d3 <= {14{1'b0}};
+        req_atomic_0_d3 <= 0;
     end else begin
         if ((pre_reg_en_d2_g0) == 1'b1) begin
             req_atomic_0_d3 <= req_atomic_d2;
@@ -1027,7 +1037,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 end
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     if (!nvdla_core_rstn) begin
-        req_atomic_1_d3 <= {14{1'b0}};
+        req_atomic_1_d3 <= 0;
     end else begin
         if ((pre_reg_en_d2_g1) == 1'b1) begin
             req_atomic_1_d3 <= req_atomic_d2;
@@ -1252,20 +1262,20 @@ assign is_atm_done[3] = (req_atm_cnt_3 == req_atm);
 assign req_atm_cnt = (req_atm_sel == 2'h0) ? req_atm_cnt_0 :
                      (req_atm_sel == 2'h1) ? req_atm_cnt_1 :
                      (req_atm_sel == 2'h2) ? req_atm_cnt_2 :
-                     (req_atm_sel == 2'h3) ? req_atm_cnt_3 : 14'd0;
+                     (req_atm_sel == 2'h3) ? req_atm_cnt_3 : 0;
 assign {mon_req_atm_cnt_inc, req_atm_cnt_inc} = req_atm_cnt + req_atm_size;
 assign cur_atm_done = (req_atm_sel == 2'h0) ? is_atm_done[0] :
                       (req_atm_sel == 2'h1) ? is_atm_done[1] :
                       (req_atm_sel == 2'h2) ? is_atm_done[2] :
                       (req_atm_sel == 2'h3) ? is_atm_done[3] : 1'b0;
 assign {mon_req_atm_left, req_atm_left} = req_atm - req_atm_cnt;
-assign {mon_req_atm_size_addr_limit, req_atm_size_addr_limit} = (req_atm_cnt == 14'b0) ? (4'h8 - req_addr[2:0]) : 4'h8;
+assign {mon_req_atm_size_addr_limit, req_atm_size_addr_limit} = (req_atm_cnt == 0) ? (4'h8 - req_addr[2:0]) : 4'h8;
 assign req_atm_size = (req_atm_left < {{10{1'b0}}, req_atm_size_addr_limit}) ? req_atm_left[3:0] : req_atm_size_addr_limit;
 assign {mon_req_atm_size_out, req_atm_size_out} = req_atm_size - 1'b1;
-assign req_atm_cnt_0_w = (~is_running | is_req_atm_end) ? 14'b0 : req_atm_cnt_inc;
-assign req_atm_cnt_1_w = (~is_running | is_req_atm_end) ? 14'b0 : req_atm_cnt_inc;
-assign req_atm_cnt_2_w = (~is_running | is_req_atm_end) ? 14'b0 : req_atm_cnt_inc;
-assign req_atm_cnt_3_w = (~is_running | is_req_atm_end) ? 14'b0 : req_atm_cnt_inc;
+assign req_atm_cnt_0_w = (~is_running | is_req_atm_end) ? 0 : req_atm_cnt_inc;
+assign req_atm_cnt_1_w = (~is_running | is_req_atm_end) ? 0 : req_atm_cnt_inc;
+assign req_atm_cnt_2_w = (~is_running | is_req_atm_end) ? 0 : req_atm_cnt_inc;
+assign req_atm_cnt_3_w = (~is_running | is_req_atm_end) ? 0 : req_atm_cnt_inc;
 
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     if (!nvdla_core_rstn) begin
@@ -1285,7 +1295,7 @@ assign is_req_atm_sel_end = ({2'd0,req_atm_sel} == (req_cur_ch-1));
 
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     if (!nvdla_core_rstn) begin
-        req_atm_cnt_0 <= {14{1'b0}};
+        req_atm_cnt_0 <= 0;
     end else begin
         if ((layer_st | req_atm_reg_en_0) == 1'b1) begin
             req_atm_cnt_0 <= req_atm_cnt_0_w;
@@ -1294,7 +1304,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 end
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     if (!nvdla_core_rstn) begin
-        req_atm_cnt_1 <= {14{1'b0}};
+        req_atm_cnt_1 <= 0;
     end else begin
         if ((layer_st | req_atm_reg_en_1) == 1'b1) begin
             req_atm_cnt_1 <= req_atm_cnt_1_w;
@@ -1303,7 +1313,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 end
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     if (!nvdla_core_rstn) begin
-        req_atm_cnt_2 <= {14{1'b0}};
+        req_atm_cnt_2 <= 0;
     end else begin
         if ((layer_st | req_atm_reg_en_2) == 1'b1) begin
             req_atm_cnt_2 <= req_atm_cnt_2_w;
@@ -1312,7 +1322,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 end
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     if (!nvdla_core_rstn) begin
-        req_atm_cnt_3 <= {14{1'b0}};
+        req_atm_cnt_3 <= 0;
     end else begin
         if ((layer_st | req_atm_reg_en_3) == 1'b1) begin
             req_atm_cnt_3 <= req_atm_cnt_3_w;
