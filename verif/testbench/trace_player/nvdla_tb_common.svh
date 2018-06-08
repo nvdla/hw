@@ -79,23 +79,18 @@ package nvdla_tb_common_pkg;
 
     // TODO: Remove hard-coded magic numbers and use macros from project.vh once VMOD add them.
 
-`ifdef NV_LARGE
-    parameter SDP_DW = 16;
-    parameter SDP_DS = 8;
-`else
-    parameter SDP_DW = 8;
-    parameter SDP_DS = 1;
-`endif
+    parameter SDP_DW = `NVDLA_BPE;
+    parameter SDP_DS = `NVDLA_SDP_MAX_THROUGHPUT;
     parameter SDP_PW    = (`NVDLA_BPE*`NVDLA_SDP_MAX_THROUGHPUT);  // small:8, large:128
     parameter CACC_PW   = (32*`NVDLA_SDP_MAX_THROUGHPUT+2);   // small:34, large:514
     parameter CACC_DW = 32;
-    parameter CACC_DS   = `NVDLA_SDP_BS_THROUGHPUT; // small:1, large:16
+    parameter CACC_DS   = `NVDLA_SDP_MAX_THROUGHPUT; // small:1, large:16
     parameter CSC_DT_DW = `NVDLA_BPE; // small: 8
     parameter CSC_WT_DW = `NVDLA_BPE;
     parameter CSC_DT_DS = `NVDLA_MAC_ATOMIC_C_SIZE;     // small: 8, large:?
     parameter CSC_WT_DS = `NVDLA_MAC_ATOMIC_C_SIZE;     // small: 8, large:?
     parameter CMAC_DW   = `NVDLA_MAC_RESULT_WIDTH;      // small:19, large:22
-    parameter CMAC_DS   = (`NVDLA_MAC_ATOMIC_K_SIZE/2); // small: 4, large:?
+    parameter CMAC_DS   = (`NVDLA_MAC_ATOMIC_K_SIZE_DIV2); // small: 4, large:?
 
 endpackage: nvdla_tb_common_pkg
 
