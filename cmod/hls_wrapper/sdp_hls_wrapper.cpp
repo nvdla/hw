@@ -184,26 +184,13 @@ void sdp_hls_wrapper::sdp_y(int32_t *sdp_data_in, int16_t *sdp_alu_op, int16_t *
     eDataInStruct mul_op;
     yInpInStruct  inp_op;
     int sdp_y_loop_cnt = (SDP_PARALLEL_PROC_NUM+SPEED_Y-1)/SPEED_Y;
-    int last_proc_cnt  = SDP_PARALLEL_PROC_NUM%SPEED_Y;
 
+    assert(SDP_PARALLEL_PROC_NUM%SPEED_Y == 0);
     for(int iter = 0; iter < sdp_y_loop_cnt; iter++) {
-        if (iter == sdp_y_loop_cnt-1) {
-            for (i=0; i<last_proc_cnt; i++) {
-                data_in.data[i] = (yDataInType)sdp_data_in[iter*SPEED_Y + i];
-                alu_op.data[i]  = (eDataInType)sdp_alu_op[iter*SPEED_Y + i];
-                mul_op.data[i]  = (eDataInType)sdp_mul_op[iter*SPEED_Y + i];
-            }
-            for (i=last_proc_cnt; i<SPEED_Y; i++) {
-                data_in.data[i] = 0;
-                alu_op.data[i]  = 0;
-                mul_op.data[i]  = 0;
-            }
-        } else {
-            for (i=0; i<SPEED_Y; i++) {
-                data_in.data[i] = (yDataInType)sdp_data_in[iter*SPEED_Y + i];
-                alu_op.data[i]  = (eDataInType)sdp_alu_op[iter*SPEED_Y + i];
-                mul_op.data[i]  = (eDataInType)sdp_mul_op[iter*SPEED_Y + i];
-            }
+        for (i=0; i<SPEED_Y; i++) {
+            data_in.data[i] = (yDataInType)sdp_data_in[iter*SPEED_Y + i];
+            alu_op.data[i]  = (eDataInType)sdp_alu_op[iter*SPEED_Y + i];
+            mul_op.data[i]  = (eDataInType)sdp_mul_op[iter*SPEED_Y + i];
         }
         chn_data_in.write(data_in);
         chn_alu_op.write(alu_op);

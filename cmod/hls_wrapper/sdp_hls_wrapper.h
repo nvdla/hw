@@ -26,7 +26,7 @@
 #define HLS_MAX_THROUGHPUT  16
 
 #if SDP_PARALLEL_PROC_NUM > HLS_MAX_THROUGHPUT
-#error "SDP throughput shoudln't be larger than 16"
+#error "SDP throughput shoudldn't be larger than 16"
 #endif
 
 class sdp_hls_wrapper{
