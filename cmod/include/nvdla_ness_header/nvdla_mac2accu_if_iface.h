@@ -20,7 +20,7 @@ union nvdla_mac2accu_if_u {
     nvdla_stripe_info_t nvdla_stripe_info;
 };
 typedef struct nvdla_mac2accu_if_s {
-    uint8_t mask ; 
+    uint64_t mask ; 
     uint8_t mode ; 
     uint64_t data [3] [8]; 
     union nvdla_mac2accu_if_u pd ; 

@@ -885,8 +885,8 @@ class NV_NVDLA_cmac:
 
         // Operation mode
         uint32_t    cmac_operation_mode_;
-        uint16_t    enabled_mac_cell_shadow_;
-        uint16_t    enabled_mac_cell_active_;
+        uint64_t    enabled_mac_cell_shadow_;
+        uint64_t    enabled_mac_cell_active_;
 
         // Function declaration 
         // # Threads
