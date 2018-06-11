@@ -1118,12 +1118,26 @@ assign pixel_x_cnt_add = (is_sub_h_end) ? pixel_x_add : 6'b0;
 //                        (is_stripe_end & ~dl_block_end) ? {1'b0, pixel_w_ori} :
 //                        (pixel_w_cnt + pixel_x_cnt_add);
 
+//channel count.
+wire [12:0] total_channel_op = (reg2dp_weight_channel_ext[LOG2_ATOMC-1:0]=={LOG2_ATOMC{1'b0}}) ?  
+                        reg2dp_weight_channel_ext[12:LOG2_ATOMC] : reg2dp_weight_channel_ext[12:LOG2_ATOMC]+1'b1;
+
+reg [12:0] channel_op_cnt;
+wire mon_channel_op_cnt_nxt;
+wire [12:0] channel_op_cnt_nxt; 
+assign {mon_channel_op_cnt_nxt, channel_op_cnt_nxt} =   dl_channel_end&is_stripe_end ? 13'h2 :
+                                                        dl_block_end&is_stripe_end ? channel_op_cnt + 1'b1 :
+                                                        channel_op_cnt;
+//: &eperl::flop("-q channel_op_cnt  -d \"channel_op_cnt_nxt\"  -wid 13  -rval \"13'h2\" -nodeclare ");
+wire next_is_last_channel = (channel_op_cnt >= total_channel_op); 
 
 //notice, after pre-extention, image weight w_total <=128
 assign {mon_pixel_w_cnt_w,pixel_w_cnt_w} = (layer_st_d1) ? {{11{1'b0}}, pixel_x_init} :
                         (is_stripe_end & dl_block_end & dl_channel_end & is_w_end) ? {{11{1'b0}}, pixel_x_init} :
                         (is_stripe_end & dl_block_end & dl_channel_end & ~is_w_end) ? (pixel_w_ch_ori + pixel_ch_stride) :
-                        (is_stripe_end & dl_block_end & ~dl_channel_end) ? (pixel_w_ori + dl_in_pd_d0[16:10]) :   
+                        //(is_stripe_end & dl_block_end & ~dl_channel_end) ? (pixel_w_ori + dl_in_pd_d0[16:10]) :   
+                        (is_stripe_end & dl_block_end & next_is_last_channel) ? (pixel_w_ori + pixel_x_init_offset) :   
+                        (is_stripe_end & dl_block_end & ~next_is_last_channel) ? (pixel_w_ori + CSC_ENTRY_HEX) :   
                         (is_stripe_end & ~dl_block_end) ? {1'b0, pixel_w_ori} :
                         (pixel_w_cnt + pixel_x_cnt_add);
 
