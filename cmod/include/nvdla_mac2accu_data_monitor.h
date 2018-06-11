@@ -22,7 +22,7 @@
 //     nvdla_stripe_info_t nvdla_stripe_info;
 // };
 typedef struct nvdla_mac2accu_data_monitor_s {
-    uint64_t mask ; 
+    uint32_t mask ; 
     uint8_t mode;
     int32_t  data [(NVDLA_MAC_ATOMIC_K_SIZE / 2) * 4];
     // union nvdla_mac2accu_data_if_u pd ; 
