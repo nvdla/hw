@@ -637,7 +637,9 @@ constraint nvdla_sdp_rdma_resource::c_ias_dut_por_requirement {
     in_precision   == in_precision_INT8  ;
     proc_precision == proc_precision_INT8;
     out_precision  == out_precision_INT8 ;
+`ifndef NVDLA_SDP_EW_ENABLE
     erdma_disable  == erdma_disable_YES  ;
+`endif
 `ifndef NVDLA_SECONDARY_MEMIF_ENABLE
     brdma_ram_type == brdma_ram_type_MC  ;
     nrdma_ram_type == nrdma_ram_type_MC  ;
