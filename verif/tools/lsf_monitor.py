@@ -71,10 +71,9 @@ class LSFMonitor(object):
                     info = subprocess.check_output('bjobs -al '+str(item), shell = True)
                 except subprocess.CalledProcessError as e:
                     print('[WARNING] Failed to execute bjobs %s' % e.output)
-                except:
-                    pass
-                if not info:
-                    print('[WARNING] Failed to get log info of jobID %0d' % str(item))
+                    continue
+                except Exception as e:
+                    print('[WARNING] Failed to execute bjobs by unexpected error %s' % e.output)
                     continue
                 info = re.sub(r'\\n\s*','', str(info))
                 cputime_p  = re.compile(r'CPU\s*time\s*used\s*is\s*([\d\.]+)')
@@ -135,10 +134,9 @@ class LSFMonitor(object):
                     info = subprocess.check_output('bjobs -al '+str(key), shell = True)
                 except subprocess.CalledProcessError as e:
                     print('[WARNING] Failed to execute bjobs %s' % e.output)
-                except:
-                    pass
-                if not info:
-                    print('[WARNING] Failed to get log info of jobID %0d' % key)
+                    continue
+                except Exception as e:
+                    print('[WARNING] Failed to execute bjobs by unexpected error: %s' % e.output)
                     continue
                 info = re.sub(r'\\n\s*','', str(info))
                 status_p   = re.compile(r'Status\s*<(\w+)>,')
