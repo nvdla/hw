@@ -8,6 +8,7 @@ import re
 import enum
 import time
 import fcntl
+import nvdla_tb_sim_cfg
 from pprint import pprint
 from pathlib import Path
 import subprocess
@@ -43,6 +44,7 @@ class RunTest(object):
                                 'test_name':None,
                                 'testbench':None,
                                 'timeout':None,
+                                'debug':None,
                                 'dump_waveform':None,
                                 'seed':None,
                             }
@@ -283,6 +285,8 @@ class RunTest(object):
         simv_args += ' +uvm_set_config_string=*,trace_file_path,' + self._trace_test_cfg_path
         if self._rtlarg is not None:
             simv_args += ' ' + ' '.join(self._rtlarg)
+        if self._config_dict['debug']:
+            simv_args += nvdla_tb_sim_cfg.arg_gen() 
         simv_cmd = simv_exe + simv_args
 
         # generate trace player script
@@ -449,7 +453,7 @@ if __name__ == '__main__':
     parser.add_argument('--project','-P', dest='project', required=True,
                         help='Specify project name')
     parser.add_argument('--module', '-mod', dest='module', required=False, default='nvdla_trace_test',
-                        help='Specify module: nvdla_python_test, nvdla_uvm_test, nvdla_python_test')
+                        help='Specify module: nvdla_python_test, nvdla_uvm_test, nvdla_trace_test')
     parser.add_argument('--traceRoot', '-traceRoot', dest='trace_root', required=False,
                         help='Specify a directory which is in high hierarchy of the test source directory')
     parser.add_argument('--traces', '-traces', dest='trace_dir', required=False,
@@ -474,6 +478,8 @@ if __name__ == '__main__':
                         help='Dump memory content in the end of simulation')
     parser.add_argument('--dump_trace_only','-dump_trace_only', dest='dump_trace_only', action='store_true', default=False, required=False,
                         help='Dump trace file only, do not run trace player, only used for uvm_random_test')
+    parser.add_argument('--debug','-debug', dest='debug', action='store_true', default=False, required=False,
+                        help='Enter into debug config setting process')
     config = vars( parser.parse_args() )
     pprint (config)
     run_test = RunTest(config)
