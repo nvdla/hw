@@ -76,8 +76,10 @@ class RunReport(object):
             self.regr_sts_data = json.load(regr_sts_fh)
         if self.regr_sts_data['farm_type'] == 'LSF':
             lsfm = LSFMonitor()
-            for item in self.test_orgz_data.values():
-                self.job_status.update(lsfm.get_job_init_status([item['job_id']]))
+            job_id_list = list(item['job_id'] for item in self.test_orgz_data.values())
+            info_dict = lsfm.get_job_init_status(job_id_list)
+            for item in info_dict:
+                self.job_status.update({item:info_dict[item]})
 
 
     def submetrics_parse(self):

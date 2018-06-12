@@ -30,6 +30,7 @@ class LSFMonitor(object):
         self._job_name = job_name
         self._interval = interval
         self._job_id   = []
+        self._job_query_max_rounds = 3
 
     def run(self):
         self._job_id = self.get_job_by_name(self._job_name)
@@ -62,66 +63,69 @@ class LSFMonitor(object):
 
     def get_job_init_status(self, job_id=[]):
         exec_host_info = {}
-        for item in job_id:
-            exec_host_info[item] = {}
-            try:
-                info = subprocess.check_output('bjobs -al '+str(item), shell = True)
-                if not info:
-                    raise(None_Job)
-            except:
-                print('wait 5s and retry')
-                time.sleep(5)
+        job_id_not_initiated = list(job_id)
+        for round_idx in range(self._job_query_max_rounds):
+            for item in job_id_not_initiated:
+                exec_host_info[item] = {}
                 try:
                     info = subprocess.check_output('bjobs -al '+str(item), shell = True)
-                    if not info:
-                        raise(None_Job)
+                except subprocess.CalledProcessError as e:
+                    print('[WARNING] Failed to execute bjobs %s' % e.output)
                 except:
-                    exec_host_info[item]['status']       = 'EXPIRE'
-                    exec_host_info[item]['testdir']      = '-'
-                    exec_host_info[item]['cpulimit']     = '-'
-                    exec_host_info[item]['exechost']     = '-'
-                    exec_host_info[item]['runlimit']     = '-'
-                    exec_host_info[item]['memlimit']     = '-'
-                    exec_host_info[item]['queue_type']   = '-'
-                    exec_host_info[item]['cputime_used'] = '-'
-                    exec_host_info[item]['maxmem']       = '-'
-                    exec_host_info[item]['syndrome']     = '-'
+                    pass
+                if not info:
+                    print('[WARNING] Failed to get log info of jobID %0d' % str(item))
                     continue
-            info = re.sub(r'\\n\s*','', str(info))
-            cputime_p  = re.compile(r'CPU\s*time\s*used\s*is\s*([\d\.]+)')
-            cputime    = cputime_p.search(str(info))
-            maxmem_p   = re.compile(r'MAX\s*MEM:\s*(\d+.*)Mbytes;')
-            maxmem     = maxmem_p.search(str(info))
-
-            match = re.search(r'.*Status\s*<(\w+)>,.*VIRTUAL_QUEUE=(\w+)\s*QSUB_JOB_TAG_PROJECT_MODE.*CWD\s*<(.*)>,.*CPULIMIT\s*([\d\.]+\s*min)\s*of\s*([a-zA-Z0-9-]+)\s*.*RUNLIMIT\s*([\d\.]+\s*min)\s*.*MEMLIMIT\s*(\d+\s*)K\s*', str(info))
-            if match is None:
-                with open('log_of_job_'+str(item), 'w') as fh:
-                    fh.write(str(info))
-                #print(str(info))
-                raise Exception('Job status extraction failed')
-            exec_host_info[item]['status']     = match.group(1)
-            exec_host_info[item]['queue_type'] = match.group(2)
-            exec_host_info[item]['testdir']    = os.path.basename(match.group(3))
-            exec_host_info[item]['cpulimit']   = match.group(4)
-            exec_host_info[item]['exechost']   = match.group(5)
-            exec_host_info[item]['runlimit']   = match.group(6)
-            exec_host_info[item]['memlimit']   = str(int(match.group(7))//1024)+' MB'
-            if cputime:
-                exec_host_info[item]['cputime_used']   = '{:.1f}'.format(float(cputime.group(1))/60)+' min'
-            else:
-                exec_host_info[item]['cputime_used']   = '-'
-            if maxmem:
-                exec_host_info[item]['maxmem']   = maxmem.group(1)+' MB'
-            else:
-                exec_host_info[item]['maxmem']   = '-'
-            if match.group(1) == 'EXIT':
-                syndrome = re.search(r'Completed\s*<exit>;\s*(\w.*)\..*MEMORY\s*USAGE', str(info))
-                if syndrome:
-                    exec_host_info[item]['syndrome'] = str(syndrome.group(1))
+                info = re.sub(r'\\n\s*','', str(info))
+                cputime_p  = re.compile(r'CPU\s*time\s*used\s*is\s*([\d\.]+)')
+                cputime    = cputime_p.search(str(info))
+                maxmem_p   = re.compile(r'MAX\s*MEM:\s*(\d+.*)Mbytes;')
+                maxmem     = maxmem_p.search(str(info))
+                match = re.search(r'.*Status\s*<(\w+)>,.*VIRTUAL_QUEUE=(\w+)\s*QSUB_JOB_TAG_PROJECT_MODE.*CWD\s*<(.*)>,.*CPULIMIT\s*([\d\.]+\s*min)\s*of\s*([a-zA-Z0-9-]+)\s*.*RUNLIMIT\s*([\d\.]+\s*min)\s*.*MEMLIMIT\s*(\d+\s*)K\s*', str(info))
+                if match is None:
+                    with open('log_of_job_'+str(item), 'w') as fh:
+                        fh.write(str(info))
+                    #print(str(info))
+                    #raise Exception('Job status extraction failed')
+                exec_host_info[item]['status']     = match.group(1)
+                exec_host_info[item]['queue_type'] = match.group(2)
+                exec_host_info[item]['testdir']    = os.path.basename(match.group(3))
+                exec_host_info[item]['cpulimit']   = match.group(4)
+                exec_host_info[item]['exechost']   = match.group(5)
+                exec_host_info[item]['runlimit']   = match.group(6)
+                exec_host_info[item]['memlimit']   = str(int(match.group(7))//1024)+' MB'
+                if cputime:
+                    exec_host_info[item]['cputime_used']   = '{:.1f}'.format(float(cputime.group(1))/60)+' min'
                 else:
-                    exec_host_info[item]['syndrome'] = 'LSF job exited with unknown reason'
-            else:
-                exec_host_info[item]['syndrome'] = ''
+                    exec_host_info[item]['cputime_used']   = '-'
+                if maxmem:
+                    exec_host_info[item]['maxmem']   = maxmem.group(1)+' MB'
+                else:
+                    exec_host_info[item]['maxmem']   = '-'
+                if match.group(1) == 'EXIT':
+                    syndrome = re.search(r'Completed\s*<exit>;\s*(\w.*)\..*MEMORY\s*USAGE', str(info))
+                    if syndrome:
+                        exec_host_info[item]['syndrome'] = str(syndrome.group(1))
+                    else:
+                        exec_host_info[item]['syndrome'] = 'LSF job exited with unknown reason'
+                else:
+                    exec_host_info[item]['syndrome'] = ''
+                job_id_not_initiated.remove(item)
+            print('Round %d: wait 5s and retry' % round_idx)
+            time.sleep(5)
+        # last round
+        for item in job_id_not_initiated:
+            exec_host_info[item] = {}
+            exec_host_info[item]['status']       = 'EXPIRE'
+            exec_host_info[item]['testdir']      = '-'
+            exec_host_info[item]['cpulimit']     = '-'
+            exec_host_info[item]['exechost']     = '-'
+            exec_host_info[item]['runlimit']     = '-'
+            exec_host_info[item]['memlimit']     = '-'
+            exec_host_info[item]['queue_type']   = '-'
+            exec_host_info[item]['cputime_used'] = '-'
+            exec_host_info[item]['maxmem']       = '-'
+            exec_host_info[item]['syndrome']     = '-'
         return exec_host_info
 
     def update_job_exec_status(self, job_status={}):
@@ -129,18 +133,13 @@ class LSFMonitor(object):
             if value['status'] in ('RUN','PEND'):
                 try:
                     info = subprocess.check_output('bjobs -al '+str(key), shell = True)
-                    if not info:
-                        raise(None_Job)
+                except subprocess.CalledProcessError as e:
+                    print('[WARNING] Failed to execute bjobs %s' % e.output)
                 except:
-                    print('wait 5s and retry')
-                    time.sleep(5)
-                    try:
-                        info = subprocess.check_output('bjobs -al '+str(key), shell = True)
-                        if not info:
-                            raise(None_Job)
-                    except:
-                        print('[WARNING] Failed to get log info of jobID %0d' % key)
-                        continue
+                    pass
+                if not info:
+                    print('[WARNING] Failed to get log info of jobID %0d' % key)
+                    continue
                 info = re.sub(r'\\n\s*','', str(info))
                 status_p   = re.compile(r'Status\s*<(\w+)>,')
                 status     = status_p.search(str(info))
