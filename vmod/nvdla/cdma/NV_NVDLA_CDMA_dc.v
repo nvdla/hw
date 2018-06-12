@@ -2432,7 +2432,7 @@ end
 //:                                   (is_rsp_ch_end) ? {1'b0, idx_batch_offset_w} :
 //:                                   (rsp_ch_cnt[0]) ? idx_ch_offset + data_width : idx_ch_offset;
 //:         assign is_w_cnt_div4 = 1'b0;
-//:         assign is_w_cnt_div2 = (is_data_normal & is_rsp_ch_end & ~rsp_ch_cnt[0] & (rsp_cur_ch == 3'h2));
+//:         assign is_w_cnt_div2 = (is_data_normal & is_rsp_ch_end & ~rsp_ch_cnt[0]);
 //:         assign cbuf_wr_hsel_w = (is_w_cnt_div2 & rsp_w_cnt[0]) | (is_data_normal & rsp_ch_cnt[0]) ;
 //:     );
 //: } elsif(($dmaif==1) && ($atmc==4)) {
