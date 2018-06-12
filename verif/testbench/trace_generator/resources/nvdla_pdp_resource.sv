@@ -7,7 +7,7 @@
 //
 // @description: resource class of PDP
 //-------------------------------------------------------------------------------------
-
+`define PDP_ATOM_PER_LINE `PDP_SINGLE_LBUF_WIDTH/(`NVDLA_MEMORY_ATOMIC_SIZE/`NVDLA_PDP_THROUGHPUT)
 class nvdla_pdp_resource extends nvdla_base_resource;
     // singleton handle
     static local nvdla_pdp_resource         inst;
@@ -311,7 +311,7 @@ constraint nvdla_pdp_resource::c_ias_split_num {
 
     solve cube_out_width       before split_num;
     // Require: atomic_m*(bpe+6)*width_o*ceil(kernel_h/stride_h) <= buffer_size
-    if ( (cube_out_width+1) > (8/(((kernel_height + 1) + (kernel_stride_height + 1) - 1)/(kernel_stride_height + 1)))*16 ) {
+    if ( (cube_out_width+1) > (8/(((kernel_height + 1) + (kernel_stride_height + 1) - 1)/(kernel_stride_height + 1)))*`PDP_ATOM_PER_LINE ) {
         split_num > 0;
     }
 
@@ -334,7 +334,7 @@ constraint nvdla_pdp_resource::c_ias_partial_size_out {
 
     if(split_num >= 2) {
         // Only when split number greater than 2, partial_width_out_mid would take effect
-        (partial_width_out_mid+1) <= (8/(((kernel_height + 1) + (kernel_stride_height + 1) - 1)/(kernel_stride_height + 1)))*16;
+        (partial_width_out_mid+1) <= (8/(((kernel_height + 1) + (kernel_stride_height + 1) - 1)/(kernel_stride_height + 1)))*`PDP_ATOM_PER_LINE;
     } else {
         // partial_width_out_mid   == 0;
         // partial_width_out_mid   dist { [10'h0:10'hF]:=30, [10'h10:10'hFF]:=30, [10'h100:10'h2FF]:=30, [10'h300:10'h3FF]:=10};
@@ -352,17 +352,17 @@ constraint nvdla_pdp_resource::c_ias_partial_size_out {
     }
     else if (split_num == 1) {
         (cube_out_width+1)          == (partial_width_out_first+1) + (partial_width_out_last+1);
-        (partial_width_out_first+1) <= (8/(((kernel_height + 1) + (kernel_stride_height + 1) - 1)/(kernel_stride_height + 1)))*16;
-        (partial_width_out_last+1)  <= (8/(((kernel_height + 1) + (kernel_stride_height + 1) - 1)/(kernel_stride_height + 1)))*16;
+        (partial_width_out_first+1) <= (8/(((kernel_height + 1) + (kernel_stride_height + 1) - 1)/(kernel_stride_height + 1)))*`PDP_ATOM_PER_LINE;
+        (partial_width_out_last+1)  <= (8/(((kernel_height + 1) + (kernel_stride_height + 1) - 1)/(kernel_stride_height + 1)))*`PDP_ATOM_PER_LINE;
         // (cube_in_width+1)  == (partial_width_in_first+1)  + (partial_width_in_last+1);
     }
     else if (split_num >= 2) {
         (cube_out_width+1) == partial_width_out_first+1 + partial_width_out_last+1 + (partial_width_out_mid+1)*(split_num+1-2);
         partial_width_out_mid       >= partial_width_out_last;
         partial_width_out_mid       >= partial_width_out_first;
-        (partial_width_out_first+1) <= (8/(((kernel_height + 1) + (kernel_stride_height + 1) - 1)/(kernel_stride_height + 1)))*16;
-        (partial_width_out_mid+1)   <= (8/(((kernel_height + 1) + (kernel_stride_height + 1) - 1)/(kernel_stride_height + 1)))*16;
-        (partial_width_out_last+1)  <= (8/(((kernel_height + 1) + (kernel_stride_height + 1) - 1)/(kernel_stride_height + 1)))*16;
+        (partial_width_out_first+1) <= (8/(((kernel_height + 1) + (kernel_stride_height + 1) - 1)/(kernel_stride_height + 1)))*`PDP_ATOM_PER_LINE;
+        (partial_width_out_mid+1)   <= (8/(((kernel_height + 1) + (kernel_stride_height + 1) - 1)/(kernel_stride_height + 1)))*`PDP_ATOM_PER_LINE;
+        (partial_width_out_last+1)  <= (8/(((kernel_height + 1) + (kernel_stride_height + 1) - 1)/(kernel_stride_height + 1)))*`PDP_ATOM_PER_LINE;
         // (cube_in_width+1)  == partial_width_in_first+1  + partial_width_in_last+1  + (partial_width_in_mid+1)*(split_num+1-2);
     }
 }
