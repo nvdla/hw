@@ -36,7 +36,7 @@ typedef struct {
 } sc2mac_weight_payload_t;
 
 typedef struct {
-    byte                        mask;
+    bit [CMAC_DS-1:0]           mask;
     byte                        mode;
     bit [31:0]                  data[CMAC_DS];
     byte                        layer_end;

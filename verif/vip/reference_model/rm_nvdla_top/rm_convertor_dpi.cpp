@@ -370,24 +370,6 @@ extern "C" void parse_sc2mac_weight_transaction(
     sv_ptr_byte_idx += copy_size;
 }
 
-// union nvdla_mac2accu_data_if_u {
-//     nvdla_stripe_info_t nvdla_stripe_info;
-// };
-// typedef struct nvdla_mac2accu_data_if_s {
-//     uint16_t mask ; 
-//     sc_int<22> data [8*8]; 
-//     union nvdla_mac2accu_data_if_u pd ; 
-// } nvdla_mac2accu_data_monitor_t;
-//
-// typedef struct nvdla_stripe_info_s {
-//     uint8_t redundant;
-//     uint8_t layer_end;
-//     uint8_t channel_end;
-//     uint8_t stripe_end;
-//     uint8_t stripe_st;
-//     uint8_t batch_index;
-// } nvdla_stripe_info_t;
-
 extern "C" void parse_mac2accu_transaction(
     const       svOpenArrayHandle tlm_gp_data_ptr,
     const       svOpenArrayHandle parsed_data_ptr
@@ -418,7 +400,8 @@ extern "C" void parse_mac2accu_transaction(
 */
     // Transfer mask
     src_uint8_ptr = reinterpret_cast <uint8_t *> (&sc_ptr->mask);
-    copy_size     = sizeof(sc_ptr->mask);
+    copy_size = MAC2ACCU_DATA_CONTAINER_NUM<8 ? 1 : MAC2ACCU_DATA_CONTAINER_NUM/8;
+//  printf("[DEBUG] parse_mac2accu_transaction: mask=%#x, copy_size=%0d\n", sc_ptr->mask, copy_size);
     for (copy_idx = 0; copy_idx < copy_size; copy_idx++) {
 //      printf("[DEBUG] parse_mac2accu_transaction: mask: sv_ptr_byte_idx=%0d\n", sv_ptr_byte_idx);
         memcpy(&sv_ptr[sv_ptr_byte_idx+copy_idx], &src_uint8_ptr[copy_size-1-copy_idx], 1);
