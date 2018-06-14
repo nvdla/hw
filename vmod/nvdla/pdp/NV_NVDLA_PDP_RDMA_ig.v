@@ -103,7 +103,7 @@ reg           mon_base_addr_width_c;
 reg    [31:0] mon_gap_between_layers;
 reg           mon_layer_end_flg;
 reg           mon_op_en_dly;
-reg    [14:0] number_of_byte_in_c;
+wire   [14:0] number_of_byte_in_c;
 reg           op_process;
 reg    [31:0] pdp_rd_stall_count;
 reg    [12:0] req_size;

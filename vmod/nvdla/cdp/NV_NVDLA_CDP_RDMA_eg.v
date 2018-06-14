@@ -88,7 +88,7 @@ reg      [3:0] beat_cnt;
 reg            cdp2cvif_rd_cdt_lat_fifo_pop;
 #endif
 reg            cdp2mcif_rd_cdt_lat_fifo_pop;
-reg     [NVDLA_CDP_THROUGHPUT*NVDLA_BPE+22:0] cdp_rdma2dp_pd;
+wire    [NVDLA_CDP_THROUGHPUT*NVDLA_BPE+22:0] cdp_rdma2dp_pd;
 //reg            cdp_rdma2dp_valid_f;
 wire            dp2reg_done_flag;
 reg     [NVDLA_CDP_THROUGHPUT*NVDLA_BPE-1:0] dp_data;
