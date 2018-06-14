@@ -60,35 +60,6 @@ output        lut_out_ram_sel;
 output        lut_out_uflow;
 output [31:0] lut_out_x;
 
-/*
-input         nvdla_core_clk;
-input         nvdla_core_rstn;
-input         cfg_lut_le_function;
-input         cfg_lut_hybrid_priority;
-input         cfg_lut_oflow_priority;
-input         cfg_lut_uflow_priority;
-
-input         lut_in_pvld;
-output        lut_in_prdy;
-output        lut_out_pvld;
-input         lut_out_prdy;
-
-input   [LUT_IDX_REG_WIDTH-1:0]  cfg_lut_le_index_select;
-input   [LUT_IDX_REG_WIDTH-1:0]  cfg_lut_lo_index_select;
-input   [LUT_IDX_REG_WIDTH-1:0]  cfg_lut_le_index_offset;
-input   [LUT_REG_WIDTH-1:0]      cfg_lut_le_start;
-input   [LUT_REG_WIDTH-1:0]      cfg_lut_lo_start;
-input   [LUT_IN_WIDTH-1:0]       lut_data_in;
-
-output  [LUT_IN_WIDTH-1:0]       lut_out_x;
-output  [LUT_FRAC_WIDTH-1:0]     lut_out_frac;
-output  [LUT_ADDR_WIDTH-1:0]     lut_out_ram_addr;
-output                           lut_out_ram_sel;
-output                           lut_out_le_hit;
-output                           lut_out_lo_hit;
-output                           lut_out_uflow;
-output                           lut_out_oflow;
-*/
 
 reg    [34:0] lut_final_frac;
 reg           lut_final_oflow;
@@ -127,10 +98,12 @@ wire   [34:0] lo_frac;
 wire          lo_hit;
 wire    [8:0] lo_index;
 wire   [34:0] lo_line_frac;
+wire          lo_line_in_pvld;
 wire          lo_line_in_prdy;
 wire    [8:0] lo_line_index;
 wire          lo_line_oflow;
 wire          lo_line_out_pvld;
+wire          lo_line_out_prdy;
 wire          lo_line_uflow;
 wire          lo_miss;
 wire          lo_oflow;
@@ -139,32 +112,18 @@ wire   [80:0] lut_final_pd;
 wire          lut_final_prdy;
 wire          lut_final_pvld;
 wire   [31:0] lut_final_x;
-wire          lut_in_xrdy;
-wire   [80:0] lut_out_pd;
+wire          lut_x_in_pvld;
+wire          lut_x_in_prdy;
+wire          lut_x_out_pvld;
+wire          lut_x_out_prdy;
 wire          lut_pipe2_prdy;
 wire          lut_pipe2_pvld;
 wire   [31:0] lut_pipe2_x;
-wire          lut_pipe3_pvld;
 wire          lut_pipe_prdy;
 wire          lut_pipe_pvld;
 wire   [31:0] lut_pipe_x;
+wire   [80:0] lut_out_pd;
 
-
-// synoff nets
-
-// monitor nets
-
-// debug nets
-
-// tie high nets
-
-// tie low nets
-
-// no connect nets
-
-// not all bits used nets
-
-// todo nets
 
     
 //The same three stage pipe with lut_expn and lut_line
@@ -172,9 +131,9 @@ NV_NVDLA_SDP_HLS_Y_INT_IDX_pipe_p1 pipe_p1 (
    .nvdla_core_clk  (nvdla_core_clk)               //|< i
   ,.nvdla_core_rstn (nvdla_core_rstn)              //|< i
   ,.lut_data_in     (lut_data_in[31:0])            //|< i
-  ,.lut_in_pvld     (lut_in_pvld)                  //|< i
+  ,.lut_x_in_pvld   (lut_x_in_pvld)                //|< i
   ,.lut_pipe_prdy   (lut_pipe_prdy)                //|< w
-  ,.lut_in_xrdy     (lut_in_xrdy)                  //|> w *
+  ,.lut_x_in_prdy   (lut_x_in_prdy)                //|> w 
   ,.lut_pipe_pvld   (lut_pipe_pvld)                //|> w
   ,.lut_pipe_x      (lut_pipe_x[31:0])             //|> w
   );
@@ -191,12 +150,12 @@ NV_NVDLA_SDP_HLS_Y_INT_IDX_pipe_p2 pipe_p2 (
 NV_NVDLA_SDP_HLS_Y_INT_IDX_pipe_p3 pipe_p3 (
    .nvdla_core_clk  (nvdla_core_clk)               //|< i
   ,.nvdla_core_rstn (nvdla_core_rstn)              //|< i
-  ,.lut_final_prdy  (lut_final_prdy)               //|< w
+  ,.lut_pipe3_prdy  (lut_x_out_prdy)               //|< w
   ,.lut_pipe2_pvld  (lut_pipe2_pvld)               //|< w
   ,.lut_pipe2_x     (lut_pipe2_x[31:0])            //|< w
-  ,.lut_final_x     (lut_final_x[31:0])            //|> w
+  ,.lut_pipe3_x     (lut_final_x[31:0])            //|> w
   ,.lut_pipe2_prdy  (lut_pipe2_prdy)               //|> w
-  ,.lut_pipe3_pvld  (lut_pipe3_pvld)               //|> w *
+  ,.lut_pipe3_pvld  (lut_x_out_pvld)               //|> w 
   );
 
 
@@ -236,8 +195,8 @@ NV_NVDLA_SDP_HLS_lut_line #(.LUT_DEPTH(257 )) lut_lo_line (
    .cfg_lut_sel     (cfg_lut_lo_index_select[7:0]) //|< i
   ,.cfg_lut_start   (cfg_lut_lo_start[31:0])       //|< i
   ,.idx_data_in     (lut_data_in[31:0])            //|< i
-  ,.idx_in_pvld     (lut_in_pvld)                  //|< i
-  ,.idx_out_prdy    (lut_final_prdy)               //|< w
+  ,.idx_in_pvld     (lo_line_in_pvld)              //|< i
+  ,.idx_out_prdy    (lo_line_out_prdy)             //|< w
   ,.nvdla_core_clk  (nvdla_core_clk)               //|< i
   ,.nvdla_core_rstn (nvdla_core_rstn)              //|< i
   ,.idx_in_prdy     (lo_line_in_prdy)              //|> w
@@ -248,11 +207,21 @@ NV_NVDLA_SDP_HLS_lut_line #(.LUT_DEPTH(257 )) lut_lo_line (
   ,.lut_uflow_out   (lo_line_uflow)                //|> w
   );
 
-assign  le_expn_in_pvld  = (cfg_lut_le_function == 0 ) ? lut_in_pvld : 1'b0;
-assign  le_line_in_pvld  = (cfg_lut_le_function != 0 ) ? lut_in_pvld : 1'b0;
 
-assign  le_expn_out_prdy = (cfg_lut_le_function == 0 ) ? lut_final_prdy : 1'b1;
-assign  le_line_out_prdy = (cfg_lut_le_function != 0 ) ? lut_final_prdy : 1'b1;
+//sync lut_x_in, le_in,lo_in 
+assign  le_expn_in_pvld  = (cfg_lut_le_function == 0 ) & lut_in_pvld & lo_line_in_prdy & lut_x_in_prdy;
+assign  le_line_in_pvld  = (cfg_lut_le_function != 0 ) & lut_in_pvld & lo_line_in_prdy & lut_x_in_prdy;
+assign  lo_line_in_pvld  = ((cfg_lut_le_function == 0 ) ? le_expn_in_prdy  : le_line_in_prdy ) & lut_in_pvld & lut_x_in_prdy;
+assign  lut_x_in_pvld    = ((cfg_lut_le_function == 0 ) ? le_expn_in_prdy  : le_line_in_prdy ) & lut_in_pvld & lo_line_in_prdy;
+assign  lut_in_prdy      = ((cfg_lut_le_function == 0 ) ? le_expn_in_prdy  : le_line_in_prdy ) & lo_line_in_prdy & lut_x_in_prdy;
+
+//sync lut_x_out, le_out,lo_out 
+assign  le_expn_out_prdy = (cfg_lut_le_function == 0 ) & lut_final_prdy & lo_line_out_pvld & lut_x_out_pvld;
+assign  le_line_out_prdy = (cfg_lut_le_function != 0 ) & lut_final_prdy & lo_line_out_pvld & lut_x_out_pvld;
+assign  lo_line_out_prdy = ((cfg_lut_le_function == 0 ) ? le_expn_out_pvld : le_line_out_pvld) & lut_final_prdy & lut_x_out_pvld;
+assign  lut_x_out_prdy   = ((cfg_lut_le_function == 0 ) ? le_expn_out_pvld : le_line_out_pvld) & lut_final_prdy & lo_line_out_pvld;
+assign  lut_final_pvld   = ((cfg_lut_le_function == 0 ) ? le_expn_out_pvld : le_line_out_pvld) & lo_line_out_pvld & lut_x_out_pvld;
+
 
 assign  le_expn_data_in[31:0]         = (cfg_lut_le_function == 0 ) ? lut_data_in[31:0] : {32  {1'b0}};
 assign  le_expn_cfg_start[31:0]      = (cfg_lut_le_function == 0 ) ? cfg_lut_le_start[31:0] : {32 {1'b0}};
@@ -262,8 +231,6 @@ assign  le_line_data_in[31:0]      = (cfg_lut_le_function != 0 ) ? lut_data_in[3
 assign  le_line_cfg_start[31:0]   = (cfg_lut_le_function != 0 ) ? cfg_lut_le_start[31:0] : {32 {1'b0}};
 assign  le_line_cfg_sel[7:0] = (cfg_lut_le_function != 0 ) ? cfg_lut_le_index_select[7:0] : {8 {1'b0}};
 
-assign  lut_in_prdy    = ((cfg_lut_le_function == 0 ) ? le_expn_in_prdy  : le_line_in_prdy ) & lo_line_in_prdy;
-assign  lut_final_pvld = ((cfg_lut_le_function == 0 ) ? le_expn_out_pvld : le_line_out_pvld) & lo_line_out_pvld;
 
 assign  le_oflow = (cfg_lut_le_function == 0 ) ? le_expn_oflow : le_line_oflow; 
 assign  le_uflow = (cfg_lut_le_function == 0 ) ? le_expn_uflow : le_line_uflow; 
@@ -365,27 +332,27 @@ endmodule // NV_NVDLA_SDP_HLS_Y_int_idx
 
 
 // **************************************************************************************************************
-// Generated by ::pipe -m -bc -rand none -is lut_pipe_x[31:0]  (lut_pipe_pvld,lut_pipe_prdy)   <= lut_data_in[31:0] (lut_in_pvld,lut_in_xrdy)
+// Generated by ::pipe -m -bc -rand none -is lut_pipe_x[31:0]  (lut_pipe_pvld,lut_pipe_prdy)   <= lut_data_in[31:0] (lut_x_in_pvld,lut_x_in_prdy)
 // **************************************************************************************************************
 module NV_NVDLA_SDP_HLS_Y_INT_IDX_pipe_p1 (
    nvdla_core_clk
   ,nvdla_core_rstn
   ,lut_data_in
-  ,lut_in_pvld
+  ,lut_x_in_pvld
   ,lut_pipe_prdy
-  ,lut_in_xrdy
+  ,lut_x_in_prdy
   ,lut_pipe_pvld
   ,lut_pipe_x
   );
 input         nvdla_core_clk;
 input         nvdla_core_rstn;
 input  [31:0] lut_data_in;
-input         lut_in_pvld;
+input         lut_x_in_pvld;
 input         lut_pipe_prdy;
-output        lut_in_xrdy;
+output        lut_x_in_prdy;
 output        lut_pipe_pvld;
 output [31:0] lut_pipe_x;
-reg           lut_in_xrdy;
+reg           lut_x_in_prdy;
 reg           lut_pipe_pvld;
 reg    [31:0] lut_pipe_x;
 reg    [31:0] p1_pipe_data;
@@ -402,23 +369,23 @@ reg           p1_skid_ready_flop;
 reg           p1_skid_valid;
 //## pipe (1) skid buffer
 always @(
-  lut_in_pvld
+  lut_x_in_pvld
   or p1_skid_ready_flop
   or p1_skid_pipe_ready
   or p1_skid_valid
   ) begin
-  p1_skid_catch = lut_in_pvld && p1_skid_ready_flop && !p1_skid_pipe_ready;  
+  p1_skid_catch = lut_x_in_pvld && p1_skid_ready_flop && !p1_skid_pipe_ready;  
   p1_skid_ready = (p1_skid_valid)? p1_skid_pipe_ready : !p1_skid_catch;
 end
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
     p1_skid_valid <= 1'b0;
     p1_skid_ready_flop <= 1'b1;
-    lut_in_xrdy <= 1'b1;
+    lut_x_in_prdy <= 1'b1;
   end else begin
   p1_skid_valid <= (p1_skid_valid)? !p1_skid_pipe_ready : p1_skid_catch;
   p1_skid_ready_flop <= p1_skid_ready;
-  lut_in_xrdy <= p1_skid_ready;
+  lut_x_in_prdy <= p1_skid_ready;
   end
 end
 always @(posedge nvdla_core_clk) begin
@@ -428,12 +395,12 @@ always @(posedge nvdla_core_clk) begin
 end
 always @(
   p1_skid_ready_flop
-  or lut_in_pvld
+  or lut_x_in_pvld
   or p1_skid_valid
   or lut_data_in
   or p1_skid_data
   ) begin
-  p1_skid_pipe_valid = (p1_skid_ready_flop)? lut_in_pvld : p1_skid_valid; 
+  p1_skid_pipe_valid = (p1_skid_ready_flop)? lut_x_in_pvld : p1_skid_valid; 
   // VCS sop_coverage_off start
   p1_skid_pipe_data = (p1_skid_ready_flop)? lut_data_in[31:0] : p1_skid_data;
   // VCS sop_coverage_off end
@@ -504,7 +471,7 @@ wire p1_assert_clk = nvdla_core_clk;
 `endif // FV_ASSERT_ON
 `ifndef SYNTHESIS
   // VCS coverage off 
-  nv_assert_no_x #(0,1,0,"No X's allowed on control signals")      zzz_assert_no_x_1x (nvdla_core_clk, `ASSERT_RESET, nvdla_core_rstn, (lut_pipe_pvld^lut_pipe_prdy^lut_in_pvld^lut_in_xrdy)); // spyglass disable W504 SelfDeterminedExpr-ML 
+  nv_assert_no_x #(0,1,0,"No X's allowed on control signals")      zzz_assert_no_x_1x (nvdla_core_clk, `ASSERT_RESET, nvdla_core_rstn, (lut_pipe_pvld^lut_pipe_prdy^lut_x_in_pvld^lut_x_in_prdy)); // spyglass disable W504 SelfDeterminedExpr-ML 
   // VCS coverage on
 `endif
 `undef ASSERT_RESET
@@ -550,7 +517,7 @@ wire p1_assert_clk = nvdla_core_clk;
 `endif // SYNTHESIS
 `endif // FV_ASSERT_ON
   // VCS coverage off 
-  nv_assert_hold_throughout_event_interval #(0,1,0,"valid removed before ready")      zzz_assert_hold_throughout_event_interval_2x (nvdla_core_clk, `ASSERT_RESET, (lut_in_pvld && !lut_in_xrdy), (lut_in_pvld), (lut_in_xrdy)); // spyglass disable W504 SelfDeterminedExpr-ML 
+  nv_assert_hold_throughout_event_interval #(0,1,0,"valid removed before ready")      zzz_assert_hold_throughout_event_interval_2x (nvdla_core_clk, `ASSERT_RESET, (lut_x_in_pvld && !lut_x_in_prdy), (lut_x_in_pvld), (lut_x_in_prdy)); // spyglass disable W504 SelfDeterminedExpr-ML 
   // VCS coverage on
 `undef ASSERT_RESET
 `endif // ASSERT_ON
@@ -783,27 +750,27 @@ endmodule // NV_NVDLA_SDP_HLS_Y_INT_IDX_pipe_p2
 
 
 // **************************************************************************************************************
-// Generated by ::pipe -m -bc -rand none -is lut_final_x[31:0] (lut_pipe3_pvld,lut_final_prdy) <= lut_pipe2_x[31:0] (lut_pipe2_pvld,lut_pipe2_prdy)
+// Generated by ::pipe -m -bc -rand none -is lut_pipe3_x[31:0] (lut_pipe3_pvld,lut_pipe3_prdy) <= lut_pipe2_x[31:0] (lut_pipe2_pvld,lut_pipe2_prdy)
 // **************************************************************************************************************
 module NV_NVDLA_SDP_HLS_Y_INT_IDX_pipe_p3 (
    nvdla_core_clk
   ,nvdla_core_rstn
-  ,lut_final_prdy
+  ,lut_pipe3_prdy
   ,lut_pipe2_pvld
   ,lut_pipe2_x
-  ,lut_final_x
+  ,lut_pipe3_x
   ,lut_pipe2_prdy
   ,lut_pipe3_pvld
   );
 input         nvdla_core_clk;
 input         nvdla_core_rstn;
-input         lut_final_prdy;
+input         lut_pipe3_prdy;
 input         lut_pipe2_pvld;
 input  [31:0] lut_pipe2_x;
-output [31:0] lut_final_x;
+output [31:0] lut_pipe3_x;
 output        lut_pipe2_prdy;
 output        lut_pipe3_pvld;
-reg    [31:0] lut_final_x;
+reg    [31:0] lut_pipe3_x;
 reg           lut_pipe2_prdy;
 reg           lut_pipe3_pvld;
 reg    [31:0] p3_pipe_data;
@@ -883,12 +850,12 @@ end
 //## pipe (3) output
 always @(
   p3_pipe_valid
-  or lut_final_prdy
+  or lut_pipe3_prdy
   or p3_pipe_data
   ) begin
   lut_pipe3_pvld = p3_pipe_valid;
-  p3_pipe_ready = lut_final_prdy;
-  lut_final_x[31:0] = p3_pipe_data;
+  p3_pipe_ready = lut_pipe3_prdy;
+  lut_pipe3_x[31:0] = p3_pipe_data;
 end
 //## pipe (3) assertions/testpoints
 `ifndef VIVA_PLUGIN_PIPE_DISABLE_ASSERTIONS
@@ -922,7 +889,7 @@ wire p3_assert_clk = nvdla_core_clk;
 `endif // FV_ASSERT_ON
 `ifndef SYNTHESIS
   // VCS coverage off 
-  nv_assert_no_x #(0,1,0,"No X's allowed on control signals")      zzz_assert_no_x_5x (nvdla_core_clk, `ASSERT_RESET, nvdla_core_rstn, (lut_pipe3_pvld^lut_final_prdy^lut_pipe2_pvld^lut_pipe2_prdy)); // spyglass disable W504 SelfDeterminedExpr-ML 
+  nv_assert_no_x #(0,1,0,"No X's allowed on control signals")      zzz_assert_no_x_5x (nvdla_core_clk, `ASSERT_RESET, nvdla_core_rstn, (lut_pipe3_pvld^lut_pipe3_prdy^lut_pipe2_pvld^lut_pipe2_prdy)); // spyglass disable W504 SelfDeterminedExpr-ML 
   // VCS coverage on
 `endif
 `undef ASSERT_RESET
