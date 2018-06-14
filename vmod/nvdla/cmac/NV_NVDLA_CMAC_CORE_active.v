@@ -95,15 +95,15 @@ input   [CMAC_ATOMK_HALF-1:0] in_wt_sel;
 //: reg  [CMAC_BPE*CMAC_ATOMC-1:0]  dat_actv_data_reg${i};
 //: )
 //: }
-reg    [CMAC_BPE*CMAC_ATOMC-1:0]    dat_pre_data_w;
+wire   [CMAC_BPE*CMAC_ATOMC-1:0]    dat_pre_data_w;
 wire   [CMAC_ATOMC-1:0]             dat_pre_mask_w;
 reg    [CMAC_ATOMC-1:0]             dat_pre_nz_w;
 reg                                 dat_pre_stripe_end;
 reg                                 dat_pre_stripe_st;
 reg    [CMAC_BPE*CMAC_ATOMC-1:0]    wt_pre_data;
-reg    [CMAC_BPE*CMAC_ATOMC-1:0]    wt_pre_data_w;
+wire   [CMAC_BPE*CMAC_ATOMC-1:0]    wt_pre_data_w;
 reg    [CMAC_ATOMC-1:0]             wt_pre_mask;
-reg    [CMAC_ATOMC-1:0]             wt_pre_mask_w;
+wire   [CMAC_ATOMC-1:0]             wt_pre_mask_w;
 reg    [CMAC_ATOMC-1:0]             wt_pre_nz_w;
 
 

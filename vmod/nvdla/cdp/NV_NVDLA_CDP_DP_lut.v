@@ -94,14 +94,14 @@ reg           lut2intp_pvld;
 //: my $k = NVDLA_CDP_THROUGHPUT;
 //: foreach my $m  (0..$k-1) {
 //:     print qq(
-//:         reg    [31:0] lut2intp_X_data_${m}0;
-//:         reg    [16:0] lut2intp_X_data_${m}0_17b;
-//:         reg    [31:0] lut2intp_X_data_${m}1;
-//:         reg    [19:0] lut2intp_X_info_${m};
+//:         wire   [31:0] lut2intp_X_data_${m}0;
+//:         wire   [16:0] lut2intp_X_data_${m}0_17b;
+//:         wire   [31:0] lut2intp_X_data_${m}1;
+//:         wire   [19:0] lut2intp_X_info_${m};
 //:     );
 //: }
-reg     [NVDLA_CDP_THROUGHPUT-1:0] lut2intp_X_sel;
-reg     [NVDLA_CDP_THROUGHPUT-1:0] lut2intp_Y_sel;
+wire    [NVDLA_CDP_THROUGHPUT-1:0] lut2intp_X_sel;
+wire    [NVDLA_CDP_THROUGHPUT-1:0] lut2intp_Y_sel;
 reg     [NVDLA_CDP_THROUGHPUT-1:0] lutX_sel;
 reg     [NVDLA_CDP_THROUGHPUT-1:0] lutY_sel;
 //: my $k = NVDLA_CDP_THROUGHPUT;

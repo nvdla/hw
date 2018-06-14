@@ -25,8 +25,8 @@ input        reg2dp_conv_mode;
 input        reg2dp_op_en;
 output       cfg_is_wg;
 output       cfg_reg_en;
-reg          cfg_is_wg_w;
-reg          cfg_reg_en_w;
+wire         cfg_is_wg_w;
+wire         cfg_reg_en_w;
 
 
 //: &eperl::flop(" -q  op_en_d1  -d \"reg2dp_op_en\" -clk nvdla_core_clk -rst nvdla_core_rstn "); 

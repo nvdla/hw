@@ -95,7 +95,7 @@ reg            cv_dma_wr_rsp_complete;
 reg            cv_pending;
 reg            dat_en;
 reg     [63:0] dma_req_addr;
-reg            dma_wr_rsp_complete;
+wire           dma_wr_rsp_complete;
 reg     [31:0] dp2reg_d0_perf_write_stall;
 reg     [31:0] dp2reg_d1_perf_write_stall;
 //: my $jx = NVDLA_MEMORY_ATOMIC_SIZE*NVDLA_BPE;

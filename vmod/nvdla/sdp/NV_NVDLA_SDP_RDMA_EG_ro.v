@@ -87,7 +87,7 @@ wire           is_batch_end;
 reg     [12:0] count_h;
 reg     [12:0] count_w;
 reg     [13-AM_AW:0] count_c;
-reg            is_last_beat;
+wire           is_last_beat;
 wire           is_cube_end;
 wire           is_last_c;
 wire           is_last_h;
@@ -131,7 +131,7 @@ reg            out_vld_1bpe;
 reg            out_vld_2bpe;
 wire           out_accept;
 wire           out_rdy;
-reg            out_vld;
+wire           out_vld;
 wire   [AM_DW2:0] out_pd;
 
 
