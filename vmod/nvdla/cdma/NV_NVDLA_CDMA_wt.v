@@ -259,8 +259,8 @@ reg            dbg_src_rd_ptr;
 reg            dbg_src_wr_ptr;
 reg     [31:0] dbg_wmb_kernel_bits;
 reg     [31:0] dbg_wt_kernel_bytes;
-reg      [3:0] dma_req_size;
-reg      [2:0] dma_req_size_out;
+wire      [3:0] dma_req_size;
+wire      [2:0] dma_req_size_out;
 
 //: my $mask = NVDLA_CDMA_MEM_MASK_BIT;
 //: my $atmm = (NVDLA_MEMORY_ATOMIC_SIZE * NVDLA_BPE);
@@ -273,7 +273,7 @@ reg      [2:0] dma_req_size_out;
 //:     );
 //: foreach my $i(0..$mask-1) {
 //:     print qq(
-//:         reg    [${atmm}-1:0] dma_rsp_data_p${i};
+//:         wire    [${atmm}-1:0] dma_rsp_data_p${i};
 //:     );
 //: }
 wire   [NVDLA_CDMA_DMAIF_BW-1:0] wt_cbuf_wr_data_ori_w;
@@ -281,7 +281,7 @@ wire   [NVDLA_CDMA_DMAIF_BW-1:0] wt_cbuf_wr_data_w;
 reg    [NVDLA_CDMA_DMAIF_BW-1:0] cdma2buf_wt_wr_data;
 wire   [NVDLA_CDMA_DMAIF_BW-1:0] wmb_cbuf_wr_data_w;
 wire   [NVDLA_CDMA_DMAIF_BW-1:0] cdma2buf_wt_wr_data_w;
-reg      [3:0] dma_rsp_size;
+wire      [3:0] dma_rsp_size;
 reg      [3:0] dma_rsp_size_cnt;
 wire     [31:0] dp2reg_wt_rd_latency=32'd0;
 reg     [31:0] dp2reg_wt_rd_stall;
@@ -301,8 +301,8 @@ reg     [10:0] ltc_1_cnt_mod;
 reg     [10:0] ltc_1_cnt_new;
 reg     [10:0] ltc_1_cnt_nxt;
 reg      [8:0] ltc_1_cnt_cur;
-reg            ltc_1_dec;
-reg            ltc_1_inc;
+wire            ltc_1_dec;
+wire            ltc_1_inc;
 reg            ltc_2_adv;
 reg     [33:0] ltc_2_cnt_dec;
 reg     [33:0] ltc_2_cnt_ext;
@@ -622,7 +622,7 @@ wire           wt_local_data_vld_w;
 //:     wire    [64-${atmbw}-1:0] wt_req_addr_w;
 //:     reg     [64-${atmbw}-1:0] wt_req_addr_d2;
 //:     reg     [64-${atmbw}-1:0] wt_req_addr_d3;
-//:     reg     [64-${atmbw}-1:0] dma_req_addr;
+//:     wire     [64-${atmbw}-1:0] dma_req_addr;
 //:     wire    [64-${atmbw}-1-3:0] wt_req_addr_inc;
 //:     wire    [64-${atmbw}-1:0] wmb_req_addr_w;
 //:     reg     [64-${atmbw}-1:0] wmb_req_addr_d2;

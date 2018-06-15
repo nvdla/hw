@@ -206,8 +206,8 @@ input         status2dma_fsm_switch;
 //:          output               img2sbuf_p${i}_wr_en  ;  
 //:          output [7:0]         img2sbuf_p${i}_wr_addr;
 //:          output [${atmm}-1:0] img2sbuf_p${i}_wr_data;
-//:          output reg           img2sbuf_p${i}_rd_en;
-//:          output reg [7:0]     img2sbuf_p${i}_rd_addr;
+//:          output               img2sbuf_p${i}_rd_en;
+//:          output [7:0]         img2sbuf_p${i}_rd_addr;
 //:          input  [${atmm}-1:0] img2sbuf_p${i}_rd_data;
 //:     );
 //: }

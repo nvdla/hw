@@ -49,8 +49,8 @@ reg     [CSC_ATOMC*CSC_BPE-1:0] data_d1;
 reg     [CSC_ATOMC-1:0] mask_d1;
 //reg     [CSC_ATOMC-1:0] mask_d2_fp16_w;
 //reg     [CSC_ATOMC-1:0] mask_d2_int16_w;
-reg     [CSC_ATOMC-1:0] mask_d2_int8_w;
-reg     [CSC_ATOMC-1:0] mask_d2_w;
+wire     [CSC_ATOMC-1:0] mask_d2_int8_w;
+wire     [CSC_ATOMC-1:0] mask_d2_w;
 reg     [CSC_ATOMC-1:0] mask_d3;
 reg      [CSC_ATOMK-1:0] sel_d1;
 reg      [CSC_ATOMK-1:0] sel_d2;
@@ -73,7 +73,7 @@ reg             valid_d3;
 //:     }
 //:     my $k = $j - 1;
 //:     my $series_no = sprintf("%02d", $i);
-//:     print qq(reg       [${k}:0] vec_sum_${series_no};\n);
+//:     print qq(wire       [${k}:0] vec_sum_${series_no};\n);
 //:     print qq(reg       [${k}:0] vec_sum_${series_no}_d1;\n);
 //: }
 
