@@ -197,7 +197,7 @@ reg       [1:0] dat_req_sub_w_d2;
 reg             dat_req_sub_w_st_d1;
 reg             dat_req_sub_w_st_d2;
 reg             dat_req_valid_d1;
-reg    [CBUF_ENTRY_BITS-1:0] dat_rsp_l0_sft;
+wire    [CBUF_ENTRY_BITS-1:0] dat_rsp_l0_sft;
 reg    [CBUF_ENTRY_BITS-1:0] dat_rsp_l0_sft_d1;
 reg    [CBUF_ENTRY_BITS-1:0] dat_rsp_l0_sft_d2;
 reg    [CBUF_ENTRY_BITS-1:0] dat_rsp_l0_sft_d3;
