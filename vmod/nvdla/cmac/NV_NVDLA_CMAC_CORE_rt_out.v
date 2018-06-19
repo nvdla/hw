@@ -53,10 +53,10 @@ output                          dp2reg_done;
 output   [CMAC_ATOMK_HALF-1:0]  mac2accu_mask;
 output   [8:0]                  mac2accu_pd;
 output                          mac2accu_pvld;
-reg      [CMAC_ATOMK_HALF-1:0]  mac2accu_mask;
-reg      [8:0]                  mac2accu_pd;
-reg                             mac2accu_pvld;
-reg                             out_layer_done;
+wire      [CMAC_ATOMK_HALF-1:0]  mac2accu_mask;
+wire      [8:0]                  mac2accu_pd;
+wire                             mac2accu_pvld;
+wire                             out_layer_done;
 wire                            out_rt_done_d0;
 
 

@@ -410,7 +410,7 @@ wire           dma_rd_req_vld;
 //:     wire   [${M}-1:0] dma_rd_rsp_mask;
 //: );
 //: foreach my $k (0..$M-1) {
-//: print qq( reg    [${atmm}-1:0] dma_rsp_data_p${k}; \n);
+//: print qq( wire    [${atmm}-1:0] dma_rsp_data_p${k}; \n);
 //: }
 wire           dma_rd_rsp_rdy;
 wire           dma_rd_rsp_vld;

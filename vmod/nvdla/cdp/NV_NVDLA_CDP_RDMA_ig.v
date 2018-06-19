@@ -95,7 +95,7 @@ reg    [31:0] mon_gap_between_layers;
 reg           mon_layer_end_flg;
 reg           mon_op_en_dly;
 reg           mon_size_of_32x1_in_first_block_in_width_c;
-reg    [10:0] number_of_total_trans_in_width;
+wire    [10:0] number_of_total_trans_in_width;
 reg     [2:0] req_size;
 reg     [2:0] size_of_32x1_in_first_block_in_width;
 reg           stl_adv;

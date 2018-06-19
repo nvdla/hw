@@ -46,7 +46,7 @@ output        alu_op_prdy;
 output        alu_out_pvld;
 wire   [32:0] alu_sum;
 reg    [32:0] alu_dout;
-reg           mon_sum_c;
+wire           mon_sum_c;
 wire   [32:0] alu_data_ext;
 wire   [32:0] alu_data_final;
 wire   [31:0] alu_data_reg;

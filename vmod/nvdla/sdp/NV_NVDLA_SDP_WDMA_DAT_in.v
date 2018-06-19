@@ -178,10 +178,6 @@ wire           in_dat_accept;
 wire           in_dat_rdy;
 wire           is_last_beat;
 reg     [13:0] beat_count;
-reg            dfifo0_wr_en;
-reg            dfifo1_wr_en;
-reg            dfifo2_wr_en;
-reg            dfifo3_wr_en;
 wire   [AM_DW-1:0] dfifo0_wr_pd;
 wire           dfifo0_wr_prdy;
 wire           dfifo0_wr_pvld;
@@ -589,6 +585,11 @@ end
 assign in_dat_rdy = dfifo0_wr_rdy & dfifo1_wr_rdy & dfifo2_wr_rdy & dfifo3_wr_rdy;
 assign in_dat_accept = (dfifo0_wr_pvld & dfifo0_wr_prdy) | (dfifo1_wr_pvld & dfifo1_wr_prdy) | (dfifo2_wr_pvld & dfifo2_wr_prdy) | (dfifo3_wr_pvld & dfifo3_wr_prdy);
 
+
+reg            dfifo0_wr_en;
+reg            dfifo1_wr_en;
+reg            dfifo2_wr_en;
+reg            dfifo3_wr_en;
 // 4 FIFOs, 16B each, 64B in total
 // DATA FIFO WRITE SIDE
 always @(
@@ -768,10 +769,10 @@ assign dfifo3_wr_rdy = dfifo3_wr_en ? dfifo3_wr_prdy : 1'b1;
 assign in_dat_rdy = dfifo0_wr_rdy & dfifo1_wr_rdy & dfifo2_wr_rdy & dfifo3_wr_rdy;
 assign in_dat_accept = (dfifo0_wr_pvld & dfifo0_wr_prdy) | (dfifo1_wr_pvld & dfifo1_wr_prdy) | (dfifo2_wr_pvld & dfifo2_wr_prdy) | (dfifo3_wr_pvld & dfifo3_wr_prdy);
 
-assign dfifo0_wr_en = beat_count[1:0] == 2'h0;
-assign dfifo1_wr_en = beat_count[1:0] == 2'h1;
-assign dfifo2_wr_en = beat_count[1:0] == 2'h2;
-assign dfifo3_wr_en = beat_count[1:0] == 2'h3;
+wire dfifo0_wr_en = beat_count[1:0] == 2'h0;
+wire dfifo1_wr_en = beat_count[1:0] == 2'h1;
+wire dfifo2_wr_en = beat_count[1:0] == 2'h2;
+wire dfifo3_wr_en = beat_count[1:0] == 2'h3;
 
 assign dfifo0_wr_pvld = sdp_dp2wdma_valid & dfifo0_wr_en;
 assign dfifo0_wr_rdy  = dfifo0_wr_en ? dfifo0_wr_prdy : 1'b1;
