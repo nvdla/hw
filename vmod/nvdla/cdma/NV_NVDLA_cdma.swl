@@ -1,0 +1,2 @@
+waive -regexp -file NV_NVDLA_CDMA_wt.v -msg ".*width 17 should match right expression.*" -rule W362
+waive -regexp -file NV_NVDLA_CDMA_wt.v -msg ".*should be greater than rhs width 17.*" -rule W484
