@@ -202,7 +202,7 @@ void NV_NVDLA_cdp::CdpIntrThread() {
 
 void NV_NVDLA_cdp::CdpRdmaHardwareLayerExecutionTrigger () {
     cdp_rdma_kickoff_.notify();
-    wait(cdp_rdma_done_);
+    wait(cdp_done_);
 }
 
 void NV_NVDLA_cdp::CdpHardwareLayerExecutionTrigger () {
@@ -552,9 +552,139 @@ void NV_NVDLA_cdp::CdpDataPathSequence() {
                 for (atom_iter=0; atom_iter<atom_num; atom_iter++) {    // In W direction
                     int32_t idx;
                     int32_t pos = (round_iter * NVDLA_CDP_THROUGHPUT) % DLA_ATOM_SIZE;
-                    cslDebug((50, "CDP line_iter=%d surf_iter=%d round_iter=%d atom_iter=%d round_num=%d\n", line_iter, surf_iter, round_iter, atom_iter, round_num));
+
+                    cslDebug((50, "CDP line_iter=%d surf_iter=%d round_iter=%d atom_iter=%d round_num=%d processed_atom_num=%d\n", line_iter, surf_iter, round_iter, atom_iter, round_num, processed_atom_num));
+		    if(((line_iter == 0) && (surf_iter == 85) && (round_iter == 687) && (atom_iter == 0) && (round_num == 816)) || (processed_atom_num == 2312)) {
+		      cslDebug((70,"pos=%d, NVDLA_CDP_THROUGHPUT=%d, DLA_ATOM_SIZE=%d",pos,NVDLA_CDP_THROUGHPUT,DLA_ATOM_SIZE));
+		      cslDebug((70, " pre_buf[%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x]",
+				pre_calc_buffer[atom_iter][0] & 0xff,
+				pre_calc_buffer[atom_iter][1] & 0xff,
+				pre_calc_buffer[atom_iter][2] & 0xff,
+				pre_calc_buffer[atom_iter][3] & 0xff,
+				pre_calc_buffer[atom_iter][4] & 0xff,
+				pre_calc_buffer[atom_iter][5] & 0xff,
+				pre_calc_buffer[atom_iter][6] & 0xff,
+				pre_calc_buffer[atom_iter][7] & 0xff,
+				pre_calc_buffer[atom_iter][8] & 0xff,
+				pre_calc_buffer[atom_iter][9] & 0xff,
+				pre_calc_buffer[atom_iter][10] & 0xff,
+				pre_calc_buffer[atom_iter][11] & 0xff,
+				pre_calc_buffer[atom_iter][12] & 0xff,
+				pre_calc_buffer[atom_iter][13] & 0xff,
+				pre_calc_buffer[atom_iter][14] & 0xff,
+				pre_calc_buffer[atom_iter][15] & 0xff,
+				pre_calc_buffer[atom_iter][16] & 0xff,
+				pre_calc_buffer[atom_iter][17] & 0xff,
+				pre_calc_buffer[atom_iter][18] & 0xff,
+				pre_calc_buffer[atom_iter][19] & 0xff,
+				pre_calc_buffer[atom_iter][20] & 0xff,
+				pre_calc_buffer[atom_iter][21] & 0xff,
+				pre_calc_buffer[atom_iter][22] & 0xff,
+				pre_calc_buffer[atom_iter][23] & 0xff,
+				pre_calc_buffer[atom_iter][24] & 0xff,
+				pre_calc_buffer[atom_iter][25] & 0xff,
+				pre_calc_buffer[atom_iter][26] & 0xff,
+				pre_calc_buffer[atom_iter][27] & 0xff,
+				pre_calc_buffer[atom_iter][28] & 0xff,
+				pre_calc_buffer[atom_iter][29] & 0xff,
+				pre_calc_buffer[atom_iter][30] & 0xff,
+				pre_calc_buffer[atom_iter][31] & 0xff
+				));
+
+		      cslDebug((70, " cur_buf[%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x]",
+				cur_calc_buffer[atom_iter][0] & 0xff,
+				cur_calc_buffer[atom_iter][1] & 0xff,
+				cur_calc_buffer[atom_iter][2] & 0xff,
+				cur_calc_buffer[atom_iter][3] & 0xff,
+				cur_calc_buffer[atom_iter][4] & 0xff,
+				cur_calc_buffer[atom_iter][5] & 0xff,
+				cur_calc_buffer[atom_iter][6] & 0xff,
+				cur_calc_buffer[atom_iter][7] & 0xff,
+				cur_calc_buffer[atom_iter][8] & 0xff,
+				cur_calc_buffer[atom_iter][9] & 0xff,
+				cur_calc_buffer[atom_iter][10] & 0xff,
+				cur_calc_buffer[atom_iter][11] & 0xff,
+				cur_calc_buffer[atom_iter][12] & 0xff,
+				cur_calc_buffer[atom_iter][13] & 0xff,
+				cur_calc_buffer[atom_iter][14] & 0xff,
+				cur_calc_buffer[atom_iter][15] & 0xff,
+				cur_calc_buffer[atom_iter][16] & 0xff,
+				cur_calc_buffer[atom_iter][17] & 0xff,
+				cur_calc_buffer[atom_iter][18] & 0xff,
+				cur_calc_buffer[atom_iter][19] & 0xff,
+				cur_calc_buffer[atom_iter][20] & 0xff,
+				cur_calc_buffer[atom_iter][21] & 0xff,
+				cur_calc_buffer[atom_iter][22] & 0xff,
+				cur_calc_buffer[atom_iter][23] & 0xff,
+				cur_calc_buffer[atom_iter][24] & 0xff,
+				cur_calc_buffer[atom_iter][25] & 0xff,
+				cur_calc_buffer[atom_iter][26] & 0xff,
+				cur_calc_buffer[atom_iter][27] & 0xff,
+				cur_calc_buffer[atom_iter][28] & 0xff,
+				cur_calc_buffer[atom_iter][29] & 0xff,
+				cur_calc_buffer[atom_iter][30] & 0xff,
+				cur_calc_buffer[atom_iter][31] & 0xff
+				));
+
+		      cslDebug((70, " nxt_buf[%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x,%02x]",
+				nxt_calc_buffer[atom_iter][0] & 0xff,
+				nxt_calc_buffer[atom_iter][1] & 0xff,
+				nxt_calc_buffer[atom_iter][2] & 0xff,
+				nxt_calc_buffer[atom_iter][3] & 0xff,
+				nxt_calc_buffer[atom_iter][4] & 0xff,
+				nxt_calc_buffer[atom_iter][5] & 0xff,
+				nxt_calc_buffer[atom_iter][6] & 0xff,
+				nxt_calc_buffer[atom_iter][7] & 0xff,
+				nxt_calc_buffer[atom_iter][8] & 0xff,
+				nxt_calc_buffer[atom_iter][9] & 0xff,
+				nxt_calc_buffer[atom_iter][10] & 0xff,
+				nxt_calc_buffer[atom_iter][11] & 0xff,
+				nxt_calc_buffer[atom_iter][12] & 0xff,
+				nxt_calc_buffer[atom_iter][13] & 0xff,
+				nxt_calc_buffer[atom_iter][14] & 0xff,
+				nxt_calc_buffer[atom_iter][15] & 0xff,
+				nxt_calc_buffer[atom_iter][16] & 0xff,
+				nxt_calc_buffer[atom_iter][17] & 0xff,
+				nxt_calc_buffer[atom_iter][18] & 0xff,
+				nxt_calc_buffer[atom_iter][19] & 0xff,
+				nxt_calc_buffer[atom_iter][20] & 0xff,
+				nxt_calc_buffer[atom_iter][21] & 0xff,
+				nxt_calc_buffer[atom_iter][22] & 0xff,
+				nxt_calc_buffer[atom_iter][23] & 0xff,
+				nxt_calc_buffer[atom_iter][24] & 0xff,
+				nxt_calc_buffer[atom_iter][25] & 0xff,
+				nxt_calc_buffer[atom_iter][26] & 0xff,
+				nxt_calc_buffer[atom_iter][27] & 0xff,
+				nxt_calc_buffer[atom_iter][28] & 0xff,
+				nxt_calc_buffer[atom_iter][29] & 0xff,
+				nxt_calc_buffer[atom_iter][30] & 0xff,
+				nxt_calc_buffer[atom_iter][31] & 0xff
+				));
+			
+		      }
                     for(idx=pos-4;idx<=pos+(NVDLA_CDP_THROUGHPUT-1)+4;idx++) {
                         int32_t data_idx = idx-(pos-4);
+			if((line_iter == 0) && (surf_iter == 85) && (round_iter == 687) && (atom_iter == 0) && (round_num == 816)/* && (processed_atom_num == 2312)*/) {
+			  cslDebug((70, "data_idx=%d-- %02x, %02x, %02x, %02x, %02x, %02x, %02x, %02x, %02x, %02x, %02x, %02x, %02x, %02x, %02x", data_idx,
+				    data_to_hls_i8[0] & 0xff,
+				    data_to_hls_i8[1] & 0xff,
+				    data_to_hls_i8[2] & 0xff,
+				    data_to_hls_i8[3] & 0xff,
+				    data_to_hls_i8[4] & 0xff,
+				    data_to_hls_i8[5] & 0xff,
+				    data_to_hls_i8[6] & 0xff,
+				    data_to_hls_i8[7] & 0xff,
+				    data_to_hls_i8[8] & 0xff,
+				    data_to_hls_i8[9] & 0xff,
+				    data_to_hls_i8[10] & 0xff,
+				    data_to_hls_i8[11] & 0xff,
+				    data_to_hls_i8[12] & 0xff,
+				    data_to_hls_i8[13] & 0xff,
+				    data_to_hls_i8[14] & 0xff,
+				    data_to_hls_i8[15] & 0xff
+				    ));
+			}
+			
                         if(idx<0)
                             data_to_hls_i8[data_idx] = pre_calc_buffer[atom_iter][DLA_ATOM_SIZE+idx];
                         else if(idx<DLA_ATOM_SIZE)
@@ -872,12 +1002,15 @@ void NV_NVDLA_cdp::WaitUntilWdmaBufferAvailableSizeGreaterThan(uint32_t num) {
 void NV_NVDLA_cdp::SendDmaReadRequest(nvdla_dma_rd_req_t* payload, sc_time& delay, uint8_t src_ram_type) {
     cslDebug((50, "NV_NVDLA_cdp::SendDmaReadRequest, start.\n"));
     if ( (NVDLA_CDP_RDMA_D_SRC_DMA_CFG_0_SRC_RAM_TYPE_MC) == src_ram_type ) {
+      cslDebug((70, "send req to mcif -%d, ram_type-%d\n",dbg_atom_idx,src_ram_type));
         NV_NVDLA_cdp_base::cdp2mcif_rd_req_b_transport(payload, dma_delay_);
     } else {
+      cslDebug((70, "send req to cvif -%d, ram_type-%d\n",dbg_atom_idx,src_ram_type));
         NV_NVDLA_cdp_base::cdp2cvif_rd_req_b_transport(payload, dma_delay_);
     }
     cslDebug((50, "NV_NVDLA_cdp::SendDmaReadRequest, end.\n"));
 }
+
 
 void NV_NVDLA_cdp::ExtractRdmaResponsePayload(nvdla_dma_rd_rsp_t* payload){
     // Extract data from payload
@@ -885,6 +1018,7 @@ void NV_NVDLA_cdp::ExtractRdmaResponsePayload(nvdla_dma_rd_rsp_t* payload){
     uint8_t *payload_data_ptr;
     int8_t *rdma_atom_cube_ptr;
     uint8_t mask;
+
     cslDebug((50, "NV_NVDLA_cdp::ExtractRdmaResponsePayload, get a dma read response payload\n"));
     mask = payload->pd.dma_read_data.mask;
     payload_data_ptr    = reinterpret_cast <uint8_t *> (payload->pd.dma_read_data.data);
@@ -913,23 +1047,61 @@ void NV_NVDLA_cdp::ExtractRdmaResponsePayload(nvdla_dma_rd_rsp_t* payload){
                 }
             }
 
-            cslDebug((70, "write to rdma_buffer. atom:%d\n", atom_iter));
-            for(int i=0;i<DLA_ATOM_SIZE;i++)
+            cslDebug((70, "write to rdma_buffer. dbg_atom_idx=%d, atom:%d\n",dbg_atom_idx, atom_iter));
+	    //            for(int i=0;i<DLA_ATOM_SIZE;i++)
             {
-                cslDebug((70, "%02x ", rdma_atom_cube_ptr[i]));
+	      cslDebug((70, "%02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x",
+			rdma_atom_cube_ptr[0],
+			rdma_atom_cube_ptr[1],
+			rdma_atom_cube_ptr[2],
+			rdma_atom_cube_ptr[3],
+			rdma_atom_cube_ptr[4],
+			rdma_atom_cube_ptr[5],
+			rdma_atom_cube_ptr[6],
+			rdma_atom_cube_ptr[7],
+			rdma_atom_cube_ptr[8],
+			rdma_atom_cube_ptr[9],
+			rdma_atom_cube_ptr[10],
+			rdma_atom_cube_ptr[11],
+			rdma_atom_cube_ptr[12],
+			rdma_atom_cube_ptr[13],
+			rdma_atom_cube_ptr[14],
+			rdma_atom_cube_ptr[15],
+			rdma_atom_cube_ptr[16],
+			rdma_atom_cube_ptr[17],
+			rdma_atom_cube_ptr[18],
+			rdma_atom_cube_ptr[19],
+			rdma_atom_cube_ptr[20],
+			rdma_atom_cube_ptr[21],
+			rdma_atom_cube_ptr[22],
+			rdma_atom_cube_ptr[23],
+			rdma_atom_cube_ptr[24],
+			rdma_atom_cube_ptr[25],
+			rdma_atom_cube_ptr[26],
+			rdma_atom_cube_ptr[27],
+			rdma_atom_cube_ptr[28],
+			rdma_atom_cube_ptr[29],
+			rdma_atom_cube_ptr[30],
+			rdma_atom_cube_ptr[31]
+			));
             }
             cslDebug((70, "\n"));
             rdma_fifo_->write(rdma_atom_cube_ptr);
+	    dbg_atom_idx++;
         }
     }
 }
 
 void NV_NVDLA_cdp::mcif2cdp_rd_rsp_b_transport(int ID, nvdla_dma_rd_rsp_t* payload, sc_core::sc_time& delay){
-    ExtractRdmaResponsePayload(payload);
+  cslDebug((70, "mcif call in -%d\n",dbg_atom_idx));
+  ExtractRdmaResponsePayload(payload);
+  cslDebug((70, "mcif call out %d\n",dbg_atom_idx));
 }
 
 void NV_NVDLA_cdp::cvif2cdp_rd_rsp_b_transport(int ID, nvdla_dma_rd_rsp_t* payload, sc_core::sc_time&){
+    cslDebug((70, "cvif call in -%d\n",dbg_atom_idx));
     ExtractRdmaResponsePayload(payload);
+    cslDebug((70, "cvif call out -%d\n",dbg_atom_idx));
 }
 
 void NV_NVDLA_cdp::SendDmaWriteRequest(nvdla_dma_wr_req_t* payload, sc_time& delay, uint8_t dst_ram_type,bool ack_required) {

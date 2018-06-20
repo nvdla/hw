@@ -210,6 +210,9 @@ class NV_NVDLA_cdp:
         uint32_t    txn_r;
         uint32_t    txn_w; 
 
+	uint32_t dbg_atom_idx = 0;
+
+
 };
 
 SCSIM_NAMESPACE_END()
