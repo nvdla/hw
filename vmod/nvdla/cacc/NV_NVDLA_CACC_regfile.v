@@ -50,7 +50,7 @@ output  [4:0] reg2dp_batches;
 output  [4:0] reg2dp_clip_truncate;
 output        reg2dp_conv_mode;
 output [31:0] reg2dp_cya;
-output [26:0] reg2dp_dataout_addr;
+output [31:0] reg2dp_dataout_addr;
 output [12:0] reg2dp_dataout_channel;
 output [12:0] reg2dp_dataout_height;
 output [12:0] reg2dp_dataout_width;
@@ -80,7 +80,7 @@ wire    [4:0] reg2dp_d0_batches;
 wire    [4:0] reg2dp_d0_clip_truncate;
 wire          reg2dp_d0_conv_mode;
 wire   [31:0] reg2dp_d0_cya;
-wire   [26:0] reg2dp_d0_dataout_addr;
+wire   [31:0] reg2dp_d0_dataout_addr;
 wire   [12:0] reg2dp_d0_dataout_channel;
 wire   [12:0] reg2dp_d0_dataout_height;
 wire   [12:0] reg2dp_d0_dataout_width;
@@ -94,7 +94,7 @@ wire    [4:0] reg2dp_d1_batches;
 wire    [4:0] reg2dp_d1_clip_truncate;
 wire          reg2dp_d1_conv_mode;
 wire   [31:0] reg2dp_d1_cya;
-wire   [26:0] reg2dp_d1_dataout_addr;
+wire   [31:0] reg2dp_d1_dataout_addr;
 wire   [12:0] reg2dp_d1_dataout_channel;
 wire   [12:0] reg2dp_d1_dataout_height;
 wire   [12:0] reg2dp_d1_dataout_width;
@@ -149,7 +149,7 @@ reg           reg2dp_d0_op_en;
 reg           reg2dp_d0_op_en_w;
 reg           reg2dp_d1_op_en;
 reg           reg2dp_d1_op_en_w;
-reg    [26:0] reg2dp_dataout_addr;
+reg    [31:0] reg2dp_dataout_addr;
 reg    [12:0] reg2dp_dataout_channel;
 reg    [12:0] reg2dp_dataout_height;
 reg    [12:0] reg2dp_dataout_width;
@@ -193,7 +193,7 @@ NV_NVDLA_CACC_dual_reg u_dual_reg_d0 (
   ,.batches         (reg2dp_d0_batches[4:0])          //|> w
   ,.clip_truncate   (reg2dp_d0_clip_truncate[4:0])    //|> w
   ,.cya             (reg2dp_d0_cya[31:0])             //|> w
-  ,.dataout_addr    (reg2dp_d0_dataout_addr[26:0])    //|> w
+  ,.dataout_addr    (reg2dp_d0_dataout_addr[31:0])    //|> w
   ,.line_packed     (reg2dp_d0_line_packed)           //|> w
   ,.surf_packed     (reg2dp_d0_surf_packed)           //|> w
   ,.dataout_height  (reg2dp_d0_dataout_height[12:0])  //|> w
@@ -218,7 +218,7 @@ NV_NVDLA_CACC_dual_reg u_dual_reg_d1 (
   ,.batches         (reg2dp_d1_batches[4:0])          //|> w
   ,.clip_truncate   (reg2dp_d1_clip_truncate[4:0])    //|> w
   ,.cya             (reg2dp_d1_cya[31:0])             //|> w
-  ,.dataout_addr    (reg2dp_d1_dataout_addr[26:0])    //|> w
+  ,.dataout_addr    (reg2dp_d1_dataout_addr[31:0])    //|> w
   ,.line_packed     (reg2dp_d1_line_packed)           //|> w
   ,.surf_packed     (reg2dp_d1_surf_packed)           //|> w
   ,.dataout_height  (reg2dp_d1_dataout_height[12:0])  //|> w

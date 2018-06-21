@@ -10,6 +10,7 @@ Getopt::Long::config('no_auto_abbrev',
                      'no_ignore_case',
                      'no_ignore_case_always');
 
+my $outdir = "small_rams" ;
 my $width  = "" ;
 my $depth  = "" ;
 my $module = "" ;
@@ -24,6 +25,7 @@ my $we_name  = "" ;
 my $di_name  = "" ;
 
 my %opt_ctl = (
+                "o|outdir=s" => \$outdir,
                 "w|width=s"  => \$width,
                 "d|depth=s"  => \$depth,
                 "m|module=s" => \$module,
@@ -61,7 +63,7 @@ if ($module ne "") {
  }
 }
 elsif(($depth ne "") && ($width ne "")) {
-   $module =  join "", "nv_ram_",$ram_name,"_",$depth,"x",$width,"_dlarr"; 
+   $module =  join "", "nv_ram_",$ram_name,"_",$depth,"x",$width; 
    print "$module\n";
 }
 else {
@@ -70,7 +72,7 @@ else {
 }
 
 
-open(OUT_FILE, ">$module.v") || die "Cannot open target file $module.v!";
+open(OUT_FILE, ">$outdir/$module.v") || die "Cannot open target file $module.v!";
 
 my @ports = ();
 my $addrw_raw = log($depth)/log(2); 
@@ -198,7 +200,7 @@ if(!defined($module)&& (!defined($width) || !defined($depth))) {
 sub print_usage {
     print STDERR "
 Usage1:  $0 -m <module_name>;
-Example: dla_ramgen -m nv_ram_rws_32x16_dlarr 
+Example: dla_ramgen -m nv_ram_rws_32x16 
 Usage2:  $0 -w <width> -d <depth>  -t <option.ram type: 0,rws; 1,rwst; 2,rwsp; 3,rwsthp>;
 Example: dla_ramgen -d 32 -w 16 
          dla_ramgen -d 32 -w 16 -t 0

@@ -481,7 +481,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     brdma_data_mode <= 1'b0;
     brdma_data_size <= 1'b0;
     brdma_data_use[1:0] <= 2'b00;
-    brdma_disable <= 1'b0;
+    brdma_disable <= 1'b1;
     brdma_ram_type <= 1'b0;
     bs_base_addr_high[31:0] <= 32'h0;
     bs_base_addr_low[31:0] <= {(32){1'b0}};
@@ -494,7 +494,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     erdma_data_mode <= 1'b0;
     erdma_data_size <= 1'b0;
     erdma_data_use[1:0] <= 2'b00;
-    erdma_disable <= 1'b0;
+    erdma_disable <= 1'b1;
     erdma_ram_type <= 1'b0;
     ew_base_addr_high[31:0] <= 32'h0;
     ew_base_addr_low[31:0] <= {(32){1'b0}};
@@ -510,7 +510,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     nrdma_data_mode <= 1'b0;
     nrdma_data_size <= 1'b0;
     nrdma_data_use[1:0] <= 2'b00;
-    nrdma_disable <= 1'b0;
+    nrdma_disable <= 1'b1;
     nrdma_ram_type <= 1'b0;
     perf_dma_en <= 1'b0;
     perf_nan_inf_count_en <= 1'b0;

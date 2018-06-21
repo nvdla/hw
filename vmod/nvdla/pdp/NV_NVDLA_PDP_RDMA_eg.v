@@ -71,7 +71,7 @@ input [31:0] pwrbus_ram_pd;
 
 reg     [13:0] beat_cnt;
 wire           dma_rd_rsp_rdy;
-wire            dp2reg_done_flag;
+wire           dp2reg_done_flag;
 reg     [NVDLA_PDP_BWPE*NVDLA_PDP_THROUGHPUT-1:0] dp_data;
 wire           dp_rdy;
 reg            dp_vld;

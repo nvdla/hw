@@ -407,7 +407,7 @@ wire           dma_rd_req_vld;
 //:     wire   [${M}-1:0] dma_rd_rsp_mask;
 //: );
 //: foreach my $k (0..$M-1) {
-//: print qq(wire   [${atmm}-1:0] dma_rsp_data_p${k}; \n);
+//: print qq( wire    [${atmm}-1:0] dma_rsp_data_p${k}; \n);
 //: }
 wire           dma_rd_rsp_rdy;
 wire           dma_rd_rsp_vld;
@@ -799,10 +799,18 @@ assign slcg_dc_gate_img = slcg_dc_gate_d3[1];
 ////////////////////////////////////////////////////////////////////////
 //: my $atmm = NVDLA_MEMORY_ATOMIC_SIZE;
 //: my $atmbw = int(log(${atmm})/log(2));
+//: if($atmbw > 3){
 //: print qq(
 //:     assign data_width_sub_one_w = (is_packed_1x1) ? {{(2+${atmbw}){1'b0}}, reg2dp_datain_channel[12:${atmbw}]} : {2'b0, reg2dp_datain_width};
 //:     assign data_surface_inc = {{(${atmbw}-3){1'b0}}, reg2dp_datain_channel[12:${atmbw}]} + 1'b1;
 //: );
+//:}
+//: else {
+//: print qq(
+//:     assign data_width_sub_one_w = (is_packed_1x1) ? {{(2+${atmbw}){1'b0}}, reg2dp_datain_channel[12:${atmbw}]} : {2'b0, reg2dp_datain_width};
+//:     assign data_surface_inc = {reg2dp_datain_channel[12:${atmbw}]} + 1'b1;
+//: );
+//:}
 
 // assign is_data_expand = 1'b0;
 //assign is_data_shrink = 1'b0;

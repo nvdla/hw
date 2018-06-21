@@ -43,24 +43,24 @@ add_test(name='dc_4x1x8192_1x1x8192x1_int8_0',
 #SDP
 add_test(name='sdp_4x1x8192_pass_through_int8_0',
          tags=['L2', 'sdp'],
-         args=[],
+         args=[FIXED_SEED_ARG, DISABLE_COMPARE_ALL_UNITS_SB_ARG],
          config=['nvdla_utb'],
          desc='''test max channel number, bypass bs, bypass bn, bypass ew''')
 
 add_test(name='sdp_8192x1x1_pass_through_int8_0',
          tags=['L2', 'sdp'],
-         args=[],
+         args=[FIXED_SEED_ARG, DISABLE_COMPARE_ALL_UNITS_SB_ARG],
          config=['nvdla_utb'],
          desc='''test max width number, bypass bs, bypass bn, bypass ew''')
 
 add_test(name='sdp_1x8192x1_pass_through_int8_0',
          tags=['L2', 'sdp'],
-         args=[],
+         args=[FIXED_SEED_ARG, DISABLE_COMPARE_ALL_UNITS_SB_ARG],
          config=['nvdla_utb'],
          desc='''test max height number, bypass bs, bypass bn, bypass ew''')
 
 add_test(name='sdp_1x1x1_pass_through_int8',
          tags=['L2', 'sdp'],
-         args=[],
+         args=[FIXED_SEED_ARG, DISABLE_COMPARE_ALL_UNITS_SB_ARG],
          config=['nvdla_utb'],
          desc='''test 1x1x1 case, bypass bs, bypass bn, bypass ew''')

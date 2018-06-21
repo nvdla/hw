@@ -64,7 +64,7 @@ input         nvdla_core_rstn;
 output [4:0]  batches;
 output [4:0]  clip_truncate;
 output [31:0] cya;
-output [26:0] dataout_addr;
+output [31:0] dataout_addr;
 output        line_packed;
 output        surf_packed;
 output [12:0] dataout_height;
@@ -93,7 +93,7 @@ reg     [4:0] batches;
 reg     [4:0] clip_truncate;
 reg           conv_mode;
 reg    [31:0] cya;
-reg    [26:0] dataout_addr;
+reg    [31:0] dataout_addr;
 reg    [12:0] dataout_channel;
 reg    [12:0] dataout_height;
 reg    [12:0] dataout_width;
@@ -124,7 +124,7 @@ wire nvdla_cacc_d_surf_stride_0_wren = (reg_offset_wr == (32'h9024  & 32'h00000f
 assign nvdla_cacc_d_batch_number_0_out[31:0] = { 27'b0, batches };
 assign nvdla_cacc_d_clip_cfg_0_out[31:0] = { 27'b0, clip_truncate };
 assign nvdla_cacc_d_cya_0_out[31:0] = { cya };
-assign nvdla_cacc_d_dataout_addr_0_out[31:0] = { dataout_addr, 5'b0 };
+assign nvdla_cacc_d_dataout_addr_0_out[31:0] = { dataout_addr};
 assign nvdla_cacc_d_dataout_map_0_out[31:0] = { 15'b0, surf_packed, 15'b0, line_packed };
 assign nvdla_cacc_d_dataout_size_0_0_out[31:0] = { 3'b0, dataout_height, 3'b0, dataout_width };
 assign nvdla_cacc_d_dataout_size_1_0_out[31:0] = { 19'b0, dataout_channel };
@@ -205,7 +205,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     batches[4:0] <= 5'b00000;
     clip_truncate[4:0] <= 5'b00000;
     cya[31:0] <= 32'b00000000000000000000000000000000;
-    dataout_addr[26:0] <= 27'b000000000000000000000000000;
+    dataout_addr[31:0] <= 32'h0; 
     line_packed <= 1'b0;
     surf_packed <= 1'b0;
     dataout_height[12:0] <= 13'b0000000000000;
@@ -233,7 +233,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 
   // Register: NVDLA_CACC_D_DATAOUT_ADDR_0    Field: dataout_addr
   if (nvdla_cacc_d_dataout_addr_0_wren) begin
-    dataout_addr[26:0] <= reg_wr_data[31:5];
+    dataout_addr[31:0] <= reg_wr_data[31:0];
   end
 
   // Register: NVDLA_CACC_D_DATAOUT_MAP_0    Field: line_packed
