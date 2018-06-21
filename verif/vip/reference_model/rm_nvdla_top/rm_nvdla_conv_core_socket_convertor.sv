@@ -32,11 +32,11 @@ typedef struct {
 typedef struct {
     bit [CSC_WT_DS-1:0]         mask;
     byte                        data[CSC_WT_DS];
-    bit [(((CMAC_DS+4)/8)*8)-1:0] wt_sel;
+    bit [(((CMAC_DS+7)/8)*8)-1:0] wt_sel;
 } sc2mac_weight_payload_t;
 
 typedef struct {
-    bit [(((CMAC_DS+4)/8)*8)-1:0] mask;
+    bit [(((CMAC_DS+7)/8)*8)-1:0] mask;
     byte                        mode;
     bit [31:0]                  data[CMAC_DS];
     byte                        layer_end;
