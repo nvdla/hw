@@ -83,7 +83,7 @@ reg            is_split_end;
 reg            is_surf_end;
 reg            pdp2cvif_rd_cdt_lat_fifo_pop;
 reg            pdp2mcif_rd_cdt_lat_fifo_pop;
-wire     [NVDLA_PDP_BWPE*NVDLA_PDP_THROUGHPUT+11:0] pdp_rdma2dp_pd;
+wire     [NVDLA_PDP_BWPE*NVDLA_PDP_THROUGHPUT+13:0] pdp_rdma2dp_pd;
 wire            rdma2wdma_done_flag;
 reg      [3:0] tran_cnt;
 reg     [13:0] width_cnt;
