@@ -815,24 +815,58 @@ assign conv_x_stride_w = (is_winograd) ? 4'b1 : reg2dp_conv_x_stride_ext + 1'b1;
 assign pixel_x_stride_w = (reg2dp_datain_channel_ext[1:0] == 2'h3) ? {conv_x_stride_w, 2'b0} :  //*4, after pre_extension
                           (reg2dp_datain_channel_ext[1:0] == 2'h2) ? ({conv_x_stride_w, 1'b0} + conv_x_stride_w) :    //*3
                           {2'b0, conv_x_stride_w}; //*1
-assign {mon_pixel_x_init_w,pixel_x_init_w} = (reg2dp_y_extension == 2'h2) ? ({pixel_x_stride_w, 1'b0} + pixel_x_stride_w + reg2dp_weight_channel_ext[5:0]) :
-                                               (reg2dp_y_extension == 2'h1) ? (pixel_x_stride_w + reg2dp_weight_channel_ext[5:0]):
-                                               (reg2dp_weight_channel_ext >= CSC_ATOMC_HEX) ? {LOG2_ATOMC{1'b1}}:    //cut by atomC
-                                               {{6-LOG2_ATOMC{1'b0}},reg2dp_weight_channel_ext[LOG2_ATOMC-1:0]};
+
+//: my $kk=LOG2_ATOMC;
+//: if ($kk=6) {
+//: print qq (
+//: assign {mon_pixel_x_init_w,pixel_x_init_w} = (reg2dp_y_extension == 2'h2) ? ({pixel_x_stride_w, 1'b0} + pixel_x_stride_w + reg2dp_weight_channel_ext[5:0]) :
+//:                                                (reg2dp_y_extension == 2'h1) ? (pixel_x_stride_w + reg2dp_weight_channel_ext[5:0]):
+//:                                                (reg2dp_weight_channel_ext >= CSC_ATOMC_HEX) ? {LOG2_ATOMC{1'b1}}:    //cut by atomC
+//:                                                {reg2dp_weight_channel_ext[LOG2_ATOMC-1:0]};
+//:                                                )
+//: }
+//:     else {
+//:     print qq(
+//: assign {mon_pixel_x_init_w,pixel_x_init_w} = (reg2dp_y_extension == 2'h2) ? ({pixel_x_stride_w, 1'b0} + pixel_x_stride_w + reg2dp_weight_channel_ext[5:0]) :
+//:                                                (reg2dp_y_extension == 2'h1) ? (pixel_x_stride_w + reg2dp_weight_channel_ext[5:0]):
+//:                                                (reg2dp_weight_channel_ext >= CSC_ATOMC_HEX) ? {LOG2_ATOMC{1'b1}}:    //cut by atomC
+//:                                                {{6-LOG2_ATOMC{1'b0}},reg2dp_weight_channel_ext[LOG2_ATOMC-1:0]};
+//:     )
+//: }
 assign pixel_x_init_offset_w = (reg2dp_weight_channel_ext[LOG2_ATOMC-1:0] + 1'b1);
 assign pixel_x_add_w = (reg2dp_y_extension == 2'h2) ? {pixel_x_stride_w, 2'b0} :  //*4, after post_extension
                        (reg2dp_y_extension == 2'h1) ? {1'b0, pixel_x_stride_w, 1'b0} : //*2
                        {2'b0, pixel_x_stride_w};
 assign pixel_x_byte_stride_w =  {1'b0, pixel_x_stride_w};
-`ifdef CC_ATOMC_DIV_ATOMK_EQUAL_1
-assign pixel_ch_stride_w = {{5-LOG2_ATOMK{1'b0}},pixel_x_stride_w, {LOG2_ATOMK+1{1'b0}}}; //stick to 2*atomK  no matter which config.  
-`endif
-`ifdef CC_ATOMC_DIV_ATOMK_EQUAL_2
-assign pixel_ch_stride_w = {{5-LOG2_ATOMK{1'b0}},pixel_x_stride_w, {LOG2_ATOMK+1{1'b0}}}; //stick to 2*atomK  no matter which config.  
-`endif
-`ifdef CC_ATOMC_DIV_ATOMK_EQUAL_4
-assign pixel_ch_stride_w = {{5-LOG2_ATOMK{1'b0}},pixel_x_stride_w, {LOG2_ATOMK+2{1'b0}}}; //stick to 4*atomK  no matter which config.  
-`endif
+//: my $kk=LOG2_ATOMK;
+//: if($kk=5) {
+//: print qq(
+//: `ifdef CC_ATOMC_DIV_ATOMK_EQUAL_1
+//: assign pixel_ch_stride_w = {pixel_x_stride_w, {LOG2_ATOMK+1{1'b0}}}; //stick to 2*atomK  no matter which config.  
+//: `endif
+//: `ifdef CC_ATOMC_DIV_ATOMK_EQUAL_2
+//: assign pixel_ch_stride_w = {pixel_x_stride_w, {LOG2_ATOMK+1{1'b0}}}; //stick to 2*atomK  no matter which config.  
+//: `endif
+//: `ifdef CC_ATOMC_DIV_ATOMK_EQUAL_4
+//: assign pixel_ch_stride_w = {pixel_x_stride_w, {LOG2_ATOMK+2{1'b0}}}; //stick to 4*atomK  no matter which config.  
+//: `endif
+//: )
+//: }
+//: else {
+//: print qq(
+//: `ifdef CC_ATOMC_DIV_ATOMK_EQUAL_1
+//: assign pixel_ch_stride_w = {{5-LOG2_ATOMK{1'b0}},pixel_x_stride_w, {LOG2_ATOMK+1{1'b0}}}; //stick to 2*atomK  no matter which config.  
+//: `endif
+//: `ifdef CC_ATOMC_DIV_ATOMK_EQUAL_2
+//: assign pixel_ch_stride_w = {{5-LOG2_ATOMK{1'b0}},pixel_x_stride_w, {LOG2_ATOMK+1{1'b0}}}; //stick to 2*atomK  no matter which config.  
+//: `endif
+//: `ifdef CC_ATOMC_DIV_ATOMK_EQUAL_4
+//: assign pixel_ch_stride_w = {{5-LOG2_ATOMK{1'b0}},pixel_x_stride_w, {LOG2_ATOMK+2{1'b0}}}; //stick to 4*atomK  no matter which config.  
+//: `endif
+//: )
+//: }
+
+
 assign conv_y_stride_w = (is_winograd) ? 4'b1 : reg2dp_conv_y_stride_ext + 1'b1;
 assign x_dilate_w = (is_winograd | is_img) ? 6'b1 : reg2dp_x_dilation_ext + 1'b1;
 assign y_dilate_w = (is_winograd | is_img) ? 6'b1 : reg2dp_y_dilation_ext + 1'b1;
