@@ -85,7 +85,7 @@ reg            pdp2cvif_rd_cdt_lat_fifo_pop;
 reg            pdp2mcif_rd_cdt_lat_fifo_pop;
 wire     [NVDLA_PDP_BWPE*NVDLA_PDP_THROUGHPUT+13:0] pdp_rdma2dp_pd;
 wire            rdma2wdma_done_flag;
-reg      [3:0] tran_cnt;
+reg      [5:0] tran_cnt;
 reg     [13:0] width_cnt;
 wire [NVDLA_PDP_MEM_RD_RSP-1:0] cv_dma_rd_rsp_pd;
 wire [NVDLA_PDP_MEM_RD_RSP-1:0] cv_int_rd_rsp_pd;
@@ -714,9 +714,18 @@ assign is_b_sync = is_last_beat & is_last_tran & dp_rdy;
 assign {mon_dp_pos_w[10:0],dp_pos_w[3:0]}   = width_cnt - beat_cnt;
 //:  my $F = NVDLA_MEMORY_ATOMIC_SIZE/NVDLA_PDP_THROUGHPUT;
 //:  my $cmax = int( log($F)/log(2));
-//:  print qq(
-//:     assign dp_pos_c[4:0] = fifo_sel[${cmax}-1:0];
-//:  );
+//:  if($cmax == 5) {
+//:     print qq(
+//:        assign dp_pos_c[4:0] = {fifo_sel[${cmax}-1:0]};
+//:     );
+//:  } else {
+//:     print qq(
+//:        assign dp_pos_c[4:0] = {{(5-${cmax}){1'b0}},fifo_sel[${cmax}-1:0]};
+//:     );
+//:  }
+//  print qq(
+//     assign dp_pos_c[4:0] = {fifo_sel[${cmax}-1:0]};
+//  );
 assign dp_b_sync  = is_b_sync;
 assign dp_line_end = is_line_end;
 assign dp_surf_end = is_surf_end;

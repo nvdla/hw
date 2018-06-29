@@ -368,7 +368,12 @@ assign lat_rd_prdy = lat_rd_pvld
 //:
 //:  my $tpbw   = int(log($tp)/log(2));
 //:  my $atmmbw = int(log($atmm)/log(2));
+//:  if($atmmbw ==5) {
+//:  print " assign ele_in_channel = {reg2dp_channel[${atmmbw}-1:0]};   \n";
+//:  } else {
 //:  print " assign ele_in_channel = {{(5-${atmmbw}){1'b0}},reg2dp_channel[${atmmbw}-1:0]};   \n";
+//:  }
+//:  ##print " assign ele_in_channel = {{(5-${atmmbw}){1'b0}},reg2dp_channel[${atmmbw}-1:0]};   \n";
 //:  print " assign rest_channel=(6'd${F}-ele_in_channel[${atmmbw}-1:${tpbw}]);  \n";
 //:
 //:         print " always @(*)  begin \n";
@@ -389,7 +394,12 @@ assign lat_rd_prdy = lat_rd_pvld
 //:                 foreach my $i (0..$tp-2) {
 //:                 my $j = $i + 1;
 //:                 my $s = $j + 1;
-//:                     print "             | {${tp}{ele_in_channel[${tpbw}-1:0]==${tpbw}'d${j}}} & {{(${tp}-${s}){1'b1}},${s}'b0}  \n";
+//:                     if($s < $tp){
+//:                         print "             | {${tp}{ele_in_channel[${tpbw}-1:0]==${tpbw}'d${j}}} & {{(${tp}-${s}){1'b1}},${s}'b0}  \n";
+//:                     } else {
+//:                         print "             | {${tp}{ele_in_channel[${tpbw}-1:0]==${tpbw}'d${j}}} & {${s}'b0}  \n";
+//:                     }
+//:                     ##print "             | {${tp}{ele_in_channel[${tpbw}-1:0]==${tpbw}'d${j}}} & {{(${tp}-${s}){1'b1}},${s}'b0}  \n";
 //:                 }
 //:                 print "     ;  \n";
 //:             }
@@ -578,7 +588,13 @@ assign eg2ig_done_f  = is_cube_end & tran_rdy;
 // OUTPUT PACK and PIPE: To Data Processor
 //==============
 // PD Pack
-assign dp_invalid = {{(8-NVDLA_CDP_THROUGHPUT){1'b0}},invalid_flag};
+//: my $tp = NVDLA_CDP_THROUGHPUT;
+//: if($tp ==8) {
+//:     print " assign dp_invalid = {invalid_flag}; \n";
+//: } else {
+//:     print " assign dp_invalid = {{(8-NVDLA_CDP_THROUGHPUT){1'b0}},invalid_flag}; \n";
+//: }
+//assign dp_invalid = {{(8-NVDLA_CDP_THROUGHPUT){1'b0}},invalid_flag};
 
 // PKT_PACK_WIRE( cdp_rdma2dp , dp_ , dp_pd )
 assign      dp_pd[NVDLA_CDP_THROUGHPUT*NVDLA_BPE-1:0] =    dp_data[NVDLA_CDP_THROUGHPUT*NVDLA_BPE-1:0];

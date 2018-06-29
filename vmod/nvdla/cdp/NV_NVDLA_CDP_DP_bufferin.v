@@ -37,7 +37,7 @@ reg            b_sync_align;
 reg            b_sync_dly1;
 reg            buf_dat_vld;
 reg            buffer_b_sync;
-reg    [NVDLA_CDP_THROUGHPUT*NVDLA_CDP_ICVTO_BWPE*3:0] buffer_data;
+reg    [NVDLA_CDP_THROUGHPUT*NVDLA_CDP_ICVTO_BWPE*3-1:0] buffer_data;
 reg            buffer_data_vld;
 reg            buffer_last_c;
 reg            buffer_last_h;
@@ -151,6 +151,7 @@ wire           rdma2dp_ready_normal;
 wire           rdma2dp_valid_rebuild;
 wire           vld;
 wire     [3:0] width_cur;
+wire           is_last_pos_c;
 /////////////////////////////////////////////////////////////
 //
 parameter cvt2buf_data_bw = NVDLA_CDP_THROUGHPUT*NVDLA_CDP_ICVTO_BWPE;

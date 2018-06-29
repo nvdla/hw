@@ -742,11 +742,30 @@ function [3:0] fun_bit_sum_8;
   end
 endfunction
 
-assign both_hybrid_ele = fun_bit_sum_8({{(8-NVDLA_CDP_THROUGHPUT){1'b0}},both_hybrid_flag});
-assign both_of_ele     = fun_bit_sum_8({{(8-NVDLA_CDP_THROUGHPUT){1'b0}},both_of_flag});
-assign both_uf_ele     = fun_bit_sum_8({{(8-NVDLA_CDP_THROUGHPUT){1'b0}},both_uf_flag});
-assign only_le_hit_ele = fun_bit_sum_8({{(8-NVDLA_CDP_THROUGHPUT){1'b0}},only_le_hit});
-assign only_lo_hit_ele = fun_bit_sum_8({{(8-NVDLA_CDP_THROUGHPUT){1'b0}},only_lo_hit});
+//: my $tp = NVDLA_CDP_THROUGHPUT;
+//: if($tp ==8) {
+//: print qq(
+//:     assign both_hybrid_ele = fun_bit_sum_8({both_hybrid_flag});
+//:     assign both_of_ele     = fun_bit_sum_8({both_of_flag});
+//:     assign both_uf_ele     = fun_bit_sum_8({both_uf_flag});
+//:     assign only_le_hit_ele = fun_bit_sum_8({only_le_hit});
+//:     assign only_lo_hit_ele = fun_bit_sum_8({only_lo_hit});
+//: );
+//: } else {
+//: print qq(
+//:     assign both_hybrid_ele = fun_bit_sum_8({{(8-NVDLA_CDP_THROUGHPUT){1'b0}},both_hybrid_flag});
+//:     assign both_of_ele     = fun_bit_sum_8({{(8-NVDLA_CDP_THROUGHPUT){1'b0}},both_of_flag});
+//:     assign both_uf_ele     = fun_bit_sum_8({{(8-NVDLA_CDP_THROUGHPUT){1'b0}},both_uf_flag});
+//:     assign only_le_hit_ele = fun_bit_sum_8({{(8-NVDLA_CDP_THROUGHPUT){1'b0}},only_le_hit});
+//:     assign only_lo_hit_ele = fun_bit_sum_8({{(8-NVDLA_CDP_THROUGHPUT){1'b0}},only_lo_hit});
+//: );
+//: }
+
+//assign both_hybrid_ele = fun_bit_sum_8({{(8-NVDLA_CDP_THROUGHPUT){1'b0}},both_hybrid_flag});
+//assign both_of_ele     = fun_bit_sum_8({{(8-NVDLA_CDP_THROUGHPUT){1'b0}},both_of_flag});
+//assign both_uf_ele     = fun_bit_sum_8({{(8-NVDLA_CDP_THROUGHPUT){1'b0}},both_uf_flag});
+//assign only_le_hit_ele = fun_bit_sum_8({{(8-NVDLA_CDP_THROUGHPUT){1'b0}},only_le_hit});
+//assign only_lo_hit_ele = fun_bit_sum_8({{(8-NVDLA_CDP_THROUGHPUT){1'b0}},only_lo_hit});
 
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
