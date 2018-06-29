@@ -547,14 +547,14 @@ wire           rd_req_rdyi;
 
 //: my $req_cur_atomic_size=CDMA_GRAIN_MAX_BIT;
 //: print qq(
-//:     reg   [${req_cur_atomic_size}:0] req_atm;
-//:     reg   [${req_cur_atomic_size}:0] req_atm_cnt;
-//:     reg   [${req_cur_atomic_size}:0] req_atm_cnt_0_w;
-//:     reg   [${req_cur_atomic_size}:0] req_atm_cnt_1_w;
-//:     reg   [${req_cur_atomic_size}:0] req_atm_cnt_2_w;
-//:     reg   [${req_cur_atomic_size}:0] req_atm_cnt_3_w;
-//:     reg   [${req_cur_atomic_size}:0] req_atm_cnt_inc;
-//:     reg   [${req_cur_atomic_size}:0] req_atm_left;
+//:     wire   [${req_cur_atomic_size}:0] req_atm;
+//:     wire   [${req_cur_atomic_size}:0] req_atm_cnt;
+//:     wire   [${req_cur_atomic_size}:0] req_atm_cnt_0_w;
+//:     wire   [${req_cur_atomic_size}:0] req_atm_cnt_1_w;
+//:     wire   [${req_cur_atomic_size}:0] req_atm_cnt_2_w;
+//:     wire   [${req_cur_atomic_size}:0] req_atm_cnt_3_w;
+//:     wire   [${req_cur_atomic_size}:0] req_atm_cnt_inc;
+//:     wire   [${req_cur_atomic_size}:0] req_atm_left;
 //: );
 wire           req_atm_reg_en;
 wire           req_atm_reg_en_0;

@@ -130,7 +130,12 @@ wire [CACC_ABUF_AWIDTH-1:0] abuf_rd_addr = accu_addr;
 //: &eperl::flop(" -q  accu_ctrl_layer_end  -en \"accu_ctrl_valid_d0\" -d  \"accu_layer_end_d0\" -clk nvdla_core_clk -rst nvdla_core_rstn -rval 0"); 
 //: &eperl::flop(" -q  accu_ctrl_dlv_elem_mask  -en \"accu_ctrl_valid_d0\" -d  \"accu_channel_end_d0\" -clk nvdla_core_clk -rst nvdla_core_rstn -rval 0"); 
 //: my $jj=6-$kk;
+//: if ($jj==0) {
+//: print "assign       accu_ctrl_pd[5:0]  =     {accu_ctrl_addr}; \n";
+//: }
+//: elsif ($jj>0) {
 //: print "assign       accu_ctrl_pd[5:0]  =     {{${jj}{1'b0}},accu_ctrl_addr}; \n";
+//: }
 
 // spyglass enable_block NoWidthInBasedNum-ML
 // spyglass enable_block STARC-2.10.1.6

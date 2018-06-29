@@ -123,10 +123,18 @@ wire calc_wr_en                     = calc_valid & (~calc_channel_end);
 //: my $pp= CACC_PARSUM_WIDTH;
 //: my $bb= CACC_IN_WIDTH;
 //: for(my $i = 0; $i <CACC_ATOMK; $i ++) {
+//: if($hh == 0) {
+//: print qq( 
+//: wire [21:0]calc_op0_${i} = {calc_elem_${i}};   
+//: wire [${pp}-1:0] calc_op1_${i} = abuf_in_data_${i};  
+//: );
+//: } 
+//: elsif($hh > 0) {
 //: print qq( 
 //: wire [21:0]calc_op0_${i} = {{${hh}{calc_elem_${i}[${bb}-1]}},calc_elem_${i}};   
 //: wire [${pp}-1:0] calc_op1_${i} = abuf_in_data_${i};  
 //: );
+//: }
 //: }
 
 // instance int8 adders

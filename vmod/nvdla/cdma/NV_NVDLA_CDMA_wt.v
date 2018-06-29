@@ -1564,7 +1564,7 @@ assign cdma2buf_wt_wr_en_w = wt_cbuf_wr_vld_w | wt_cbuf_flush_vld_w;
 //: 
 //:     my $dmanum = int($atmc/$dmaif);
 //:     foreach my $s (0..${dmanum}-1) {
-//:         &eperl::flop("-nodeclare -clk nvdla_core_ng_clk -rval \"1'b0\"  -en \"cdma2buf_wt_wr_en_w\" -d \"cdma2buf_wt_wr_sel_w===${k}'d${s}\" -q cdma2buf_wt_wr_sel[${s}]");
+//:         &eperl::flop("-nodeclare -clk nvdla_core_ng_clk -rval \"1'b0\"  -en \"cdma2buf_wt_wr_en_w\" -d \"cdma2buf_wt_wr_sel_w==${k}'d${s}\" -q cdma2buf_wt_wr_sel[${s}]");
 //:     }
 //:  ## &eperl::flop("-nodeclare -clk nvdla_core_ng_clk -rval \"1'b0\"  -en \"cdma2buf_wt_wr_en_w\" -d \"cdma2buf_wt_wr_sel_w\" -q cdma2buf_wt_wr_sel");
 //: } elsif($dmaif > $atmc) {
