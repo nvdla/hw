@@ -163,7 +163,7 @@ dataprep()
     do
         cp -Lrf $file $BUILD_NAME/src
         FILE_NAME=$(basename $file)
-        EXTRA_RTL_LIST+=$BUILD_NAME/src/$FILE_NAME
+        EXTRA_RTL_LIST+=" $BUILD_NAME/src/$FILE_NAME"
     done
     echo "[INFO]: Copied all RTL and include files into $BUILD_NAME/src"
     
@@ -193,7 +193,7 @@ dataprep()
         # Common "library" modules
         for file in $EXTRA_RTL_LIST
         do
-            echo "-v $file" >> $BUILD_NAME/scripts/${module}.files.vc
+            echo " -v $file" >> $BUILD_NAME/scripts/${module}.files.vc
         done
         echo "[INFO]: Generated module input dependency file $BUILD_NAME/scripts/${module}.files.vc"
 

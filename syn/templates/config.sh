@@ -33,6 +33,7 @@ export RTL_SEARCH_PATH=" \
 # For verilog source files that do not match the module name. 
 export EXTRA_RTL=" \
     ${NVDLA_ROOT}/outdir/${PROJECT}/vmod/nvdla/nocif/NV_NVDLA_XXIF_libs.v \
+    $(ls -d ${NVDLA_ROOT}/outdir/${PROJECT}/vmod/fifos/*.v) \
 "
 
 # If there are verilog header files, where do I find them?
