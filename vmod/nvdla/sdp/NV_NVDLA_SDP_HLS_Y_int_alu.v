@@ -44,8 +44,8 @@ output        chn_alu_op_prdy;
 
 
 wire   [32:0] alu_sum;
+wire          mon_sum_c;
 reg    [32:0] alu_dout;
-reg           mon_sum_c;
 wire   [32:0] alu_data_ext;
 wire   [31:0] alu_data_final;
 wire   [31:0] alu_data_reg;
