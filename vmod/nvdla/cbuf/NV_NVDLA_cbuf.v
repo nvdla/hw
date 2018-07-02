@@ -75,6 +75,7 @@ output                      sc2buf_wmb_rd_valid;  /* data valid */
 output [CBUF_RD_PORT_WIDTH-1:0] sc2buf_wmb_rd_data;
 `endif
 
+`ifndef SYNTHESIS
 `ifdef CDMA2CBUF_DEBUG_PRINT
 `ifdef VERILATOR
 `else
@@ -98,6 +99,7 @@ initial begin
         end
     end
 end
+`endif
 `endif
 `endif
 
