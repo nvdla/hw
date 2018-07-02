@@ -1638,13 +1638,13 @@ assign rsp_sft_cnt_l3_sub = dat_l3c0_en ? CSC_ENTRY_HEX : 8'h0;
 ////: &eperl::retime("-O stripe_begin_disable_jump_7T -i stripe_begin_disable_jump -stage 8 -clk nvdla_core_clk");
 ////: &eperl::flop("-q stripe_begin_disable_jump_8T -d stripe_begin_disable_jump_7T -clk nvdla_core_clk");
 assign {mon_rsp_sft_cnt_l0_w,rsp_sft_cnt_l0_inc} = (pixel_x_byte_stride > CSC_ENTRY_HEX) ? CSC_ENTRY_HEX :  
-                                                    (rsp_sft_cnt_l0 + pixel_x_byte_stride[NVDLA_BPE_LOG2:0] - rsp_sft_cnt_l0_sub);
+                                                    (rsp_sft_cnt_l0 + pixel_x_byte_stride - rsp_sft_cnt_l0_sub);
 assign {mon_rsp_sft_cnt_l1_w,rsp_sft_cnt_l1_inc} = (pixel_x_byte_stride > CSC_ENTRY_HEX) ? CSC_ENTRY_HEX :
-                                                    (rsp_sft_cnt_l1 + pixel_x_byte_stride[NVDLA_BPE_LOG2:0] - rsp_sft_cnt_l1_sub);
+                                                    (rsp_sft_cnt_l1 + pixel_x_byte_stride - rsp_sft_cnt_l1_sub);
 assign {mon_rsp_sft_cnt_l2_w,rsp_sft_cnt_l2_inc} = (pixel_x_byte_stride > CSC_ENTRY_HEX) ? CSC_ENTRY_HEX :
-                                                    (rsp_sft_cnt_l2 + pixel_x_byte_stride[NVDLA_BPE_LOG2:0] - rsp_sft_cnt_l2_sub);
+                                                    (rsp_sft_cnt_l2 + pixel_x_byte_stride - rsp_sft_cnt_l2_sub);
 assign {mon_rsp_sft_cnt_l3_w,rsp_sft_cnt_l3_inc} = (pixel_x_byte_stride > CSC_ENTRY_HEX) ? CSC_ENTRY_HEX :
-                                                    (rsp_sft_cnt_l3 + pixel_x_byte_stride[NVDLA_BPE_LOG2:0] - rsp_sft_cnt_l3_sub);
+                                                    (rsp_sft_cnt_l3 + pixel_x_byte_stride - rsp_sft_cnt_l3_sub);
 
 //the data frm cbuf's low Bytes is always needed. High Bytes maybe unneeded.
 assign dat_rsp_l0_block_end = dat_rsp_l0_sub_c;
