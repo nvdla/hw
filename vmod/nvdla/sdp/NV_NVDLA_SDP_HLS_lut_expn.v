@@ -137,7 +137,7 @@ assign  cfg_lut_offset_ext[8:0] = {{1{cfg_lut_offset[7]}}, cfg_lut_offset[7:0]};
 
 assign  lut_uflow_mid = $signed({1'b0,log2_lut_index_reg[8:0]}) < $signed(cfg_lut_offset_ext[8:0]);   //morework 
 
-assign  {mon_lutmid_sub_c[1:0],lut_index_sub_mid_tmp[8:0]} = $signed({1'b0,log2_lut_index_reg[8:0]}) - $signed(cfg_lut_offset_ext[8:0]);  //morework
+assign  {mon_lutmid_sub_c[1:0],lut_index_sub_mid_tmp[8:0]} = $signed({1'b0,log2_lut_index_reg[8:0]}) - $signed(cfg_lut_offset_ext[8:0]);  // spyglass disable W164b
 
 assign  lut_index_sub_mid[8:0] = (lut_uflow_reg2 | lut_uflow_mid) ? 0 : lut_index_sub_mid_tmp[8:0];
 

@@ -199,7 +199,7 @@ NV_NVDLA_SDP_HLS_Y_INT_INP_pipe_p4 pipe_p4 (
   ,.mul0_reg        (mul0_reg[52:0])          //|> w
   );
 
-assign  mul1[52:0] = $signed(inp_y1_in[15:0]) *$signed({1'b0,frac_in[34:0]});
+assign  mul1[52:0] = $signed(inp_y1_in[15:0]) *$signed({2'b0,frac_in[34:0]});
 
 NV_NVDLA_SDP_HLS_Y_INT_INP_pipe_p5 pipe_p5 (
    .nvdla_core_clk  (nvdla_core_clk)          //|< i

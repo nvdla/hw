@@ -217,8 +217,8 @@ always @(
   reg2dp_channel
   #ifdef NVDLA_SDP_DATA_TYPE_INT16TO8
   or cfg_mode_16to8
-  #endif
   or cfg_mode_1x1_pack
+  #endif
   or cfg_di_int8
   or cfg_di_int16
   ) begin

@@ -109,8 +109,6 @@ NV_NVDLA_HLS_shiftrightsu #(.IN_WIDTH(32 + 32 ),.OUT_WIDTH(32 ),.SHIFT_WIDTH(10 
 //signed 
 //unsigned 
 
-assign   mul_data_reg[31:0] = mul_prelu_out[31:0];
-
 always @(
   cfg_mul_prelu
   or mul_data_reg

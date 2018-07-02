@@ -17,13 +17,13 @@
 `define  tieoff_axid_cdma_dat 4'd8
 `define  tieoff_axid_cdma_wt  4'd9
 
-`define  tieoff_depth_bdma     8'd245
+`define  tieoff_depth_bdma     9'd245
 `define  tieoff_depth_sdp      NVDLA_VMOD_SDP_MRDMA_LATENCY_FIFO_DEPTH 
 `define  tieoff_depth_pdp      NVDLA_VMOD_PDP_RDMA_LATENCY_FIFO_DEPTH
 `define  tieoff_depth_cdp      NVDLA_VMOD_CDP_RDMA_LATENCY_FIFO_DEPTH
-`define  tieoff_depth_rbk      8'd80
+`define  tieoff_depth_rbk      9'd80
 `define  tieoff_depth_sdp_b    NVDLA_VMOD_SDP_BRDMA_LATENCY_FIFO_DEPTH
 `define  tieoff_depth_sdp_n    NVDLA_VMOD_SDP_NRDMA_LATENCY_FIFO_DEPTH
 `define  tieoff_depth_sdp_e    NVDLA_VMOD_SDP_ERDMA_LATENCY_FIFO_DEPTH
-`define  tieoff_depth_cdma_dat 8'd0 
-`define  tieoff_depth_cdma_wt  8'd0 
+`define  tieoff_depth_cdma_dat 9'd0 
+`define  tieoff_depth_cdma_wt  9'd0 

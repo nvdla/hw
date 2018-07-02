@@ -37,23 +37,26 @@ output        bpt2arb_req_valid;
 input         bpt2arb_req_ready;  
 output [NVDLA_DMA_RD_IG_PW-1:0] bpt2arb_req_pd;
 input  [3:0] tieoff_axid;
-input  [7:0] tieoff_lat_fifo_depth;
+input  [8:0] tieoff_lat_fifo_depth;
 
 reg   [NVDLA_DMA_RD_SIZE-1:0] count_req;
 reg   [NVDLA_DMA_RD_SIZE-1:0] req_num;
+wire         lat_fifo_stall_enable;
 reg          lat_adv;
-reg    [7:0] lat_cnt_cur;
-reg    [9:0] lat_cnt_ext;
-reg    [9:0] lat_cnt_mod;
-reg    [9:0] lat_cnt_new;
-reg    [9:0] lat_cnt_nxt;
-reg    [7:0] lat_count_cnt;
+reg    [10:0] lat_cnt_ext;
+reg    [10:0] lat_cnt_mod;
+reg    [10:0] lat_cnt_new;
+reg    [10:0] lat_cnt_nxt;
+reg    [8:0] lat_cnt_cur;
+reg    [8:0] lat_count_cnt;
 reg    [0:0] lat_count_dec;
+wire   [2:0] lat_count_inc;
+wire   [8:0] lat_fifo_free_slot;
+wire         mon_lat_fifo_free_slot_c;
 
 reg   [NVDLA_MEM_ADDRESS_WIDTH-1:0] out_addr;
 wire   [2:0] out_size;
 reg    [2:0] out_size_tmp;
-reg    [2:0] slot_needed;
 wire   [1:0] beat_size;
 wire         bpt2arb_accept;
 wire  [NVDLA_MEM_ADDRESS_WIDTH-1:0] bpt2arb_addr;
@@ -68,6 +71,7 @@ wire   [NVDLA_MCIF_BURST_SIZE_LOG2-1:0] end_offset;
 wire   [NVDLA_MCIF_BURST_SIZE_LOG2-1:0] size_offset;
 wire   [NVDLA_MCIF_BURST_SIZE_LOG2-1:0] ftran_size_tmp;
 wire   [NVDLA_MCIF_BURST_SIZE_LOG2-1:0] ltran_size_tmp;
+wire         mon_end_offset_c;
 wire  [2:0]  ftran_size;
 wire  [2:0]  ltran_size;
 wire  [NVDLA_DMA_RD_SIZE-1:0] mtran_num;
@@ -84,11 +88,6 @@ wire         is_ftran;
 wire         is_ltran;
 wire         is_mtran;
 wire         is_single_tran;
-wire   [2:0] lat_count_inc;
-wire   [7:0] lat_fifo_free_slot;
-wire         lat_fifo_stall_enable;
-wire         mon_end_offset_c;
-wire         mon_lat_fifo_free_slot_c;
 wire         mon_out_beats_c;
 wire         out_inc;
 wire         out_odd;
@@ -200,6 +199,7 @@ assign mtran_num = in_size - 1;
 // check the empty entry of lat.fifo
 //================
 #if (NVDLA_MCIF_BURST_SIZE > 1)
+reg    [2:0] slot_needed;
 always @(
   is_single_tran
   or out_size
@@ -219,7 +219,7 @@ always @(
 end
 
 #else 
-assign slot_needed = 3'b1;
+wire   [2:0]  slot_needed = 3'b1;
 #endif
 
 
@@ -234,7 +234,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 end
 assign lat_count_inc = (bpt2arb_accept && lat_fifo_stall_enable ) ? slot_needed : 0;
 
-// lat adv logic
+
 always @(
   lat_count_inc
   or lat_count_dec
@@ -249,18 +249,21 @@ always @(
   or lat_count_dec
   or lat_adv
   ) begin
-  lat_cnt_ext[9:0] = {1'b0, 1'b0, lat_cnt_cur};
-  lat_cnt_mod[9:0] = lat_cnt_cur + lat_count_inc[2:0] - lat_count_dec[0:0]; // spyglass disable W164b 
-  lat_cnt_new[9:0] = (lat_adv)? lat_cnt_mod[9:0] : lat_cnt_ext[9:0];
-  lat_cnt_nxt[9:0] = lat_cnt_new[9:0];
+  // VCS sop_coverage_off start
+  lat_cnt_ext[10:0] = {1'b0, 1'b0, lat_cnt_cur};
+  lat_cnt_mod[10:0] = lat_cnt_cur + lat_count_inc[2:0] - lat_count_dec[0:0]; // spyglass disable W164b
+  lat_cnt_new[10:0] = (lat_adv)? lat_cnt_mod[10:0] : lat_cnt_ext[10:0];
+  lat_cnt_nxt[10:0] = lat_cnt_new[10:0];
+  // VCS sop_coverage_off end
+//| &End;
 end
 
 // lat flops
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
-    lat_cnt_cur[7:0] <= 0;
+    lat_cnt_cur[8:0] <= 0;
   end else begin
-  lat_cnt_cur[7:0] <= lat_cnt_nxt[7:0];
+  lat_cnt_cur[8:0] <= lat_cnt_nxt[8:0];
   end
 end
 
@@ -268,9 +271,8 @@ end
 always @(
   lat_cnt_cur
   ) begin
-  lat_count_cnt[7:0] = lat_cnt_cur[7:0];
+  lat_count_cnt[8:0] = lat_cnt_cur[8:0];
 end
-
     
 // lat asserts
 `ifdef SPYGLASS_ASSERT_ON
@@ -320,8 +322,8 @@ end
 `endif // SPYGLASS_ASSERT_ON
 
   
-assign {mon_lat_fifo_free_slot_c,lat_fifo_free_slot[7:0]} = tieoff_lat_fifo_depth - lat_count_cnt;
-assign req_enable = (!lat_fifo_stall_enable) || ({{5{1'b0}}, slot_needed} <= lat_fifo_free_slot);
+assign {mon_lat_fifo_free_slot_c,lat_fifo_free_slot[8:0]} = tieoff_lat_fifo_depth - lat_count_cnt;
+assign req_enable = (!lat_fifo_stall_enable) || ({{6{1'b0}}, slot_needed} <= lat_fifo_free_slot);
 
 `ifdef SPYGLASS_ASSERT_ON
 `else
