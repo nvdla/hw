@@ -592,7 +592,7 @@ assign eg2ig_done_f  = is_cube_end & tran_rdy;
 //: if($tp ==8) {
 //:     print " assign dp_invalid = {invalid_flag}; \n";
 //: } else {
-//:     print " assign dp_invalid = {{(8-NVDLA_CDP_THROUGHPUT){1'b0}},invalid_flag}; \n";
+//:     print " assign dp_invalid = {{(8-${tp}){1'b0}},invalid_flag}; \n";
 //: }
 //assign dp_invalid = {{(8-NVDLA_CDP_THROUGHPUT){1'b0}},invalid_flag};
 
