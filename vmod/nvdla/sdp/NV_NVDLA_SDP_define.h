@@ -13,6 +13,12 @@
 #define  AM_DW   NVDLA_MEMORY_ATOMIC_SIZE*8     //atomic m bus width: atomic_m * 1byte
 #define  AM_DW2  NVDLA_MEMORY_ATOMIC_SIZE*16    //atomic m bus width: atomic_m * 2byte
 
+#ifdef (NVDLA_SDP_EW_ENABLE)
+#define  TW      NVDLA_SDP_EW_THROUGHPUT_LOG2
+#else 
+#define  TW      0 
+#endif
+
 #define  SDP_WR_CMD_DW   NVDLA_MEM_ADDRESS_WIDTH-AM_AW+13 
 
 #define  BS_OP_DW     16*NVDLA_SDP_BS_THROUGHPUT

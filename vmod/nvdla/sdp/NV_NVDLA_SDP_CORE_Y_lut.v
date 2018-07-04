@@ -93,15 +93,15 @@ output  [31:0] dp2reg_lut_uflow;
 input   [31:0] pwrbus_ram_pd;
 input          op_en_load;
 
-reg            idx2lut_prdy;
-reg    [EW_LUT_OUT_DW-1:0] lut2inp_pd;
-reg            lut2inp_pvld;
-reg    [EW_IDX_OUT_DW-1:0] lut_in_pd;
-reg            lut_in_pvld;
+wire           idx2lut_prdy;
+wire    [EW_LUT_OUT_DW-1:0] lut2inp_pd;
+wire           lut2inp_pvld;
+wire    [EW_IDX_OUT_DW-1:0] lut_in_pd;
+wire           lut_in_pvld;
 wire           lut_in_prdy;
 wire   [EW_LUT_OUT_DW-1:0] lut_out_pd;
 wire           lut_out_pvld;
-reg            lut_out_prdy;
+wire           lut_out_prdy;
 
 //: my $m = LUT_TABLE_LE_DEPTH;
 //: my $n = LUT_TABLE_LO_DEPTH;
@@ -146,11 +146,11 @@ reg     [15:0] lo_lut_data;
 //: );
 //: }
 
-wire     [2:0] lut_hybrid_sum_tmp;
-wire     [2:0] lut_le_hit_sum_tmp;
-wire     [2:0] lut_lo_hit_sum_tmp;
-wire     [2:0] lut_oflow_sum_tmp;
-wire     [2:0] lut_uflow_sum_tmp;
+wire     [TW:0] lut_hybrid_sum_tmp;
+wire     [TW:0] lut_le_hit_sum_tmp;
+wire     [TW:0] lut_lo_hit_sum_tmp;
+wire     [TW:0] lut_oflow_sum_tmp;
+wire     [TW:0] lut_uflow_sum_tmp;
 wire     [4:0] lut_hybrid_sum;
 wire     [4:0] lut_le_hit_sum;
 wire     [4:0] lut_lo_hit_sum;
@@ -21697,14 +21697,15 @@ NV_NVDLA_SDP_CORE_Y_lut_pipe_p1  pipe_p1 (
 // PERF STATISTIC
 // OFLOW
 //: my $k=NVDLA_SDP_EW_THROUGHPUT;
-//: print "assign lut_oflow_sum_tmp[2:0] = lut_in_oflow0";
+//: my $w=TW;
+//: print "assign lut_oflow_sum_tmp[${w}:0] = lut_in_oflow0";
 //: if(${k} >1) {
 //: foreach my $i  (1..${k}-1) {
 //: print "+ lut_in_oflow${i}";
 //: }
 //: }
 //: print ";\n";
-assign lut_oflow_sum[4:0] = {2'b0,lut_oflow_sum_tmp[2:0]};
+assign lut_oflow_sum[4:0] = {{(4-TW){1'b0}},lut_oflow_sum_tmp[TW:0]};  //spyglass disable W164b
 
 
 assign perf_lut_oflow_add = (&lut_oflow_cnt) ? 0 : lut_oflow_sum;
@@ -21750,14 +21751,15 @@ end
   
 // UFLOW
 //: my $k=NVDLA_SDP_EW_THROUGHPUT;
-//: print "assign lut_uflow_sum_tmp[2:0] = lut_in_uflow0";
+//: my $w=TW;
+//: print "assign lut_uflow_sum_tmp[${w}:0] = lut_in_uflow0";
 //: if(${k} >1) {
 //: foreach my $i  (1..${k}-1) {
 //: print "+ lut_in_uflow${i}";
 //: }
 //: }
 //: print ";\n";
-assign lut_uflow_sum[4:0] = {2'b0,lut_uflow_sum_tmp[2:0]};
+assign lut_uflow_sum[4:0] = {{(4-TW){1'b0}},lut_uflow_sum_tmp[TW:0]};  //spyglass disable W164b
 
 
 assign perf_lut_uflow_add = (&lut_uflow_cnt) ? 0 : lut_uflow_sum;
@@ -21803,11 +21805,12 @@ end
   
 // HYBRID
 //: my $k=NVDLA_SDP_EW_THROUGHPUT;
+//: my $w=TW;
 //: foreach my $i  (0..${k}-1) {
 //: print "assign lut_in_hybrid${i} = !(lut_in_oflow${i} | lut_in_uflow${i}); \n";
 //: }
 //: print "\n";
-//: print "assign lut_hybrid_sum_tmp[2:0] = lut_in_hybrid0";
+//: print "assign lut_hybrid_sum_tmp[${w}:0] = lut_in_hybrid0";
 //: if(${k} >1) {
 //: foreach my $i  (1..${k}-1) {
 //: print "+ lut_in_hybrid${i}";
@@ -21815,7 +21818,7 @@ end
 //: }
 //: print ";\n";
 
-assign lut_hybrid_sum[4:0] = {2'b0,lut_hybrid_sum_tmp};
+assign lut_hybrid_sum[4:0] = {{(4-TW){1'b0}},lut_hybrid_sum_tmp}; //spyglass disable W164b
 
 
 assign perf_lut_hybrid_add = (&lut_hybrid_cnt) ? 0 : lut_hybrid_sum;
@@ -21865,14 +21868,15 @@ end
   
 // LE_HIT
 //: my $k=NVDLA_SDP_EW_THROUGHPUT;
-//: print "assign lut_le_hit_sum_tmp[2:0] = lut_in_le_hit0";
+//: my $w=TW;
+//: print "assign lut_le_hit_sum_tmp[${w}:0] = lut_in_le_hit0";
 //: if(${k} >1) {
 //: foreach my $i  (1..${k}-1) {
 //: print "+ lut_in_le_hit${i}";
 //: }
 //: }
 //: print ";\n";
-assign lut_le_hit_sum[4:0] = {2'b0, lut_le_hit_sum_tmp[2:0]};
+assign lut_le_hit_sum[4:0] = {{(4-TW){1'b0}},lut_le_hit_sum_tmp[TW:0]}; //spyglass disable W164b 
 
 
 assign perf_lut_le_hit_add = (&lut_le_hit_cnt) ? 0 : lut_le_hit_sum;
@@ -21920,14 +21924,15 @@ end
   
 // LO_HIT
 //: my $k=NVDLA_SDP_EW_THROUGHPUT;
-//: print "assign lut_lo_hit_sum_tmp[2:0] = lut_in_lo_hit0";
+//: my $w=TW;
+//: print "assign lut_lo_hit_sum_tmp[${w}:0] = lut_in_lo_hit0";
 //: if(${k} >1) {
 //: foreach my $i  (1..${k}-1) {
 //: print "+ lut_in_lo_hit${i}";
 //: }
 //: }
 //: print ";\n";
-assign lut_lo_hit_sum[4:0] = {2'b0,lut_lo_hit_sum_tmp[2:0]};
+assign lut_lo_hit_sum[4:0] = {{(4-TW){1'b0}},lut_lo_hit_sum_tmp[TW:0]};  //spyglass disable W164b
 
 
 assign perf_lut_lo_hit_add = (&lut_lo_hit_cnt) ? 0 : lut_lo_hit_sum;

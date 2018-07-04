@@ -201,18 +201,20 @@ assign mtran_num = in_size - 1;
 #if (NVDLA_MCIF_BURST_SIZE > 1)
 reg    [2:0] slot_needed;
 always @(
-  is_single_tran
-  or out_size
+  out_size
+  //or is_single_tran
   or is_ltran
-  or out_swizzle
+  //or out_swizzle
   or is_ftran
   ) begin
-    if (is_single_tran) begin
-        slot_needed = (out_size>>(NVDLA_DMA_MASK_BIT-1)) + 1;                      //fixme
-    end else if (is_ltran) begin
-        slot_needed = ((out_size+out_swizzle)>>(NVDLA_DMA_MASK_BIT-1)) + 1;        //fixme
-    end else if (is_ftran) begin
-        slot_needed = (out_size+1)>>(NVDLA_DMA_MASK_BIT-1);
+    //if (is_single_tran) begin
+    //    slot_needed = (out_size>>(NVDLA_DMA_MASK_BIT-1)) + 1;                      //fixme
+    //end else if (is_ltran) begin
+    //    slot_needed = ((out_size+out_swizzle)>>(NVDLA_DMA_MASK_BIT-1)) + 1;        //fixme
+    //end else if (is_ftran) begin
+    //    slot_needed = (out_size+1)>>(NVDLA_DMA_MASK_BIT-1);
+    if (is_ftran | is_ltran) begin
+        slot_needed = out_size+1;
     end else begin
         slot_needed = NVDLA_PRIMARY_MEMIF_MAX_BURST_LENGTH;
     end

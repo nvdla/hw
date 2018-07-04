@@ -230,6 +230,7 @@
  #else
      #error "one of NVDLA_SDP_EW_THROUGHPUT_{4,2,1,x} must be set"
  #endif
+%define NVDLA_SDP_EW_THROUGHPUT_LOG2  log2(NVDLA_SDP_EW_THROUGHPUT)
 #else
      %define NVDLA_SDP_EW_THROUGHPUT 0
 #endif

@@ -78,7 +78,7 @@ always @(posedge nvdla_core_clk) begin
     pack_data <= inp_data[IW-1:0];
 end
 
-wire [OW*16-1:0] pack_data_ext = {{(OW*16-IW){1'b0}},pack_data};
+wire [OW*16-1:0] pack_data_ext = {{(OW*16-IW){1'b0}},pack_data};  //spyglass disable W164b
 
 reg  [3:0]  pack_cnt;
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
