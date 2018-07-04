@@ -18,12 +18,12 @@
 `define  tieoff_axid_cdma_wt  4'd9
 
 `define  tieoff_depth_bdma     9'd245
-`define  tieoff_depth_sdp      NVDLA_VMOD_SDP_MRDMA_LATENCY_FIFO_DEPTH 
-`define  tieoff_depth_pdp      NVDLA_VMOD_PDP_RDMA_LATENCY_FIFO_DEPTH
-`define  tieoff_depth_cdp      NVDLA_VMOD_CDP_RDMA_LATENCY_FIFO_DEPTH
 `define  tieoff_depth_rbk      9'd80
-`define  tieoff_depth_sdp_b    NVDLA_VMOD_SDP_BRDMA_LATENCY_FIFO_DEPTH
-`define  tieoff_depth_sdp_n    NVDLA_VMOD_SDP_NRDMA_LATENCY_FIFO_DEPTH
-`define  tieoff_depth_sdp_e    NVDLA_VMOD_SDP_ERDMA_LATENCY_FIFO_DEPTH
 `define  tieoff_depth_cdma_dat 9'd0 
 `define  tieoff_depth_cdma_wt  9'd0 
+//:printf "`define  tieoff_depth_sdp    9'd%d\n",  NVDLA_VMOD_SDP_MRDMA_LATENCY_FIFO_DEPTH; 
+//:printf "`define  tieoff_depth_pdp    9'd%d\n",  NVDLA_VMOD_PDP_RDMA_LATENCY_FIFO_DEPTH;
+//:printf "`define  tieoff_depth_cdp    9'd%d\n",  NVDLA_VMOD_CDP_RDMA_LATENCY_FIFO_DEPTH;
+//:printf "`define  tieoff_depth_sdp_b  9'd%d\n",  NVDLA_VMOD_SDP_BRDMA_LATENCY_FIFO_DEPTH;
+//:printf "`define  tieoff_depth_sdp_n  9'd%d\n",  NVDLA_VMOD_SDP_NRDMA_LATENCY_FIFO_DEPTH;
+//:printf "`define  tieoff_depth_sdp_e  9'd%d\n",  NVDLA_VMOD_SDP_ERDMA_LATENCY_FIFO_DEPTH;
