@@ -3,7 +3,9 @@
  dla_ramgen -m  nv_ram_rws_128x256
  dla_ramgen -m  nv_ram_rws_128x32
  dla_ramgen -m  nv_ram_rws_128x512
+ dla_ramgen -m  nv_ram_rws_128x60
  dla_ramgen -m  nv_ram_rws_128x64
+ dla_ramgen -m  nv_ram_rws_16x128
  dla_ramgen -m  nv_ram_rws_16x256
  dla_ramgen -m  nv_ram_rws_16x272
  dla_ramgen -m  nv_ram_rws_16x64
@@ -37,30 +39,55 @@
  dla_ramgen -m  nv_ram_rws_64x512
  dla_ramgen -m  nv_ram_rws_64x64
  dla_ramgen -m  nv_ram_rwsp_128x11
+ dla_ramgen -m  nv_ram_rwsp_128x257
  dla_ramgen -m  nv_ram_rwsp_128x6
  dla_ramgen -m  nv_ram_rwsp_160x16
  dla_ramgen -m  nv_ram_rwsp_160x514
  dla_ramgen -m  nv_ram_rwsp_160x65
+ dla_ramgen -m  nv_ram_rwsp_16x14
+ dla_ramgen -m  nv_ram_rwsp_16x16
+ dla_ramgen -m  nv_ram_rwsp_16x256
+ dla_ramgen -m  nv_ram_rwsp_16x65
  dla_ramgen -m  nv_ram_rwsp_20x289
  dla_ramgen -m  nv_ram_rwsp_245x514
  dla_ramgen -m  nv_ram_rwsp_256x11
+ dla_ramgen -m  nv_ram_rwsp_256x14
+ dla_ramgen -m  nv_ram_rwsp_256x16
+ dla_ramgen -m  nv_ram_rwsp_256x257
+ dla_ramgen -m  nv_ram_rwsp_32x129
+ dla_ramgen -m  nv_ram_rwsp_32x256
  dla_ramgen -m  nv_ram_rwsp_32x32
+ dla_ramgen -m  nv_ram_rwsp_4x128
+ dla_ramgen -m  nv_ram_rwsp_4x64
  dla_ramgen -m  nv_ram_rwsp_61x514
  dla_ramgen -m  nv_ram_rwsp_61x64
  dla_ramgen -m  nv_ram_rwsp_61x65
+ dla_ramgen -m  nv_ram_rwsp_64x129
+ dla_ramgen -m  nv_ram_rwsp_64x14
+ dla_ramgen -m  nv_ram_rwsp_64x16
  dla_ramgen -m  nv_ram_rwsp_80x14
  dla_ramgen -m  nv_ram_rwsp_80x16
  dla_ramgen -m  nv_ram_rwsp_80x256
  dla_ramgen -m  nv_ram_rwsp_80x514
  dla_ramgen -m  nv_ram_rwsp_80x65
+ dla_ramgen -m  nv_ram_rwsp_8x129
+ dla_ramgen -m  nv_ram_rwsp_8x257
  dla_ramgen -m  nv_ram_rwsp_8x65
  dla_ramgen -m  nv_ram_rwst_256x8
  dla_ramgen -m  nv_ram_rwsthp_19x32
  dla_ramgen -m  nv_ram_rwsthp_19x4
  dla_ramgen -m  nv_ram_rwsthp_19x80
+ dla_ramgen -m  nv_ram_rwsthp_20x16
+ dla_ramgen -m  nv_ram_rwsthp_20x32
+ dla_ramgen -m  nv_ram_rwsthp_20x4
+ dla_ramgen -m  nv_ram_rwsthp_20x8
  dla_ramgen -m  nv_ram_rwsthp_60x168
  dla_ramgen -m  nv_ram_rwsthp_60x21
+ dla_ramgen -m  nv_ram_rwsthp_60x42
+ dla_ramgen -m  nv_ram_rwsthp_60x84
  dla_ramgen -m  nv_ram_rwsthp_80x15
  dla_ramgen -m  nv_ram_rwsthp_80x17
+ dla_ramgen -m  nv_ram_rwsthp_80x18
+ dla_ramgen -m  nv_ram_rwsthp_80x36
  dla_ramgen -m  nv_ram_rwsthp_80x72
  dla_ramgen -m  nv_ram_rwsthp_80x9
