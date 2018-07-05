@@ -2514,7 +2514,13 @@ assign {mon_idx_h_offset_w,
 //assign idx_w_offset_add = is_w_cnt_div4 ? {rsp_w_cnt[12 +2:2]} : ( is_w_cnt_div2 ? rsp_w_cnt[12+1 :1] : rsp_w_cnt[12:0] );
 assign idx_w_offset_add = is_w_cnt_div4 ? {1'b0,rsp_w_cnt[15:2]} : ( is_w_cnt_div2 ? rsp_w_cnt[14+1 :1] : rsp_w_cnt[14:0] );
 assign {mon_cbuf_idx_inc[2:0], cbuf_idx_inc} = idx_base + (idx_grain_offset + idx_h_offset) + idx_w_offset_add;
-assign is_cbuf_idx_wrap = cbuf_idx_inc >= {1'b0, data_bank, 9'b0};
+
+//: my $bank_depth_bits = int( log(NVDLA_CBUF_BANK_DEPTH)/log(2) );
+//: print qq(
+//: assign is_cbuf_idx_wrap = cbuf_idx_inc >= {1'b0, data_bank, ${bank_depth_bits}'b0};
+//: );
+
+//assign is_cbuf_idx_wrap = cbuf_idx_inc >= {1'b0, data_bank, 9'b0};
 assign cbuf_idx_w = ~is_cbuf_idx_wrap ? {2'b0, cbuf_idx_inc[14:0]} : {2'd0,cbuf_idx_inc[14 :0]} - {2'b0, data_bank, 9'b0};
 
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
