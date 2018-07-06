@@ -2518,10 +2518,11 @@ assign {mon_cbuf_idx_inc[2:0], cbuf_idx_inc} = idx_base + (idx_grain_offset + id
 //: my $bank_depth_bits = int( log(NVDLA_CBUF_BANK_DEPTH)/log(2) );
 //: print qq(
 //: assign is_cbuf_idx_wrap = cbuf_idx_inc >= {1'b0, data_bank, ${bank_depth_bits}'b0};
+//: assign cbuf_idx_w = ~is_cbuf_idx_wrap ? {2'b0, cbuf_idx_inc[14:0]} : {2'd0,cbuf_idx_inc[14 :0]} - {2'b0, data_bank, ${bank_depth_bits}'b0};
 //: );
 
 //assign is_cbuf_idx_wrap = cbuf_idx_inc >= {1'b0, data_bank, 9'b0};
-assign cbuf_idx_w = ~is_cbuf_idx_wrap ? {2'b0, cbuf_idx_inc[14:0]} : {2'd0,cbuf_idx_inc[14 :0]} - {2'b0, data_bank, 9'b0};
+//assign cbuf_idx_w = ~is_cbuf_idx_wrap ? {2'b0, cbuf_idx_inc[14:0]} : {2'd0,cbuf_idx_inc[14 :0]} - {2'b0, data_bank, 9'b0};
 
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     if (!nvdla_core_rstn) begin
