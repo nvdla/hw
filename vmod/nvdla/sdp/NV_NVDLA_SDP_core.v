@@ -1262,7 +1262,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   end
 end
 
-assign cvt_saturation_add = fun_my_bit_sum({{(32-NVDLA_SDP_MAX_THROUGHPUT){1'b0}},saturation_bits});
+assign cvt_saturation_add = fun_my_bit_sum({{(16-NVDLA_SDP_MAX_THROUGHPUT){1'b0}},saturation_bits});
 assign cvt_saturation_sub = 1'b0;
 assign cvt_saturation_clr = op_en_load;
 assign cvt_saturation_cen = reg2dp_perf_sat_en;
