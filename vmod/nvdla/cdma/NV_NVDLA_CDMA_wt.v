@@ -1251,10 +1251,32 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 //:         wt_wr_dmatx_cnt <= wt_wr_dmatx_cnt + ${m};
 //:     );
 //: }
+    end else if(wt_cbuf_wr_vld_w & sc_wt_updt) begin
+//: my $atmc=NVDLA_MAC_ATOMIC_C_SIZE;
+//: my $dmaif=NVDLA_CDMA_DMAIF_BW / NVDLA_CDMA_BPE;
+//: if($dmaif == $atmc) {
+//:     print qq(
+//:          wt_wr_dmatx_cnt <= wt_wr_dmatx_cnt + 1'b1 - sc_wt_entries;
+//:     );
+//: } elsif($dmaif < $atmc) {
+//:     my $k = $atmc/$dmaif - 1;
+//:     print qq(
+//:          if(dmaif_within_atmc_cnt == ${k}) begin
+//:             wt_wr_dmatx_cnt <= wt_wr_dmatx_cnt + 1'b1 - sc_wt_entries;
+//:          end else begin
+//:             wt_wr_dmatx_cnt <= wt_wr_dmatx_cnt - sc_wt_entries;
+//:          end
+//:     );
+//: } elsif($dmaif > $atmc) {
+//:     my $m = $dmaif/$atmc;
+//:     print qq(
+//:         wt_wr_dmatx_cnt <= wt_wr_dmatx_cnt + ${m} - sc_wt_entries;
+//:     );
+//: }
     end else if(!wt_cbuf_wr_vld_w & sc_wt_updt) begin
         wt_wr_dmatx_cnt <= wt_wr_dmatx_cnt - sc_wt_entries;
-    end else if(wt_cbuf_wr_vld_w & sc_wt_updt) begin
-        wt_wr_dmatx_cnt <= wt_wr_dmatx_cnt + 1'b1 - sc_wt_entries;
+    //end else if(wt_cbuf_wr_vld_w & sc_wt_updt) begin
+    //    wt_wr_dmatx_cnt <= wt_wr_dmatx_cnt + 1'b1 - sc_wt_entries;
     end
 end
 //: my $bank_depth = int( log(NVDLA_CBUF_BANK_DEPTH)/log(2) );
