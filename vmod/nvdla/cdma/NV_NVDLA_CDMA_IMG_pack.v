@@ -480,11 +480,11 @@ wire            pk_rsp_vld;
 wire            pk_rsp_vld_d1_w;
 wire     [14:0] pk_rsp_wr_addr;
 wire     [16:0] pk_rsp_wr_addr_inc;
-wire      [5:0] pk_rsp_wr_addr_wrap;
+wire      [14:0] pk_rsp_wr_addr_wrap;
 wire            pk_rsp_wr_base_en;
 wire     [15:0] pk_rsp_wr_base_inc;
 wire     [14:0] pk_rsp_wr_base_w;
-wire      [5:0] pk_rsp_wr_base_wrap;
+wire     [14:0] pk_rsp_wr_base_wrap;
 wire      [1:0] pk_rsp_wr_cnt_w;
 wire     [14:0] pk_rsp_wr_entries;
 //wire            pk_rsp_wr_ext128;
@@ -1332,9 +1332,19 @@ assign pk_rsp_wr_slices = pk_rsp_cur_1st_height ? sg2pack_sub_h_st :
                           pk_rsp_cur_layer_end ? sg2pack_sub_h_end : sg2pack_sub_h_mid;
 
 assign pk_rsp_wr_base_inc = is_first_running ? {1'b0, status2dma_wr_idx} : (pk_rsp_wr_base + pk_rsp_wr_entries);
-assign is_base_wrap = (pk_rsp_wr_base_inc[15 : 9 ] >= {1'd0,pixel_bank});
-assign {mon_pk_rsp_wr_base_wrap[1:0], pk_rsp_wr_base_wrap} = (pk_rsp_wr_base_inc[15 : 9 ] - {1'b0,pixel_bank});
-assign pk_rsp_wr_base_w = is_base_wrap ? {pk_rsp_wr_base_wrap, pk_rsp_wr_base_inc[8 :0]} : pk_rsp_wr_base_inc[15 -1:0];
+
+
+
+//: my $bank_depth = NVDLA_CBUF_BANK_DEPTH_LOG2;
+//: print qq(
+//:     assign is_base_wrap = (pk_rsp_wr_base_inc[15 : ${bank_depth} ] >= {{(10-${bank_depth}){1'd0}},pixel_bank});
+//:     assign {mon_pk_rsp_wr_base_wrap[1:0], pk_rsp_wr_base_wrap} = (pk_rsp_wr_base_inc[15 : 0 ] - {{(10-${bank_depth}){1'b0}},pixel_bank,{${bank_depth}{1'b0}}});
+//:     assign pk_rsp_wr_base_w = is_base_wrap ? pk_rsp_wr_base_wrap : pk_rsp_wr_base_inc[15 -1:0];
+//: );
+
+//assign is_base_wrap = (pk_rsp_wr_base_inc[15 : 9 ] >= {1'd0,pixel_bank});
+//assign {mon_pk_rsp_wr_base_wrap[1:0], pk_rsp_wr_base_wrap} = (pk_rsp_wr_base_inc[15 : 9 ] - {1'b0,pixel_bank});
+//assign pk_rsp_wr_base_w = is_base_wrap ? {pk_rsp_wr_base_wrap, pk_rsp_wr_base_inc[8 :0]} : pk_rsp_wr_base_inc[15 -1:0];
 
 assign pk_rsp_wr_base_en = is_first_running | (pk_rsp_wr_vld & pk_rsp_cur_one_line_end & pk_rsp_cur_sub_h_end);
 //: &eperl::flop("-nodeclare   -rval \"{15{1'b0}}\"  -en \"pk_rsp_wr_base_en\" -d \"pk_rsp_wr_base_w\" -q pk_rsp_wr_base");
@@ -1403,9 +1413,15 @@ assign pk_rsp_wr_w_offset_ori_en = is_first_running;
 //:         }
 //:     }
 //: }
-assign is_addr_wrap = (pk_rsp_wr_addr_inc[15 +1: 9 ] >= {2'd0, pixel_bank});
-assign {mon_pk_rsp_wr_addr_wrap[2:0], pk_rsp_wr_addr_wrap} = (pk_rsp_wr_addr_inc[16 : 9 ] - {2'b0,pixel_bank});
-assign pk_rsp_wr_addr = is_addr_wrap ? {pk_rsp_wr_addr_wrap, pk_rsp_wr_addr_inc[8 :0]} : pk_rsp_wr_addr_inc[14:0];
+
+
+//: my $bank_depth = NVDLA_CBUF_BANK_DEPTH_LOG2;
+//: print qq(
+//:     assign is_addr_wrap = (pk_rsp_wr_addr_inc[15 +1: ${bank_depth} ] >= {{(11-${bank_depth}){1'd0}}, pixel_bank});
+//:     assign {mon_pk_rsp_wr_addr_wrap[2:0], pk_rsp_wr_addr_wrap} = pk_rsp_wr_addr_inc[16 : 0] - {{(11-${bank_depth}){1'b0}},pixel_bank,{${bank_depth}{1'b0}}};
+//:     assign pk_rsp_wr_addr = is_addr_wrap ? pk_rsp_wr_addr_wrap : pk_rsp_wr_addr_inc[14:0];
+//: );
+
 //: &eperl::flop("-nodeclare   -rval \"{15{1'b0}}\"  -en \"pk_rsp_wr_vld\" -d \"pk_rsp_wr_addr\" -q pk_out_addr");
 
 ////////////////////////////////////////////////////////////////////////
