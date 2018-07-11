@@ -54,7 +54,7 @@ wire          log2_pvld;
 wire   [34:0] lut_frac_final;
 wire   [31:0] lut_index_sub;
 wire    [8:0] lut_index_sub_mid;
-wire    [8:0] lut_index_sub_mid_tmp;
+wire    [9:0] lut_index_sub_mid_tmp;
 wire   [31:0] lut_index_sub_reg;
 wire   [31:0] lut_index_sub_tmp;
 wire          lut_oflow_final;
@@ -64,7 +64,7 @@ wire          lut_uflow_mid;
 wire          lut_uflow_reg;
 wire          lut_uflow_reg2;
 wire          mon_lutin_sub_c;
-wire    [1:0] mon_lutmid_sub_c;
+wire          mon_lutmid_sub_c;
 wire          sub_prdy;
 wire          sub_pvld;
 
@@ -137,9 +137,10 @@ assign  cfg_lut_offset_ext[8:0] = {{1{cfg_lut_offset[7]}}, cfg_lut_offset[7:0]};
 
 assign  lut_uflow_mid = $signed({1'b0,log2_lut_index_reg[8:0]}) < $signed(cfg_lut_offset_ext[8:0]);   //morework 
 
-assign  {mon_lutmid_sub_c[1:0],lut_index_sub_mid_tmp[8:0]} = $signed({1'b0,log2_lut_index_reg[8:0]}) - $signed(cfg_lut_offset_ext[8:0]);  // spyglass disable W164b
+//10bit signed to 9bit unsigned,need saturation
+assign  {mon_lutmid_sub_c,lut_index_sub_mid_tmp[9:0]} = $signed({1'b0,log2_lut_index_reg[8:0]}) - $signed(cfg_lut_offset_ext[8:0]);  // spyglass disable W164b
 
-assign  lut_index_sub_mid[8:0] = (lut_uflow_reg2 | lut_uflow_mid) ? 0 : lut_index_sub_mid_tmp[8:0];
+assign  lut_index_sub_mid[8:0] = (lut_uflow_reg2 | lut_uflow_mid) ? 0 : lut_index_sub_mid_tmp[9] ? 9'h1ff:  lut_index_sub_mid_tmp[8:0];
 
 assign  lut_oflow_final = (lut_index_sub_mid >= LUT_DEPTH -1); 
 assign  lut_uflow_final =  lut_uflow_reg2 | lut_uflow_mid; 
