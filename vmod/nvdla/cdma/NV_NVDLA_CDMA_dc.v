@@ -226,7 +226,7 @@ reg      [3:0] dma_rsp_size_cnt;
 //reg     [31:0] dp2reg_dc_rd_latency;
 //reg     [31:0] dp2reg_dc_rd_stall;
 reg     [17:0] entry_per_batch_d2;
-reg     [11:0] fetch_grain;
+reg     [12:0] fetch_grain;
 reg     [14:0] idx_base;
 reg     [17:0] idx_batch_offset;
 reg     [17:0] idx_ch_offset;
@@ -299,7 +299,7 @@ reg     [17:0] rsp_batch_entry_last;
 reg     [10:0] rsp_ch_cnt;
 reg            mon_rsp_ch_cnt;
 reg      [2:0] rsp_cur_ch;
-reg     [11:0] rsp_cur_grain;
+reg     [12:0] rsp_cur_grain;
 //reg     [17:0] req_entry_0_d3;
 //reg     [17:0] req_entry_1_d3;
 reg     [17:0] rsp_entry_init;
@@ -427,7 +427,7 @@ wire           dp2reg_dc_rd_stall_dec;
 wire    [17:0] entry_per_batch;
 wire    [17:0] entry_required;
 wire           fetch_done;
-wire    [11:0] fetch_grain_w;
+wire    [12:0] fetch_grain_w;
 wire    [17:0] idx_batch_offset_w;
 wire    [17:0] idx_ch_offset_w;
 wire    [17:0] idx_h_offset_w;
@@ -595,7 +595,7 @@ wire    [10:0] rsp_ch_left_w;
 wire     [2:0] rsp_ch_mode;
 wire           rsp_ch_reg_en;
 wire    [2:0]  rsp_cur_ch_w;
-wire    [11:0] rsp_cur_grain_w;
+wire    [12:0] rsp_cur_grain_w;
 wire    [17:0] rsp_entry;
 wire           rsp_h_reg_en;
 reg            rsp_rd_en;
@@ -883,7 +883,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 end
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     if (!nvdla_core_rstn) begin
-        fetch_grain <= {12{1'b0}};
+        fetch_grain <= {13{1'b0}};
     end else begin
         if ((layer_st) == 1'b1) begin
             fetch_grain <= fetch_grain_w;
@@ -926,8 +926,8 @@ end
 assign pre_ready = ~pre_valid_d1 | pre_ready_d1;
 assign pre_reg_en = is_running & (req_height_cnt_d1 != data_height) & pre_ready;
 assign {mon_req_slice_left, req_slice_left} = data_height - req_height_cnt_d1;
-assign is_req_grain_last = (req_slice_left <= {2'd0,fetch_grain});
-assign req_cur_grain_w = is_req_grain_last ? req_slice_left : {2'd0,fetch_grain};
+assign is_req_grain_last = (req_slice_left <= {1'd0,fetch_grain});
+assign req_cur_grain_w = is_req_grain_last ? req_slice_left : {1'd0,fetch_grain};
 
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     if (!nvdla_core_rstn) begin
@@ -1770,7 +1770,7 @@ assign {mon_rsp_all_h_cnt_inc,
         rsp_all_h_cnt_inc} = rsp_all_h_cnt + rsp_cur_grain;
 assign {mon_rsp_all_h_left_w,
         rsp_all_h_left_w} = layer_st ? {1'b0, data_height_w} : data_height - rsp_all_h_cnt_inc;
-assign rsp_cur_grain_w = (rsp_all_h_left_w > {{2{1'b0}}, fetch_grain_w}) ? fetch_grain_w : rsp_all_h_left_w[11:0];
+assign rsp_cur_grain_w = (rsp_all_h_left_w > {{1{1'b0}}, fetch_grain_w}) ? fetch_grain_w : rsp_all_h_left_w[12:0];
 assign is_rsp_all_h_end = (rsp_all_h_cnt_inc == data_height);
 assign is_rsp_done = ~reg2dp_op_en | (rsp_all_h_cnt == data_height);
 
@@ -1787,7 +1787,7 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
 end
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
     if (!nvdla_core_rstn) begin
-        rsp_cur_grain <= {12{1'b0}};
+        rsp_cur_grain <= {13{1'b0}};
     end else begin
         if ((layer_st | rsp_all_h_reg_en) == 1'b1) begin
             rsp_cur_grain <= rsp_cur_grain_w;
