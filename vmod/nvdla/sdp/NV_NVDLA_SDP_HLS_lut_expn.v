@@ -106,8 +106,9 @@ NV_NVDLA_SDP_HLS_LUT_EXPN_pipe_p1 pipe_p1 (
   ,.sub_pvld           (sub_pvld)                //|> w
   );
 
-//log2 function 
-NV_DW_lsd #(.a_width(33)) log2_dw_lsd(.a({1'b0,lut_index_sub_reg[31:0]}), .enc(leadzero[4:0]), .dec());    //unsigned 
+//log2 function
+wire loadzero_nc;
+NV_DW_lsd #(.a_width(33)) log2_dw_lsd(.a({1'b0,lut_index_sub_reg[31:0]}), .enc({leadzero_nc, leadzero[4:0]}), .dec());    //unsigned 
 
 assign  log2_lut_index[31:0] = (lut_uflow_reg | !(|lut_index_sub_reg)) ? {32{1'b0}} : (31 - leadzero[4:0]);   //morework
 
