@@ -90,7 +90,6 @@ reg    [63:0] base_addr_esurf;
 reg    [63:0] base_addr_line;
 reg    [63:0] base_addr_split;
 reg    [63:0] base_addr_width;
-reg    [10:0] count_c;
 reg    [12:0] count_h;
 reg     [9:0] count_wg;
 reg    [31:0] dp2reg_d0_perf_read_stall;
@@ -103,7 +102,6 @@ reg           mon_base_addr_width_c;
 reg    [31:0] mon_gap_between_layers;
 reg           mon_layer_end_flg;
 reg           mon_op_en_dly;
-wire   [14:0] number_of_byte_in_c;
 reg           op_process;
 reg    [31:0] pdp_rd_stall_count;
 reg    [12:0] req_size;
@@ -116,7 +114,6 @@ reg    [33:0] stl_cnt_mod;
 reg    [33:0] stl_cnt_new;
 reg    [33:0] stl_cnt_nxt;
 reg    [13:0] width_stride;
-wire   [13:0] cfg_channel;
 wire    [9:0] cfg_fspt_width;
 wire   [10:0] cfg_fspt_width_use;
 wire    [9:0] cfg_lspt_width;
@@ -130,18 +127,6 @@ wire          cmd_accept;
 wire          cnt_cen;
 wire          cnt_clr;
 wire          cnt_inc;
-wire          cv_dma_rd_req_rdy;
-wire          cv_dma_rd_req_vld;
-wire   [78:0] cv_int_rd_req_pd;
-wire   [78:0] cv_int_rd_req_pd_d0;
-wire   [78:0] cv_int_rd_req_pd_d1;
-wire          cv_int_rd_req_ready;
-wire          cv_int_rd_req_ready_d0;
-wire          cv_int_rd_req_ready_d1;
-wire          cv_int_rd_req_valid;
-wire          cv_int_rd_req_valid_d0;
-wire          cv_int_rd_req_valid_d1;
-wire          cv_rd_req_rdyi;
 wire   [NVDLA_MEM_ADDRESS_WIDTH+14:0] dma_rd_req_pd;
 wire          dma_rd_req_ram_type;
 wire          dma_rd_req_rdy;
@@ -162,29 +147,14 @@ wire          is_line_end;
 wire          is_lspt;
 wire          is_split_end;
 wire          is_surf_end;
-wire          mc_dma_rd_req_rdy;
-wire          mc_dma_rd_req_vld;
-wire   [78:0] mc_int_rd_req_pd;
-wire   [78:0] mc_int_rd_req_pd_d0;
-wire   [78:0] mc_int_rd_req_pd_d1;
-wire          mc_int_rd_req_ready;
-wire          mc_int_rd_req_ready_d0;
-wire          mc_int_rd_req_ready_d1;
-wire          mc_int_rd_req_valid;
-wire          mc_int_rd_req_valid_d0;
-wire          mc_int_rd_req_valid_d1;
-wire          mc_rd_req_rdyi;
-wire   [1:0]  mon_number_of_block_in_c;
 wire          mon_op_en_neg;
 wire          mon_op_en_pos;
 wire          mon_overlap;
-//: my $k=NVDLA_MEMORY_ATOMIC_SIZE;
-//: if($k==32) {
-//:     print " wire    [9:0] number_of_block_in_c; \n";
-//: }
-//: elsif($k==8) {
-//:     print " wire    [10:0] number_of_block_in_c; \n";
-//: } 
+//: my $atmm_bw = int( log(NVDLA_MEMORY_ATOMIC_SIZE)/log(2) );
+//: print qq(
+//:     wire   [12-${atmm_bw}:0] number_of_block_in_c;
+//:     reg    [12-${atmm_bw}:0] count_c;
+//: );
 wire          op_done;
 wire          op_load;
 wire    [3:0] overlap;
@@ -284,8 +254,6 @@ assign reg2dp_src_base_addr = {reg2dp_src_base_addr_high,reg2dp_src_base_addr_lo
 //==============
 assign cfg_width  = reg2dp_cube_in_width + 1'b1;
 
-assign cfg_channel  = reg2dp_cube_in_channel + 1'b1;
-
 assign cfg_fspt_width = reg2dp_partial_width_in_first;
 assign cfg_mspt_width = reg2dp_partial_width_in_mid;
 assign cfg_lspt_width = reg2dp_partial_width_in_last;
@@ -300,14 +268,9 @@ assign cfg_split_num  = reg2dp_split_num + 1'b1;
 // CHANNEL Direction
 // calculate how many 32x8 blocks in channel direction
 //==============
-assign        number_of_byte_in_c = {1'b0,cfg_channel};
-//: my $k=NVDLA_MEMORY_ATOMIC_SIZE;
-//: if($k == 32) {
-//:     print " assign {mon_number_of_block_in_c,number_of_block_in_c[9:0]} = number_of_byte_in_c[14:5] + (|number_of_byte_in_c[4:0]);    \n";
-//: }
-//: elsif($k == 8) {
-//:     print " assign {mon_number_of_block_in_c[1:0],number_of_block_in_c[10:0]} = number_of_byte_in_c[14:3] + {11'd0,(|number_of_byte_in_c[2:0])};    \n";
-//: }
+
+//: my $atmm_bw = int( log(NVDLA_MEMORY_ATOMIC_SIZE)/log(2) );
+//: print " assign number_of_block_in_c[12-${atmm_bw}:0] = reg2dp_cube_in_channel[12:${atmm_bw}];    \n";
 
 //==============
 // WIDTH calculation
@@ -315,15 +278,7 @@ assign        number_of_byte_in_c = {1'b0,cfg_channel};
 // then will LTRAN with size 0~7
 // then will have MTEAN with fixed size 7
 //==============
-always @(
-  cfg_mode_split
-  or is_fspt
-  or cfg_fspt_width_use
-  or is_lspt
-  or cfg_lspt_width_use
-  or cfg_mspt_width_use
-  or cfg_width
-  ) begin
+always @(*) begin
     if (cfg_mode_split) begin
         if (is_fspt) begin
             width_stride = {{3{1'b0}}, cfg_fspt_width_use};
@@ -370,18 +325,19 @@ assign is_lspt = cfg_mode_split & (count_wg==wg_num-1);
 //==============
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
-    count_c <= {11{1'b0}};
+    count_c <= 0;
   end else begin
     if (cmd_accept) begin
         if (is_split_end) begin
-            count_c <= 11'd0;
+            count_c <= 0;
         end else if (is_surf_end) begin
             count_c <= count_c + 1'b1;
         end
     end
   end
 end
-assign is_last_c = (count_c==number_of_block_in_c - 1);
+//assign is_last_c = (count_c==number_of_block_in_c - 1);
+assign is_last_c = (count_c==number_of_block_in_c);
 
 //==============
 // HEIGHT Count: move to next line after one line is done
@@ -789,18 +745,7 @@ assign {mon_overlap,overlap[3:0]} = (reg2dp_kernel_width < reg2dp_kernel_stride_
 // spyglass enable_block WRN_58 
 // spyglass enable_block WRN_61 
 `endif // SPYGLASS_ASSERT_ON
-always @(
-  cfg_mode_split
-  or is_fspt
-  or cfg_fspt_width
-  or is_lspt
-  or reg2dp_kernel_width
-  or reg2dp_kernel_stride_width
-  or cfg_lspt_width
-  or overlap
-  or cfg_mspt_width
-  or reg2dp_cube_in_width
-  ) begin
+always @(*) begin
     if(cfg_mode_split) begin
         if (is_fspt)
             req_size = {{3{1'b0}}, cfg_fspt_width};
