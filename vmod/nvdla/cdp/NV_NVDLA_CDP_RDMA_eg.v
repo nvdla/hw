@@ -68,7 +68,7 @@ output  cdp2cvif_rd_cdt_lat_fifo_pop;
 
 output        cdp_rdma2dp_valid;  /* data valid */
 input         cdp_rdma2dp_ready;  /* data return handshake */
-output [NVDLA_CDP_THROUGHPUT*NVDLA_BPE+22:0] cdp_rdma2dp_pd;
+output [NVDLA_CDP_THROUGHPUT*NVDLA_BPE+24:0] cdp_rdma2dp_pd;
 
 input        cq_rd_pvld;  /* data valid */
 output       cq_rd_prdy;  /* data return handshake */
@@ -88,7 +88,7 @@ reg      [3:0] beat_cnt;
 reg            cdp2cvif_rd_cdt_lat_fifo_pop;
 #endif
 reg            cdp2mcif_rd_cdt_lat_fifo_pop;
-wire    [NVDLA_CDP_THROUGHPUT*NVDLA_BPE+22:0] cdp_rdma2dp_pd;
+wire    [NVDLA_CDP_THROUGHPUT*NVDLA_BPE+24:0] cdp_rdma2dp_pd;
 //reg            cdp_rdma2dp_valid_f;
 wire            dp2reg_done_flag;
 reg     [NVDLA_CDP_THROUGHPUT*NVDLA_BPE-1:0] dp_data;
@@ -99,16 +99,16 @@ reg      [NVDLA_CDP_THROUGHPUT-1:0] invalid_flag;
 reg            is_last_c;
 reg            is_last_h;
 reg            is_last_w;
-reg      [3:0] tran_cnt;
+reg      [5:0] tran_cnt;
 reg      [3:0] width_cnt;
 wire     [4:0] ele_in_channel;
-wire           cv_dma_rd_rsp_vld;
-wire           cv_int_rd_rsp_ready;
-wire           cv_int_rd_rsp_valid;
-  #ifdef NVDLA_SECONDARY_MEMIF_ENABLE
-wire           cvif2cdp_rd_rsp_ready_d0;
-wire           cvif2cdp_rd_rsp_valid_d0;
-#endif
+//wire           cv_dma_rd_rsp_vld;
+//wire           cv_int_rd_rsp_ready;
+//wire           cv_int_rd_rsp_valid;
+//  #ifdef NVDLA_SECONDARY_MEMIF_ENABLE
+//wire           cvif2cdp_rd_rsp_ready_d0;
+//wire           cvif2cdp_rd_rsp_valid_d0;
+//#endif
 wire           dma_rd_cdt_lat_fifo_pop;
 wire           dma_rd_rsp_rdy;
 wire           dma_rd_rsp_type;
@@ -119,8 +119,8 @@ wire     [7:0] dp_invalid;
 wire           dp_last_c;
 wire           dp_last_h;
 wire           dp_last_w;
-wire    [NVDLA_CDP_THROUGHPUT*NVDLA_BPE+22:0] dp_pd;
-wire     [2:0] dp_pos_c;
+wire    [NVDLA_CDP_THROUGHPUT*NVDLA_BPE+24:0] dp_pd;
+wire     [4:0] dp_pos_c;
 wire     [3:0] dp_pos_w;
 wire     [3:0] dp_width;
 wire           eg2ig_done_f;
@@ -142,25 +142,25 @@ wire           is_last_tran;
 //: my $k=NVDLA_CDP_DMAIF_BW;
 //: my $jx = NVDLA_MEMORY_ATOMIC_SIZE*NVDLA_BPE; ##atomic_m BW
 //: my $M = $k/$jx;  ##atomic_m number per dma transaction
-//: print "wire [${k}+${M}-1:0] cv_dma_rd_rsp_pd;  \n"; 
-//: print "wire [${k}+${M}-1:0] cv_int_rd_rsp_pd;  \n"; 
-//: print "wire [${k}+${M}-1:0] cvif2cdp_rd_rsp_pd_d0;  \n"; 
+//: ##print "wire [${k}+${M}-1:0] cv_dma_rd_rsp_pd;  \n"; 
+//: ##print "wire [${k}+${M}-1:0] cv_int_rd_rsp_pd;  \n"; 
+//: ##print "wire [${k}+${M}-1:0] cvif2cdp_rd_rsp_pd_d0;  \n"; 
 //: print "wire [${k}+${M}-1:0] dma_rd_rsp_pd;  \n"; 
 //: print "wire [${k}+${M}-1:0] lat_rd_pd;  \n"; 
-//: print "wire [${k}+${M}-1:0] mc_dma_rd_rsp_pd;  \n"; 
-//: print "wire [${k}+${M}-1:0] mc_int_rd_rsp_pd;  \n"; 
-//: print "wire [${k}+${M}-1:0] mcif2cdp_rd_rsp_pd_d0;  \n"; 
+//: ##print "wire [${k}+${M}-1:0] mc_dma_rd_rsp_pd;  \n"; 
+//: ##print "wire [${k}+${M}-1:0] mc_int_rd_rsp_pd;  \n"; 
+//: ##print "wire [${k}+${M}-1:0] mcif2cdp_rd_rsp_pd_d0;  \n"; 
 wire   [NVDLA_CDP_DMAIF_BW-1:0] lat_rd_data;
 //: my $jx = NVDLA_MEMORY_ATOMIC_SIZE*NVDLA_BPE; ##atomic_m BW
 //: my $M = NVDLA_CDP_DMAIF_BW/$jx;  ##atomic_m number per dma transaction
 //: print "wire     [${M}-1:0] lat_rd_mask; \n";
 wire           lat_rd_prdy;
 wire           lat_rd_pvld;
-wire           mc_dma_rd_rsp_vld;
-wire           mc_int_rd_rsp_ready;
-wire           mc_int_rd_rsp_valid;
-wire           mcif2cdp_rd_rsp_ready_d0;
-wire           mcif2cdp_rd_rsp_valid_d0;
+//wire           mc_dma_rd_rsp_vld;
+//wire           mc_int_rd_rsp_ready;
+//wire           mc_int_rd_rsp_valid;
+//wire           mcif2cdp_rd_rsp_ready_d0;
+//wire           mcif2cdp_rd_rsp_valid_d0;
 wire     [5:0] rest_channel;
 //: my $kx = NVDLA_CDP_THROUGHPUT*NVDLA_BPE;     ##throughput BW
 //: my $jx = NVDLA_MEMORY_ATOMIC_SIZE*NVDLA_BPE; ##atomic_m BW
@@ -376,15 +376,14 @@ assign lat_rd_prdy = lat_rd_pvld
 //:  ##print " assign ele_in_channel = {{(5-${atmmbw}){1'b0}},reg2dp_channel[${atmmbw}-1:0]};   \n";
 //:  print " assign rest_channel=(6'd${F}-ele_in_channel[${atmmbw}-1:${tpbw}]);  \n";
 //:
-//:    ## if(NVDLA_CDP_THROUGHPUT == 8) {
 //:         print " always @(*)  begin \n";
 //:         print " case(fifo_sel)  \n";
 //:         foreach my $r (0..$tt_fifo_num-1) {
 //:             print "   6'd$r: begin  \n";
 //:             print "       if(is_last_c) begin  \n";
-//:             print "           if({2'd0,tran_cnt} < rest_channel)  \n";
+//:             print "           if(tran_cnt < rest_channel)  \n";
 //:             print "               invalid_flag  = {${tp}{1'b1}};  \n";
-//:             print "           else if({2'd0,tran_cnt} > rest_channel)  \n";
+//:             print "           else if(tran_cnt > rest_channel)  \n";
 //:             print "               invalid_flag  = {${tp}{1'b0}};  \n";
 //:             print "           else  \n";
 //:          
@@ -411,26 +410,6 @@ assign lat_rd_prdy = lat_rd_pvld
 //:         print "default: invalid_flag = {${tp}{1'b0}};  \n";
 //:         print "endcase  \n";
 //:         print "end  \n";
-//:    ## }
-//:    ## elsif(NVDLA_CDP_THROUGHPUT == 1) {
-//:    ##     print " always @(*)  \n";
-//:    ##     print " begin  \n";
-//:    ##     print " case(fifo_sel)  \n";
-//:    ##     foreach my $r (0..$tt_fifo_num-1) {
-//:    ##         print "   6'd$r: begin  \n";
-//:    ##         print "       if(is_last_c) begin  \n";
-//:    ##         print "           if(tran_cnt <= rest_channel)
-//:    ##         print "               invalid_flag  = 1'h1;  \n";
-//:    ##         print "           else  \n";
-//:    ##         print "               invalid_flag  = 1'h0;  \n";
-//:    ##         print "       end else  \n";
-//:    ##         print "           invalid_flag  = 1'h0;  \n";
-//:    ##         print "   end  \n";
-//:    ##     }
-//:    ##     print "default: invalid_flag = 1'h0;  \n";
-//:    ##     print "endcase  \n";
-//:    ##     print "end;  \n";
-//:    ## }
 
 
 //==============
@@ -476,10 +455,8 @@ always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
             beat_cnt    <= 0;
     end else if(tran_rdy) begin
         if (tran_vld) begin
-//: my $tp = NVDLA_CDP_THROUGHPUT*NVDLA_BPE;
-//: my $atmm = NVDLA_MEMORY_ATOMIC_SIZE*NVDLA_BPE;
-//: my $F = $atmm/$tp; 
-//: print " tran_cnt    <= 4'd${F}; \n";
+//: my $F = NVDLA_MEMORY_ATOMIC_SIZE/NVDLA_CDP_THROUGHPUT; 
+//: print " tran_cnt    <= 6'd${F}; \n";
             beat_cnt    <= tran_num;
         end else begin
             tran_cnt    <= 0;
@@ -597,7 +574,7 @@ wire    mon_dp_pos_c;
 //: my $tp = NVDLA_CDP_THROUGHPUT*NVDLA_BPE;
 //: my $atmm = NVDLA_MEMORY_ATOMIC_SIZE*NVDLA_BPE;
 //: my $F = $atmm/$tp; 
-//: print " assign {mon_dp_pos_c,dp_pos_c[2:0]} = 4'd${F} - tran_cnt; \n";
+//: print " assign {mon_dp_pos_c,dp_pos_c[4:0]} = 6'd${F} - tran_cnt; \n";
 assign dp_b_sync  = is_b_sync;
 assign dp_last_w = is_last_w;
 assign dp_last_h = is_last_h;
@@ -623,20 +600,17 @@ assign eg2ig_done_f  = is_cube_end & tran_rdy;
 assign      dp_pd[NVDLA_CDP_THROUGHPUT*NVDLA_BPE-1:0] =    dp_data[NVDLA_CDP_THROUGHPUT*NVDLA_BPE-1:0];
 assign      dp_pd[NVDLA_CDP_THROUGHPUT*NVDLA_BPE+3:NVDLA_CDP_THROUGHPUT*NVDLA_BPE] =    dp_pos_w[3:0];
 assign      dp_pd[NVDLA_CDP_THROUGHPUT*NVDLA_BPE+7:NVDLA_CDP_THROUGHPUT*NVDLA_BPE+4] =    dp_width[3:0];
-assign      dp_pd[NVDLA_CDP_THROUGHPUT*NVDLA_BPE+10:NVDLA_CDP_THROUGHPUT*NVDLA_BPE+8] =    dp_pos_c[2:0];
-assign      dp_pd[NVDLA_CDP_THROUGHPUT*NVDLA_BPE+11] =    dp_b_sync ;
-assign      dp_pd[NVDLA_CDP_THROUGHPUT*NVDLA_BPE+12] =    dp_last_w ;
-assign      dp_pd[NVDLA_CDP_THROUGHPUT*NVDLA_BPE+13] =    dp_last_h ;
-assign      dp_pd[NVDLA_CDP_THROUGHPUT*NVDLA_BPE+14] =    dp_last_c ;
-assign      dp_pd[NVDLA_CDP_THROUGHPUT*NVDLA_BPE+22:NVDLA_CDP_THROUGHPUT*NVDLA_BPE+15] =    dp_invalid[7:0];
+assign      dp_pd[NVDLA_CDP_THROUGHPUT*NVDLA_BPE+12:NVDLA_CDP_THROUGHPUT*NVDLA_BPE+8] =    dp_pos_c[4:0];
+assign      dp_pd[NVDLA_CDP_THROUGHPUT*NVDLA_BPE+13] =    dp_b_sync ;
+assign      dp_pd[NVDLA_CDP_THROUGHPUT*NVDLA_BPE+14] =    dp_last_w ;
+assign      dp_pd[NVDLA_CDP_THROUGHPUT*NVDLA_BPE+15] =    dp_last_h ;
+assign      dp_pd[NVDLA_CDP_THROUGHPUT*NVDLA_BPE+16] =    dp_last_c ;
+assign      dp_pd[NVDLA_CDP_THROUGHPUT*NVDLA_BPE+24:NVDLA_CDP_THROUGHPUT*NVDLA_BPE+17] =    dp_invalid[7:0];
 
-////////::pipe -bc -is {cdp_rdma2dp_pd,dp2reg_done_flag,eg2ig_done_flag} (cdp_rdma2dp_valid_f,cdp_rdma2dp_ready) <= {dp_pd,dp2reg_done_f,eg2ig_done_f} (dp_vld, dp_rdy);
-
-wire    [NVDLA_CDP_THROUGHPUT*NVDLA_BPE+25-1:0] cdp_rdma2dp_pd_i;
+wire    [NVDLA_CDP_THROUGHPUT*NVDLA_BPE+27-1:0] cdp_rdma2dp_pd_i;
 assign cdp_rdma2dp_pd_i =  {dp_pd,dp2reg_done_f,eg2ig_done_f};
-//assign {cdp_rdma2dp_pd,dp2reg_done_flag,eg2ig_done_flag} = cdp_rdma2dp_pd_o;
 
-//: my $k=NVDLA_CDP_THROUGHPUT*NVDLA_BPE+25;
+//: my $k=NVDLA_CDP_THROUGHPUT*NVDLA_BPE+27;
 //: &eperl::pipe(" -wid $k -is -do cdp_rdma2dp_pd_o -vo cdp_rdma2dp_valid_f -ri cdp_rdma2dp_ready -di cdp_rdma2dp_pd_i  -vi dp_vld -ro dp_rdy_f ");
 assign dp_rdy = dp_rdy_f;
 

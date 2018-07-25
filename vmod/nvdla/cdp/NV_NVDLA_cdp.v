@@ -119,10 +119,10 @@ input   tmc2slcg_disable_clock_gating;
  input [31:0] pwrbus_ram_pd;
 //////////////////////////////////////////////////////////////////
 
- wire [NVDLA_CDP_THROUGHPUT*NVDLA_BPE+14:0] cdp_dp2wdma_pd;
+ wire [NVDLA_CDP_THROUGHPUT*NVDLA_BPE+16:0] cdp_dp2wdma_pd;
  wire        cdp_dp2wdma_ready;
  wire        cdp_dp2wdma_valid;
- wire [NVDLA_CDP_THROUGHPUT*NVDLA_BPE+22:0] cdp_rdma2dp_pd;
+ wire [NVDLA_CDP_THROUGHPUT*NVDLA_BPE+24:0] cdp_rdma2dp_pd;
  wire        cdp_rdma2dp_ready;
  wire        cdp_rdma2dp_valid;
  wire [31:0] dp2reg_d0_out_saturation;
@@ -145,7 +145,7 @@ input   tmc2slcg_disable_clock_gating;
  wire [31:0] dp2reg_nan_input_num;
  wire        mon_op_en_neg;
  wire        mon_op_en_pos;
- wire [NVDLA_CDP_THROUGHPUT*NVDLA_BPE+22:0] nan_preproc_pd;
+ wire [NVDLA_CDP_THROUGHPUT*NVDLA_BPE+24:0] nan_preproc_pd;
  wire        nan_preproc_prdy;
  wire        nan_preproc_pvld;
  wire        nvdla_op_gated_clk_core;

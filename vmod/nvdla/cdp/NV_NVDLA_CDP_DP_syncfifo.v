@@ -33,7 +33,7 @@ module NV_NVDLA_CDP_DP_syncfifo (
 ///////////////////////////////////////////////////
 input          nvdla_core_clk;
 input          nvdla_core_rstn;
-input   [NVDLA_CDP_THROUGHPUT*NVDLA_CDP_ICVTO_BWPE+14:0] cvt2sync_pd;
+input   [NVDLA_CDP_THROUGHPUT*NVDLA_CDP_ICVTO_BWPE+16:0] cvt2sync_pd;
 input          cvt2sync_pvld;
 input   [31:0] pwrbus_ram_pd;
 input  [NVDLA_CDP_THROUGHPUT*(NVDLA_CDP_ICVTO_BWPE*2+3)-1:0] sum2sync_pd;
@@ -47,7 +47,7 @@ output [NVDLA_CDP_THROUGHPUT*(NVDLA_CDP_ICVTO_BWPE*2+3)-1:0] sync2itp_pd;
 output         sync2itp_pvld;
 output  [NVDLA_CDP_THROUGHPUT*NVDLA_CDP_ICVTO_BWPE-1:0] sync2mul_pd;
 output         sync2mul_pvld;
-output  [14:0] sync2ocvt_pd;
+output  [16:0] sync2ocvt_pd;
 output         sync2ocvt_pvld;
 ///////////////////////////////////////////////////
 //reg     [NVDLA_CDP_THROUGHPUT * NVDLA_CDP_ICVTO_BWPE-1:0] data_sync_wr_pd;
@@ -60,8 +60,8 @@ wire           data_sync_rd_prdy;
 wire           data_sync_rd_pvld;
 wire           data_sync_wr_prdy;
 wire           data_vld;
-wire    [14:0] info_pd;
-wire    [14:0] info_sync_rd_pd;
+wire    [16:0] info_pd;
+wire    [16:0] info_sync_rd_pd;
 wire           info_sync_rd_prdy;
 wire           info_sync_rd_pvld;
 wire           info_sync_wr_prdy;
@@ -72,7 +72,7 @@ wire           info_vld;
 
 //: my $dbw = NVDLA_CDP_THROUGHPUT * NVDLA_CDP_ICVTO_BWPE;
 //: &eperl::pipe(" -wid $dbw -do data_sync_wr_pd -vo data_sync_wr_pvld -ri data_sync_wr_prdy -di data_pd -vi data_vld -ro data_rdy ");
-//: &eperl::pipe(" -wid 15   -do info_sync_wr_pd -vo info_sync_wr_pvld -ri info_sync_wr_prdy -di info_pd -vi info_vld -ro info_rdy ");
+//: &eperl::pipe(" -wid 17   -do info_sync_wr_pd -vo info_sync_wr_pvld -ri info_sync_wr_prdy -di info_pd -vi info_vld -ro info_rdy ");
 
 //////////////////////////////////////////////
 //datin sync fifo
@@ -80,7 +80,7 @@ assign cvt2sync_prdy = data_rdy & info_rdy;
 assign data_vld = cvt2sync_pvld & info_rdy;
 assign info_vld = cvt2sync_pvld & data_rdy;
 assign data_pd  = cvt2sync_pd[NVDLA_CDP_THROUGHPUT * NVDLA_CDP_ICVTO_BWPE-1:0];
-assign info_pd  = cvt2sync_pd[NVDLA_CDP_THROUGHPUT * NVDLA_CDP_ICVTO_BWPE+14:NVDLA_CDP_THROUGHPUT * NVDLA_CDP_ICVTO_BWPE];
+assign info_pd  = cvt2sync_pd[NVDLA_CDP_THROUGHPUT * NVDLA_CDP_ICVTO_BWPE+16:NVDLA_CDP_THROUGHPUT * NVDLA_CDP_ICVTO_BWPE];
 //////////////////////////////////////////////
 //////////////////////////////////////////////
 
@@ -106,13 +106,13 @@ NV_NVDLA_CDP_DP_info_fifo u_info_sync_fifo (
   ,.nvdla_core_rstn (nvdla_core_rstn)       //|< i
   ,.info_wr_prdy    (info_sync_wr_prdy)     //|> w
   ,.info_wr_pvld    (info_sync_wr_pvld)     //|< r
-  ,.info_wr_pd      (info_sync_wr_pd[14:0]) //|< r
+  ,.info_wr_pd      (info_sync_wr_pd[16:0]) //|< r
   ,.info_rd_prdy    (info_sync_rd_prdy)     //|< w
   ,.info_rd_pvld    (info_sync_rd_pvld)     //|> w
-  ,.info_rd_pd      (info_sync_rd_pd[14:0]) //|> w
+  ,.info_rd_pd      (info_sync_rd_pd[16:0]) //|> w
   ,.pwrbus_ram_pd   (pwrbus_ram_pd[31:0])   //|< i
   );
-assign sync2ocvt_pd   = info_sync_rd_pd[14:0];
+assign sync2ocvt_pd   = info_sync_rd_pd[16:0];
 assign sync2ocvt_pvld = info_sync_rd_pvld;
 assign info_sync_rd_prdy = sync2ocvt_prdy;
 
@@ -133,15 +133,8 @@ assign info_sync_rd_prdy = sync2ocvt_prdy;
 ///////////////////////////////////////////
 endmodule // NV_NVDLA_CDP_DP_syncfifo
 
-//
-// AUTOMATICALLY GENERATED -- DO NOT EDIT OR CHECK IN
-//
-// /home/nvtools/engr/2017/03/11_05_00_06/nvtools/scripts/fifogen
-// fifogen -input_config_yaml ../../../../../../../socd/ip_chip_tools/1.0/defs/public/fifogen/golden/tlit5/fifogen.yml -no_make_ram -no_make_ram -stdout -m NV_NVDLA_CDP_DP_info_fifo -clk_name nvdla_core_clk -reset_name nvdla_core_rstn -wr_pipebus info_wr -rd_pipebus info_rd -rd_reg -ram_bypass -d 80 -w 15 -ram ra2 [Chosen ram type: ra2 - ramgen_generic (user specified, thus no other ram type is allowed)]
-// chip config vars: assertion_module_prefix=nv_  strict_synchronizers=1  strict_synchronizers_use_lib_cells=1  strict_synchronizers_use_tm_lib_cells=1  strict_sync_randomizer=1  assertion_message_prefix=FIFOGEN_ASSERTION  allow_async_fifola=0  ignore_ramgen_fifola_variant=1  uses_p_SSYNC=0  uses_prand=1  uses_rammake_inc=1  use_x_or_0=1  force_wr_reg_gated=1  no_force_reset=1  no_timescale=1  no_pli_ifdef=1  requires_full_throughput=1  ram_auto_ff_bits_cutoff=16  ram_auto_ff_width_cutoff=2  ram_auto_ff_width_cutoff_max_depth=32  ram_auto_ff_depth_cutoff=-1  ram_auto_ff_no_la2_depth_cutoff=5  ram_auto_la2_width_cutoff=8  ram_auto_la2_width_cutoff_max_depth=56  ram_auto_la2_depth_cutoff=16  flopram_emu_model=1  dslp_single_clamp_port=1  dslp_clamp_port=1  slp_single_clamp_port=1  slp_clamp_port=1  master_clk_gated=1  clk_gate_module=NV_CLK_gate_power  redundant_timing_flops=0  hot_reset_async_force_ports_and_loopback=1  ram_sleep_en_width=1  async_cdc_reg_id=NV_AFIFO_  rd_reg_default_for_async=1  async_ram_instance_prefix=NV_ASYNC_RAM_  allow_rd_busy_reg_warning=0  do_dft_xelim_gating=1  add_dft_xelim_wr_clkgate=1  add_dft_xelim_rd_clkgate=1 
-//
-// leda B_3208_NV OFF -- Unequal length LHS and RHS in assignment
-// leda B_1405 OFF -- 2 asynchronous resets in this unit detected
+
+
 `define FORCE_CONTENTION_ASSERTION_RESET_ACTIVE 1'b1
 `include "simulate_x_tick.vh"
 
@@ -169,10 +162,10 @@ input         info_wr_pvld;
 `ifdef FV_RAND_WR_PAUSE
 input         info_wr_pause;
 `endif
-input  [14:0] info_wr_pd;
+input  [16:0] info_wr_pd;
 input         info_rd_prdy;
 output        info_rd_pvld;
-output [14:0] info_rd_pd;
+output [16:0] info_rd_pd;
 input  [31:0] pwrbus_ram_pd;
 
 // Master Clock Gating (SLCG)
@@ -268,7 +261,7 @@ wire       wr_pushing = wr_reserving;   // data pushed same cycle as info_wr_pvl
 
 reg  [6:0] info_wr_adr;			// current write address
 wire [6:0] info_rd_adr_p;		// read address to use for ram
-wire [14:0] info_rd_pd_p_byp_ram;		// read data directly out of ram
+wire [16:0] info_rd_pd_p_byp_ram;		// read data directly out of ram
 
 wire rd_enable;
 
@@ -282,7 +275,7 @@ wire [31 : 0] pwrbus_ram_pd;
 // Fifogen handles this by ignoring the data on the ram data out for that cycle.
 
 
-nv_ram_rwsthp_80x15 #(`FORCE_CONTENTION_ASSERTION_RESET_ACTIVE) ram (
+nv_ram_rwsthp_80x17 #(`FORCE_CONTENTION_ASSERTION_RESET_ACTIVE) ram (
       .clk		 ( nvdla_core_clk )
     , .pwrbus_ram_pd ( pwrbus_ram_pd )
     , .wa        ( info_wr_adr )
@@ -292,7 +285,7 @@ nv_ram_rwsthp_80x15 #(`FORCE_CONTENTION_ASSERTION_RESET_ACTIVE) ram (
     , .re        ( (do_bypass && wr_pushing) || rd_enable )
     , .dout        ( info_rd_pd_p_byp_ram )
     , .byp_sel        ( comb_bypass )
-    , .dbyp        ( info_wr_pd[14:0] )
+    , .dbyp        ( info_wr_pd[16:0] )
     , .ore        ( ore )
     );
 // next info_wr_adr if wr_pushing=1
@@ -342,7 +335,7 @@ end
 // spyglass enable_block W484
 
 assign do_bypass = (rd_popping ? (info_wr_adr == rd_adr_next) : (info_wr_adr == info_rd_adr));
-wire [14:0] info_rd_pd_p_byp = info_rd_pd_p_byp_ram;
+wire [16:0] info_rd_pd_p_byp = info_rd_pd_p_byp_ram;
 
 
 //
@@ -351,7 +344,7 @@ wire [14:0] info_rd_pd_p_byp = info_rd_pd_p_byp_ram;
 // If we're pushing an empty fifo, mux the wr_data directly.
 //
 assign comb_bypass = info_wr_count == 0;
-wire [14:0] info_rd_pd_p = info_rd_pd_p_byp;
+wire [16:0] info_rd_pd_p = info_rd_pd_p_byp;
 
 
 
@@ -609,8 +602,8 @@ always @( negedge nvdla_core_clk or negedge nvdla_core_rstn ) begin
 `else
             if ( info_wr_pvld && !(!info_wr_prdy)
                  && stall_probability != 0 ) begin
-                if ( prand_inst4(1, 100) <= stall_probability ) begin
-                    stall_cycles_left <=  prand_inst5(stall_cycles_min, stall_cycles_max);
+                if ( prand_inst0(1, 100) <= stall_probability ) begin
+                    stall_cycles_left <=  prand_inst1(stall_cycles_min, stall_cycles_max);
                 end else if ( stall_cycles_left !== 0  ) begin
                     stall_cycles_left <=  stall_cycles_left - 1;
                 end
@@ -728,6 +721,8 @@ NV_BLKBOX_SRC0 dummy_breadcrumb_fifogen_blkbox (.Y());
 //   set_boundary_optimization find(design, "NV_NVDLA_CDP_DP_info_fifo") true
 // synopsys dc_script_end
 
+//| &Attachment -no_warn EndModulePrepend;
+//| _attach_EndModulePrepend_1;
 
 `ifdef SYNTH_LEVEL1_COMPILE
 `else
@@ -735,14 +730,14 @@ NV_BLKBOX_SRC0 dummy_breadcrumb_fifogen_blkbox (.Y());
 `else
 `ifdef PRAND_VERILOG
 // Only verilog needs any local variables
-reg [47:0] prand_local_seed4;
-reg prand_initialized4;
-reg prand_no_rollpli4;
+reg [47:0] prand_local_seed0;
+reg prand_initialized0;
+reg prand_no_rollpli0;
 `endif
 `endif
 `endif
 
-function [31:0] prand_inst4;
+function [31:0] prand_inst0;
 //VCS coverage off
     input [31:0] min;
     input [31:0] max;
@@ -750,31 +745,31 @@ function [31:0] prand_inst4;
     
     begin
 `ifdef SYNTH_LEVEL1_COMPILE
-        prand_inst4 = min;
+        prand_inst0 = min;
 `else
 `ifdef SYNTHESIS
-        prand_inst4 = min;
+        prand_inst0 = min;
 `else
 `ifdef PRAND_VERILOG
-        if (prand_initialized4 !== 1'b1) begin
-            prand_no_rollpli4 = $test$plusargs("NO_ROLLPLI");
-            if (!prand_no_rollpli4)
-                prand_local_seed4 = {$prand_get_seed(4), 16'b0};
-            prand_initialized4 = 1'b1;
+        if (prand_initialized0 !== 1'b1) begin
+            prand_no_rollpli0 = $test$plusargs("NO_ROLLPLI");
+            if (!prand_no_rollpli0)
+                prand_local_seed0 = {$prand_get_seed(0), 16'b0};
+            prand_initialized0 = 1'b1;
         end
-        if (prand_no_rollpli4) begin
-            prand_inst4 = min;
+        if (prand_no_rollpli0) begin
+            prand_inst0 = min;
         end else begin
             diff = max - min + 1;
-            prand_inst4 = min + prand_local_seed4[47:16] % diff;
+            prand_inst0 = min + prand_local_seed0[47:16] % diff;
             // magic numbers taken from Java's random class (same as lrand48)
-            prand_local_seed4 = prand_local_seed4 * 48'h5deece66d + 48'd11;
+            prand_local_seed0 = prand_local_seed0 * 48'h5deece66d + 48'd11;
         end
 `else
 `ifdef PRAND_OFF
-        prand_inst4 = min;
+        prand_inst0 = min;
 `else
-        prand_inst4 = $RollPLI(min, max, "auto");
+        prand_inst0 = $RollPLI(min, max, "auto");
 `endif
 `endif
 `endif
@@ -783,6 +778,7 @@ function [31:0] prand_inst4;
 //VCS coverage on
 endfunction
 
+//| _attach_EndModulePrepend_2;
 
 `ifdef SYNTH_LEVEL1_COMPILE
 `else
@@ -790,14 +786,14 @@ endfunction
 `else
 `ifdef PRAND_VERILOG
 // Only verilog needs any local variables
-reg [47:0] prand_local_seed5;
-reg prand_initialized5;
-reg prand_no_rollpli5;
+reg [47:0] prand_local_seed1;
+reg prand_initialized1;
+reg prand_no_rollpli1;
 `endif
 `endif
 `endif
 
-function [31:0] prand_inst5;
+function [31:0] prand_inst1;
 //VCS coverage off
     input [31:0] min;
     input [31:0] max;
@@ -805,31 +801,31 @@ function [31:0] prand_inst5;
     
     begin
 `ifdef SYNTH_LEVEL1_COMPILE
-        prand_inst5 = min;
+        prand_inst1 = min;
 `else
 `ifdef SYNTHESIS
-        prand_inst5 = min;
+        prand_inst1 = min;
 `else
 `ifdef PRAND_VERILOG
-        if (prand_initialized5 !== 1'b1) begin
-            prand_no_rollpli5 = $test$plusargs("NO_ROLLPLI");
-            if (!prand_no_rollpli5)
-                prand_local_seed5 = {$prand_get_seed(5), 16'b0};
-            prand_initialized5 = 1'b1;
+        if (prand_initialized1 !== 1'b1) begin
+            prand_no_rollpli1 = $test$plusargs("NO_ROLLPLI");
+            if (!prand_no_rollpli1)
+                prand_local_seed1 = {$prand_get_seed(1), 16'b0};
+            prand_initialized1 = 1'b1;
         end
-        if (prand_no_rollpli5) begin
-            prand_inst5 = min;
+        if (prand_no_rollpli1) begin
+            prand_inst1 = min;
         end else begin
             diff = max - min + 1;
-            prand_inst5 = min + prand_local_seed5[47:16] % diff;
+            prand_inst1 = min + prand_local_seed1[47:16] % diff;
             // magic numbers taken from Java's random class (same as lrand48)
-            prand_local_seed5 = prand_local_seed5 * 48'h5deece66d + 48'd11;
+            prand_local_seed1 = prand_local_seed1 * 48'h5deece66d + 48'd11;
         end
 `else
 `ifdef PRAND_OFF
-        prand_inst5 = min;
+        prand_inst1 = min;
 `else
-        prand_inst5 = $RollPLI(min, max, "auto");
+        prand_inst1 = $RollPLI(min, max, "auto");
 `endif
 `endif
 `endif
@@ -840,6 +836,12 @@ endfunction
 
 
 endmodule // NV_NVDLA_CDP_DP_info_fifo
+
+
+
+
+
+
 
 
 #ifdef LARGE_FIFO_RAM

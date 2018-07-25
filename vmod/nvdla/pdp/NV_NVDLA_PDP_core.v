@@ -77,7 +77,7 @@ module NV_NVDLA_PDP_core (
  input    [2:0] padding_h_cfg;
  input    [2:0] padding_v_cfg;
  input          pdp_dp2wdma_ready;
- input   [NVDLA_PDP_THROUGHPUT*NVDLA_PDP_BWPE+11:0] pdp_rdma2dp_pd;
+ input   [NVDLA_PDP_THROUGHPUT*NVDLA_PDP_BWPE+13:0] pdp_rdma2dp_pd;
  input          pdp_rdma2dp_valid;
  input   [12:0] pooling_channel_cfg;
  input    [9:0] pooling_fwidth_cfg;
@@ -131,7 +131,7 @@ module NV_NVDLA_PDP_core (
  wire   [NVDLA_PDP_THROUGHPUT*(NVDLA_PDP_BWPE+6)-1:0] pooling1d_pd;
  wire           pooling1d_prdy;
  wire           pooling1d_pvld;
- wire    [NVDLA_PDP_THROUGHPUT*NVDLA_PDP_BWPE+11:0] pre2cal1d_pd;
+ wire    [NVDLA_PDP_THROUGHPUT*NVDLA_PDP_BWPE+13:0] pre2cal1d_pd;
  wire           pre2cal1d_prdy;
  wire           pre2cal1d_pvld;
 

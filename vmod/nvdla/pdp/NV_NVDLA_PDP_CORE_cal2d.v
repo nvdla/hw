@@ -642,8 +642,8 @@ assign average_pooling_en = (pooling_type_cfg== 2'h0 );
 //////////////////////////////////////////////////////////////////////////////////////
 //: my $m = NVDLA_MEMORY_ATOMIC_SIZE;
 //: my $k = NVDLA_PDP_THROUGHPUT;
-//: my $j = int($m / $k);
-//: print "assign data_c_end = (c_cnt == 5'd${j}-1); \n";
+//: my $j = int($m/$k -1);
+//: print "assign data_c_end = (c_cnt == 5'd${j}); \n";
 always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
   if (!nvdla_core_rstn) begin
     c_cnt[4:0] <= 0;
