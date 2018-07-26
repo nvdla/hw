@@ -39,7 +39,7 @@ input  [NVDLA_MEM_ADDRESS_WIDTH+12:0] arb2spt_cmd_pd;
 
 input          arb2spt_dat_valid;  /* data valid */
 output         arb2spt_dat_ready;  /* data return handshake */
-input  [NVDLA_MEMIF_WIDTH:0] arb2spt_dat_pd;
+input  [NVDLA_MEMIF_WIDTH+1:0] arb2spt_dat_pd;
 
 output        spt2cvt_cmd_valid;  /* data valid */
 input         spt2cvt_cmd_ready;  /* data return handshake */
@@ -47,7 +47,7 @@ output [NVDLA_MEM_ADDRESS_WIDTH+12:0] spt2cvt_cmd_pd;
 
 output         spt2cvt_dat_valid;  /* data valid */
 input          spt2cvt_dat_ready;  /* data return handshake */
-output [NVDLA_MEMIF_WIDTH:0] spt2cvt_dat_pd;
+output [NVDLA_MEMIF_WIDTH+1:0] spt2cvt_dat_pd;
 
 input [31:0] pwrbus_ram_pd;
 
@@ -63,7 +63,7 @@ wire         cvt_cmd_require_ack;
 wire   [2:0] cvt_cmd_size;
 wire         cvt_cmd_swizzle;
 wire [NVDLA_MEMIF_WIDTH-1:0] cvt_dat_data;
-wire   [NVDLA_DMA_MASK_BIT-1:0] cvt_dat_mask;
+wire   [1:0] cvt_dat_mask;
 wire         cvt_dat_rdy;
 wire  [NVDLA_MEM_ADDRESS_WIDTH-1:0] spt_cmd_addr;
 wire   [3:0] spt_cmd_axid;
@@ -78,8 +78,8 @@ wire   [2:0] spt_cmd_size;
 wire         spt_cmd_swizzle;
 wire         spt_cmd_vld;
 wire [NVDLA_MEMIF_WIDTH-1:0] spt_dat_data;
-wire   [NVDLA_DMA_MASK_BIT-1:0] spt_dat_mask;
-wire [NVDLA_MEMIF_WIDTH:0] spt_dat_pd;
+wire   [1:0] spt_dat_mask;
+wire [NVDLA_MEMIF_WIDTH+1:0] spt_dat_pd;
 wire         spt_dat_rdy;
 wire         spt_dat_vld;
 // synoff nets
@@ -123,10 +123,10 @@ NV_NVDLA_NOCIF_DRAM_WRITE_IG_SPT_dfifo u_dfifo (
   ,.nvdla_core_rstn   (nvdla_core_rstn)        //|< i
   ,.dfifo_wr_count    (arb2spt_dat_count[2:0]) //|> w
   ,.dfifo_wr_pvld     (arb2spt_dat_valid)      //|< i
-  ,.dfifo_wr_pd       (arb2spt_dat_pd[NVDLA_MEMIF_WIDTH:0])  //|< i
+  ,.dfifo_wr_pd       (arb2spt_dat_pd[NVDLA_MEMIF_WIDTH+1:0])  //|< i
   ,.dfifo_rd_prdy     (spt_dat_rdy)            //|< w
   ,.dfifo_rd_pvld     (spt_dat_vld)            //|> w
-  ,.dfifo_rd_pd       (spt_dat_pd[NVDLA_MEMIF_WIDTH:0])      //|> w
+  ,.dfifo_rd_pd       (spt_dat_pd[NVDLA_MEMIF_WIDTH+1:0])      //|> w
   ,.pwrbus_ram_pd     (pwrbus_ram_pd[31:0])    //|< i
   );
 //&Connect dfifo_wr_prdy  ;
@@ -149,7 +149,7 @@ assign         spt_cmd_ftran  =    spt_cmd_pd[NVDLA_MEM_ADDRESS_WIDTH+12];
 
 // PKT_UNPACK_WIRE( cvt_write_data , spt_dat_ , spt_dat_pd )
 assign       spt_dat_data[NVDLA_MEMIF_WIDTH-1:0] =    spt_dat_pd[NVDLA_MEMIF_WIDTH-1:0];
-assign       spt_dat_mask =    spt_dat_pd[NVDLA_MEMIF_WIDTH+NVDLA_DMA_MASK_BIT-1:NVDLA_MEMIF_WIDTH];
+assign       spt_dat_mask[1:0] =    spt_dat_pd[NVDLA_MEMIF_WIDTH+1:NVDLA_MEMIF_WIDTH];
 
 //==============
 //====OUTPUT====
@@ -191,7 +191,7 @@ assign spt2cvt_dat_valid = spt_dat_vld;
 
 // PKT_PACK_WIRE( cvt_write_data , cvt_dat_ , spt2cvt_dat_pd )
 assign      spt2cvt_dat_pd[NVDLA_MEMIF_WIDTH-1:0] =    cvt_dat_data[NVDLA_MEMIF_WIDTH-1:0];
-assign      spt2cvt_dat_pd[NVDLA_MEMIF_WIDTH+NVDLA_DMA_MASK_BIT-1:NVDLA_MEMIF_WIDTH] =    cvt_dat_mask[NVDLA_DMA_MASK_BIT-1:0];
+assign      spt2cvt_dat_pd[NVDLA_MEMIF_WIDTH+1:NVDLA_MEMIF_WIDTH] =    cvt_dat_mask[1:0];
 
 endmodule // NV_NVDLA_NOCIF_WRITE_IG_spt
 
@@ -388,10 +388,10 @@ input         nvdla_core_clk;
 input         nvdla_core_rstn;
 output [2:0] dfifo_wr_count;
 input         dfifo_wr_pvld;
-input  [NVDLA_MEMIF_WIDTH:0] dfifo_wr_pd;
+input  [NVDLA_MEMIF_WIDTH+1:0] dfifo_wr_pd;
 input         dfifo_rd_prdy;
 output        dfifo_rd_pvld;
-output [NVDLA_MEMIF_WIDTH:0] dfifo_rd_pd;
+output [NVDLA_MEMIF_WIDTH+1:0] dfifo_rd_pd;
 input  [31:0] pwrbus_ram_pd;
 
 // Master Clock Gating (SLCG)
@@ -465,7 +465,7 @@ end
 
 reg [2:0] dfifo_rd_adr;          // read address this cycle
 wire ram_we = wr_pushing;   // note: write occurs next cycle
-wire [NVDLA_MEMIF_WIDTH:0] dfifo_rd_pd;                    // read data out of ram
+wire [NVDLA_MEMIF_WIDTH+1:0] dfifo_rd_pd;                    // read data out of ram
 
 wire [31 : 0] pwrbus_ram_pd;
 
@@ -720,11 +720,11 @@ endmodule // NV_NVDLA_NOCIF_DRAM_WRITE_IG_SPT_dfifo
 
 input  clk;  // write clock
 input [31 : 0] pwrbus_ram_pd;
-input  [NVDLA_MEMIF_WIDTH:0] di;
+input  [NVDLA_MEMIF_WIDTH+1:0] di;
 input  we;
 input  [2:0] wa;
 input  [2:0] ra;
-output [NVDLA_MEMIF_WIDTH:0] dout;
+output [NVDLA_MEMIF_WIDTH+1:0] dout;
 
 `ifndef FPGA 
 NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_0 (.A(pwrbus_ram_pd[0]));
@@ -824,11 +824,11 @@ NV_BLKBOX_SINK UJ_BBOX2UNIT_UNUSED_pwrbus_31 (.A(pwrbus_ram_pd[31]));
 `endif 
 
 
-reg [NVDLA_MEMIF_WIDTH:0] ram_ff0;
-reg [NVDLA_MEMIF_WIDTH:0] ram_ff1;
-reg [NVDLA_MEMIF_WIDTH:0] ram_ff2;
-reg [NVDLA_MEMIF_WIDTH:0] ram_ff3;
-reg [NVDLA_MEMIF_WIDTH:0] ram_ff4;
+reg [NVDLA_MEMIF_WIDTH+1:0] ram_ff0;
+reg [NVDLA_MEMIF_WIDTH+1:0] ram_ff1;
+reg [NVDLA_MEMIF_WIDTH+1:0] ram_ff2;
+reg [NVDLA_MEMIF_WIDTH+1:0] ram_ff3;
+reg [NVDLA_MEMIF_WIDTH+1:0] ram_ff4;
 
 always @( posedge clk ) begin
     if ( we && wa == 3'd0 ) begin
@@ -848,7 +848,7 @@ always @( posedge clk ) begin
     end
 end
 
-reg [NVDLA_MEMIF_WIDTH:0] dout;
+reg [NVDLA_MEMIF_WIDTH+1:0] dout;
 
 always @(*) begin
     case( ra ) 

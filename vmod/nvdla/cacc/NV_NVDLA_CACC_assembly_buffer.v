@@ -54,10 +54,12 @@ wire [CACC_ABUF_AWIDTH-1:0] abuf_rd_addr;
 // 1 pipe for sram read data.
 //: &eperl::flop("-q abuf_rd_en_d1 -d \"abuf_rd_en\" -clk nvdla_core_clk -rst nvdla_core_rstn");
 wire [CACC_ABUF_WIDTH-1:0] abuf_rd_raw_data = abuf_rd_data_ecc;
+// spygalss disable_block STARC-2.10.1.6
 // spyglass disable_block STARC05-3.3.1.4b
 //: my $kk=CACC_ABUF_WIDTH;
 //: &eperl::flop("-wid ${kk} -norst -q abuf_rd_raw_data_d1 -en \"abuf_rd_en_d1\" -d \"abuf_rd_raw_data\" -clk nvdla_core_clk");
 // spyglass enable_block NoWidthInBasedNum-ML
+// spyglass enable_block STARC-2.10.1.6
 // spyglass enable_block STARC05-3.3.1.4b
 
 assign abuf_rd_data = abuf_rd_raw_data_d1;

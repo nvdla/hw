@@ -11,6 +11,8 @@
 `include "simulate_x_tick.vh"
 `define FORCE_CONTENTION_ASSERTION_RESET_ACTIVE 1'b1
 `include "simulate_x_tick.vh"
+#include "NV_NVDLA_define.h"
+
 module NV_NVDLA_NOCIF_DRAM_READ_cq (
       nvdla_core_clk
     , nvdla_core_rstn
@@ -51,6 +53,24 @@ module NV_NVDLA_NOCIF_DRAM_READ_cq (
     , cq_rd9_prdy
     , cq_rd9_pvld
     , cq_rd9_pd
+    , cq_rd10_prdy
+    , cq_rd10_pvld
+    , cq_rd10_pd
+    , cq_rd11_prdy
+    , cq_rd11_pvld
+    , cq_rd11_pd
+    , cq_rd12_prdy
+    , cq_rd12_pvld
+    , cq_rd12_pd
+    , cq_rd13_prdy
+    , cq_rd13_pvld
+    , cq_rd13_pd
+    , cq_rd14_prdy
+    , cq_rd14_pvld
+    , cq_rd14_pd
+    , cq_rd15_prdy
+    , cq_rd15_pvld
+    , cq_rd15_pd
     , pwrbus_ram_pd
     );
 
@@ -94,11 +114,29 @@ output [6:0] cq_rd8_pd;
 input         cq_rd9_prdy;
 output        cq_rd9_pvld;
 output [6:0] cq_rd9_pd;
+input         cq_rd10_prdy;
+output        cq_rd10_pvld;
+output [6:0] cq_rd10_pd;
+input         cq_rd11_prdy;
+output        cq_rd11_pvld;
+output [6:0] cq_rd11_pd;
+input         cq_rd12_prdy;
+output        cq_rd12_pvld;
+output [6:0] cq_rd12_pd;
+input         cq_rd13_prdy;
+output        cq_rd13_pvld;
+output [6:0] cq_rd13_pd;
+input         cq_rd14_prdy;
+output        cq_rd14_pvld;
+output [6:0] cq_rd14_pd;
+input         cq_rd15_prdy;
+output        cq_rd15_pvld;
+output [6:0] cq_rd15_pd;
 input  [31:0] pwrbus_ram_pd;
 
 // -rd_take_to_rd_busy internal credit/take/data signals (which would have been ports)
 //
-//wire [9:0] cq_rd_credit;
+//wire [15:0] cq_rd_credit;
 wire       cq_rd_take;
 wire [6:0] cq_rd_pd_p;
 wire [3:0] cq_rd_take_thread_id;
@@ -2090,11 +2128,11 @@ assign wr_popping = rd_popping;
 //
 // credits for taker are simply rd_pushing*
 //
-reg [9:0] cq_rd_credit;			// registered out take credits
+reg [15:0] cq_rd_credit;			// registered out take credits
 reg rd_pushing_q;
 always @( posedge nvdla_core_clk_mgated or negedge nvdla_core_rstn ) begin
     if ( !nvdla_core_rstn ) begin
-        cq_rd_credit <=  10'd0;
+        cq_rd_credit <=  16'd0;
         rd_pushing_q <=  1'b0;
     end else begin
         if ( rd_pushing || rd_pushing_q ) begin
@@ -2108,6 +2146,12 @@ always @( posedge nvdla_core_clk_mgated or negedge nvdla_core_rstn ) begin
             cq_rd_credit[7] <=  rd_pushing && rd_pushing_thread_id == 4'd7;
             cq_rd_credit[8] <=  rd_pushing && rd_pushing_thread_id == 4'd8;
             cq_rd_credit[9] <=  rd_pushing && rd_pushing_thread_id == 4'd9;
+            cq_rd_credit[10] <=  rd_pushing && rd_pushing_thread_id == 4'd10;
+            cq_rd_credit[11] <=  rd_pushing && rd_pushing_thread_id == 4'd11;
+            cq_rd_credit[12] <=  rd_pushing && rd_pushing_thread_id == 4'd12;
+            cq_rd_credit[13] <=  rd_pushing && rd_pushing_thread_id == 4'd13;
+            cq_rd_credit[14] <=  rd_pushing && rd_pushing_thread_id == 4'd14;
+            cq_rd_credit[15] <=  rd_pushing && rd_pushing_thread_id == 4'd15;
             rd_pushing_q <=  rd_pushing;
         end
     end
@@ -2122,6 +2166,12 @@ wire rd_pushing6 = rd_pushing && rd_pushing_thread_id == 4'd6;
 wire rd_pushing7 = rd_pushing && rd_pushing_thread_id == 4'd7;
 wire rd_pushing8 = rd_pushing && rd_pushing_thread_id == 4'd8;
 wire rd_pushing9 = rd_pushing && rd_pushing_thread_id == 4'd9;
+wire rd_pushing10 = rd_pushing && rd_pushing_thread_id == 4'd10;
+wire rd_pushing11 = rd_pushing && rd_pushing_thread_id == 4'd11;
+wire rd_pushing12 = rd_pushing && rd_pushing_thread_id == 4'd12;
+wire rd_pushing13 = rd_pushing && rd_pushing_thread_id == 4'd13;
+wire rd_pushing14 = rd_pushing && rd_pushing_thread_id == 4'd14;
+wire rd_pushing15 = rd_pushing && rd_pushing_thread_id == 4'd15;
 
 wire rd_take0 = cq_rd_take && cq_rd_take_thread_id == 4'd0; 
 wire rd_take1 = cq_rd_take && cq_rd_take_thread_id == 4'd1; 
@@ -2133,6 +2183,12 @@ wire rd_take6 = cq_rd_take && cq_rd_take_thread_id == 4'd6;
 wire rd_take7 = cq_rd_take && cq_rd_take_thread_id == 4'd7; 
 wire rd_take8 = cq_rd_take && cq_rd_take_thread_id == 4'd8; 
 wire rd_take9 = cq_rd_take && cq_rd_take_thread_id == 4'd9; 
+wire rd_take10 = cq_rd_take && cq_rd_take_thread_id == 4'd10; 
+wire rd_take11 = cq_rd_take && cq_rd_take_thread_id == 4'd11; 
+wire rd_take12 = cq_rd_take && cq_rd_take_thread_id == 4'd12; 
+wire rd_take13 = cq_rd_take && cq_rd_take_thread_id == 4'd13; 
+wire rd_take14 = cq_rd_take && cq_rd_take_thread_id == 4'd14; 
+wire rd_take15 = cq_rd_take && cq_rd_take_thread_id == 4'd15; 
 
 
 reg [7:0] head0; // thread 0's head pointer
@@ -2165,23 +2221,41 @@ reg [7:0] tail8; // thread 8's tail pointer
 reg [7:0] head9; // thread 9's head pointer
 reg [7:0] tail9; // thread 9's tail pointer
 
-reg [9:0] rd_take_n_dly;
+reg [7:0] head10; // thread 10's head pointer
+reg [7:0] tail10; // thread 10's tail pointer
+
+reg [7:0] head11; // thread 11's head pointer
+reg [7:0] tail11; // thread 11's tail pointer
+
+reg [7:0] head12; // thread 12's head pointer
+reg [7:0] tail12; // thread 12's tail pointer
+
+reg [7:0] head13; // thread 13's head pointer
+reg [7:0] tail13; // thread 13's tail pointer
+
+reg [7:0] head14; // thread 14's head pointer
+reg [7:0] tail14; // thread 14's tail pointer
+
+reg [7:0] head15; // thread 15's head pointer
+reg [7:0] tail15; // thread 15's tail pointer
+
+reg [15:0] rd_take_n_dly;
 reg rd_take_dly_cg;
 wire update_rd_take_n_dly = cq_rd_take || rd_take_dly_cg; 
 always @( posedge nvdla_core_clk_mgated or negedge nvdla_core_rstn ) begin
     if ( !nvdla_core_rstn ) begin
         rd_take_dly_cg <=  1'b0;
-        rd_take_n_dly <=  {10{1'b0}};
+        rd_take_n_dly <=  {16{1'b0}};
     end else begin
         rd_take_dly_cg <=  cq_rd_take;
 
         if ( update_rd_take_n_dly ) begin
-            rd_take_n_dly <=  {rd_take9,rd_take8,rd_take7,rd_take6,rd_take5,rd_take4,rd_take3,rd_take2,rd_take1,rd_take0};
+            rd_take_n_dly <=  {rd_take15,rd_take14,rd_take13,rd_take12,rd_take11,rd_take10,rd_take9,rd_take8,rd_take7,rd_take6,rd_take5,rd_take4,rd_take3,rd_take2,rd_take1,rd_take0};
         end
         //synopsys translate_off
             else if ( !update_rd_take_n_dly) begin
         end else begin
-            rd_take_n_dly <=  {10{`x_or_0}};
+            rd_take_n_dly <=  {16{`x_or_0}};
         end
         //synopsys translate_on
 
@@ -2215,6 +2289,18 @@ reg  [8:0] cq_rd_count8;
 wire [8:0] rd_count8_next;
 reg  [8:0] cq_rd_count9;
 wire [8:0] rd_count9_next;
+reg  [8:0] cq_rd_count10;
+wire [8:0] rd_count10_next;
+reg  [8:0] cq_rd_count11;
+wire [8:0] rd_count11_next;
+reg  [8:0] cq_rd_count12;
+wire [8:0] rd_count12_next;
+reg  [8:0] cq_rd_count13;
+wire [8:0] rd_count13_next;
+reg  [8:0] cq_rd_count14;
+wire [8:0] rd_count14_next;
+reg  [8:0] cq_rd_count15;
+wire [8:0] rd_count15_next;
 
 assign rd_count0_next = 
     rd_pushing0 ? ( rd_take0 ? cq_rd_count0 : cq_rd_count0 + 1'd1 ) : 
@@ -2246,6 +2332,24 @@ assign rd_count8_next =
 assign rd_count9_next = 
     rd_pushing9 ? ( rd_take9 ? cq_rd_count9 : cq_rd_count9 + 1'd1 ) : 
                   ( rd_take9 ? cq_rd_count9 - 1'd1 : cq_rd_count9 );
+assign rd_count10_next = 
+    rd_pushing10 ? ( rd_take10 ? cq_rd_count10 : cq_rd_count10 + 1'd1 ) : 
+                  ( rd_take10 ? cq_rd_count10 - 1'd1 : cq_rd_count10 );
+assign rd_count11_next = 
+    rd_pushing11 ? ( rd_take11 ? cq_rd_count11 : cq_rd_count11 + 1'd1 ) : 
+                  ( rd_take11 ? cq_rd_count11 - 1'd1 : cq_rd_count11 );
+assign rd_count12_next = 
+    rd_pushing12 ? ( rd_take12 ? cq_rd_count12 : cq_rd_count12 + 1'd1 ) : 
+                  ( rd_take12 ? cq_rd_count12 - 1'd1 : cq_rd_count12 );
+assign rd_count13_next = 
+    rd_pushing13 ? ( rd_take13 ? cq_rd_count13 : cq_rd_count13 + 1'd1 ) : 
+                  ( rd_take13 ? cq_rd_count13 - 1'd1 : cq_rd_count13 );
+assign rd_count14_next = 
+    rd_pushing14 ? ( rd_take14 ? cq_rd_count14 : cq_rd_count14 + 1'd1 ) : 
+                  ( rd_take14 ? cq_rd_count14 - 1'd1 : cq_rd_count14 );
+assign rd_count15_next = 
+    rd_pushing15 ? ( rd_take15 ? cq_rd_count15 : cq_rd_count15 + 1'd1 ) : 
+                  ( rd_take15 ? cq_rd_count15 - 1'd1 : cq_rd_count15 );
 always @( posedge nvdla_core_clk_mgated or negedge nvdla_core_rstn ) begin
     if ( !nvdla_core_rstn ) begin
         cq_rd_count0 <=  9'd0;
@@ -2258,6 +2362,12 @@ always @( posedge nvdla_core_clk_mgated or negedge nvdla_core_rstn ) begin
         cq_rd_count7 <=  9'd0;
         cq_rd_count8 <=  9'd0;
         cq_rd_count9 <=  9'd0;
+        cq_rd_count10 <=  9'd0;
+        cq_rd_count11 <=  9'd0;
+        cq_rd_count12 <=  9'd0;
+        cq_rd_count13 <=  9'd0;
+        cq_rd_count14 <=  9'd0;
+        cq_rd_count15 <=  9'd0;
     end else begin
         if ( rd_pushing0 ^ rd_take0 ) begin
             cq_rd_count0 <=  rd_count0_next;
@@ -2359,11 +2469,71 @@ always @( posedge nvdla_core_clk_mgated or negedge nvdla_core_rstn ) begin
         end
         //synopsys translate_on
 
+        if ( rd_pushing10 ^ rd_take10 ) begin
+            cq_rd_count10 <=  rd_count10_next;
+        end 
+        //synopsys translate_off
+            else if ( !(rd_pushing10 ^ rd_take10) ) begin
+        end else begin
+            cq_rd_count10 <=  {9{`x_or_0}};
+        end
+        //synopsys translate_on
+
+        if ( rd_pushing11 ^ rd_take11 ) begin
+            cq_rd_count11 <=  rd_count11_next;
+        end 
+        //synopsys translate_off
+            else if ( !(rd_pushing11 ^ rd_take11) ) begin
+        end else begin
+            cq_rd_count11 <=  {9{`x_or_0}};
+        end
+        //synopsys translate_on
+
+        if ( rd_pushing12 ^ rd_take12 ) begin
+            cq_rd_count12 <=  rd_count12_next;
+        end 
+        //synopsys translate_off
+            else if ( !(rd_pushing12 ^ rd_take12) ) begin
+        end else begin
+            cq_rd_count12 <=  {9{`x_or_0}};
+        end
+        //synopsys translate_on
+
+        if ( rd_pushing13 ^ rd_take13 ) begin
+            cq_rd_count13 <=  rd_count13_next;
+        end 
+        //synopsys translate_off
+            else if ( !(rd_pushing13 ^ rd_take13) ) begin
+        end else begin
+            cq_rd_count13 <=  {9{`x_or_0}};
+        end
+        //synopsys translate_on
+
+        if ( rd_pushing14 ^ rd_take14 ) begin
+            cq_rd_count14 <=  rd_count14_next;
+        end 
+        //synopsys translate_off
+            else if ( !(rd_pushing14 ^ rd_take14) ) begin
+        end else begin
+            cq_rd_count14 <=  {9{`x_or_0}};
+        end
+        //synopsys translate_on
+
+        if ( rd_pushing15 ^ rd_take15 ) begin
+            cq_rd_count15 <=  rd_count15_next;
+        end 
+        //synopsys translate_off
+            else if ( !(rd_pushing15 ^ rd_take15) ) begin
+        end else begin
+            cq_rd_count15 <=  {9{`x_or_0}};
+        end
+        //synopsys translate_on
+
     end
 end
 
-reg [9:0] update_head;
-wire [9:0] update_head_next;
+reg [15:0] update_head;
+wire [15:0] update_head_next;
 
 assign update_head_next[0] = (rd_take0 && cq_rd_count0 > 9'd1) ? 1'b1 : 1'b0; 
 assign update_head_next[1] = (rd_take1 && cq_rd_count1 > 9'd1) ? 1'b1 : 1'b0; 
@@ -2375,9 +2545,15 @@ assign update_head_next[6] = (rd_take6 && cq_rd_count6 > 9'd1) ? 1'b1 : 1'b0;
 assign update_head_next[7] = (rd_take7 && cq_rd_count7 > 9'd1) ? 1'b1 : 1'b0; 
 assign update_head_next[8] = (rd_take8 && cq_rd_count8 > 9'd1) ? 1'b1 : 1'b0; 
 assign update_head_next[9] = (rd_take9 && cq_rd_count9 > 9'd1) ? 1'b1 : 1'b0; 
+assign update_head_next[10] = (rd_take10 && cq_rd_count10 > 9'd1) ? 1'b1 : 1'b0; 
+assign update_head_next[11] = (rd_take11 && cq_rd_count11 > 9'd1) ? 1'b1 : 1'b0; 
+assign update_head_next[12] = (rd_take12 && cq_rd_count12 > 9'd1) ? 1'b1 : 1'b0; 
+assign update_head_next[13] = (rd_take13 && cq_rd_count13 > 9'd1) ? 1'b1 : 1'b0; 
+assign update_head_next[14] = (rd_take14 && cq_rd_count14 > 9'd1) ? 1'b1 : 1'b0; 
+assign update_head_next[15] = (rd_take15 && cq_rd_count15 > 9'd1) ? 1'b1 : 1'b0; 
 always @( posedge nvdla_core_clk_mgated or negedge nvdla_core_rstn ) begin
     if ( !nvdla_core_rstn ) begin
-        update_head <=  10'd0;
+        update_head <=  16'd0;
     end else begin
 
         if ( rd_pushing || cq_rd_take ) begin
@@ -2386,9 +2562,15 @@ always @( posedge nvdla_core_clk_mgated or negedge nvdla_core_rstn ) begin
         //synopsys translate_off
             else if ( !(rd_pushing || cq_rd_take) ) begin
         end else begin
-            update_head <=  {10{`x_or_0}};
+            update_head <=  {16{`x_or_0}};
         end
         //synopsys translate_on
+
+
+
+
+
+
 
 
 
@@ -2594,6 +2776,120 @@ always @(posedge nvdla_core_clk_mgated) begin
         head9 <=  adr_ram_rd_data;
     end
 
+
+    if ( rd_pushing10 ) begin
+        tail10 <=  rd_pushing_adr;
+    end 
+    //synopsys translate_off
+        else if ( !rd_pushing10 ) begin
+    end else begin
+        tail10 <=  {8{`x_or_0}};
+    end
+    //synopsys translate_on
+
+
+    if ( (rd_pushing10 && cq_rd_count10 == 9'd0 ) ||
+         (rd_pushing10 && rd_take10 && cq_rd_count10 == 9'd1) ) begin
+        head10 <=  rd_pushing_adr;
+    end else if ( update_head[10] ) begin
+        head10 <=  adr_ram_rd_data;
+    end
+
+
+    if ( rd_pushing11 ) begin
+        tail11 <=  rd_pushing_adr;
+    end 
+    //synopsys translate_off
+        else if ( !rd_pushing11 ) begin
+    end else begin
+        tail11 <=  {8{`x_or_0}};
+    end
+    //synopsys translate_on
+
+
+    if ( (rd_pushing11 && cq_rd_count11 == 9'd0 ) ||
+         (rd_pushing11 && rd_take11 && cq_rd_count11 == 9'd1) ) begin
+        head11 <=  rd_pushing_adr;
+    end else if ( update_head[11] ) begin
+        head11 <=  adr_ram_rd_data;
+    end
+
+
+    if ( rd_pushing12 ) begin
+        tail12 <=  rd_pushing_adr;
+    end 
+    //synopsys translate_off
+        else if ( !rd_pushing12 ) begin
+    end else begin
+        tail12 <=  {8{`x_or_0}};
+    end
+    //synopsys translate_on
+
+
+    if ( (rd_pushing12 && cq_rd_count12 == 9'd0 ) ||
+         (rd_pushing12 && rd_take12 && cq_rd_count12 == 9'd1) ) begin
+        head12 <=  rd_pushing_adr;
+    end else if ( update_head[12] ) begin
+        head12 <=  adr_ram_rd_data;
+    end
+
+
+    if ( rd_pushing13 ) begin
+        tail13 <=  rd_pushing_adr;
+    end 
+    //synopsys translate_off
+        else if ( !rd_pushing13 ) begin
+    end else begin
+        tail13 <=  {8{`x_or_0}};
+    end
+    //synopsys translate_on
+
+
+    if ( (rd_pushing13 && cq_rd_count13 == 9'd0 ) ||
+         (rd_pushing13 && rd_take13 && cq_rd_count13 == 9'd1) ) begin
+        head13 <=  rd_pushing_adr;
+    end else if ( update_head[13] ) begin
+        head13 <=  adr_ram_rd_data;
+    end
+
+
+    if ( rd_pushing14 ) begin
+        tail14 <=  rd_pushing_adr;
+    end 
+    //synopsys translate_off
+        else if ( !rd_pushing14 ) begin
+    end else begin
+        tail14 <=  {8{`x_or_0}};
+    end
+    //synopsys translate_on
+
+
+    if ( (rd_pushing14 && cq_rd_count14 == 9'd0 ) ||
+         (rd_pushing14 && rd_take14 && cq_rd_count14 == 9'd1) ) begin
+        head14 <=  rd_pushing_adr;
+    end else if ( update_head[14] ) begin
+        head14 <=  adr_ram_rd_data;
+    end
+
+
+    if ( rd_pushing15 ) begin
+        tail15 <=  rd_pushing_adr;
+    end 
+    //synopsys translate_off
+        else if ( !rd_pushing15 ) begin
+    end else begin
+        tail15 <=  {8{`x_or_0}};
+    end
+    //synopsys translate_on
+
+
+    if ( (rd_pushing15 && cq_rd_count15 == 9'd0 ) ||
+         (rd_pushing15 && rd_take15 && cq_rd_count15 == 9'd1) ) begin
+        head15 <=  rd_pushing_adr;
+    end else if ( update_head[15] ) begin
+        head15 <=  adr_ram_rd_data;
+    end
+
 end
 
 
@@ -2622,6 +2918,12 @@ always @(*) begin
         4'd7: adr_ram_wr_adr = tail7;
         4'd8: adr_ram_wr_adr = tail8;
         4'd9: adr_ram_wr_adr = tail9;
+        4'd10: adr_ram_wr_adr = tail10;
+        4'd11: adr_ram_wr_adr = tail11;
+        4'd12: adr_ram_wr_adr = tail12;
+        4'd13: adr_ram_wr_adr = tail13;
+        4'd14: adr_ram_wr_adr = tail14;
+        4'd15: adr_ram_wr_adr = tail15;
         //VCS coverage off
         default: adr_ram_wr_adr = {8{`x_or_0}};
         //VCS coverage on
@@ -2640,6 +2942,12 @@ always @(*) begin
         4'd7: adr_ram_wr_enable = rd_pushing && cq_rd_count7 != 9'd0 ? 1'b1 : 1'b0;
         4'd8: adr_ram_wr_enable = rd_pushing && cq_rd_count8 != 9'd0 ? 1'b1 : 1'b0;
         4'd9: adr_ram_wr_enable = rd_pushing && cq_rd_count9 != 9'd0 ? 1'b1 : 1'b0;
+        4'd10: adr_ram_wr_enable = rd_pushing && cq_rd_count10 != 9'd0 ? 1'b1 : 1'b0;
+        4'd11: adr_ram_wr_enable = rd_pushing && cq_rd_count11 != 9'd0 ? 1'b1 : 1'b0;
+        4'd12: adr_ram_wr_enable = rd_pushing && cq_rd_count12 != 9'd0 ? 1'b1 : 1'b0;
+        4'd13: adr_ram_wr_enable = rd_pushing && cq_rd_count13 != 9'd0 ? 1'b1 : 1'b0;
+        4'd14: adr_ram_wr_enable = rd_pushing && cq_rd_count14 != 9'd0 ? 1'b1 : 1'b0;
+        4'd15: adr_ram_wr_enable = rd_pushing && cq_rd_count15 != 9'd0 ? 1'b1 : 1'b0;
         //VCS coverage off
         default: adr_ram_wr_enable = !rd_pushing ? 1'b0 : `x_or_0;
         //VCS coverage on
@@ -2658,6 +2966,12 @@ always @(*) begin
         4'd7: adr_ram_rd_enable = cq_rd_take && cq_rd_count7 != 9'd0 ? 1'b1 : 1'b0;
         4'd8: adr_ram_rd_enable = cq_rd_take && cq_rd_count8 != 9'd0 ? 1'b1 : 1'b0;
         4'd9: adr_ram_rd_enable = cq_rd_take && cq_rd_count9 != 9'd0 ? 1'b1 : 1'b0;
+        4'd10: adr_ram_rd_enable = cq_rd_take && cq_rd_count10 != 9'd0 ? 1'b1 : 1'b0;
+        4'd11: adr_ram_rd_enable = cq_rd_take && cq_rd_count11 != 9'd0 ? 1'b1 : 1'b0;
+        4'd12: adr_ram_rd_enable = cq_rd_take && cq_rd_count12 != 9'd0 ? 1'b1 : 1'b0;
+        4'd13: adr_ram_rd_enable = cq_rd_take && cq_rd_count13 != 9'd0 ? 1'b1 : 1'b0;
+        4'd14: adr_ram_rd_enable = cq_rd_take && cq_rd_count14 != 9'd0 ? 1'b1 : 1'b0;
+        4'd15: adr_ram_rd_enable = cq_rd_take && cq_rd_count15 != 9'd0 ? 1'b1 : 1'b0;
         //VCS coverage off
         default: adr_ram_rd_enable = !cq_rd_take ? 1'b0 : `x_or_0;
         //VCS coverage on
@@ -2676,6 +2990,12 @@ always @(*) begin
         4'd7: adr_ram_rd_adr = rd_take_n_dly[7] && update_head[7] ? adr_ram_rd_data : head7;
         4'd8: adr_ram_rd_adr = rd_take_n_dly[8] && update_head[8] ? adr_ram_rd_data : head8;
         4'd9: adr_ram_rd_adr = rd_take_n_dly[9] && update_head[9] ? adr_ram_rd_data : head9;
+        4'd10: adr_ram_rd_adr = rd_take_n_dly[10] && update_head[10] ? adr_ram_rd_data : head10;
+        4'd11: adr_ram_rd_adr = rd_take_n_dly[11] && update_head[11] ? adr_ram_rd_data : head11;
+        4'd12: adr_ram_rd_adr = rd_take_n_dly[12] && update_head[12] ? adr_ram_rd_data : head12;
+        4'd13: adr_ram_rd_adr = rd_take_n_dly[13] && update_head[13] ? adr_ram_rd_data : head13;
+        4'd14: adr_ram_rd_adr = rd_take_n_dly[14] && update_head[14] ? adr_ram_rd_data : head14;
+        4'd15: adr_ram_rd_adr = rd_take_n_dly[15] && update_head[15] ? adr_ram_rd_data : head15;
         //VCS coverage off
         default: adr_ram_rd_adr = {8{`x_or_0}};
         //VCS coverage on
@@ -2694,6 +3014,12 @@ always @(*) begin
         4'd7: cq_rd_adr = rd_take_n_dly[7] && update_head[7] ? adr_ram_rd_data : head7;
         4'd8: cq_rd_adr = rd_take_n_dly[8] && update_head[8] ? adr_ram_rd_data : head8;
         4'd9: cq_rd_adr = rd_take_n_dly[9] && update_head[9] ? adr_ram_rd_data : head9;
+        4'd10: cq_rd_adr = rd_take_n_dly[10] && update_head[10] ? adr_ram_rd_data : head10;
+        4'd11: cq_rd_adr = rd_take_n_dly[11] && update_head[11] ? adr_ram_rd_data : head11;
+        4'd12: cq_rd_adr = rd_take_n_dly[12] && update_head[12] ? adr_ram_rd_data : head12;
+        4'd13: cq_rd_adr = rd_take_n_dly[13] && update_head[13] ? adr_ram_rd_data : head13;
+        4'd14: cq_rd_adr = rd_take_n_dly[14] && update_head[14] ? adr_ram_rd_data : head14;
+        4'd15: cq_rd_adr = rd_take_n_dly[15] && update_head[15] ? adr_ram_rd_data : head15;
         //VCS coverage off
         default: cq_rd_adr = {8{`x_or_0}};
         //VCS coverage on
@@ -2735,7 +3061,7 @@ end
 //
 // -rd_take_to_rd_busy conversion (conceptually outside the fifo except for ra2 bypass)
 //
-wire [9:0] cq_rd_take_elig;   // mask of threads that can do takes this cycle
+wire [15:0] cq_rd_take_elig;   // mask of threads that can do takes this cycle
 
 wire rd_pre_bypassing0;          // bypassing is split up into two parts to avoid combinatorial loop
 wire rd_bypassing0;              //      between cq_rd0_pvld and cq_rd0_prdy when doing full bypass
@@ -3827,77 +4153,767 @@ always @( posedge nvdla_core_clk_mgated_skid or negedge nvdla_core_rstn ) begin
     end
 end
 
+wire rd_pre_bypassing10;          // bypassing is split up into two parts to avoid combinatorial loop
+wire rd_bypassing10;              //      between cq_rd10_pvld and cq_rd10_prdy when doing full bypass
+reg  [6:0] rd_skid10_0;     // head   skid reg
+reg  [6:0] rd_skid10_1;     // head+1 skid reg
+reg  [6:0] rd_skid10_2;     // head+2 skid reg (for -rd_take_reg)
+reg  rd_skid10_0_vld;             // head   skid reg has valid data
+reg  rd_skid10_1_vld;             // head+1 skid reg has valid data
+reg  rd_skid10_2_vld;             // head+2 skid reg has valid data (for -rd_take_reg)
+
+reg  cq_rd10_prdy_d;  
+always @( posedge nvdla_core_clk or negedge nvdla_core_rstn ) begin
+    if ( !nvdla_core_rstn ) begin
+        cq_rd10_prdy_d <=  1'b1;
+    end else begin
+
+        cq_rd10_prdy_d <=  cq_rd10_prdy;
+    end
+end
+
+assign cq_rd10_pvld = rd_skid10_0_vld || rd_pre_bypassing10;  			// full bypass for 0-latency
+assign cq_rd10_pd = rd_skid10_0_vld ? rd_skid10_0 : cq_wr_pd;        // full bypass for 0-latency
+
+always @( posedge nvdla_core_clk_mgated_skid ) begin
+    if ( (rd_bypassing10 || rd_take_n_dly[10]) && (!rd_skid10_0_vld || (cq_rd10_pvld && cq_rd10_prdy && !rd_skid10_1_vld)) ) begin
+        rd_skid10_0 <=  rd_take_n_dly[10] ? cq_rd_pd_p : cq_wr_pd;
+    end else if ( cq_rd10_pvld && cq_rd10_prdy && rd_skid10_1_vld ) begin
+        rd_skid10_0 <=  rd_skid10_1;
+    end
+    //synopsys translate_off
+        else if ( !((rd_bypassing10 || rd_take_n_dly[10]) && (!rd_skid10_0_vld || (cq_rd10_pvld && cq_rd10_prdy && !rd_skid10_1_vld))) && 
+                  !(cq_rd10_pvld && cq_rd10_prdy && rd_skid10_1_vld) ) begin
+    end else begin
+        rd_skid10_0 <=  {7{`x_or_0}};
+    end
+    //synopsys translate_on
+
+    if ( (rd_bypassing10 || rd_take_n_dly[10]) && (!rd_skid10_1_vld || (cq_rd10_pvld && cq_rd10_prdy && !rd_skid10_2_vld)) ) begin
+        rd_skid10_1 <=  rd_bypassing10 ? cq_wr_pd : cq_rd_pd_p;
+    end else if ( cq_rd10_pvld && cq_rd10_prdy && rd_skid10_2_vld ) begin
+        rd_skid10_1 <=  rd_skid10_2;
+    end
+    //synopsys translate_off
+        else if ( !((rd_bypassing10 || rd_take_n_dly[10]) && (!rd_skid10_1_vld || (cq_rd10_pvld && cq_rd10_prdy && !rd_skid10_2_vld))) && 
+                  !(cq_rd10_pvld && cq_rd10_prdy && rd_skid10_2_vld) ) begin
+    end else begin
+        rd_skid10_1 <=  {7{`x_or_0}};
+    end
+    //synopsys translate_on
+
+    if ( (rd_bypassing10 || rd_take_n_dly[10]) && rd_skid10_0_vld && rd_skid10_1_vld && (rd_skid10_2_vld || !(cq_rd10_pvld && cq_rd10_prdy)) ) begin
+        rd_skid10_2 <=  rd_bypassing10 ? cq_wr_pd : cq_rd_pd_p;
+    end
+    //synopsys translate_off
+        else if ( !((rd_bypassing10 || rd_take_n_dly[10]) && rd_skid10_0_vld && rd_skid10_1_vld && (rd_skid10_2_vld || !(cq_rd10_pvld && cq_rd10_prdy))) ) begin 
+    end else begin
+        rd_skid10_2 <=  {7{`x_or_0}};
+    end
+    //synopsys translate_on
+
+end
+
+always @( posedge nvdla_core_clk_mgated_skid or negedge nvdla_core_rstn ) begin
+    if ( !nvdla_core_rstn ) begin
+        rd_skid10_0_vld <=  1'b0;
+        rd_skid10_1_vld <=  1'b0;
+        rd_skid10_2_vld <=  1'b0;
+    end else begin
+        rd_skid10_0_vld <=  (cq_rd10_pvld && cq_rd10_prdy) ? (rd_skid10_1_vld || (rd_bypassing10 && rd_skid10_0_vld) || rd_take_n_dly[10]) : (rd_skid10_0_vld || rd_bypassing10 || rd_take_n_dly[10]);
+	rd_skid10_1_vld <=  (cq_rd10_pvld && cq_rd10_prdy) ? (rd_skid10_2_vld || (rd_skid10_1_vld && (rd_bypassing10 || rd_take_n_dly[10]))) : (rd_skid10_1_vld || (rd_skid10_0_vld && (rd_bypassing10 || rd_take_n_dly[10])));
+        //VCS coverage off
+	rd_skid10_2_vld <=  (cq_rd10_pvld && cq_rd10_prdy) ? (rd_skid10_2_vld && (rd_bypassing10 || rd_take_n_dly[10])) : (rd_skid10_2_vld || (rd_skid10_1_vld && (rd_bypassing10 || rd_take_n_dly[10])));
+        //VCS coverage on
+    end
+end
+
+// spyglass disable_block W164a W116 W484
+reg  [8:0] cq_rd10_credits;   // unused credits
+reg             cq_rd10_credits_ne0; 
+wire [8:0] cq_rd10_credits_w_take_next  =  cq_rd10_credits + cq_rd_credit[10] - 1'b1;
+wire [8:0] cq_rd10_credits_wo_take_next =  cq_rd10_credits + cq_rd_credit[10];
+wire [8:0] cq_rd10_credits_next =  rd_take10 ? cq_rd10_credits_w_take_next : cq_rd10_credits_wo_take_next; 
+// spyglass enable_block W164a W116 W484
+
+//VCS coverage off
+assign cq_rd_take_elig[10] = (cq_rd10_prdy_d || !rd_skid10_0_vld || !rd_skid10_1_vld || (!rd_skid10_2_vld && !rd_take_n_dly[10])) && (cq_rd_credit[10] || cq_rd10_credits_ne0);
+//VCS coverage on
+
+assign rd_pre_bypassing10 = cq_wr_pvld && !cq_wr_busy_int && (cq_wr_thread_id == 4'd10) && cq_rd10_credits == 0 && !cq_rd_credit[10] && (!rd_take_n_dly[10] || rd_skid10_0_vld); // split this up to avoid combinatorial loop when full bypass is in effect
+assign rd_bypassing10 = rd_pre_bypassing10 && (!rd_skid10_2_vld || !rd_skid10_1_vld || !(!cq_rd10_prdy_d && rd_skid10_0_vld && rd_skid10_1_vld)) && !rd_take_n_dly[10];
+always @( posedge nvdla_core_clk_mgated_skid or negedge nvdla_core_rstn ) begin
+    if ( !nvdla_core_rstn ) begin
+        cq_rd10_credits <=  9'd0;
+        cq_rd10_credits_ne0 <=  1'b0;
+    end else begin
+        if ( cq_rd_credit[10] |  rd_take10 ) begin
+            cq_rd10_credits <=  cq_rd10_credits_next;
+            cq_rd10_credits_ne0 <=  rd_take10 ? (cq_rd10_credits_w_take_next != 0) : (cq_rd10_credits_wo_take_next != 0);
+        end
+        //synopsys translate_off
+            else if ( ! (cq_rd_credit[10] |  rd_take10) ) begin
+        end else begin
+            cq_rd10_credits <=  {9{`x_or_0}};
+            cq_rd10_credits_ne0 <=  `x_or_0; 
+        end
+        //synopsys translate_on
+
+    end
+end
+
+wire rd_pre_bypassing11;          // bypassing is split up into two parts to avoid combinatorial loop
+wire rd_bypassing11;              //      between cq_rd11_pvld and cq_rd11_prdy when doing full bypass
+reg  [6:0] rd_skid11_0;     // head   skid reg
+reg  [6:0] rd_skid11_1;     // head+1 skid reg
+reg  [6:0] rd_skid11_2;     // head+2 skid reg (for -rd_take_reg)
+reg  rd_skid11_0_vld;             // head   skid reg has valid data
+reg  rd_skid11_1_vld;             // head+1 skid reg has valid data
+reg  rd_skid11_2_vld;             // head+2 skid reg has valid data (for -rd_take_reg)
+
+reg  cq_rd11_prdy_d;  
+always @( posedge nvdla_core_clk or negedge nvdla_core_rstn ) begin
+    if ( !nvdla_core_rstn ) begin
+        cq_rd11_prdy_d <=  1'b1;
+    end else begin
+
+        cq_rd11_prdy_d <=  cq_rd11_prdy;
+    end
+end
+
+assign cq_rd11_pvld = rd_skid11_0_vld || rd_pre_bypassing11;  			// full bypass for 0-latency
+assign cq_rd11_pd = rd_skid11_0_vld ? rd_skid11_0 : cq_wr_pd;        // full bypass for 0-latency
+
+always @( posedge nvdla_core_clk_mgated_skid ) begin
+    if ( (rd_bypassing11 || rd_take_n_dly[11]) && (!rd_skid11_0_vld || (cq_rd11_pvld && cq_rd11_prdy && !rd_skid11_1_vld)) ) begin
+        rd_skid11_0 <=  rd_take_n_dly[11] ? cq_rd_pd_p : cq_wr_pd;
+    end else if ( cq_rd11_pvld && cq_rd11_prdy && rd_skid11_1_vld ) begin
+        rd_skid11_0 <=  rd_skid11_1;
+    end
+    //synopsys translate_off
+        else if ( !((rd_bypassing11 || rd_take_n_dly[11]) && (!rd_skid11_0_vld || (cq_rd11_pvld && cq_rd11_prdy && !rd_skid11_1_vld))) && 
+                  !(cq_rd11_pvld && cq_rd11_prdy && rd_skid11_1_vld) ) begin
+    end else begin
+        rd_skid11_0 <=  {7{`x_or_0}};
+    end
+    //synopsys translate_on
+
+    if ( (rd_bypassing11 || rd_take_n_dly[11]) && (!rd_skid11_1_vld || (cq_rd11_pvld && cq_rd11_prdy && !rd_skid11_2_vld)) ) begin
+        rd_skid11_1 <=  rd_bypassing11 ? cq_wr_pd : cq_rd_pd_p;
+    end else if ( cq_rd11_pvld && cq_rd11_prdy && rd_skid11_2_vld ) begin
+        rd_skid11_1 <=  rd_skid11_2;
+    end
+    //synopsys translate_off
+        else if ( !((rd_bypassing11 || rd_take_n_dly[11]) && (!rd_skid11_1_vld || (cq_rd11_pvld && cq_rd11_prdy && !rd_skid11_2_vld))) && 
+                  !(cq_rd11_pvld && cq_rd11_prdy && rd_skid11_2_vld) ) begin
+    end else begin
+        rd_skid11_1 <=  {7{`x_or_0}};
+    end
+    //synopsys translate_on
+
+    if ( (rd_bypassing11 || rd_take_n_dly[11]) && rd_skid11_0_vld && rd_skid11_1_vld && (rd_skid11_2_vld || !(cq_rd11_pvld && cq_rd11_prdy)) ) begin
+        rd_skid11_2 <=  rd_bypassing11 ? cq_wr_pd : cq_rd_pd_p;
+    end
+    //synopsys translate_off
+        else if ( !((rd_bypassing11 || rd_take_n_dly[11]) && rd_skid11_0_vld && rd_skid11_1_vld && (rd_skid11_2_vld || !(cq_rd11_pvld && cq_rd11_prdy))) ) begin 
+    end else begin
+        rd_skid11_2 <=  {7{`x_or_0}};
+    end
+    //synopsys translate_on
+
+end
+
+always @( posedge nvdla_core_clk_mgated_skid or negedge nvdla_core_rstn ) begin
+    if ( !nvdla_core_rstn ) begin
+        rd_skid11_0_vld <=  1'b0;
+        rd_skid11_1_vld <=  1'b0;
+        rd_skid11_2_vld <=  1'b0;
+    end else begin
+        rd_skid11_0_vld <=  (cq_rd11_pvld && cq_rd11_prdy) ? (rd_skid11_1_vld || (rd_bypassing11 && rd_skid11_0_vld) || rd_take_n_dly[11]) : (rd_skid11_0_vld || rd_bypassing11 || rd_take_n_dly[11]);
+	rd_skid11_1_vld <=  (cq_rd11_pvld && cq_rd11_prdy) ? (rd_skid11_2_vld || (rd_skid11_1_vld && (rd_bypassing11 || rd_take_n_dly[11]))) : (rd_skid11_1_vld || (rd_skid11_0_vld && (rd_bypassing11 || rd_take_n_dly[11])));
+        //VCS coverage off
+	rd_skid11_2_vld <=  (cq_rd11_pvld && cq_rd11_prdy) ? (rd_skid11_2_vld && (rd_bypassing11 || rd_take_n_dly[11])) : (rd_skid11_2_vld || (rd_skid11_1_vld && (rd_bypassing11 || rd_take_n_dly[11])));
+        //VCS coverage on
+    end
+end
+
+// spyglass disable_block W164a W116 W484
+reg  [8:0] cq_rd11_credits;   // unused credits
+reg             cq_rd11_credits_ne0; 
+wire [8:0] cq_rd11_credits_w_take_next  =  cq_rd11_credits + cq_rd_credit[11] - 1'b1;
+wire [8:0] cq_rd11_credits_wo_take_next =  cq_rd11_credits + cq_rd_credit[11];
+wire [8:0] cq_rd11_credits_next =  rd_take11 ? cq_rd11_credits_w_take_next : cq_rd11_credits_wo_take_next; 
+// spyglass enable_block W164a W116 W484
+
+//VCS coverage off
+assign cq_rd_take_elig[11] = (cq_rd11_prdy_d || !rd_skid11_0_vld || !rd_skid11_1_vld || (!rd_skid11_2_vld && !rd_take_n_dly[11])) && (cq_rd_credit[11] || cq_rd11_credits_ne0);
+//VCS coverage on
+
+assign rd_pre_bypassing11 = cq_wr_pvld && !cq_wr_busy_int && (cq_wr_thread_id == 4'd11) && cq_rd11_credits == 0 && !cq_rd_credit[11] && (!rd_take_n_dly[11] || rd_skid11_0_vld); // split this up to avoid combinatorial loop when full bypass is in effect
+assign rd_bypassing11 = rd_pre_bypassing11 && (!rd_skid11_2_vld || !rd_skid11_1_vld || !(!cq_rd11_prdy_d && rd_skid11_0_vld && rd_skid11_1_vld)) && !rd_take_n_dly[11];
+always @( posedge nvdla_core_clk_mgated_skid or negedge nvdla_core_rstn ) begin
+    if ( !nvdla_core_rstn ) begin
+        cq_rd11_credits <=  9'd0;
+        cq_rd11_credits_ne0 <=  1'b0;
+    end else begin
+        if ( cq_rd_credit[11] |  rd_take11 ) begin
+            cq_rd11_credits <=  cq_rd11_credits_next;
+            cq_rd11_credits_ne0 <=  rd_take11 ? (cq_rd11_credits_w_take_next != 0) : (cq_rd11_credits_wo_take_next != 0);
+        end
+        //synopsys translate_off
+            else if ( ! (cq_rd_credit[11] |  rd_take11) ) begin
+        end else begin
+            cq_rd11_credits <=  {9{`x_or_0}};
+            cq_rd11_credits_ne0 <=  `x_or_0; 
+        end
+        //synopsys translate_on
+
+    end
+end
+
+wire rd_pre_bypassing12;          // bypassing is split up into two parts to avoid combinatorial loop
+wire rd_bypassing12;              //      between cq_rd12_pvld and cq_rd12_prdy when doing full bypass
+reg  [6:0] rd_skid12_0;     // head   skid reg
+reg  [6:0] rd_skid12_1;     // head+1 skid reg
+reg  [6:0] rd_skid12_2;     // head+2 skid reg (for -rd_take_reg)
+reg  rd_skid12_0_vld;             // head   skid reg has valid data
+reg  rd_skid12_1_vld;             // head+1 skid reg has valid data
+reg  rd_skid12_2_vld;             // head+2 skid reg has valid data (for -rd_take_reg)
+
+reg  cq_rd12_prdy_d;  
+always @( posedge nvdla_core_clk or negedge nvdla_core_rstn ) begin
+    if ( !nvdla_core_rstn ) begin
+        cq_rd12_prdy_d <=  1'b1;
+    end else begin
+
+        cq_rd12_prdy_d <=  cq_rd12_prdy;
+    end
+end
+
+assign cq_rd12_pvld = rd_skid12_0_vld || rd_pre_bypassing12;  			// full bypass for 0-latency
+assign cq_rd12_pd = rd_skid12_0_vld ? rd_skid12_0 : cq_wr_pd;        // full bypass for 0-latency
+
+always @( posedge nvdla_core_clk_mgated_skid ) begin
+    if ( (rd_bypassing12 || rd_take_n_dly[12]) && (!rd_skid12_0_vld || (cq_rd12_pvld && cq_rd12_prdy && !rd_skid12_1_vld)) ) begin
+        rd_skid12_0 <=  rd_take_n_dly[12] ? cq_rd_pd_p : cq_wr_pd;
+    end else if ( cq_rd12_pvld && cq_rd12_prdy && rd_skid12_1_vld ) begin
+        rd_skid12_0 <=  rd_skid12_1;
+    end
+    //synopsys translate_off
+        else if ( !((rd_bypassing12 || rd_take_n_dly[12]) && (!rd_skid12_0_vld || (cq_rd12_pvld && cq_rd12_prdy && !rd_skid12_1_vld))) && 
+                  !(cq_rd12_pvld && cq_rd12_prdy && rd_skid12_1_vld) ) begin
+    end else begin
+        rd_skid12_0 <=  {7{`x_or_0}};
+    end
+    //synopsys translate_on
+
+    if ( (rd_bypassing12 || rd_take_n_dly[12]) && (!rd_skid12_1_vld || (cq_rd12_pvld && cq_rd12_prdy && !rd_skid12_2_vld)) ) begin
+        rd_skid12_1 <=  rd_bypassing12 ? cq_wr_pd : cq_rd_pd_p;
+    end else if ( cq_rd12_pvld && cq_rd12_prdy && rd_skid12_2_vld ) begin
+        rd_skid12_1 <=  rd_skid12_2;
+    end
+    //synopsys translate_off
+        else if ( !((rd_bypassing12 || rd_take_n_dly[12]) && (!rd_skid12_1_vld || (cq_rd12_pvld && cq_rd12_prdy && !rd_skid12_2_vld))) && 
+                  !(cq_rd12_pvld && cq_rd12_prdy && rd_skid12_2_vld) ) begin
+    end else begin
+        rd_skid12_1 <=  {7{`x_or_0}};
+    end
+    //synopsys translate_on
+
+    if ( (rd_bypassing12 || rd_take_n_dly[12]) && rd_skid12_0_vld && rd_skid12_1_vld && (rd_skid12_2_vld || !(cq_rd12_pvld && cq_rd12_prdy)) ) begin
+        rd_skid12_2 <=  rd_bypassing12 ? cq_wr_pd : cq_rd_pd_p;
+    end
+    //synopsys translate_off
+        else if ( !((rd_bypassing12 || rd_take_n_dly[12]) && rd_skid12_0_vld && rd_skid12_1_vld && (rd_skid12_2_vld || !(cq_rd12_pvld && cq_rd12_prdy))) ) begin 
+    end else begin
+        rd_skid12_2 <=  {7{`x_or_0}};
+    end
+    //synopsys translate_on
+
+end
+
+always @( posedge nvdla_core_clk_mgated_skid or negedge nvdla_core_rstn ) begin
+    if ( !nvdla_core_rstn ) begin
+        rd_skid12_0_vld <=  1'b0;
+        rd_skid12_1_vld <=  1'b0;
+        rd_skid12_2_vld <=  1'b0;
+    end else begin
+        rd_skid12_0_vld <=  (cq_rd12_pvld && cq_rd12_prdy) ? (rd_skid12_1_vld || (rd_bypassing12 && rd_skid12_0_vld) || rd_take_n_dly[12]) : (rd_skid12_0_vld || rd_bypassing12 || rd_take_n_dly[12]);
+	rd_skid12_1_vld <=  (cq_rd12_pvld && cq_rd12_prdy) ? (rd_skid12_2_vld || (rd_skid12_1_vld && (rd_bypassing12 || rd_take_n_dly[12]))) : (rd_skid12_1_vld || (rd_skid12_0_vld && (rd_bypassing12 || rd_take_n_dly[12])));
+        //VCS coverage off
+	rd_skid12_2_vld <=  (cq_rd12_pvld && cq_rd12_prdy) ? (rd_skid12_2_vld && (rd_bypassing12 || rd_take_n_dly[12])) : (rd_skid12_2_vld || (rd_skid12_1_vld && (rd_bypassing12 || rd_take_n_dly[12])));
+        //VCS coverage on
+    end
+end
+
+// spyglass disable_block W164a W116 W484
+reg  [8:0] cq_rd12_credits;   // unused credits
+reg             cq_rd12_credits_ne0; 
+wire [8:0] cq_rd12_credits_w_take_next  =  cq_rd12_credits + cq_rd_credit[12] - 1'b1;
+wire [8:0] cq_rd12_credits_wo_take_next =  cq_rd12_credits + cq_rd_credit[12];
+wire [8:0] cq_rd12_credits_next =  rd_take12 ? cq_rd12_credits_w_take_next : cq_rd12_credits_wo_take_next; 
+// spyglass enable_block W164a W116 W484
+
+//VCS coverage off
+assign cq_rd_take_elig[12] = (cq_rd12_prdy_d || !rd_skid12_0_vld || !rd_skid12_1_vld || (!rd_skid12_2_vld && !rd_take_n_dly[12])) && (cq_rd_credit[12] || cq_rd12_credits_ne0);
+//VCS coverage on
+
+assign rd_pre_bypassing12 = cq_wr_pvld && !cq_wr_busy_int && (cq_wr_thread_id == 4'd12) && cq_rd12_credits == 0 && !cq_rd_credit[12] && (!rd_take_n_dly[12] || rd_skid12_0_vld); // split this up to avoid combinatorial loop when full bypass is in effect
+assign rd_bypassing12 = rd_pre_bypassing12 && (!rd_skid12_2_vld || !rd_skid12_1_vld || !(!cq_rd12_prdy_d && rd_skid12_0_vld && rd_skid12_1_vld)) && !rd_take_n_dly[12];
+always @( posedge nvdla_core_clk_mgated_skid or negedge nvdla_core_rstn ) begin
+    if ( !nvdla_core_rstn ) begin
+        cq_rd12_credits <=  9'd0;
+        cq_rd12_credits_ne0 <=  1'b0;
+    end else begin
+        if ( cq_rd_credit[12] |  rd_take12 ) begin
+            cq_rd12_credits <=  cq_rd12_credits_next;
+            cq_rd12_credits_ne0 <=  rd_take12 ? (cq_rd12_credits_w_take_next != 0) : (cq_rd12_credits_wo_take_next != 0);
+        end
+        //synopsys translate_off
+            else if ( ! (cq_rd_credit[12] |  rd_take12) ) begin
+        end else begin
+            cq_rd12_credits <=  {9{`x_or_0}};
+            cq_rd12_credits_ne0 <=  `x_or_0; 
+        end
+        //synopsys translate_on
+
+    end
+end
+
+wire rd_pre_bypassing13;          // bypassing is split up into two parts to avoid combinatorial loop
+wire rd_bypassing13;              //      between cq_rd13_pvld and cq_rd13_prdy when doing full bypass
+reg  [6:0] rd_skid13_0;     // head   skid reg
+reg  [6:0] rd_skid13_1;     // head+1 skid reg
+reg  [6:0] rd_skid13_2;     // head+2 skid reg (for -rd_take_reg)
+reg  rd_skid13_0_vld;             // head   skid reg has valid data
+reg  rd_skid13_1_vld;             // head+1 skid reg has valid data
+reg  rd_skid13_2_vld;             // head+2 skid reg has valid data (for -rd_take_reg)
+
+reg  cq_rd13_prdy_d;  
+always @( posedge nvdla_core_clk or negedge nvdla_core_rstn ) begin
+    if ( !nvdla_core_rstn ) begin
+        cq_rd13_prdy_d <=  1'b1;
+    end else begin
+
+        cq_rd13_prdy_d <=  cq_rd13_prdy;
+    end
+end
+
+assign cq_rd13_pvld = rd_skid13_0_vld || rd_pre_bypassing13;  			// full bypass for 0-latency
+assign cq_rd13_pd = rd_skid13_0_vld ? rd_skid13_0 : cq_wr_pd;        // full bypass for 0-latency
+
+always @( posedge nvdla_core_clk_mgated_skid ) begin
+    if ( (rd_bypassing13 || rd_take_n_dly[13]) && (!rd_skid13_0_vld || (cq_rd13_pvld && cq_rd13_prdy && !rd_skid13_1_vld)) ) begin
+        rd_skid13_0 <=  rd_take_n_dly[13] ? cq_rd_pd_p : cq_wr_pd;
+    end else if ( cq_rd13_pvld && cq_rd13_prdy && rd_skid13_1_vld ) begin
+        rd_skid13_0 <=  rd_skid13_1;
+    end
+    //synopsys translate_off
+        else if ( !((rd_bypassing13 || rd_take_n_dly[13]) && (!rd_skid13_0_vld || (cq_rd13_pvld && cq_rd13_prdy && !rd_skid13_1_vld))) && 
+                  !(cq_rd13_pvld && cq_rd13_prdy && rd_skid13_1_vld) ) begin
+    end else begin
+        rd_skid13_0 <=  {7{`x_or_0}};
+    end
+    //synopsys translate_on
+
+    if ( (rd_bypassing13 || rd_take_n_dly[13]) && (!rd_skid13_1_vld || (cq_rd13_pvld && cq_rd13_prdy && !rd_skid13_2_vld)) ) begin
+        rd_skid13_1 <=  rd_bypassing13 ? cq_wr_pd : cq_rd_pd_p;
+    end else if ( cq_rd13_pvld && cq_rd13_prdy && rd_skid13_2_vld ) begin
+        rd_skid13_1 <=  rd_skid13_2;
+    end
+    //synopsys translate_off
+        else if ( !((rd_bypassing13 || rd_take_n_dly[13]) && (!rd_skid13_1_vld || (cq_rd13_pvld && cq_rd13_prdy && !rd_skid13_2_vld))) && 
+                  !(cq_rd13_pvld && cq_rd13_prdy && rd_skid13_2_vld) ) begin
+    end else begin
+        rd_skid13_1 <=  {7{`x_or_0}};
+    end
+    //synopsys translate_on
+
+    if ( (rd_bypassing13 || rd_take_n_dly[13]) && rd_skid13_0_vld && rd_skid13_1_vld && (rd_skid13_2_vld || !(cq_rd13_pvld && cq_rd13_prdy)) ) begin
+        rd_skid13_2 <=  rd_bypassing13 ? cq_wr_pd : cq_rd_pd_p;
+    end
+    //synopsys translate_off
+        else if ( !((rd_bypassing13 || rd_take_n_dly[13]) && rd_skid13_0_vld && rd_skid13_1_vld && (rd_skid13_2_vld || !(cq_rd13_pvld && cq_rd13_prdy))) ) begin 
+    end else begin
+        rd_skid13_2 <=  {7{`x_or_0}};
+    end
+    //synopsys translate_on
+
+end
+
+always @( posedge nvdla_core_clk_mgated_skid or negedge nvdla_core_rstn ) begin
+    if ( !nvdla_core_rstn ) begin
+        rd_skid13_0_vld <=  1'b0;
+        rd_skid13_1_vld <=  1'b0;
+        rd_skid13_2_vld <=  1'b0;
+    end else begin
+        rd_skid13_0_vld <=  (cq_rd13_pvld && cq_rd13_prdy) ? (rd_skid13_1_vld || (rd_bypassing13 && rd_skid13_0_vld) || rd_take_n_dly[13]) : (rd_skid13_0_vld || rd_bypassing13 || rd_take_n_dly[13]);
+	rd_skid13_1_vld <=  (cq_rd13_pvld && cq_rd13_prdy) ? (rd_skid13_2_vld || (rd_skid13_1_vld && (rd_bypassing13 || rd_take_n_dly[13]))) : (rd_skid13_1_vld || (rd_skid13_0_vld && (rd_bypassing13 || rd_take_n_dly[13])));
+        //VCS coverage off
+	rd_skid13_2_vld <=  (cq_rd13_pvld && cq_rd13_prdy) ? (rd_skid13_2_vld && (rd_bypassing13 || rd_take_n_dly[13])) : (rd_skid13_2_vld || (rd_skid13_1_vld && (rd_bypassing13 || rd_take_n_dly[13])));
+        //VCS coverage on
+    end
+end
+
+// spyglass disable_block W164a W116 W484
+reg  [8:0] cq_rd13_credits;   // unused credits
+reg             cq_rd13_credits_ne0; 
+wire [8:0] cq_rd13_credits_w_take_next  =  cq_rd13_credits + cq_rd_credit[13] - 1'b1;
+wire [8:0] cq_rd13_credits_wo_take_next =  cq_rd13_credits + cq_rd_credit[13];
+wire [8:0] cq_rd13_credits_next =  rd_take13 ? cq_rd13_credits_w_take_next : cq_rd13_credits_wo_take_next; 
+// spyglass enable_block W164a W116 W484
+
+//VCS coverage off
+assign cq_rd_take_elig[13] = (cq_rd13_prdy_d || !rd_skid13_0_vld || !rd_skid13_1_vld || (!rd_skid13_2_vld && !rd_take_n_dly[13])) && (cq_rd_credit[13] || cq_rd13_credits_ne0);
+//VCS coverage on
+
+assign rd_pre_bypassing13 = cq_wr_pvld && !cq_wr_busy_int && (cq_wr_thread_id == 4'd13) && cq_rd13_credits == 0 && !cq_rd_credit[13] && (!rd_take_n_dly[13] || rd_skid13_0_vld); // split this up to avoid combinatorial loop when full bypass is in effect
+assign rd_bypassing13 = rd_pre_bypassing13 && (!rd_skid13_2_vld || !rd_skid13_1_vld || !(!cq_rd13_prdy_d && rd_skid13_0_vld && rd_skid13_1_vld)) && !rd_take_n_dly[13];
+always @( posedge nvdla_core_clk_mgated_skid or negedge nvdla_core_rstn ) begin
+    if ( !nvdla_core_rstn ) begin
+        cq_rd13_credits <=  9'd0;
+        cq_rd13_credits_ne0 <=  1'b0;
+    end else begin
+        if ( cq_rd_credit[13] |  rd_take13 ) begin
+            cq_rd13_credits <=  cq_rd13_credits_next;
+            cq_rd13_credits_ne0 <=  rd_take13 ? (cq_rd13_credits_w_take_next != 0) : (cq_rd13_credits_wo_take_next != 0);
+        end
+        //synopsys translate_off
+            else if ( ! (cq_rd_credit[13] |  rd_take13) ) begin
+        end else begin
+            cq_rd13_credits <=  {9{`x_or_0}};
+            cq_rd13_credits_ne0 <=  `x_or_0; 
+        end
+        //synopsys translate_on
+
+    end
+end
+
+wire rd_pre_bypassing14;          // bypassing is split up into two parts to avoid combinatorial loop
+wire rd_bypassing14;              //      between cq_rd14_pvld and cq_rd14_prdy when doing full bypass
+reg  [6:0] rd_skid14_0;     // head   skid reg
+reg  [6:0] rd_skid14_1;     // head+1 skid reg
+reg  [6:0] rd_skid14_2;     // head+2 skid reg (for -rd_take_reg)
+reg  rd_skid14_0_vld;             // head   skid reg has valid data
+reg  rd_skid14_1_vld;             // head+1 skid reg has valid data
+reg  rd_skid14_2_vld;             // head+2 skid reg has valid data (for -rd_take_reg)
+
+reg  cq_rd14_prdy_d;  
+always @( posedge nvdla_core_clk or negedge nvdla_core_rstn ) begin
+    if ( !nvdla_core_rstn ) begin
+        cq_rd14_prdy_d <=  1'b1;
+    end else begin
+
+        cq_rd14_prdy_d <=  cq_rd14_prdy;
+    end
+end
+
+assign cq_rd14_pvld = rd_skid14_0_vld || rd_pre_bypassing14;  			// full bypass for 0-latency
+assign cq_rd14_pd = rd_skid14_0_vld ? rd_skid14_0 : cq_wr_pd;        // full bypass for 0-latency
+
+always @( posedge nvdla_core_clk_mgated_skid ) begin
+    if ( (rd_bypassing14 || rd_take_n_dly[14]) && (!rd_skid14_0_vld || (cq_rd14_pvld && cq_rd14_prdy && !rd_skid14_1_vld)) ) begin
+        rd_skid14_0 <=  rd_take_n_dly[14] ? cq_rd_pd_p : cq_wr_pd;
+    end else if ( cq_rd14_pvld && cq_rd14_prdy && rd_skid14_1_vld ) begin
+        rd_skid14_0 <=  rd_skid14_1;
+    end
+    //synopsys translate_off
+        else if ( !((rd_bypassing14 || rd_take_n_dly[14]) && (!rd_skid14_0_vld || (cq_rd14_pvld && cq_rd14_prdy && !rd_skid14_1_vld))) && 
+                  !(cq_rd14_pvld && cq_rd14_prdy && rd_skid14_1_vld) ) begin
+    end else begin
+        rd_skid14_0 <=  {7{`x_or_0}};
+    end
+    //synopsys translate_on
+
+    if ( (rd_bypassing14 || rd_take_n_dly[14]) && (!rd_skid14_1_vld || (cq_rd14_pvld && cq_rd14_prdy && !rd_skid14_2_vld)) ) begin
+        rd_skid14_1 <=  rd_bypassing14 ? cq_wr_pd : cq_rd_pd_p;
+    end else if ( cq_rd14_pvld && cq_rd14_prdy && rd_skid14_2_vld ) begin
+        rd_skid14_1 <=  rd_skid14_2;
+    end
+    //synopsys translate_off
+        else if ( !((rd_bypassing14 || rd_take_n_dly[14]) && (!rd_skid14_1_vld || (cq_rd14_pvld && cq_rd14_prdy && !rd_skid14_2_vld))) && 
+                  !(cq_rd14_pvld && cq_rd14_prdy && rd_skid14_2_vld) ) begin
+    end else begin
+        rd_skid14_1 <=  {7{`x_or_0}};
+    end
+    //synopsys translate_on
+
+    if ( (rd_bypassing14 || rd_take_n_dly[14]) && rd_skid14_0_vld && rd_skid14_1_vld && (rd_skid14_2_vld || !(cq_rd14_pvld && cq_rd14_prdy)) ) begin
+        rd_skid14_2 <=  rd_bypassing14 ? cq_wr_pd : cq_rd_pd_p;
+    end
+    //synopsys translate_off
+        else if ( !((rd_bypassing14 || rd_take_n_dly[14]) && rd_skid14_0_vld && rd_skid14_1_vld && (rd_skid14_2_vld || !(cq_rd14_pvld && cq_rd14_prdy))) ) begin 
+    end else begin
+        rd_skid14_2 <=  {7{`x_or_0}};
+    end
+    //synopsys translate_on
+
+end
+
+always @( posedge nvdla_core_clk_mgated_skid or negedge nvdla_core_rstn ) begin
+    if ( !nvdla_core_rstn ) begin
+        rd_skid14_0_vld <=  1'b0;
+        rd_skid14_1_vld <=  1'b0;
+        rd_skid14_2_vld <=  1'b0;
+    end else begin
+        rd_skid14_0_vld <=  (cq_rd14_pvld && cq_rd14_prdy) ? (rd_skid14_1_vld || (rd_bypassing14 && rd_skid14_0_vld) || rd_take_n_dly[14]) : (rd_skid14_0_vld || rd_bypassing14 || rd_take_n_dly[14]);
+	rd_skid14_1_vld <=  (cq_rd14_pvld && cq_rd14_prdy) ? (rd_skid14_2_vld || (rd_skid14_1_vld && (rd_bypassing14 || rd_take_n_dly[14]))) : (rd_skid14_1_vld || (rd_skid14_0_vld && (rd_bypassing14 || rd_take_n_dly[14])));
+        //VCS coverage off
+	rd_skid14_2_vld <=  (cq_rd14_pvld && cq_rd14_prdy) ? (rd_skid14_2_vld && (rd_bypassing14 || rd_take_n_dly[14])) : (rd_skid14_2_vld || (rd_skid14_1_vld && (rd_bypassing14 || rd_take_n_dly[14])));
+        //VCS coverage on
+    end
+end
+
+// spyglass disable_block W164a W116 W484
+reg  [8:0] cq_rd14_credits;   // unused credits
+reg             cq_rd14_credits_ne0; 
+wire [8:0] cq_rd14_credits_w_take_next  =  cq_rd14_credits + cq_rd_credit[14] - 1'b1;
+wire [8:0] cq_rd14_credits_wo_take_next =  cq_rd14_credits + cq_rd_credit[14];
+wire [8:0] cq_rd14_credits_next =  rd_take14 ? cq_rd14_credits_w_take_next : cq_rd14_credits_wo_take_next; 
+// spyglass enable_block W164a W116 W484
+
+//VCS coverage off
+assign cq_rd_take_elig[14] = (cq_rd14_prdy_d || !rd_skid14_0_vld || !rd_skid14_1_vld || (!rd_skid14_2_vld && !rd_take_n_dly[14])) && (cq_rd_credit[14] || cq_rd14_credits_ne0);
+//VCS coverage on
+
+assign rd_pre_bypassing14 = cq_wr_pvld && !cq_wr_busy_int && (cq_wr_thread_id == 4'd14) && cq_rd14_credits == 0 && !cq_rd_credit[14] && (!rd_take_n_dly[14] || rd_skid14_0_vld); // split this up to avoid combinatorial loop when full bypass is in effect
+assign rd_bypassing14 = rd_pre_bypassing14 && (!rd_skid14_2_vld || !rd_skid14_1_vld || !(!cq_rd14_prdy_d && rd_skid14_0_vld && rd_skid14_1_vld)) && !rd_take_n_dly[14];
+always @( posedge nvdla_core_clk_mgated_skid or negedge nvdla_core_rstn ) begin
+    if ( !nvdla_core_rstn ) begin
+        cq_rd14_credits <=  9'd0;
+        cq_rd14_credits_ne0 <=  1'b0;
+    end else begin
+        if ( cq_rd_credit[14] |  rd_take14 ) begin
+            cq_rd14_credits <=  cq_rd14_credits_next;
+            cq_rd14_credits_ne0 <=  rd_take14 ? (cq_rd14_credits_w_take_next != 0) : (cq_rd14_credits_wo_take_next != 0);
+        end
+        //synopsys translate_off
+            else if ( ! (cq_rd_credit[14] |  rd_take14) ) begin
+        end else begin
+            cq_rd14_credits <=  {9{`x_or_0}};
+            cq_rd14_credits_ne0 <=  `x_or_0; 
+        end
+        //synopsys translate_on
+
+    end
+end
+
+wire rd_pre_bypassing15;          // bypassing is split up into two parts to avoid combinatorial loop
+wire rd_bypassing15;              //      between cq_rd15_pvld and cq_rd15_prdy when doing full bypass
+reg  [6:0] rd_skid15_0;     // head   skid reg
+reg  [6:0] rd_skid15_1;     // head+1 skid reg
+reg  [6:0] rd_skid15_2;     // head+2 skid reg (for -rd_take_reg)
+reg  rd_skid15_0_vld;             // head   skid reg has valid data
+reg  rd_skid15_1_vld;             // head+1 skid reg has valid data
+reg  rd_skid15_2_vld;             // head+2 skid reg has valid data (for -rd_take_reg)
+
+reg  cq_rd15_prdy_d;  
+always @( posedge nvdla_core_clk or negedge nvdla_core_rstn ) begin
+    if ( !nvdla_core_rstn ) begin
+        cq_rd15_prdy_d <=  1'b1;
+    end else begin
+
+        cq_rd15_prdy_d <=  cq_rd15_prdy;
+    end
+end
+
+assign cq_rd15_pvld = rd_skid15_0_vld || rd_pre_bypassing15;  			// full bypass for 0-latency
+assign cq_rd15_pd = rd_skid15_0_vld ? rd_skid15_0 : cq_wr_pd;        // full bypass for 0-latency
+
+always @( posedge nvdla_core_clk_mgated_skid ) begin
+    if ( (rd_bypassing15 || rd_take_n_dly[15]) && (!rd_skid15_0_vld || (cq_rd15_pvld && cq_rd15_prdy && !rd_skid15_1_vld)) ) begin
+        rd_skid15_0 <=  rd_take_n_dly[15] ? cq_rd_pd_p : cq_wr_pd;
+    end else if ( cq_rd15_pvld && cq_rd15_prdy && rd_skid15_1_vld ) begin
+        rd_skid15_0 <=  rd_skid15_1;
+    end
+    //synopsys translate_off
+        else if ( !((rd_bypassing15 || rd_take_n_dly[15]) && (!rd_skid15_0_vld || (cq_rd15_pvld && cq_rd15_prdy && !rd_skid15_1_vld))) && 
+                  !(cq_rd15_pvld && cq_rd15_prdy && rd_skid15_1_vld) ) begin
+    end else begin
+        rd_skid15_0 <=  {7{`x_or_0}};
+    end
+    //synopsys translate_on
+
+    if ( (rd_bypassing15 || rd_take_n_dly[15]) && (!rd_skid15_1_vld || (cq_rd15_pvld && cq_rd15_prdy && !rd_skid15_2_vld)) ) begin
+        rd_skid15_1 <=  rd_bypassing15 ? cq_wr_pd : cq_rd_pd_p;
+    end else if ( cq_rd15_pvld && cq_rd15_prdy && rd_skid15_2_vld ) begin
+        rd_skid15_1 <=  rd_skid15_2;
+    end
+    //synopsys translate_off
+        else if ( !((rd_bypassing15 || rd_take_n_dly[15]) && (!rd_skid15_1_vld || (cq_rd15_pvld && cq_rd15_prdy && !rd_skid15_2_vld))) && 
+                  !(cq_rd15_pvld && cq_rd15_prdy && rd_skid15_2_vld) ) begin
+    end else begin
+        rd_skid15_1 <=  {7{`x_or_0}};
+    end
+    //synopsys translate_on
+
+    if ( (rd_bypassing15 || rd_take_n_dly[15]) && rd_skid15_0_vld && rd_skid15_1_vld && (rd_skid15_2_vld || !(cq_rd15_pvld && cq_rd15_prdy)) ) begin
+        rd_skid15_2 <=  rd_bypassing15 ? cq_wr_pd : cq_rd_pd_p;
+    end
+    //synopsys translate_off
+        else if ( !((rd_bypassing15 || rd_take_n_dly[15]) && rd_skid15_0_vld && rd_skid15_1_vld && (rd_skid15_2_vld || !(cq_rd15_pvld && cq_rd15_prdy))) ) begin 
+    end else begin
+        rd_skid15_2 <=  {7{`x_or_0}};
+    end
+    //synopsys translate_on
+
+end
+
+always @( posedge nvdla_core_clk_mgated_skid or negedge nvdla_core_rstn ) begin
+    if ( !nvdla_core_rstn ) begin
+        rd_skid15_0_vld <=  1'b0;
+        rd_skid15_1_vld <=  1'b0;
+        rd_skid15_2_vld <=  1'b0;
+    end else begin
+        rd_skid15_0_vld <=  (cq_rd15_pvld && cq_rd15_prdy) ? (rd_skid15_1_vld || (rd_bypassing15 && rd_skid15_0_vld) || rd_take_n_dly[15]) : (rd_skid15_0_vld || rd_bypassing15 || rd_take_n_dly[15]);
+	rd_skid15_1_vld <=  (cq_rd15_pvld && cq_rd15_prdy) ? (rd_skid15_2_vld || (rd_skid15_1_vld && (rd_bypassing15 || rd_take_n_dly[15]))) : (rd_skid15_1_vld || (rd_skid15_0_vld && (rd_bypassing15 || rd_take_n_dly[15])));
+        //VCS coverage off
+	rd_skid15_2_vld <=  (cq_rd15_pvld && cq_rd15_prdy) ? (rd_skid15_2_vld && (rd_bypassing15 || rd_take_n_dly[15])) : (rd_skid15_2_vld || (rd_skid15_1_vld && (rd_bypassing15 || rd_take_n_dly[15])));
+        //VCS coverage on
+    end
+end
+
+// spyglass disable_block W164a W116 W484
+reg  [8:0] cq_rd15_credits;   // unused credits
+reg             cq_rd15_credits_ne0; 
+wire [8:0] cq_rd15_credits_w_take_next  =  cq_rd15_credits + cq_rd_credit[15] - 1'b1;
+wire [8:0] cq_rd15_credits_wo_take_next =  cq_rd15_credits + cq_rd_credit[15];
+wire [8:0] cq_rd15_credits_next =  rd_take15 ? cq_rd15_credits_w_take_next : cq_rd15_credits_wo_take_next; 
+// spyglass enable_block W164a W116 W484
+
+//VCS coverage off
+assign cq_rd_take_elig[15] = (cq_rd15_prdy_d || !rd_skid15_0_vld || !rd_skid15_1_vld || (!rd_skid15_2_vld && !rd_take_n_dly[15])) && (cq_rd_credit[15] || cq_rd15_credits_ne0);
+//VCS coverage on
+
+assign rd_pre_bypassing15 = cq_wr_pvld && !cq_wr_busy_int && (cq_wr_thread_id == 4'd15) && cq_rd15_credits == 0 && !cq_rd_credit[15] && (!rd_take_n_dly[15] || rd_skid15_0_vld); // split this up to avoid combinatorial loop when full bypass is in effect
+assign rd_bypassing15 = rd_pre_bypassing15 && (!rd_skid15_2_vld || !rd_skid15_1_vld || !(!cq_rd15_prdy_d && rd_skid15_0_vld && rd_skid15_1_vld)) && !rd_take_n_dly[15];
+always @( posedge nvdla_core_clk_mgated_skid or negedge nvdla_core_rstn ) begin
+    if ( !nvdla_core_rstn ) begin
+        cq_rd15_credits <=  9'd0;
+        cq_rd15_credits_ne0 <=  1'b0;
+    end else begin
+        if ( cq_rd_credit[15] |  rd_take15 ) begin
+            cq_rd15_credits <=  cq_rd15_credits_next;
+            cq_rd15_credits_ne0 <=  rd_take15 ? (cq_rd15_credits_w_take_next != 0) : (cq_rd15_credits_wo_take_next != 0);
+        end
+        //synopsys translate_off
+            else if ( ! (cq_rd_credit[15] |  rd_take15) ) begin
+        end else begin
+            cq_rd15_credits <=  {9{`x_or_0}};
+            cq_rd15_credits_ne0 <=  `x_or_0; 
+        end
+        //synopsys translate_on
+
+    end
+end
+
 // rd_take round-robin arbiter (similar to arbgen output)
 //
 assign cq_rd_take = |cq_rd_take_elig;  // any thread is eligible to take, so issue take
 
 reg [3:0] cq_rd_take_thread_id_last;
 
-wire [9:0] cq_rd_take_thread_id_is_1 = {
-    cq_rd_take_elig[1] && cq_rd_take_thread_id_last == 4'd9 && !cq_rd_take_elig[0],
-    cq_rd_take_elig[1] && cq_rd_take_thread_id_last == 4'd8 && !cq_rd_take_elig[9] && !cq_rd_take_elig[0],
-    cq_rd_take_elig[1] && cq_rd_take_thread_id_last == 4'd7 && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[0],
-    cq_rd_take_elig[1] && cq_rd_take_thread_id_last == 4'd6 && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[0],
-    cq_rd_take_elig[1] && cq_rd_take_thread_id_last == 4'd5 && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[0],
-    cq_rd_take_elig[1] && cq_rd_take_thread_id_last == 4'd4 && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[0],
-    cq_rd_take_elig[1] && cq_rd_take_thread_id_last == 4'd3 && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[0],
-    cq_rd_take_elig[1] && cq_rd_take_thread_id_last == 4'd2 && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[0],
-    cq_rd_take_elig[1] && cq_rd_take_thread_id_last == 4'd1 && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[0],
+wire [15:0] cq_rd_take_thread_id_is_1 = {
+    cq_rd_take_elig[1] && cq_rd_take_thread_id_last == 4'd15 && !cq_rd_take_elig[0],
+    cq_rd_take_elig[1] && cq_rd_take_thread_id_last == 4'd14 && !cq_rd_take_elig[15] && !cq_rd_take_elig[0],
+    cq_rd_take_elig[1] && cq_rd_take_thread_id_last == 4'd13 && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0],
+    cq_rd_take_elig[1] && cq_rd_take_thread_id_last == 4'd12 && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0],
+    cq_rd_take_elig[1] && cq_rd_take_thread_id_last == 4'd11 && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0],
+    cq_rd_take_elig[1] && cq_rd_take_thread_id_last == 4'd10 && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0],
+    cq_rd_take_elig[1] && cq_rd_take_thread_id_last == 4'd9 && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0],
+    cq_rd_take_elig[1] && cq_rd_take_thread_id_last == 4'd8 && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0],
+    cq_rd_take_elig[1] && cq_rd_take_thread_id_last == 4'd7 && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0],
+    cq_rd_take_elig[1] && cq_rd_take_thread_id_last == 4'd6 && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0],
+    cq_rd_take_elig[1] && cq_rd_take_thread_id_last == 4'd5 && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0],
+    cq_rd_take_elig[1] && cq_rd_take_thread_id_last == 4'd4 && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0],
+    cq_rd_take_elig[1] && cq_rd_take_thread_id_last == 4'd3 && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0],
+    cq_rd_take_elig[1] && cq_rd_take_thread_id_last == 4'd2 && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0],
+    cq_rd_take_elig[1] && cq_rd_take_thread_id_last == 4'd1 && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0],
     cq_rd_take_elig[1] && cq_rd_take_thread_id_last == 4'd0};
 
-wire [9:0] cq_rd_take_thread_id_is_2 = {
-    cq_rd_take_elig[2] && cq_rd_take_thread_id_last == 4'd9 && !cq_rd_take_elig[0] && !cq_rd_take_elig[1],
-    cq_rd_take_elig[2] && cq_rd_take_thread_id_last == 4'd8 && !cq_rd_take_elig[9] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1],
-    cq_rd_take_elig[2] && cq_rd_take_thread_id_last == 4'd7 && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1],
-    cq_rd_take_elig[2] && cq_rd_take_thread_id_last == 4'd6 && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1],
-    cq_rd_take_elig[2] && cq_rd_take_thread_id_last == 4'd5 && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1],
-    cq_rd_take_elig[2] && cq_rd_take_thread_id_last == 4'd4 && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1],
-    cq_rd_take_elig[2] && cq_rd_take_thread_id_last == 4'd3 && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1],
-    cq_rd_take_elig[2] && cq_rd_take_thread_id_last == 4'd2 && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1],
+wire [15:0] cq_rd_take_thread_id_is_2 = {
+    cq_rd_take_elig[2] && cq_rd_take_thread_id_last == 4'd15 && !cq_rd_take_elig[0] && !cq_rd_take_elig[1],
+    cq_rd_take_elig[2] && cq_rd_take_thread_id_last == 4'd14 && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1],
+    cq_rd_take_elig[2] && cq_rd_take_thread_id_last == 4'd13 && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1],
+    cq_rd_take_elig[2] && cq_rd_take_thread_id_last == 4'd12 && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1],
+    cq_rd_take_elig[2] && cq_rd_take_thread_id_last == 4'd11 && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1],
+    cq_rd_take_elig[2] && cq_rd_take_thread_id_last == 4'd10 && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1],
+    cq_rd_take_elig[2] && cq_rd_take_thread_id_last == 4'd9 && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1],
+    cq_rd_take_elig[2] && cq_rd_take_thread_id_last == 4'd8 && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1],
+    cq_rd_take_elig[2] && cq_rd_take_thread_id_last == 4'd7 && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1],
+    cq_rd_take_elig[2] && cq_rd_take_thread_id_last == 4'd6 && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1],
+    cq_rd_take_elig[2] && cq_rd_take_thread_id_last == 4'd5 && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1],
+    cq_rd_take_elig[2] && cq_rd_take_thread_id_last == 4'd4 && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1],
+    cq_rd_take_elig[2] && cq_rd_take_thread_id_last == 4'd3 && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1],
+    cq_rd_take_elig[2] && cq_rd_take_thread_id_last == 4'd2 && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1],
     cq_rd_take_elig[2] && cq_rd_take_thread_id_last == 4'd1,
     cq_rd_take_elig[2] && cq_rd_take_thread_id_last == 4'd0 && !cq_rd_take_elig[1]};
 
-wire [9:0] cq_rd_take_thread_id_is_3 = {
-    cq_rd_take_elig[3] && cq_rd_take_thread_id_last == 4'd9 && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2],
-    cq_rd_take_elig[3] && cq_rd_take_thread_id_last == 4'd8 && !cq_rd_take_elig[9] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2],
-    cq_rd_take_elig[3] && cq_rd_take_thread_id_last == 4'd7 && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2],
-    cq_rd_take_elig[3] && cq_rd_take_thread_id_last == 4'd6 && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2],
-    cq_rd_take_elig[3] && cq_rd_take_thread_id_last == 4'd5 && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2],
-    cq_rd_take_elig[3] && cq_rd_take_thread_id_last == 4'd4 && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2],
-    cq_rd_take_elig[3] && cq_rd_take_thread_id_last == 4'd3 && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2],
+wire [15:0] cq_rd_take_thread_id_is_3 = {
+    cq_rd_take_elig[3] && cq_rd_take_thread_id_last == 4'd15 && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2],
+    cq_rd_take_elig[3] && cq_rd_take_thread_id_last == 4'd14 && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2],
+    cq_rd_take_elig[3] && cq_rd_take_thread_id_last == 4'd13 && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2],
+    cq_rd_take_elig[3] && cq_rd_take_thread_id_last == 4'd12 && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2],
+    cq_rd_take_elig[3] && cq_rd_take_thread_id_last == 4'd11 && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2],
+    cq_rd_take_elig[3] && cq_rd_take_thread_id_last == 4'd10 && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2],
+    cq_rd_take_elig[3] && cq_rd_take_thread_id_last == 4'd9 && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2],
+    cq_rd_take_elig[3] && cq_rd_take_thread_id_last == 4'd8 && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2],
+    cq_rd_take_elig[3] && cq_rd_take_thread_id_last == 4'd7 && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2],
+    cq_rd_take_elig[3] && cq_rd_take_thread_id_last == 4'd6 && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2],
+    cq_rd_take_elig[3] && cq_rd_take_thread_id_last == 4'd5 && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2],
+    cq_rd_take_elig[3] && cq_rd_take_thread_id_last == 4'd4 && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2],
+    cq_rd_take_elig[3] && cq_rd_take_thread_id_last == 4'd3 && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2],
     cq_rd_take_elig[3] && cq_rd_take_thread_id_last == 4'd2,
     cq_rd_take_elig[3] && cq_rd_take_thread_id_last == 4'd1 && !cq_rd_take_elig[2],
     cq_rd_take_elig[3] && cq_rd_take_thread_id_last == 4'd0 && !cq_rd_take_elig[1] && !cq_rd_take_elig[2]};
 
-wire [9:0] cq_rd_take_thread_id_is_4 = {
-    cq_rd_take_elig[4] && cq_rd_take_thread_id_last == 4'd9 && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3],
-    cq_rd_take_elig[4] && cq_rd_take_thread_id_last == 4'd8 && !cq_rd_take_elig[9] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3],
-    cq_rd_take_elig[4] && cq_rd_take_thread_id_last == 4'd7 && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3],
-    cq_rd_take_elig[4] && cq_rd_take_thread_id_last == 4'd6 && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3],
-    cq_rd_take_elig[4] && cq_rd_take_thread_id_last == 4'd5 && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3],
-    cq_rd_take_elig[4] && cq_rd_take_thread_id_last == 4'd4 && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3],
+wire [15:0] cq_rd_take_thread_id_is_4 = {
+    cq_rd_take_elig[4] && cq_rd_take_thread_id_last == 4'd15 && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3],
+    cq_rd_take_elig[4] && cq_rd_take_thread_id_last == 4'd14 && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3],
+    cq_rd_take_elig[4] && cq_rd_take_thread_id_last == 4'd13 && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3],
+    cq_rd_take_elig[4] && cq_rd_take_thread_id_last == 4'd12 && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3],
+    cq_rd_take_elig[4] && cq_rd_take_thread_id_last == 4'd11 && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3],
+    cq_rd_take_elig[4] && cq_rd_take_thread_id_last == 4'd10 && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3],
+    cq_rd_take_elig[4] && cq_rd_take_thread_id_last == 4'd9 && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3],
+    cq_rd_take_elig[4] && cq_rd_take_thread_id_last == 4'd8 && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3],
+    cq_rd_take_elig[4] && cq_rd_take_thread_id_last == 4'd7 && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3],
+    cq_rd_take_elig[4] && cq_rd_take_thread_id_last == 4'd6 && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3],
+    cq_rd_take_elig[4] && cq_rd_take_thread_id_last == 4'd5 && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3],
+    cq_rd_take_elig[4] && cq_rd_take_thread_id_last == 4'd4 && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3],
     cq_rd_take_elig[4] && cq_rd_take_thread_id_last == 4'd3,
     cq_rd_take_elig[4] && cq_rd_take_thread_id_last == 4'd2 && !cq_rd_take_elig[3],
     cq_rd_take_elig[4] && cq_rd_take_thread_id_last == 4'd1 && !cq_rd_take_elig[2] && !cq_rd_take_elig[3],
     cq_rd_take_elig[4] && cq_rd_take_thread_id_last == 4'd0 && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3]};
 
-wire [9:0] cq_rd_take_thread_id_is_5 = {
-    cq_rd_take_elig[5] && cq_rd_take_thread_id_last == 4'd9 && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4],
-    cq_rd_take_elig[5] && cq_rd_take_thread_id_last == 4'd8 && !cq_rd_take_elig[9] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4],
-    cq_rd_take_elig[5] && cq_rd_take_thread_id_last == 4'd7 && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4],
-    cq_rd_take_elig[5] && cq_rd_take_thread_id_last == 4'd6 && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4],
-    cq_rd_take_elig[5] && cq_rd_take_thread_id_last == 4'd5 && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4],
+wire [15:0] cq_rd_take_thread_id_is_5 = {
+    cq_rd_take_elig[5] && cq_rd_take_thread_id_last == 4'd15 && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4],
+    cq_rd_take_elig[5] && cq_rd_take_thread_id_last == 4'd14 && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4],
+    cq_rd_take_elig[5] && cq_rd_take_thread_id_last == 4'd13 && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4],
+    cq_rd_take_elig[5] && cq_rd_take_thread_id_last == 4'd12 && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4],
+    cq_rd_take_elig[5] && cq_rd_take_thread_id_last == 4'd11 && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4],
+    cq_rd_take_elig[5] && cq_rd_take_thread_id_last == 4'd10 && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4],
+    cq_rd_take_elig[5] && cq_rd_take_thread_id_last == 4'd9 && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4],
+    cq_rd_take_elig[5] && cq_rd_take_thread_id_last == 4'd8 && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4],
+    cq_rd_take_elig[5] && cq_rd_take_thread_id_last == 4'd7 && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4],
+    cq_rd_take_elig[5] && cq_rd_take_thread_id_last == 4'd6 && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4],
+    cq_rd_take_elig[5] && cq_rd_take_thread_id_last == 4'd5 && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4],
     cq_rd_take_elig[5] && cq_rd_take_thread_id_last == 4'd4,
     cq_rd_take_elig[5] && cq_rd_take_thread_id_last == 4'd3 && !cq_rd_take_elig[4],
     cq_rd_take_elig[5] && cq_rd_take_thread_id_last == 4'd2 && !cq_rd_take_elig[3] && !cq_rd_take_elig[4],
     cq_rd_take_elig[5] && cq_rd_take_thread_id_last == 4'd1 && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4],
     cq_rd_take_elig[5] && cq_rd_take_thread_id_last == 4'd0 && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4]};
 
-wire [9:0] cq_rd_take_thread_id_is_6 = {
-    cq_rd_take_elig[6] && cq_rd_take_thread_id_last == 4'd9 && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5],
-    cq_rd_take_elig[6] && cq_rd_take_thread_id_last == 4'd8 && !cq_rd_take_elig[9] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5],
-    cq_rd_take_elig[6] && cq_rd_take_thread_id_last == 4'd7 && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5],
-    cq_rd_take_elig[6] && cq_rd_take_thread_id_last == 4'd6 && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5],
+wire [15:0] cq_rd_take_thread_id_is_6 = {
+    cq_rd_take_elig[6] && cq_rd_take_thread_id_last == 4'd15 && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5],
+    cq_rd_take_elig[6] && cq_rd_take_thread_id_last == 4'd14 && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5],
+    cq_rd_take_elig[6] && cq_rd_take_thread_id_last == 4'd13 && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5],
+    cq_rd_take_elig[6] && cq_rd_take_thread_id_last == 4'd12 && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5],
+    cq_rd_take_elig[6] && cq_rd_take_thread_id_last == 4'd11 && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5],
+    cq_rd_take_elig[6] && cq_rd_take_thread_id_last == 4'd10 && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5],
+    cq_rd_take_elig[6] && cq_rd_take_thread_id_last == 4'd9 && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5],
+    cq_rd_take_elig[6] && cq_rd_take_thread_id_last == 4'd8 && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5],
+    cq_rd_take_elig[6] && cq_rd_take_thread_id_last == 4'd7 && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5],
+    cq_rd_take_elig[6] && cq_rd_take_thread_id_last == 4'd6 && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5],
     cq_rd_take_elig[6] && cq_rd_take_thread_id_last == 4'd5,
     cq_rd_take_elig[6] && cq_rd_take_thread_id_last == 4'd4 && !cq_rd_take_elig[5],
     cq_rd_take_elig[6] && cq_rd_take_thread_id_last == 4'd3 && !cq_rd_take_elig[4] && !cq_rd_take_elig[5],
@@ -3905,10 +4921,16 @@ wire [9:0] cq_rd_take_thread_id_is_6 = {
     cq_rd_take_elig[6] && cq_rd_take_thread_id_last == 4'd1 && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5],
     cq_rd_take_elig[6] && cq_rd_take_thread_id_last == 4'd0 && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5]};
 
-wire [9:0] cq_rd_take_thread_id_is_7 = {
-    cq_rd_take_elig[7] && cq_rd_take_thread_id_last == 4'd9 && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6],
-    cq_rd_take_elig[7] && cq_rd_take_thread_id_last == 4'd8 && !cq_rd_take_elig[9] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6],
-    cq_rd_take_elig[7] && cq_rd_take_thread_id_last == 4'd7 && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6],
+wire [15:0] cq_rd_take_thread_id_is_7 = {
+    cq_rd_take_elig[7] && cq_rd_take_thread_id_last == 4'd15 && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6],
+    cq_rd_take_elig[7] && cq_rd_take_thread_id_last == 4'd14 && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6],
+    cq_rd_take_elig[7] && cq_rd_take_thread_id_last == 4'd13 && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6],
+    cq_rd_take_elig[7] && cq_rd_take_thread_id_last == 4'd12 && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6],
+    cq_rd_take_elig[7] && cq_rd_take_thread_id_last == 4'd11 && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6],
+    cq_rd_take_elig[7] && cq_rd_take_thread_id_last == 4'd10 && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6],
+    cq_rd_take_elig[7] && cq_rd_take_thread_id_last == 4'd9 && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6],
+    cq_rd_take_elig[7] && cq_rd_take_thread_id_last == 4'd8 && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6],
+    cq_rd_take_elig[7] && cq_rd_take_thread_id_last == 4'd7 && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6],
     cq_rd_take_elig[7] && cq_rd_take_thread_id_last == 4'd6,
     cq_rd_take_elig[7] && cq_rd_take_thread_id_last == 4'd5 && !cq_rd_take_elig[6],
     cq_rd_take_elig[7] && cq_rd_take_thread_id_last == 4'd4 && !cq_rd_take_elig[5] && !cq_rd_take_elig[6],
@@ -3917,9 +4939,15 @@ wire [9:0] cq_rd_take_thread_id_is_7 = {
     cq_rd_take_elig[7] && cq_rd_take_thread_id_last == 4'd1 && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6],
     cq_rd_take_elig[7] && cq_rd_take_thread_id_last == 4'd0 && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6]};
 
-wire [9:0] cq_rd_take_thread_id_is_8 = {
-    cq_rd_take_elig[8] && cq_rd_take_thread_id_last == 4'd9 && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7],
-    cq_rd_take_elig[8] && cq_rd_take_thread_id_last == 4'd8 && !cq_rd_take_elig[9] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7],
+wire [15:0] cq_rd_take_thread_id_is_8 = {
+    cq_rd_take_elig[8] && cq_rd_take_thread_id_last == 4'd15 && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7],
+    cq_rd_take_elig[8] && cq_rd_take_thread_id_last == 4'd14 && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7],
+    cq_rd_take_elig[8] && cq_rd_take_thread_id_last == 4'd13 && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7],
+    cq_rd_take_elig[8] && cq_rd_take_thread_id_last == 4'd12 && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7],
+    cq_rd_take_elig[8] && cq_rd_take_thread_id_last == 4'd11 && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7],
+    cq_rd_take_elig[8] && cq_rd_take_thread_id_last == 4'd10 && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7],
+    cq_rd_take_elig[8] && cq_rd_take_thread_id_last == 4'd9 && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7],
+    cq_rd_take_elig[8] && cq_rd_take_thread_id_last == 4'd8 && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7],
     cq_rd_take_elig[8] && cq_rd_take_thread_id_last == 4'd7,
     cq_rd_take_elig[8] && cq_rd_take_thread_id_last == 4'd6 && !cq_rd_take_elig[7],
     cq_rd_take_elig[8] && cq_rd_take_thread_id_last == 4'd5 && !cq_rd_take_elig[6] && !cq_rd_take_elig[7],
@@ -3929,8 +4957,14 @@ wire [9:0] cq_rd_take_thread_id_is_8 = {
     cq_rd_take_elig[8] && cq_rd_take_thread_id_last == 4'd1 && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7],
     cq_rd_take_elig[8] && cq_rd_take_thread_id_last == 4'd0 && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7]};
 
-wire [9:0] cq_rd_take_thread_id_is_9 = {
-    cq_rd_take_elig[9] && cq_rd_take_thread_id_last == 4'd9 && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8],
+wire [15:0] cq_rd_take_thread_id_is_9 = {
+    cq_rd_take_elig[9] && cq_rd_take_thread_id_last == 4'd15 && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8],
+    cq_rd_take_elig[9] && cq_rd_take_thread_id_last == 4'd14 && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8],
+    cq_rd_take_elig[9] && cq_rd_take_thread_id_last == 4'd13 && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8],
+    cq_rd_take_elig[9] && cq_rd_take_thread_id_last == 4'd12 && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8],
+    cq_rd_take_elig[9] && cq_rd_take_thread_id_last == 4'd11 && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8],
+    cq_rd_take_elig[9] && cq_rd_take_thread_id_last == 4'd10 && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8],
+    cq_rd_take_elig[9] && cq_rd_take_thread_id_last == 4'd9 && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8],
     cq_rd_take_elig[9] && cq_rd_take_thread_id_last == 4'd8,
     cq_rd_take_elig[9] && cq_rd_take_thread_id_last == 4'd7 && !cq_rd_take_elig[8],
     cq_rd_take_elig[9] && cq_rd_take_thread_id_last == 4'd6 && !cq_rd_take_elig[7] && !cq_rd_take_elig[8],
@@ -3941,13 +4975,121 @@ wire [9:0] cq_rd_take_thread_id_is_9 = {
     cq_rd_take_elig[9] && cq_rd_take_thread_id_last == 4'd1 && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8],
     cq_rd_take_elig[9] && cq_rd_take_thread_id_last == 4'd0 && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8]};
 
-assign cq_rd_take_thread_id[0] = |{cq_rd_take_thread_id_is_1,cq_rd_take_thread_id_is_3,cq_rd_take_thread_id_is_5,cq_rd_take_thread_id_is_7,cq_rd_take_thread_id_is_9};
+wire [15:0] cq_rd_take_thread_id_is_10 = {
+    cq_rd_take_elig[10] && cq_rd_take_thread_id_last == 4'd15 && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9],
+    cq_rd_take_elig[10] && cq_rd_take_thread_id_last == 4'd14 && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9],
+    cq_rd_take_elig[10] && cq_rd_take_thread_id_last == 4'd13 && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9],
+    cq_rd_take_elig[10] && cq_rd_take_thread_id_last == 4'd12 && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9],
+    cq_rd_take_elig[10] && cq_rd_take_thread_id_last == 4'd11 && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9],
+    cq_rd_take_elig[10] && cq_rd_take_thread_id_last == 4'd10 && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9],
+    cq_rd_take_elig[10] && cq_rd_take_thread_id_last == 4'd9,
+    cq_rd_take_elig[10] && cq_rd_take_thread_id_last == 4'd8 && !cq_rd_take_elig[9],
+    cq_rd_take_elig[10] && cq_rd_take_thread_id_last == 4'd7 && !cq_rd_take_elig[8] && !cq_rd_take_elig[9],
+    cq_rd_take_elig[10] && cq_rd_take_thread_id_last == 4'd6 && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9],
+    cq_rd_take_elig[10] && cq_rd_take_thread_id_last == 4'd5 && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9],
+    cq_rd_take_elig[10] && cq_rd_take_thread_id_last == 4'd4 && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9],
+    cq_rd_take_elig[10] && cq_rd_take_thread_id_last == 4'd3 && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9],
+    cq_rd_take_elig[10] && cq_rd_take_thread_id_last == 4'd2 && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9],
+    cq_rd_take_elig[10] && cq_rd_take_thread_id_last == 4'd1 && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9],
+    cq_rd_take_elig[10] && cq_rd_take_thread_id_last == 4'd0 && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9]};
 
-assign cq_rd_take_thread_id[1] = |{cq_rd_take_thread_id_is_2,cq_rd_take_thread_id_is_3,cq_rd_take_thread_id_is_6,cq_rd_take_thread_id_is_7};
+wire [15:0] cq_rd_take_thread_id_is_11 = {
+    cq_rd_take_elig[11] && cq_rd_take_thread_id_last == 4'd15 && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10],
+    cq_rd_take_elig[11] && cq_rd_take_thread_id_last == 4'd14 && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10],
+    cq_rd_take_elig[11] && cq_rd_take_thread_id_last == 4'd13 && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10],
+    cq_rd_take_elig[11] && cq_rd_take_thread_id_last == 4'd12 && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10],
+    cq_rd_take_elig[11] && cq_rd_take_thread_id_last == 4'd11 && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10],
+    cq_rd_take_elig[11] && cq_rd_take_thread_id_last == 4'd10,
+    cq_rd_take_elig[11] && cq_rd_take_thread_id_last == 4'd9 && !cq_rd_take_elig[10],
+    cq_rd_take_elig[11] && cq_rd_take_thread_id_last == 4'd8 && !cq_rd_take_elig[9] && !cq_rd_take_elig[10],
+    cq_rd_take_elig[11] && cq_rd_take_thread_id_last == 4'd7 && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10],
+    cq_rd_take_elig[11] && cq_rd_take_thread_id_last == 4'd6 && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10],
+    cq_rd_take_elig[11] && cq_rd_take_thread_id_last == 4'd5 && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10],
+    cq_rd_take_elig[11] && cq_rd_take_thread_id_last == 4'd4 && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10],
+    cq_rd_take_elig[11] && cq_rd_take_thread_id_last == 4'd3 && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10],
+    cq_rd_take_elig[11] && cq_rd_take_thread_id_last == 4'd2 && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10],
+    cq_rd_take_elig[11] && cq_rd_take_thread_id_last == 4'd1 && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10],
+    cq_rd_take_elig[11] && cq_rd_take_thread_id_last == 4'd0 && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10]};
 
-assign cq_rd_take_thread_id[2] = |{cq_rd_take_thread_id_is_4,cq_rd_take_thread_id_is_5,cq_rd_take_thread_id_is_6,cq_rd_take_thread_id_is_7};
+wire [15:0] cq_rd_take_thread_id_is_12 = {
+    cq_rd_take_elig[12] && cq_rd_take_thread_id_last == 4'd15 && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11],
+    cq_rd_take_elig[12] && cq_rd_take_thread_id_last == 4'd14 && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11],
+    cq_rd_take_elig[12] && cq_rd_take_thread_id_last == 4'd13 && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11],
+    cq_rd_take_elig[12] && cq_rd_take_thread_id_last == 4'd12 && !cq_rd_take_elig[13] && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11],
+    cq_rd_take_elig[12] && cq_rd_take_thread_id_last == 4'd11,
+    cq_rd_take_elig[12] && cq_rd_take_thread_id_last == 4'd10 && !cq_rd_take_elig[11],
+    cq_rd_take_elig[12] && cq_rd_take_thread_id_last == 4'd9 && !cq_rd_take_elig[10] && !cq_rd_take_elig[11],
+    cq_rd_take_elig[12] && cq_rd_take_thread_id_last == 4'd8 && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11],
+    cq_rd_take_elig[12] && cq_rd_take_thread_id_last == 4'd7 && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11],
+    cq_rd_take_elig[12] && cq_rd_take_thread_id_last == 4'd6 && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11],
+    cq_rd_take_elig[12] && cq_rd_take_thread_id_last == 4'd5 && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11],
+    cq_rd_take_elig[12] && cq_rd_take_thread_id_last == 4'd4 && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11],
+    cq_rd_take_elig[12] && cq_rd_take_thread_id_last == 4'd3 && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11],
+    cq_rd_take_elig[12] && cq_rd_take_thread_id_last == 4'd2 && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11],
+    cq_rd_take_elig[12] && cq_rd_take_thread_id_last == 4'd1 && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11],
+    cq_rd_take_elig[12] && cq_rd_take_thread_id_last == 4'd0 && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11]};
 
-assign cq_rd_take_thread_id[3] = |{cq_rd_take_thread_id_is_8,cq_rd_take_thread_id_is_9};
+wire [15:0] cq_rd_take_thread_id_is_13 = {
+    cq_rd_take_elig[13] && cq_rd_take_thread_id_last == 4'd15 && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12],
+    cq_rd_take_elig[13] && cq_rd_take_thread_id_last == 4'd14 && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12],
+    cq_rd_take_elig[13] && cq_rd_take_thread_id_last == 4'd13 && !cq_rd_take_elig[14] && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12],
+    cq_rd_take_elig[13] && cq_rd_take_thread_id_last == 4'd12,
+    cq_rd_take_elig[13] && cq_rd_take_thread_id_last == 4'd11 && !cq_rd_take_elig[12],
+    cq_rd_take_elig[13] && cq_rd_take_thread_id_last == 4'd10 && !cq_rd_take_elig[11] && !cq_rd_take_elig[12],
+    cq_rd_take_elig[13] && cq_rd_take_thread_id_last == 4'd9 && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12],
+    cq_rd_take_elig[13] && cq_rd_take_thread_id_last == 4'd8 && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12],
+    cq_rd_take_elig[13] && cq_rd_take_thread_id_last == 4'd7 && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12],
+    cq_rd_take_elig[13] && cq_rd_take_thread_id_last == 4'd6 && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12],
+    cq_rd_take_elig[13] && cq_rd_take_thread_id_last == 4'd5 && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12],
+    cq_rd_take_elig[13] && cq_rd_take_thread_id_last == 4'd4 && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12],
+    cq_rd_take_elig[13] && cq_rd_take_thread_id_last == 4'd3 && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12],
+    cq_rd_take_elig[13] && cq_rd_take_thread_id_last == 4'd2 && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12],
+    cq_rd_take_elig[13] && cq_rd_take_thread_id_last == 4'd1 && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12],
+    cq_rd_take_elig[13] && cq_rd_take_thread_id_last == 4'd0 && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12]};
+
+wire [15:0] cq_rd_take_thread_id_is_14 = {
+    cq_rd_take_elig[14] && cq_rd_take_thread_id_last == 4'd15 && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13],
+    cq_rd_take_elig[14] && cq_rd_take_thread_id_last == 4'd14 && !cq_rd_take_elig[15] && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13],
+    cq_rd_take_elig[14] && cq_rd_take_thread_id_last == 4'd13,
+    cq_rd_take_elig[14] && cq_rd_take_thread_id_last == 4'd12 && !cq_rd_take_elig[13],
+    cq_rd_take_elig[14] && cq_rd_take_thread_id_last == 4'd11 && !cq_rd_take_elig[12] && !cq_rd_take_elig[13],
+    cq_rd_take_elig[14] && cq_rd_take_thread_id_last == 4'd10 && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13],
+    cq_rd_take_elig[14] && cq_rd_take_thread_id_last == 4'd9 && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13],
+    cq_rd_take_elig[14] && cq_rd_take_thread_id_last == 4'd8 && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13],
+    cq_rd_take_elig[14] && cq_rd_take_thread_id_last == 4'd7 && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13],
+    cq_rd_take_elig[14] && cq_rd_take_thread_id_last == 4'd6 && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13],
+    cq_rd_take_elig[14] && cq_rd_take_thread_id_last == 4'd5 && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13],
+    cq_rd_take_elig[14] && cq_rd_take_thread_id_last == 4'd4 && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13],
+    cq_rd_take_elig[14] && cq_rd_take_thread_id_last == 4'd3 && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13],
+    cq_rd_take_elig[14] && cq_rd_take_thread_id_last == 4'd2 && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13],
+    cq_rd_take_elig[14] && cq_rd_take_thread_id_last == 4'd1 && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13],
+    cq_rd_take_elig[14] && cq_rd_take_thread_id_last == 4'd0 && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13]};
+
+wire [15:0] cq_rd_take_thread_id_is_15 = {
+    cq_rd_take_elig[15] && cq_rd_take_thread_id_last == 4'd15 && !cq_rd_take_elig[0] && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14],
+    cq_rd_take_elig[15] && cq_rd_take_thread_id_last == 4'd14,
+    cq_rd_take_elig[15] && cq_rd_take_thread_id_last == 4'd13 && !cq_rd_take_elig[14],
+    cq_rd_take_elig[15] && cq_rd_take_thread_id_last == 4'd12 && !cq_rd_take_elig[13] && !cq_rd_take_elig[14],
+    cq_rd_take_elig[15] && cq_rd_take_thread_id_last == 4'd11 && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14],
+    cq_rd_take_elig[15] && cq_rd_take_thread_id_last == 4'd10 && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14],
+    cq_rd_take_elig[15] && cq_rd_take_thread_id_last == 4'd9 && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14],
+    cq_rd_take_elig[15] && cq_rd_take_thread_id_last == 4'd8 && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14],
+    cq_rd_take_elig[15] && cq_rd_take_thread_id_last == 4'd7 && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14],
+    cq_rd_take_elig[15] && cq_rd_take_thread_id_last == 4'd6 && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14],
+    cq_rd_take_elig[15] && cq_rd_take_thread_id_last == 4'd5 && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14],
+    cq_rd_take_elig[15] && cq_rd_take_thread_id_last == 4'd4 && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14],
+    cq_rd_take_elig[15] && cq_rd_take_thread_id_last == 4'd3 && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14],
+    cq_rd_take_elig[15] && cq_rd_take_thread_id_last == 4'd2 && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14],
+    cq_rd_take_elig[15] && cq_rd_take_thread_id_last == 4'd1 && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14],
+    cq_rd_take_elig[15] && cq_rd_take_thread_id_last == 4'd0 && !cq_rd_take_elig[1] && !cq_rd_take_elig[2] && !cq_rd_take_elig[3] && !cq_rd_take_elig[4] && !cq_rd_take_elig[5] && !cq_rd_take_elig[6] && !cq_rd_take_elig[7] && !cq_rd_take_elig[8] && !cq_rd_take_elig[9] && !cq_rd_take_elig[10] && !cq_rd_take_elig[11] && !cq_rd_take_elig[12] && !cq_rd_take_elig[13] && !cq_rd_take_elig[14]};
+
+assign cq_rd_take_thread_id[0] = |{cq_rd_take_thread_id_is_1,cq_rd_take_thread_id_is_3,cq_rd_take_thread_id_is_5,cq_rd_take_thread_id_is_7,cq_rd_take_thread_id_is_9,cq_rd_take_thread_id_is_11,cq_rd_take_thread_id_is_13,cq_rd_take_thread_id_is_15};
+
+assign cq_rd_take_thread_id[1] = |{cq_rd_take_thread_id_is_2,cq_rd_take_thread_id_is_3,cq_rd_take_thread_id_is_6,cq_rd_take_thread_id_is_7,cq_rd_take_thread_id_is_10,cq_rd_take_thread_id_is_11,cq_rd_take_thread_id_is_14,cq_rd_take_thread_id_is_15};
+
+assign cq_rd_take_thread_id[2] = |{cq_rd_take_thread_id_is_4,cq_rd_take_thread_id_is_5,cq_rd_take_thread_id_is_6,cq_rd_take_thread_id_is_7,cq_rd_take_thread_id_is_12,cq_rd_take_thread_id_is_13,cq_rd_take_thread_id_is_14,cq_rd_take_thread_id_is_15};
+
+assign cq_rd_take_thread_id[3] = |{cq_rd_take_thread_id_is_8,cq_rd_take_thread_id_is_9,cq_rd_take_thread_id_is_10,cq_rd_take_thread_id_is_11,cq_rd_take_thread_id_is_12,cq_rd_take_thread_id_is_13,cq_rd_take_thread_id_is_14,cq_rd_take_thread_id_is_15};
 
 always @( posedge nvdla_core_clk_mgated_skid or negedge nvdla_core_rstn ) begin
     if ( !nvdla_core_rstn ) begin
@@ -3966,7 +5108,7 @@ always @( posedge nvdla_core_clk_mgated_skid or negedge nvdla_core_rstn ) begin
     end
 end
 
-assign wr_bypassing = rd_bypassing0 || rd_bypassing1 || rd_bypassing2 || rd_bypassing3 || rd_bypassing4 || rd_bypassing5 || rd_bypassing6 || rd_bypassing7 || rd_bypassing8 || rd_bypassing9;
+assign wr_bypassing = rd_bypassing0 || rd_bypassing1 || rd_bypassing2 || rd_bypassing3 || rd_bypassing4 || rd_bypassing5 || rd_bypassing6 || rd_bypassing7 || rd_bypassing8 || rd_bypassing9 || rd_bypassing10 || rd_bypassing11 || rd_bypassing12 || rd_bypassing13 || rd_bypassing14 || rd_bypassing15;
 
 
 // Master Clock Gating (SLCG) Enables
@@ -3996,7 +5138,7 @@ end
 `endif
 `endif
 // synopsys translate_on
-assign nvdla_core_clk_mgated_enable = ((wr_reserving || wr_pushing || wr_popping || (cq_wr_pvld && !cq_wr_busy_int) || (cq_wr_busy_int != cq_wr_busy_next) || rd_popping) || (rd_pushing || cq_rd_take || cq_rd_credit != 10'd0 || rd_take_dly))
+assign nvdla_core_clk_mgated_enable = ((wr_reserving || wr_pushing || wr_popping || (cq_wr_pvld && !cq_wr_busy_int) || (cq_wr_busy_int != cq_wr_busy_next) || rd_popping) || (rd_pushing || cq_rd_take || cq_rd_credit != 16'd0 || rd_take_dly))
                                `ifdef FIFOGEN_MASTER_CLK_GATING_DISABLED
                                || 1'b1
                                `endif
@@ -4010,7 +5152,7 @@ assign nvdla_core_clk_mgated_enable = ((wr_reserving || wr_pushing || wr_popping
                                ;
 
 
-assign nvdla_core_clk_mgated_skid_enable = nvdla_core_clk_mgated_enable || ( cq_rd0_pvld && cq_rd0_prdy ) || rd_bypassing0 || ( cq_rd1_pvld && cq_rd1_prdy ) || rd_bypassing1 || ( cq_rd2_pvld && cq_rd2_prdy ) || rd_bypassing2 || ( cq_rd3_pvld && cq_rd3_prdy ) || rd_bypassing3 || ( cq_rd4_pvld && cq_rd4_prdy ) || rd_bypassing4 || ( cq_rd5_pvld && cq_rd5_prdy ) || rd_bypassing5 || ( cq_rd6_pvld && cq_rd6_prdy ) || rd_bypassing6 || ( cq_rd7_pvld && cq_rd7_prdy ) || rd_bypassing7 || ( cq_rd8_pvld && cq_rd8_prdy ) || rd_bypassing8 || ( cq_rd9_pvld && cq_rd9_prdy ) || rd_bypassing9
+assign nvdla_core_clk_mgated_skid_enable = nvdla_core_clk_mgated_enable || ( cq_rd0_pvld && cq_rd0_prdy ) || rd_bypassing0 || ( cq_rd1_pvld && cq_rd1_prdy ) || rd_bypassing1 || ( cq_rd2_pvld && cq_rd2_prdy ) || rd_bypassing2 || ( cq_rd3_pvld && cq_rd3_prdy ) || rd_bypassing3 || ( cq_rd4_pvld && cq_rd4_prdy ) || rd_bypassing4 || ( cq_rd5_pvld && cq_rd5_prdy ) || rd_bypassing5 || ( cq_rd6_pvld && cq_rd6_prdy ) || rd_bypassing6 || ( cq_rd7_pvld && cq_rd7_prdy ) || rd_bypassing7 || ( cq_rd8_pvld && cq_rd8_prdy ) || rd_bypassing8 || ( cq_rd9_pvld && cq_rd9_prdy ) || rd_bypassing9 || ( cq_rd10_pvld && cq_rd10_prdy ) || rd_bypassing10 || ( cq_rd11_pvld && cq_rd11_prdy ) || rd_bypassing11 || ( cq_rd12_pvld && cq_rd12_prdy ) || rd_bypassing12 || ( cq_rd13_pvld && cq_rd13_prdy ) || rd_bypassing13 || ( cq_rd14_pvld && cq_rd14_prdy ) || rd_bypassing14 || ( cq_rd15_pvld && cq_rd15_prdy ) || rd_bypassing15
                                `ifdef FIFOGEN_MASTER_CLK_GATING_DISABLED
                                || 1'b1
                                `endif
@@ -4321,6 +5463,48 @@ nv_assert_vld_credit_max #(0, 0, 256, 0, "FIFOGEN_ASSERTION A take occurred with
                                         .reset_    ( ( nvdla_core_rstn === 1'bx ? 1'b0 : nvdla_core_rstn ) & assert_enabled ), 
                                         .vld       ( cq_rd_take  && cq_rd_take_thread_id == 4'd9 ),
                                         .credit    ( cq_rd_credit[9] )
+                                      );
+
+nv_assert_vld_credit_max #(0, 0, 256, 0, "FIFOGEN_ASSERTION A take occurred without credits being available") 
+    fifogen_rd_take_credit_check10  ( .clk       ( nvdla_core_clk ), 
+                                        .reset_    ( ( nvdla_core_rstn === 1'bx ? 1'b0 : nvdla_core_rstn ) & assert_enabled ), 
+                                        .vld       ( cq_rd_take  && cq_rd_take_thread_id == 4'd10 ),
+                                        .credit    ( cq_rd_credit[10] )
+                                      );
+
+nv_assert_vld_credit_max #(0, 0, 256, 0, "FIFOGEN_ASSERTION A take occurred without credits being available") 
+    fifogen_rd_take_credit_check11  ( .clk       ( nvdla_core_clk ), 
+                                        .reset_    ( ( nvdla_core_rstn === 1'bx ? 1'b0 : nvdla_core_rstn ) & assert_enabled ), 
+                                        .vld       ( cq_rd_take  && cq_rd_take_thread_id == 4'd11 ),
+                                        .credit    ( cq_rd_credit[11] )
+                                      );
+
+nv_assert_vld_credit_max #(0, 0, 256, 0, "FIFOGEN_ASSERTION A take occurred without credits being available") 
+    fifogen_rd_take_credit_check12  ( .clk       ( nvdla_core_clk ), 
+                                        .reset_    ( ( nvdla_core_rstn === 1'bx ? 1'b0 : nvdla_core_rstn ) & assert_enabled ), 
+                                        .vld       ( cq_rd_take  && cq_rd_take_thread_id == 4'd12 ),
+                                        .credit    ( cq_rd_credit[12] )
+                                      );
+
+nv_assert_vld_credit_max #(0, 0, 256, 0, "FIFOGEN_ASSERTION A take occurred without credits being available") 
+    fifogen_rd_take_credit_check13  ( .clk       ( nvdla_core_clk ), 
+                                        .reset_    ( ( nvdla_core_rstn === 1'bx ? 1'b0 : nvdla_core_rstn ) & assert_enabled ), 
+                                        .vld       ( cq_rd_take  && cq_rd_take_thread_id == 4'd13 ),
+                                        .credit    ( cq_rd_credit[13] )
+                                      );
+
+nv_assert_vld_credit_max #(0, 0, 256, 0, "FIFOGEN_ASSERTION A take occurred without credits being available") 
+    fifogen_rd_take_credit_check14  ( .clk       ( nvdla_core_clk ), 
+                                        .reset_    ( ( nvdla_core_rstn === 1'bx ? 1'b0 : nvdla_core_rstn ) & assert_enabled ), 
+                                        .vld       ( cq_rd_take  && cq_rd_take_thread_id == 4'd14 ),
+                                        .credit    ( cq_rd_credit[14] )
+                                      );
+
+nv_assert_vld_credit_max #(0, 0, 256, 0, "FIFOGEN_ASSERTION A take occurred without credits being available") 
+    fifogen_rd_take_credit_check15  ( .clk       ( nvdla_core_clk ), 
+                                        .reset_    ( ( nvdla_core_rstn === 1'bx ? 1'b0 : nvdla_core_rstn ) & assert_enabled ), 
+                                        .vld       ( cq_rd_take  && cq_rd_take_thread_id == 4'd15 ),
+                                        .credit    ( cq_rd_credit[15] )
                                       );
 
 `endif

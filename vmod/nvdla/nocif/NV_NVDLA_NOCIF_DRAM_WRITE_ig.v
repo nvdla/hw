@@ -79,8 +79,6 @@ output [NVDLA_PRIMARY_MEMIF_WIDTH-1:0] mcif2noc_axi_w_wdata;
 output  [NVDLA_PRIMARY_MEMIF_WIDTH/8-1:0] mcif2noc_axi_w_wstrb;
 output         mcif2noc_axi_w_wlast;
 
-wire       arb2spt_dat_valid, arb2spt_dat_ready;
-wire       spt2cvt_dat_valid,spt2cvt_dat_ready;
 
 //:my $i;
 //:for($i=0;$i<NVDLA_NUM_DMA_WRITE_CLIENTS;$i++) {
@@ -90,7 +88,7 @@ wire       spt2cvt_dat_valid,spt2cvt_dat_ready;
 //:wire [NVDLA_MEM_ADDRESS_WIDTH+12:0] bpt2arb_cmd${i}_pd;
 //:wire  bpt2arb_dat${i}_valid;
 //:wire  bpt2arb_dat${i}_ready;
-//:wire [NVDLA_MEMIF_WIDTH:0] bpt2arb_dat${i}_pd;
+//:wire [NVDLA_MEMIF_WIDTH+1:0] bpt2arb_dat${i}_pd;
 //:NV_NVDLA_NOCIF_DRAM_WRITE_IG_bpt u_bpt${i} (
 //:.nvdla_core_clk         (nvdla_core_clk)
 //:,.nvdla_core_rstn       (nvdla_core_rstn)
@@ -110,7 +108,7 @@ wire       spt2cvt_dat_valid,spt2cvt_dat_ready;
 //:}
 
 wire [NVDLA_MEM_ADDRESS_WIDTH+12:0]    arb2spt_cmd_pd;
-wire [NVDLA_MEMIF_WIDTH:0]    arb2spt_dat_pd;
+wire [NVDLA_MEMIF_WIDTH+1:0]    arb2spt_dat_pd;
 wire arb2spt_cmd_valid, arb2spt_cmd_ready;
 wire spt2cvt_cmd_valid, spt2cvt_cmd_ready;
 
@@ -134,12 +132,12 @@ NV_NVDLA_NOCIF_DRAM_WRITE_IG_arb u_arb (
   ,.arb2spt_cmd_pd          (arb2spt_cmd_pd[NVDLA_MEM_ADDRESS_WIDTH+12:0])         //|> w
   ,.arb2spt_dat_valid       (arb2spt_dat_valid)            //|> w
   ,.arb2spt_dat_ready       (arb2spt_dat_ready)            //|< w
-  ,.arb2spt_dat_pd          (arb2spt_dat_pd[NVDLA_MEMIF_WIDTH:0])        //|> w
+  ,.arb2spt_dat_pd          (arb2spt_dat_pd[NVDLA_MEMIF_WIDTH+1:0])        //|> w
   ,.pwrbus_ram_pd           (pwrbus_ram_pd[31:0])          //|<
 );
 
 wire [NVDLA_MEM_ADDRESS_WIDTH+12:0] spt2cvt_cmd_pd;
-wire [NVDLA_MEMIF_WIDTH:0] spt2cvt_dat_pd;
+wire [NVDLA_MEMIF_WIDTH+1:0] spt2cvt_dat_pd;
 NV_NVDLA_NOCIF_DRAM_WRITE_IG_spt u_spt (
    .nvdla_core_clk          (nvdla_core_clk)               //|< i
   ,.nvdla_core_rstn         (nvdla_core_rstn)              //|< i
@@ -148,13 +146,13 @@ NV_NVDLA_NOCIF_DRAM_WRITE_IG_spt u_spt (
   ,.arb2spt_cmd_pd          (arb2spt_cmd_pd[NVDLA_MEM_ADDRESS_WIDTH+12:0])         //|< w
   ,.arb2spt_dat_valid       (arb2spt_dat_valid)            //|< w
   ,.arb2spt_dat_ready       (arb2spt_dat_ready)            //|> w
-  ,.arb2spt_dat_pd          (arb2spt_dat_pd[NVDLA_MEMIF_WIDTH:0])        //|< w
+  ,.arb2spt_dat_pd          (arb2spt_dat_pd[NVDLA_MEMIF_WIDTH+1:0])        //|< w
   ,.spt2cvt_cmd_valid       (spt2cvt_cmd_valid)            //|> w
   ,.spt2cvt_cmd_ready       (spt2cvt_cmd_ready)            //|< w
   ,.spt2cvt_cmd_pd          (spt2cvt_cmd_pd[NVDLA_MEM_ADDRESS_WIDTH+12:0])         //|> w
   ,.spt2cvt_dat_valid       (spt2cvt_dat_valid)            //|> w
   ,.spt2cvt_dat_ready       (spt2cvt_dat_ready)            //|< w
-  ,.spt2cvt_dat_pd          (spt2cvt_dat_pd[NVDLA_MEMIF_WIDTH:0])        //|> w
+  ,.spt2cvt_dat_pd          (spt2cvt_dat_pd[NVDLA_MEMIF_WIDTH+1:0])        //|> w
   ,.pwrbus_ram_pd           (pwrbus_ram_pd[31:0])          //|< i
   );
 NV_NVDLA_NOCIF_DRAM_WRITE_IG_cvt u_cvt (
@@ -165,7 +163,7 @@ NV_NVDLA_NOCIF_DRAM_WRITE_IG_cvt u_cvt (
   ,.spt2cvt_cmd_pd          (spt2cvt_cmd_pd[NVDLA_MEM_ADDRESS_WIDTH+12:0])         //|< w
   ,.spt2cvt_dat_valid       (spt2cvt_dat_valid)            //|< w
   ,.spt2cvt_dat_ready       (spt2cvt_dat_ready)            //|> w
-  ,.spt2cvt_dat_pd          (spt2cvt_dat_pd[NVDLA_MEMIF_WIDTH:0])        //|< w
+  ,.spt2cvt_dat_pd          (spt2cvt_dat_pd[NVDLA_MEMIF_WIDTH+1:0])        //|< w
   ,.cq_wr_pvld              (cq_wr_pvld)                   //|> o
   ,.cq_wr_prdy              (cq_wr_prdy)                   //|< i
   ,.cq_wr_thread_id         (cq_wr_thread_id[3:0])         //|> o

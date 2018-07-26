@@ -38,7 +38,7 @@ input         nvdla_core_rstn;
 reg    [31:0] reg_rd_data;
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 always @(*) begin
-  case ({20'h0,reg_offset})
+  case (reg_offset)
      (NVDLA_CFGROM_CFGROM_HW_VERSION_0 & 32'h00000fff): reg_rd_data =  32'h10001 ;
      (NVDLA_CFGROM_CFGROM_GLB_DESC_0 & 32'h00000fff): reg_rd_data =  32'h1 ;
      (NVDLA_CFGROM_CFGROM_CIF_DESC_0 & 32'h00000fff): reg_rd_data =  32'h180002 ;

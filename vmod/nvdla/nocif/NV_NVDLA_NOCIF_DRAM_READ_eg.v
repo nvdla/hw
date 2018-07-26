@@ -134,8 +134,6 @@ reg      [1:0] arb_wen;
 //:print qq(wire [NVDLA_PRIMARY_MEMIF_WIDTH/2:0] ro${i}_rd1_pd;\n);
 //:print("wire ro${i}_rd0_prdy;\n");
 //:print("wire ro${i}_rd0_pvld;\n");
-//:print("wire ro${i}_rd1_prdy;\n");
-//:print("wire ro${i}_rd1_pvld;\n");
 //:print("wire ro${i}_wr_rdy;\n");
 //:print("wire ro${i}_wr0_prdy;\n");
 //:print("wire ro${i}_wr1_prdy;\n");
@@ -197,7 +195,7 @@ NV_NVDLA_NOCIF_DRAM_READ_EG_pipe_p1 pipe_p1 (
   );
 
 //my $dw = eval(NVDLA_PRIMARY_MEMIF_WIDTH+4);
-//&eperl::pipe(" -is -wid $dw -do ipipe_axi_pd -vo ipipe_axi_vld -ri noc2mcif_axi_r_rready -vi noc2mcif_axi_r_rvalid -di noc2mcif_axi_r_pd -ro ipipe_axi_rdy");
+//&eperl::pipe(" -os -wid $dw -do ipipe_axi_pd -vo ipipe_axi_vld -ri noc2mcif_axi_r_rready -vi noc2mcif_axi_r_rvalid -di noc2mcif_axi_r_pd -ro ipipe_axi_rdy");
 wire   [NVDLA_PRIMARY_MEMIF_WIDTH-1:0] rq_wr_pd;
 
 assign eg2ig_axi_vld = ipipe_axi_vld & ipipe_axi_rdy;
@@ -258,9 +256,10 @@ assign ipipe_axi_rdy =  0
 
 //:my $k = NVDLA_NUM_DMA_READ_CLIENTS;
 //:my $i;
-//:for ($i=$k; $i<10;$i++) {
+//:for ($i=$k; $i<16;$i++) {
 //:print qq(
-//: wire src${i}_req = 1'b0;
+//: assign src${i}_req = 1'b0;
+//: wire src${i}_gnt;
 //:);
 //:}
 
@@ -276,6 +275,12 @@ read_eg_arb u_read_eg_arb (
   ,.req7                       (src7_req)                       //|< w
   ,.req8                       (src8_req)                       //|< w
   ,.req9                       (src9_req)                       //|< w
+  ,.req10                       (src10_req)                       //|< w
+  ,.req11                       (src11_req)                       //|< w
+  ,.req12                       (src12_req)                       //|< w
+  ,.req13                       (src13_req)                       //|< w
+  ,.req14                       (src14_req)                       //|< w
+  ,.req15                       (src15_req)                       //|< w
   ,.wt0                        ({8{1'b1}})                      //|< ?
   ,.wt1                        ({8{1'b1}})                      //|< ?
   ,.wt2                        ({8{1'b1}})                      //|< ?
@@ -286,6 +291,12 @@ read_eg_arb u_read_eg_arb (
   ,.wt7                        ({8{1'b1}})                      //|< ?
   ,.wt8                        ({8{1'b1}})                      //|< ?
   ,.wt9                        ({8{1'b1}})                      //|< ?
+  ,.wt10                        ({8{1'b1}})                      //|< ?
+  ,.wt11                        ({8{1'b1}})                      //|< ?
+  ,.wt12                        ({8{1'b1}})                      //|< ?
+  ,.wt13                        ({8{1'b1}})                      //|< ?
+  ,.wt14                        ({8{1'b1}})                      //|< ?
+  ,.wt15                        ({8{1'b1}})                      //|< ?
   ,.clk                        (nvdla_core_clk)                 //|< i
   ,.reset_                     (nvdla_core_rstn)                //|< i
   ,.gnt0                       (src0_gnt)                       //|> w
@@ -295,6 +306,15 @@ read_eg_arb u_read_eg_arb (
   ,.gnt4                       (src4_gnt)                       //|> w
   ,.gnt5                       (src5_gnt)                       //|> w
   ,.gnt6                       (src6_gnt)                       //|> w
+  ,.gnt7                       (src7_gnt)                       //|> w
+  ,.gnt8                       (src8_gnt)                       //|> w
+  ,.gnt9                       (src9_gnt)                       //|> w
+  ,.gnt10                       (src10_gnt)                       //|> w
+  ,.gnt11                       (src11_gnt)                       //|> w
+  ,.gnt12                       (src12_gnt)                       //|> w
+  ,.gnt13                       (src13_gnt)                       //|> w
+  ,.gnt14                       (src14_gnt)                       //|> w
+  ,.gnt15                       (src15_gnt)                       //|> w
   );
 
 always @(src0_gnt or rq0_rd_pd
@@ -304,7 +324,6 @@ always @(src0_gnt or rq0_rd_pd
 //:print("or src${i}_gnt or rq${i}_rd_pd\n");
 //:}
 ) begin
-//spyglass disable_block W171 W226
  case (1'b1)
 //:my $k = NVDLA_NUM_DMA_READ_CLIENTS;
 //:my $i;
@@ -326,7 +345,6 @@ always @(src0_gnt or ctt0_cq_pd
 //:print("or src${i}_gnt or ctt${i}_cq_pd\n");
 //:}
 ) begin
-//spyglass disable_block W171 W226
  case (1'b1)
 //:my $k = NVDLA_NUM_DMA_READ_CLIENTS;
 //:my $i;
@@ -334,7 +352,7 @@ always @(src0_gnt or ctt0_cq_pd
 //:  print("src${i}_gnt: arb_cq_pd = ctt${i}_cq_pd;\n"); 
 //:}
   default : begin 
-                arb_cq_pd = {7{`x_or_0}};
+                arb_cq_pd = {NVDLA_PRIMARY_MEMIF_WIDTH{`x_or_0}};
               end  
     //VCS coverage on
     endcase
@@ -348,7 +366,6 @@ always @(src0_gnt or ctt0_cnt
 //:print("or src${i}_gnt or ctt${i}_cnt\n");
 //:}
 ) begin
-//spyglass disable_block W171 W226
  case (1'b1)
 //:my $k = NVDLA_NUM_DMA_READ_CLIENTS;
 //:my $i;
@@ -356,7 +373,7 @@ always @(src0_gnt or ctt0_cnt
 //:  print("src${i}_gnt: arb_cnt = ctt${i}_cnt;\n"); 
 //:}
   default : begin 
-                arb_cnt = {2{`x_or_0}};
+                arb_cnt = {NVDLA_PRIMARY_MEMIF_WIDTH{`x_or_0}};
               end  
     //VCS coverage on
     endcase
@@ -407,6 +424,7 @@ assign arb_first_beat = (arb_cnt==0);
 //:print qq(
 //:assign ro${i}_wr_rdy = ro${i}_wr0_prdy & ro${i}_wr1_prdy;
 //:wire ro${i}_wr0_pvld = src${i}_gnt & arb_wen0_swizzled & ro${i}_wr1_prdy;
+//:wire ro${i}_rd1_prdy;
 //:wire [NVDLA_PRIMARY_MEMIF_WIDTH/2:0] ro${i}_wr0_pd = arb_pd0;
 //:NV_NVDLA_NOCIF_DRAM_READ_EG_ro_fifo ro${i}_fifo0 (
 //:.nvdla_core_clk(nvdla_core_clk)
