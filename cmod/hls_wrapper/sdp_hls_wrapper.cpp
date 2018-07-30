@@ -185,7 +185,7 @@ void sdp_hls_wrapper::sdp_y(int32_t *sdp_data_in, int16_t *sdp_alu_op, int16_t *
     yInpInStruct  inp_op;
     int sdp_y_loop_cnt = (SDP_PARALLEL_PROC_NUM+SPEED_Y-1)/SPEED_Y;
 
-    assert(SDP_PARALLEL_PROC_NUM%SPEED_Y == 0);
+    //assert(SDP_PARALLEL_PROC_NUM%SPEED_Y == 0);
     for(int iter = 0; iter < sdp_y_loop_cnt; iter++) {
         for (i=0; i<SPEED_Y; i++) {
             data_in.data[i] = (yDataInType)sdp_data_in[iter*SPEED_Y + i];
