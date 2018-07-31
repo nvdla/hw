@@ -125,7 +125,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__DESCRIPTION__)
     parser.add_argument('--project','-P', dest='project', required=True,
                         help='Specify project name')
-    parser.add_argument('--kind', '-kind', dest='kind', type=str, default='sanity', choices=['protection','sanity','random','coverage','all','plrc'], required=True,
+    parser.add_argument('--kind', '-kind', dest='kind', type=str, default='sanity', choices=['protection','sanity','random','coverage','all'], required=True,
                         help='Specify regression kind')
     parser.add_argument('--timeout', '-timeout', dest='timeout', type=int, default=720, required=False,
                         help='Specify job running timeout value in minutes')
@@ -151,10 +151,6 @@ if __name__ == '__main__':
                         help='LSF command to run tests')
     parser.add_argument('--plotly_py_path', '-plotly_py_path', '--ppp', '-ppp', dest='plotly_py_path', type=str, default='', required=False,
                         help='Python version which contains plotly lib')
-    parser.add_argument('--predict_lsf_resource_consumption_path', '-plrc_path', '--plrc_path', dest='plrc_path', required=False, default=False,
-                        help='Specify lsf queue resource consumption prediction tool path')
-    parser.add_argument('--plrc_py', '-plrc_py', dest='plrc_py', type=str, default='', required=False,
-                        help='Python version which contains libs in plrc tool')
     parser.add_argument('--levenshtein_py_path', '-levenshtein_py_path', '--lpp', '-lpp', dest='levenshtein_py_path', type=str, default='', required=False,
                         help='Python version which contains levenshtein lib')
     parser.add_argument('--dry_run', '-dry_run', dest='dry_run', required=False, default=False, action='store_true',
@@ -177,8 +173,6 @@ if __name__ == '__main__':
     web_dir  = config['web_dir']
     lsf_cmd = config['lsf_cmd']
     dry_run = config['dry_run']
-    plrc_path = config['plrc_path']
-    plrc_py   = config['plrc_py']
     args_list = []
     if config['timeout']:
         args_list.append("-timeout %d" % config['timeout'])
@@ -224,9 +218,6 @@ if __name__ == '__main__':
                 ret=run_coverage_report('-format both', config['project'], run_dir, cov_vdb_dir, cov_report_dir, publish_dir, dry_run)
                 shutil.move(cov_vdb_dir, run_dir)
                 shutil.move(cov_report_dir, run_dir)
-            elif 'plrc' == config['kind']:
-                ret=run_plan(config['project'], project_name, '-atag L20 -atag cc -ntag pdp -ntag sdprdma %s -run_dir %s -en_plrc -plrc_py %s -plrc_path %s' % (args, run_dir, plrc_py, plrc_path), lsf_cmd, dry_run)
-                ret=run_report(run_dir, publish_dir, '-monitor_timeout %d' % max_regression_time, 'passing_rate:L10 passing_rate:L11', dry_run)
             elif 'all' == config['kind']:
                 ret=run_plan(config['project'], project_name, '%s -run_dir %s' % (args, run_dir), lsf_cmd, dry_run)
                 ret=run_report(run_dir, publish_dir, '-monitor_timeout %d' % max_regression_time, 'passing_rate:L0 passing_rate:L1 passing_rate:L2 passing_rate:L10 passing_rate:L11', dry_run)
