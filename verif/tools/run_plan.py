@@ -227,6 +227,61 @@ class RunPlan(object):
         time.sleep(10)
         os.chdir(origin_working_dir)
 
+    def execute_run_test_commands_with_plrc(self, test_dir_cmd):
+        origin_working_dir = os.getcwd()
+        lsf_cmd            = self.config['lsf_cmd']
+        for test_dir,cmd_file in test_dir_cmd.items():
+            try:
+                os.chdir(test_dir)
+            except FileNotFoundError as err1:
+                print('%0s, wait 3s and retry' % err1)
+                time.sleep(3)
+                try:
+                    os.chdir(test_dir)
+                except FileNotFoundError as err2:
+                    raise Exception('%0s' % err2)
+
+            with open(cmd_file, 'r') as fl:
+                cmd_line = fl.readlines()[-1] 
+            # use specified lsf_cmd run trace_generator
+            cmd_tg = cmd_line.rstrip() + ' -dump_trace_only '
+            cmd = ' '.join([lsf_cmd, cmd_tg])
+            subprocess.Popen(cmd, shell=True)
+            time.sleep(1)
+        time.sleep(5)
+        print('TraceGenerator jobs submitted Done')
+
+        self._test_dir_plrc = {}
+        for test_dir,cmd_file in test_dir_cmd.items():
+            os.chdir(test_dir)
+            while True:
+                if os.path.exists(os.path.join(cmd_file.rstrip('\.sh'),'FAIL')):
+                    break
+                elif os.path.exists(os.path.join(cmd_file.rstrip('\.sh'),'PASS')):
+                    cmd       = os.path.join(test_dir,cmd_file)
+                    plrc_path = self.config['plrc_path']
+                    plrc_exe  = ' '.join([self.config['plrc_py'], 
+                                          os.path.join(plrc_path,'lsf_predict.py')])
+                    trace_dir = os.path.join(test_dir,cmd_file.rstrip('\.sh'))
+                    plrc_cmd  = f'{plrc_exe} -trace_dir {trace_dir} -model_dir {plrc_path}'
+                    info      = subprocess.check_output(plrc_cmd, shell=True)
+                    lsf_info  = info.decode('utf-8').rstrip().split('\n')
+                    mem_pred  = lsf_info[0].replace('mem_pred:','').rstrip()
+                    time_pred = lsf_info[1].replace('time_pred:','').rstrip()
+                    lsf_cmd   = lsf_info[2]
+                    print(lsf_cmd)
+                    cmd       = ' '.join([lsf_cmd, cmd])
+                    subprocess.Popen(cmd, shell=True)
+                    self._test_dir_plrc[test_dir] = dict(mempred=mem_pred,cpupred=time_pred)
+                    time.sleep(1)
+                    break
+                else:
+                    time.sleep(10)
+                    continue
+        time.sleep(10)
+        os.chdir(origin_working_dir)
+
+
     def execute_run_test_commands_no_lsf(self, test_dir_cmd):
         pid_list = []
         #print("test_dir_cmd", test_dir_cmd)
@@ -256,6 +311,8 @@ class RunPlan(object):
         if not self.config['gen_cmd_only']:
             if self.config['no_lsf']:
                 self.execute_run_test_commands_no_lsf(self._test_dir_cmd)
+            elif self.config['enable_plrc']:
+                self.execute_run_test_commands_with_plrc(self._test_dir_cmd)
             else:
                 self.execute_run_test_commands(self._test_dir_cmd)
 
@@ -309,6 +366,9 @@ class RunPlan(object):
             test_orgz_data[test_id]['dir'] = test_dir
             test_name = cmd_file[0:-3]
             test_orgz_data[test_id]['name'] = test_name
+            if self.config['enable_plrc']:
+                test_orgz_data[test_id]['mempred'] = self._test_dir_plrc[test_dir]['mempred']
+                test_orgz_data[test_id]['cpupred'] = self._test_dir_plrc[test_dir]['cpupred']
             for item in self.run_test_list:
                 if item['name'] == test_name:
                     test_orgz_data[test_id]['tags'] = item['tags']
@@ -365,6 +425,12 @@ def main():
                         help='Do not Use LSF to run tests')
     parser.add_argument('--lsf_command', '-lsf_command', '--lsf_cmd', '-lsf_cmd', dest='lsf_cmd', required=False, default='',
                         help='LSF command to run tests')
+    parser.add_argument('--enable_predict_lsf_resource_consumption', '-enable_plrc', '--en_plrc', '-en_plrc', dest='enable_plrc', required=False, default=False, action='store_true',
+                        help='Enable lsf queue resource consumption prediction, then submit runs to specific predicted LSF queue')
+    parser.add_argument('--predict_lsf_resource_consumption_path', '-plrc_path', '--plrc_path', dest='plrc_path', required=False, default=False,
+                        help='Specify lsf queue resource consumption prediction tool path')
+    parser.add_argument('--plrc_py', '-plrc_py', dest='plrc_py', type=str, default='', required=False,
+                        help='Python version which contains libs in plrc tool')
     parser.add_argument('--enable_coverage', '-enable_coverage', '--en_cov', '-en_cov', dest='enable_coverage', required=False, default=False, action='store_true',
                         help='Enable both code and functional coverage')
     parser.add_argument('--enable_functional_coverage', '-enable_functional_coverage', '--en_fcov', '-en_fcov', dest='enable_functional_coverage', required=False, default=False, action='store_true',

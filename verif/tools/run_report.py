@@ -228,7 +228,7 @@ class RunReport(object):
         print('[INFO] Dir = ' + self.regress_dir)
         print(150 * '-')
         if farm_type == 'LSF':
-            print('%-10s %-40s %-20s %-10s %-10s %-10s %-10s %-10s %-s' % ('JobID', 'Test', 'TB', 'Status', 'CpuTime', 'MemSize', 'CpuLimit', 'MemLimit', 'Errinfo'))
+            print('%-10s %-40s %-20s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-s' % ('JobID', 'Test', 'TB', 'Status', 'CpuTime', 'MemSize', 'CpuPred', 'MemPred', 'CpuLimit', 'MemLimit', 'Errinfo'))
         else:
             print('%-10s %-40s %-20s %-10s %-s' % ('JobID', 'Test', 'TB', 'Status', 'Errinfo'))
         print(150 * '-')
@@ -252,13 +252,19 @@ class RunReport(object):
     def __print_testlist_status(self, color='', testlist={}, farm_type=''):
         if farm_type == 'LSF':
             for test in testlist:
-                msg = "%(jobid)-10s %(test)-40s %(tb)-20s %(status)-10s %(cputime)-10s %(memsize)-10s %(cpulimit)-10s %(memlimit)-10s %(errinfo)-s" % {
+                if 'cpupred' not in test:
+                    test['cpupred'] = '-'
+                if 'mempred' not in test:
+                    test['mempred'] = '-'
+                msg = "%(jobid)-10s %(test)-40s %(tb)-20s %(status)-10s %(cputime)-10s %(memsize)-10s %(cpupred)-10s %(mempred)-10s %(cpulimit)-10s %(memlimit)-10s %(errinfo)-s" % {
                     'jobid'    : test['job_id'],
                     'test'     : os.path.basename(test['dir']),
                     'tb'       : test['test_bench'],
                     'status'   : test['status'],
                     'cputime'  : self.job_status[test['job_id']]['cputime_used'],
                     'memsize'  : self.job_status[test['job_id']]['maxmem'],
+                    'cpupred'  : test['cpupred'],
+                    'mempred'  : test['mempred'],
                     'cpulimit' : self.job_status[test['job_id']]['cpulimit'],
                     'memlimit' : self.job_status[test['job_id']]['memlimit'],
                     'errinfo'  : self.__replace_path_sub_string(test['errinfo'])

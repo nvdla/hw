@@ -80,7 +80,7 @@ class LSFMonitor(object):
                 cputime    = cputime_p.search(str(info))
                 maxmem_p   = re.compile(r'MAX\s*MEM:\s*(\d+.*)Mbytes;')
                 maxmem     = maxmem_p.search(str(info))
-                match = re.search(r'.*Status\s*<(\w+)>,.*VIRTUAL_QUEUE=(\w+)\s*QSUB_JOB_TAG_PROJECT_MODE.*CWD\s*<(.*)>,.*CPULIMIT\s*([\d\.]+\s*min)\s*of\s*([a-zA-Z0-9-]+)\s*.*RUNLIMIT\s*([\d\.]+\s*min)\s*.*MEMLIMIT\s*(\d+\s*)K\s*', str(info))
+                match = re.search(r'.*Status\s*<(\w+)>,.*VIRTUAL_QUEUE=([\w\.]+)\s*QSUB_JOB_TAG_PROJECT_MODE.*CWD\s*<(.*)>,.*CPULIMIT\s*([\d\.]+\s*min)\s*of\s*([a-zA-Z0-9-]+)\s*.*RUNLIMIT\s*([\d\.]+\s*min)\s*.*MEMLIMIT\s*(\d+\s*)K\s*', str(info))
                 if match is None:
                     with open('log_of_job_'+str(item), 'w') as fh:
                         fh.write(str(info))
