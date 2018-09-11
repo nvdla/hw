@@ -30,7 +30,7 @@ class LSFMonitor(object):
         self._job_name = job_name
         self._interval = interval
         self._job_id   = []
-        self._job_query_max_rounds = 3
+        self._job_query_max_rounds = 5
 
     def run(self):
         self._job_id = self.get_job_by_name(self._job_name)
@@ -65,6 +65,7 @@ class LSFMonitor(object):
         exec_host_info = {}
         job_id_not_initiated = list(job_id)
         for round_idx in range(self._job_query_max_rounds):
+            done_list = []
             for item in job_id_not_initiated:
                 exec_host_info[item] = {}
                 try:
@@ -109,7 +110,10 @@ class LSFMonitor(object):
                         exec_host_info[item]['syndrome'] = 'LSF job exited with unknown reason'
                 else:
                     exec_host_info[item]['syndrome'] = ''
-                job_id_not_initiated.remove(item)
+                done_list.append(item)
+            job_id_not_initiated = list(set(job_id_not_initiated)-set(done_list))
+            if not job_id_not_initiated:
+                break
             print('Round %d: wait 5s and retry' % round_idx)
             time.sleep(5)
         # last round
