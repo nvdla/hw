@@ -114,7 +114,7 @@ class RunCoverageReport(object):
 
         # merged vdb
         cmd  = '%s -dir %s -f test_vdb.list -dbname %s' % (self.urg_exe, ip_vdb, self.merged_cm_dir)
-        cmd += ' -parallel -parallel_split 10 -maxjobs 100'
+        cmd += ' -parallel -parallel_split 80 -maxjobs 100'
         cmd += ' -show tests -nocheck -noreport'
         self.__run_cmd(cmd)
 
