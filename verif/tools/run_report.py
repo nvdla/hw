@@ -54,17 +54,20 @@ class RunReport(object):
         while True:
             self.__parse_regress_status()
             if not self.monitor_quiet:
-                self.__print_regress_report()
-            if not self.monitor:
-                break
-            elif self.__is_regress_done():
+                if self.monitor:
+                    self.__print_regress_report()
+            if self.__is_regress_done():
                 print(colorama.Fore.GREEN + 'Regression finished ...')
                 break
             elif self.__is_monitor_timeout():
                 print(colorama.Fore.YELLOW + '[INFO] Warning: Regression monitor timeout after {:.0f} minutes later !'.format((self.end_time - self.start_time)/60))
                 break
-            self.__time_sleep(self.monitor_interval)
+            if self.monitor:
+                self.__time_sleep(self.monitor_interval)
+            elif not self.monitor:
+                time.sleep(1)
         if self.__is_regress_done() or self.__is_monitor_timeout():
+            self.__print_regress_report()
             self.report_gen()
         os.chdir(origin_dir)
 
@@ -360,8 +363,8 @@ def main():
     run_report = RunReport(regress_dir=args['run_dir'],
                            publish_dir=args['publish_dir'],
                            publish=args['publish'],
-#                           monitor=args['monitor'],
-#                           monitor_interval=args['monitor_interval'],
+                           monitor=args['monitor'],
+                           monitor_interval=args['monitor_interval'],
                            monitor_timeout=args['monitor_timeout'],
                            monitor_quiet=args['monitor_quiet'],
                            submetrics=args['sub_metrics'],

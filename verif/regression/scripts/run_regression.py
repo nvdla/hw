@@ -69,7 +69,7 @@ def run_plan(project, plan_name, arguments, lsf_cmd=None, dry_run=False):
 def run_report(run_dir, db_dir, arguments, sub_metrics='', dry_run=False):
     python_interpreter = sys.executable
     cmd_exe = os.path.join(_get_abs_path_to_tree_root(), 'verif/tools/run_report.py')
-    cmd_args = "-run_dir %(run_dir)s -publish_dir %(db_dir)s -publish %(arguments)s -monitor" % {'db_dir':db_dir, 'run_dir':run_dir, 'arguments':arguments}
+    cmd_args = "-run_dir %(run_dir)s -publish_dir %(db_dir)s -publish %(arguments)s " % {'db_dir':db_dir, 'run_dir':run_dir, 'arguments':arguments}
     if sub_metrics:
         cmd_args += ' -sub_metrics %s' % sub_metrics
     cmd_str = ' '.join([python_interpreter, cmd_exe, cmd_args])
