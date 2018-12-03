@@ -65,7 +65,7 @@ class RunReport(object):
             if self.monitor:
                 self.__time_sleep(self.monitor_interval)
             elif not self.monitor:
-                time.sleep(1)
+                time.sleep(3600)
         if self.__is_regress_done() or self.__is_monitor_timeout():
             self.__print_regress_report()
             self.report_gen()
