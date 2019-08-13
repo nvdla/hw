@@ -2,13 +2,13 @@
  *                                                                        *
  *  Algorithmic C (tm) Datatypes                                          *
  *                                                                        *
- *  Software Version: 3.7                                                 *
+ *  Software Version: 3.9                                                 *
  *                                                                        *
- *  Release Date    : Wed Jun  1 13:21:52 PDT 2016                        *
+ *  Release Date    : Fri Oct 12 12:26:10 PDT 2018                        *
  *  Release Type    : Production Release                                  *
- *  Release Build   : 3.7.0                                               *
+ *  Release Build   : 3.9.0                                               *
  *                                                                        *
- *  Copyright 2004-2016, Mentor Graphics Corporation,                     *
+ *  Copyright 2004-2018, Mentor Graphics Corporation,                     *
  *                                                                        *
  *  All Rights Reserved.                                                  *
  *  
@@ -65,7 +65,7 @@
 #define __AC_INT_H
 
 #define AC_VERSION 3
-#define AC_VERSION_MINOR 7
+#define AC_VERSION_MINOR 9
 
 #ifndef __cplusplus
 #error C++ is required to include this header file
@@ -96,9 +96,13 @@
 #error DO NOT use defines before including third party header files.
 #endif
 
-#if (defined(true) || defined(false))
-#error One or more of the following is defined: true, false. They are keywords in C++ of type bool. Defining them as 1 and 0, may result in subtle compilation problems. 
-#error DO NOT use defines before including third party header files.
+#if defined(true)
+#warning The C++ keyword true is defined which may result in subtle compilation problems. Undefining it. 
+#undef true
+#endif
+#if defined(false)
+#warning The C++ keyword false is defined which may result in subtle compilation problems. Undefining it. 
+#undef false 
 #endif
 
 #ifndef __ASSERT_H__
@@ -127,7 +131,7 @@ namespace __AC_NAMESPACE {
 
 #define AC_MAX(a,b) ((a) > (b) ? (a) : (b))
 #define AC_MIN(a,b) ((a) < (b) ? (a) : (b))
-#define AC_ABS(a) ((a) < 0 ? (-a) : (a))
+#define AC_ABS(a) ((a) < 0 ? -(a) : (a))
 
 #if defined(_MSC_VER)
 typedef unsigned __int64 Ulong;
@@ -148,6 +152,7 @@ namespace ac_private {
 #endif
 
   enum {long_w = std::numeric_limits<unsigned long>::digits};
+  const unsigned int all_ones = (unsigned) ~0;
 
   // PRIVATE FUNCTIONS in namespace: for implementing ac_int/ac_fixed
 
@@ -308,7 +313,7 @@ namespace ac_private {
 
   template<int B, int N>
   inline bool iv_equal_ones_to(const int *op){
-    if((B >= 32*N && op[N-1] >= 0) || (B&31 && ~(op[B/32] | (~0 << (B&31)))))
+    if((B >= 32*N && op[N-1] >= 0) || (B&31 && ~(op[B/32] | (all_ones << (B&31)))))
       return false; 
     return iv_equal_ones<B/32>(op);
   }
@@ -321,7 +326,7 @@ namespace ac_private {
 
   template<int B, int N>
   inline bool iv_equal_zeros_to(const int *op){
-    if((B >= 32*N && op[N-1] < 0) || (B&31 && (op[B/32] & ~(~0 << (B&31)))))
+    if((B >= 32*N && op[N-1] < 0) || (B&31 && (op[B/32] & ~(all_ones << (B&31)))))
       return false; 
     return iv_equal_zero<B/32>(op);
   }
@@ -780,7 +785,7 @@ namespace ac_private {
           r1[k2_i + j] = (uw2) l;
           l >>= w2_length;
           if(ov1)
-            l |= ((sw4) -1 << w2_length);
+            l |= ((uw4) -1 << w2_length);
           if(ov2)
             l ^= ((sw4) 1 << w2_length);
         }
@@ -1081,12 +1086,12 @@ namespace ac_private {
     }
     else {
       const unsigned s31 = B & 31;
-      const unsigned ishift = (unsigned) (((B >> 5) > Nr) ? Nr : (B >> 5));
+      const int ishift = (((B >> 5) > Nr) ? Nr : (B >> 5));
       iv_extend<ishift>(r, 0);
-      const unsigned M1 = AC_MIN(N+ishift,Nr);
+      const int M1 = AC_MIN(N+ishift,Nr);
       if(s31) {
         unsigned lw = 0;
-        for(unsigned i=ishift; i < M1; i++) {
+        for(int i=ishift; i < M1; i++) {
           unsigned hw = op1[i-ishift];
           r[i] = (hw << s31) | (lw >> ((32-s31)&31));  // &31 is to quiet compilers
           lw = hw;
@@ -1096,7 +1101,7 @@ namespace ac_private {
           iv_extend<Nr-M1-1>(r+M1+1, r[M1] < 0 ? ~0 : 0);
         }
       } else {
-        for(unsigned i=ishift; i < M1 ; i++)
+        for(int i=ishift; i < M1 ; i++)
           r[i] = op1[i-ishift];
         iv_extend<Nr-M1>(r+M1, r[M1-1] < 0 ? -1 : 0);
       }
@@ -1114,21 +1119,21 @@ namespace ac_private {
     if(!B) {
       const int M1 = AC_MIN(N,Nr);
       iv_copy<M1>(op1, r);
-      iv_extend<Nr-M1>(r+M1, r[M1-1] < 0 ? -1 : 0);
+      iv_extend<Nr-M1>(r+M1, r[M1-1] < 0 ? ~0 : 0);
     }
     else {
       const unsigned s31 = B & 31;
-      const unsigned ishift = (unsigned) (((B >> 5) > N) ? N : (B >> 5));
+      const int ishift = (((B >> 5) > N) ? N : (B >> 5));
       int ext = op1[N-1] < 0 ? ~0 : 0;
       if(s31 && ishift!=N) {
         unsigned lw = (ishift < N) ? op1[ishift] : ext;
-        for(unsigned i=0; i < Nr; i++) {
+        for(int i=0; i < Nr; i++) {
           unsigned hw = (i+ishift+1 < N) ? op1[i+ishift+1] : ext;
           r[i] = (lw >> s31) | (hw << ((32-s31)&31));  // &31 is to quiet compilers
           lw = hw;
         }
       } else {
-        for(unsigned i=0; i < Nr ; i++)
+        for(int i=0; i < Nr ; i++)
           r[i] = (i+ishift < N) ? op1[i+ishift] : ext;
       }
     }
@@ -1246,16 +1251,18 @@ namespace ac_private {
     bool neg = !sign_mag && v[n-1] < 0; 
     if(!left_just) {
       while(n-- && v[n] == (neg ? ~0 : 0)) {}  
-      w = 32*(n+1);
-      if(w) {
+      int w2 = 32*(n+1);
+      if(w2) {
         int m = v[n];
         for(int i = 16; i > 0; i >>= 1) {
           if((m >> i) == (neg ? ~0 : 0))
-            w -= i;
+            w2 -= i;
           else
             m >>= i;
         }
       } 
+      if(w2 < w)
+        w = w2;
       w += !sign_mag;
     }
     if(base == AC_DEC)
@@ -1460,14 +1467,14 @@ namespace ac_private {
       unsigned msb_b = msb & 31; 
       if(N2==1) { 
         if(msb_v == lsb_v) 
-          v[lsb_v] ^= (v[lsb_v] ^ (op2.v[0] << lsb_b)) & (~(WS==32 ? 0 : ~0<<WS) << lsb_b);
+          v[lsb_v] ^= (v[lsb_v] ^ (op2.v[0] << lsb_b)) & (~(WS==32 ? 0 : all_ones<<WS) << lsb_b);
         else {
-          v[lsb_v] ^= (v[lsb_v] ^ (op2.v[0] << lsb_b)) & (~0 << lsb_b);
+          v[lsb_v] ^= (v[lsb_v] ^ (op2.v[0] << lsb_b)) & (all_ones << lsb_b);
           unsigned m = (((unsigned) op2.v[0] >> 1) >> (31-lsb_b));
-          v[msb_v] ^= (v[msb_v] ^ m) & ~((~0<<1)<<msb_b);
+          v[msb_v] ^= (v[msb_v] ^ m) & ~((all_ones<<1)<<msb_b);
         }
       } else {
-        v[lsb_v] ^= (v[lsb_v] ^ (op2.v[0] << lsb_b)) & (~0 << lsb_b);
+        v[lsb_v] ^= (v[lsb_v] ^ (op2.v[0] << lsb_b)) & (all_ones << lsb_b);
         for(int i = 1; i < N2-1; i++)
           v[lsb_v+i] = (op2.v[i] << lsb_b) | (((unsigned) op2.v[i-1] >> 1) >> (31-lsb_b)); 
         unsigned t = (op2.v[N2-1] << lsb_b) | (((unsigned) op2.v[N2-2] >> 1) >> (31-lsb_b));
@@ -1478,7 +1485,7 @@ namespace ac_private {
         } 
         else
           m = t;
-        v[msb_v] ^= (v[msb_v] ^ m) & ~((~0<<1)<<msb_b);
+        v[msb_v] ^= (v[msb_v] ^ m) & ~((all_ones<<1)<<msb_b);
       }
     }
     unsigned leading_bits(bool bit) const {
@@ -1497,7 +1504,7 @@ namespace ac_private {
   }
   
   template<> template<> inline void iv<1>::set_slc(unsigned lsb, int WS, const iv<1> &op2) {
-    v[0] ^= (v[0] ^ (op2.v[0] << lsb)) & (~(WS==32 ? 0 : ~0<<WS) << lsb);
+    v[0] ^= (v[0] ^ (op2.v[0] << lsb)) & (~(WS==32 ? 0 : all_ones<<WS) << lsb);
   }
   template<> template<> inline void iv<2>::set_slc(unsigned lsb, int WS, const iv<1> &op2) {
     Ulong l = to_uint64();
@@ -1767,7 +1774,7 @@ namespace ac {
 
   template<int LowerBound, int UpperBound>
   struct int_range {
-    enum { l_s = LowerBound < 0, u_s = UpperBound < 0, 
+    enum { l_s = (LowerBound < 0), u_s = (UpperBound < 0), 
            signedness = l_s || u_s,
            l_nbits = nbits<AC_ABS(LowerBound+l_s)+l_s>::val,
            u_nbits = nbits<AC_ABS(UpperBound+u_s)+u_s>::val,
@@ -1945,6 +1952,7 @@ public:
 #endif
   template<ac_special_val V>
   inline ac_int &set_val() {
+    const unsigned int all_ones = (unsigned) ~0;
     if(V == AC_VAL_DC) {
       ac_int r;
       Base::operator =(r); 
@@ -1954,14 +1962,14 @@ public:
       Base::operator =(0); 
       if(S && V == AC_VAL_MIN) {
         const unsigned int rem = (W-1)&31;
-        Base::v[N-1] = (-1 << rem); 
+        Base::v[N-1] = (all_ones << rem); 
       } else if(V == AC_VAL_QUANTUM)
         Base::v[0] = 1;
     }
     else if(AC_VAL_MAX) {
       Base::operator =(-1); 
-      const unsigned int rem = (32-W - (unsigned) !S )&31;
-      Base::v[N-1] = ((unsigned) (-1) >> 1) >> rem; 
+      const unsigned int rem = (32-W - !S )&31;
+      Base::v[N-1] = (all_ones >> 1) >> rem; 
     }
     return *this;
   } 
@@ -2017,11 +2025,11 @@ public:
     return std::string(r);
   }
   inline static std::string type_name() {
-	const char *tf[] = {",false>", ",true>"};
-	std::string r = "ac_int<";
-	r += ac_int<32,true>(W).to_string(AC_DEC);
-	r += tf[S];
-	return r;
+    const char *tf[] = {",false>", ",true>"};
+    std::string r = "ac_int<";
+    r += ac_int<32,true>(W).to_string(AC_DEC);
+    r += tf[S];
+    return r;
   }
 
   // Arithmetic : Binary ----------------------------------------------------
@@ -2306,9 +2314,9 @@ public:
   template<int WS, int WX, bool SX>
   inline ac_int<WS,S> slc(const ac_int<WX,SX> &index) const {
     ac_int<WS,S> r;
-    AC_ASSERT(index >= 0, "Attempting to read slc with negative indeces");
-    ac_int<WX-SX, false> uindex = index;
-    Base::shift_r(uindex.to_uint(), r);
+    AC_ASSERT(index.to_int() >= 0, "Attempting to read slc with negative indeces");
+    unsigned uindex = ac_int<WX-SX, false>(index).to_uint();
+    Base::shift_r(uindex, r);
     r.bit_adjust();
     return r; 
   }
@@ -2333,8 +2341,8 @@ public:
   template<int W2, bool S2, int WX, bool SX>
   inline ac_int &set_slc(const ac_int<WX,SX> lsb, const ac_int<W2,S2> &slc) {
     AC_ASSERT(lsb.to_int() + W2 <= W && lsb.to_int() >= 0, "Out of bounds set_slc");
-    ac_int<WX-SX, false> ulsb = lsb;
-    Base::set_slc(ulsb.to_uint(), W2, (ac_int<W2,true>) slc);
+    unsigned ulsb = ac_int<WX-SX, false>(lsb).to_uint();
+    Base::set_slc(ulsb, W2, (ac_int<W2,true>) slc);
     bit_adjust();   // in case sign bit was assigned 
     return *this;
   }
@@ -2392,17 +2400,17 @@ public:
   } 
   ac_bitref operator [] ( int index) {
     AC_ASSERT(index >= 0, "Attempting to read bit with negative index");
-    AC_ASSERT(index < W, "Attempting to read bit beyond MSB");
     unsigned uindex = index & ((unsigned)~0 >> 1);
+    AC_ASSERT(uindex < W, "Attempting to read bit beyond MSB");
     ac_bitref bvh( this, uindex );
     return bvh;
   } 
   template<int W2, bool S2>
   ac_bitref operator [] ( const ac_int<W2,S2> &index) {
-    AC_ASSERT(index >= 0, "Attempting to read bit with negative index");
-    AC_ASSERT(index < W, "Attempting to read bit beyond MSB");
-    ac_int<W2-S2,false> uindex = index;
-    ac_bitref bvh( this, uindex.to_uint() );
+    AC_ASSERT(index.to_int() >= 0, "Attempting to read bit with negative index");
+    unsigned uindex = ac_int<W2-S2,false>(index).to_uint();
+    AC_ASSERT(uindex < W, "Attempting to read bit beyond MSB");
+    ac_bitref bvh( this, uindex );
     return bvh;
   } 
   bool operator [] ( unsigned int uindex) const {
@@ -2411,22 +2419,17 @@ public:
   } 
   bool operator [] ( int index) const {
     AC_ASSERT(index >= 0, "Attempting to read bit with negative index");
-    AC_ASSERT(index < W, "Attempting to read bit beyond MSB");
     unsigned uindex = index & ((unsigned)~0 >> 1);
+    AC_ASSERT(uindex < W, "Attempting to read bit beyond MSB");
     return (uindex < W) ? (Base::v[uindex>>5]>>(uindex&31) & 1) : 0;
   }
   template<int W2, bool S2>
   bool operator [] ( const ac_int<W2,S2> &index) const {
-    AC_ASSERT(index >= 0, "Attempting to read bit with negative index");
-    AC_ASSERT(index < W, "Attempting to read bit beyond MSB");
-    ac_int<W2-S2,false> uindex = index;
-    return (uindex < W) ? (Base::v[uindex>>5]>>(uindex.to_uint()&31) & 1) : 0;
+    AC_ASSERT(index.to_int() >= 0, "Attempting to read bit with negative index");
+    unsigned uindex = ac_int<W2-S2,false>(index).to_uint();
+    AC_ASSERT(uindex < W, "Attempting to read bit beyond MSB");
+    return (uindex < W) ? (Base::v[uindex>>5]>>(uindex&31) & 1) : 0;
   }
-#if 0
-  unsigned int leading_bits(bool bit) const {
-    return Base::leading_bits(bit) - (32*N - W); 
-  }
-#endif
   typename rt_unary::leading_sign leading_sign() const {
     unsigned ls = Base::leading_bits(S & (Base::v[N-1] < 0)) - (32*N - W)-S; 
     return ls;
@@ -2640,7 +2643,13 @@ template<> inline ac_int<64,false>::ac_int( Ulong b ) { v[0] = (int) b; v[1] = (
 template<int W, bool S>
 inline std::ostream& operator << (std::ostream &os, const ac_int<W,S> &x) {
 #ifndef __SYNTHESIS__
-  os << x.to_string(AC_DEC);
+  if ((os.flags() & std::ios::hex) != 0) {
+    os << x.to_string(AC_HEX);
+  } else if ((os.flags() & std::ios::oct) != 0) {
+    os << x.to_string(AC_OCT);
+  } else {
+    os << x.to_string(AC_DEC);
+  }
 #endif
   return os;
 }
@@ -2933,8 +2942,8 @@ template<ac_special_val val> inline C_TYPE value(C_TYPE); \
 template<> inline C_TYPE value<AC_VAL_0>(C_TYPE) { return (C_TYPE)0; } \
 SPECIAL_VAL_FOR_INTS_DC(C_TYPE, WI, SI) \
 template<> inline C_TYPE value<AC_VAL_QUANTUM>(C_TYPE) { return (C_TYPE)1; } \
-template<> inline C_TYPE value<AC_VAL_MAX>(C_TYPE) { return (C_TYPE)(SI ? ~((C_TYPE) -1 << (WI-1)) : (C_TYPE) -1); } \
-template<> inline C_TYPE value<AC_VAL_MIN>(C_TYPE) { return (C_TYPE)(SI ? (C_TYPE) 1 << (WI-1) : 0); }
+template<> inline C_TYPE value<AC_VAL_MAX>(C_TYPE) { return (C_TYPE)(SI ? ~(((C_TYPE) 1) << (WI-1)) : (C_TYPE) -1); } \
+template<> inline C_TYPE value<AC_VAL_MIN>(C_TYPE) { return (C_TYPE)(SI ? ((C_TYPE) 1) << (WI-1) : (C_TYPE) 0); }
                                                                                            
 SPECIAL_VAL_FOR_INTS(bool, 1, false)
 SPECIAL_VAL_FOR_INTS(char, 8, true)

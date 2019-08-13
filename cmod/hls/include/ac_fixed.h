@@ -2,13 +2,13 @@
  *                                                                        *
  *  Algorithmic C (tm) Datatypes                                          *
  *                                                                        *
- *  Software Version: 3.7                                                 *
+ *  Software Version: 3.9                                                 *
  *                                                                        *
- *  Release Date    : Wed Jun  1 13:21:52 PDT 2016                        *
+ *  Release Date    : Fri Oct 12 12:26:10 PDT 2018                        *
  *  Release Type    : Production Release                                  *
- *  Release Build   : 3.7.0                                               *
+ *  Release Build   : 3.9.0                                               *
  *                                                                        *
- *  Copyright 2005-2016, Mentor Graphics Corporation,                     *
+ *  Copyright 2005-2018, Mentor Graphics Corporation,                     *
  *                                                                        *
  *  All Rights Reserved.                                                  *
  *  
@@ -95,6 +95,9 @@ class ac_fixed : private ac_private::iv<(W+31+!S)/32>
 #ifndef __SYNTHESIS__
 __AC_FIXED_UTILITY_BASE 
 #endif
+#ifdef __AC_FIXED_NUMERICAL_ANALYSIS_BASE
+, public __AC_FIXED_NUMERICAL_ANALYSIS_BASE
+#endif
 {
 #if defined(__SYNTHESIS__) && !defined(AC_IGNORE_BUILTINS)
 #pragma builtin
@@ -118,36 +121,39 @@ __AC_FIXED_UTILITY_BASE
   inline Base &base() { return *this; }
   inline const Base &base() const { return *this; }
 
-  inline void overflow_adjust(bool underflow, bool overflow) {
+  inline void overflow_adjust(bool overflow, bool neg) {
     if(O==AC_WRAP) {
       bit_adjust();
       return;
     } 
     else if(O==AC_SAT_ZERO) {
-      if((overflow || underflow))
+      if(overflow)
         ac_private::iv_extend<N>(Base::v, 0);
       else
         bit_adjust();
     }
     else if(S) {
       if(overflow) {
-        ac_private::iv_extend<N-1>(Base::v, ~0);
-        Base::v[N-1] = ~(~0 << ((W-1)&31));
-      } else if(underflow) {
-        ac_private::iv_extend<N-1>(Base::v, 0);
-        Base::v[N-1] = (~0 << ((W-1)&31));
-        if(O==AC_SAT_SYM)
-          Base::v[0] |= 1;
+        if(!neg) {
+          ac_private::iv_extend<N-1>(Base::v, ~0);
+          Base::v[N-1] = ~((unsigned)~0 << ((W-1)&31));
+        } else {
+          ac_private::iv_extend<N-1>(Base::v, 0);
+          Base::v[N-1] = ((unsigned)~0 << ((W-1)&31));
+          if(O==AC_SAT_SYM)
+            Base::v[0] |= 1;
+        }
       } else
         bit_adjust();
     }
     else {
       if(overflow) {
-        ac_private::iv_extend<N-1>(Base::v, ~0);
-        Base::v[N-1] = ~(~0 << (W&31));
-      } else if(underflow)
-        ac_private::iv_extend<N>(Base::v, 0);
-      else
+        if(!neg) {
+          ac_private::iv_extend<N-1>(Base::v, ~0);
+          Base::v[N-1] = ~((unsigned)~0 << (W&31));
+        } else
+          ac_private::iv_extend<N>(Base::v, 0);
+      } else
         bit_adjust();
     }
   }
@@ -179,6 +185,11 @@ public:
   static const ac_o_mode o_mode = O;
   static const ac_q_mode q_mode = Q;
   static const int e_width = 0;
+#ifdef __AC_FIXED_NUMERICAL_ANALYSIS_BASE
+  static const bool compute_overflow_for_wrap = true; 
+#else
+  static const bool compute_overflow_for_wrap = false; 
+#endif
 
   template<int W2, int I2, bool S2>
   struct rt {
@@ -276,8 +287,10 @@ public:
     else  // no quantization
       op.template const_shift_l<N,F-F2>(*this); 
 //      ac_private::iv_const_shift_l<N2,N,F-F2>(op.v, Base::v);
-    // handle overflow/underflow
-    if(O!=AC_WRAP && ((!S && S2) || I-S < I2-S2+(QUAN_INC || (S2 && O==AC_SAT_SYM && (O2 != AC_SAT_SYM || F2 > F) ))) ) { // saturation 
+    // handle overflow
+    if((O!=AC_WRAP || compute_overflow_for_wrap)
+       && ((!S && S2) || I-S < I2-S2+(QUAN_INC || (S2 && O==AC_SAT_SYM && (O2 != AC_SAT_SYM || F2 > F) ))) 
+    ) { // saturation 
       bool deleted_bits_zero = !(W&31)&S || !(Base::v[N-1] >> (W&31));
       bool deleted_bits_one = !(W&31)&S || !~(Base::v[N-1] >> (W&31));
       bool neg_src;
@@ -291,10 +304,13 @@ public:
         neg_src = S2 && op.v[N2-1] < 0 && Base::v[N-1] < 0;
       bool neg_trg = S && (bool) this->operator[](W-1); 
       bool overflow = !neg_src && (neg_trg || !deleted_bits_zero); 
-      bool underflow = neg_src && (!neg_trg || !deleted_bits_one); 
+      overflow |= neg_src && (!neg_trg || !deleted_bits_one); 
       if(O==AC_SAT_SYM && S && S2)
-        underflow |= neg_src && (W > 1 ? ac_private::iv_equal_zeros_to<W-1,N>(Base::v) : true);
-      overflow_adjust(underflow, overflow);
+        overflow |= neg_src && (W > 1 ? ac_private::iv_equal_zeros_to<W-1,N>(Base::v) : true);
+      overflow_adjust(overflow, neg_src);
+#ifdef __AC_FIXED_NUMERICAL_ANALYSIS_BASE
+    __AC_FIXED_NUMERICAL_ANALYSIS_BASE::update(overflow,neg_src,op);
+#endif
     }
     else 
       bit_adjust();
@@ -337,21 +353,23 @@ public:
     // a neg number may become non neg (0) after quantization
     neg_src &= o || Base::v[N-1] < 0;
 
-    if(O!=AC_WRAP) { // saturation 
-      bool overflow, underflow;
+    if(O!=AC_WRAP || compute_overflow_for_wrap) { // saturation 
+      bool overflow;
       bool neg_trg = S && (bool) this->operator[](W-1); 
       if(o) {
-        overflow = !neg_src;
-        underflow = neg_src;
+        overflow = true; 
       } else {
         bool deleted_bits_zero = !(W&31)&S || !(Base::v[N-1] >> (W&31));
         bool deleted_bits_one = !(W&31)&S || !~(Base::v[N-1] >> (W&31));
         overflow = !neg_src && (neg_trg || !deleted_bits_zero); 
-        underflow = neg_src && (!neg_trg || !deleted_bits_one); 
+        overflow |= neg_src && (!neg_trg || !deleted_bits_one); 
       }
       if(O==AC_SAT_SYM && S)
-        underflow |= neg_src && (W > 1 ? ac_private::iv_equal_zeros_to<W-1,N>(Base::v) : true);
-      overflow_adjust(underflow, overflow);
+        overflow |= neg_src && (W > 1 ? ac_private::iv_equal_zeros_to<W-1,N>(Base::v) : true);
+      overflow_adjust(overflow, neg_src);
+#ifdef __AC_FIXED_NUMERICAL_ANALYSIS_BASE
+      __AC_FIXED_NUMERICAL_ANALYSIS_BASE::update(overflow,neg_src,d);
+#endif
     } else 
       bit_adjust();
   }
@@ -379,7 +397,7 @@ public:
       Base::operator =(0);
       if(S && V == AC_VAL_MIN) {
         const unsigned rem = (W-1)&31;
-        Base::v[N-1] = (-1 << rem);
+        Base::v[N-1] = ((unsigned)~0 << rem);
         if(O == AC_SAT_SYM) {
           if(W == 1)
             Base::v[0] = 0;
@@ -407,7 +425,7 @@ public:
 #endif
 
   // Explicit conversion functions to ac_int that captures all integer bits (bits are truncated)
-  inline ac_int<AC_MAX(I,1),S> to_ac_int() const { return ((ac_fixed<AC_MAX(I,1),AC_MAX(I,1),S>) *this).slc<AC_MAX(I,1)>(0); }
+  inline ac_int<AC_MAX(I,1),S> to_ac_int() const { return ((ac_fixed<AC_MAX(I,1),AC_MAX(I,1),S>) *this).template slc<AC_MAX(I,1)>(0); }
 
   // Explicit conversion functions to C built-in types -------------
   inline int to_int() const { return ((I-W) >= 32) ? 0 : (signed int) to_ac_int(); } 
@@ -825,9 +843,9 @@ public:
   template<int WS, int WX, bool SX>
   inline ac_int<WS,S> slc(const ac_int<WX,SX> &index) const {
     ac_int<WS,S> r;
-    AC_ASSERT(index >= 0, "Attempting to read slc with negative indeces");
-    ac_int<WX-SX, false> uindex = index;
-    Base::shift_r(uindex.to_uint(), r);
+    AC_ASSERT(index.to_int() >= 0, "Attempting to read slc with negative indeces");
+    unsigned uindex = ac_int<WX-SX, false>(index).to_uint();
+    Base::shift_r(uindex, r);
     r.bit_adjust();
     return r; 
   }
@@ -852,8 +870,8 @@ public:
   template<int W2, bool S2, int WX, bool SX>
   inline ac_fixed &set_slc(const ac_int<WX,SX> lsb, const ac_int<W2,S2> &slc) {
     AC_ASSERT(lsb.to_int() + W2 <= W && lsb.to_int() >= 0, "Out of bounds set_slc");
-    ac_int<WX-SX, false> ulsb = lsb;
-    Base::set_slc(ulsb.to_uint(), W2, (ac_int<W2,true>) slc);
+    unsigned ulsb = ac_int<WX-SX, false>(lsb).to_uint();
+    Base::set_slc(ulsb, W2, (ac_int<W2,true>) slc);
     bit_adjust();   // in case sign bit was assigned 
     return *this;
   }
@@ -908,17 +926,17 @@ public:
   }
   ac_bitref operator [] ( int index) {
     AC_ASSERT(index >= 0, "Attempting to read bit with negative index");
-    AC_ASSERT(index < W, "Attempting to read bit beyond MSB");
     unsigned uindex = index & ((unsigned)~0 >> 1);
+    AC_ASSERT(uindex < W, "Attempting to read bit beyond MSB");
     ac_bitref bvh( this, uindex );
     return bvh;
   }
   template<int W2, bool S2>
   ac_bitref operator [] ( const ac_int<W2,S2> &index) {
-    AC_ASSERT(index >= 0, "Attempting to read bit with negative index");
-    AC_ASSERT(index < W, "Attempting to read bit beyond MSB");
-    ac_int<W2-S2,false> uindex = index;
-    ac_bitref bvh( this, uindex.to_uint() );
+    AC_ASSERT(index.to_int() >= 0, "Attempting to read bit with negative index");
+    unsigned uindex = ac_int<W2-S2,false>(index).to_uint();
+    AC_ASSERT(uindex < W, "Attempting to read bit beyond MSB");
+    ac_bitref bvh( this, uindex );
     return bvh;
   }
 
@@ -928,16 +946,16 @@ public:
   }
   bool operator [] ( int index) const {
     AC_ASSERT(index >= 0, "Attempting to read bit with negative index");
-    AC_ASSERT(index < W, "Attempting to read bit beyond MSB");
     unsigned uindex = index & ((unsigned)~0 >> 1);
+    AC_ASSERT(uindex < W, "Attempting to read bit beyond MSB");
     return (uindex < W) ? (Base::v[uindex>>5]>>(uindex&31) & 1) : 0;
   }
   template<int W2, bool S2>
   bool operator [] ( const ac_int<W2,S2> &index) const {
-    AC_ASSERT(index >= 0, "Attempting to read bit with negative index");
-    AC_ASSERT(index < W, "Attempting to read bit beyond MSB");
-    ac_int<W2-S2,false> uindex = index;
-    return (uindex < W) ? (Base::v[uindex>>5]>>(uindex.to_uint()&31) & 1) : 0;
+    AC_ASSERT(index.to_int() >= 0, "Attempting to read bit with negative index");
+    unsigned uindex = ac_int<W2-S2,false>(index).to_uint();
+    AC_ASSERT(uindex < W, "Attempting to read bit beyond MSB");
+    return (uindex < W) ? (Base::v[uindex>>5]>>(uindex&31) & 1) : 0;
   }
   typename rt_unary::leading_sign leading_sign() const {
     unsigned ls = Base::leading_bits(S & (Base::v[N-1] < 0)) - (32*N - W)-S;
@@ -1112,7 +1130,13 @@ template<> inline ac_fixed<64,64,false,AC_TRN,AC_WRAP>::ac_fixed( Ulong b ) { v[
 template<int W, int I, bool S, ac_q_mode Q, ac_o_mode O>
 inline std::ostream& operator << (std::ostream &os, const ac_fixed<W,I,S,Q,O> &x) {
 #ifndef __SYNTHESIS__
-  os << x.to_string(AC_DEC);
+  if ((os.flags() & std::ios::hex) != 0) {
+    os << x.to_string(AC_HEX);
+  } else if ((os.flags() & std::ios::oct) != 0) {
+    os << x.to_string(AC_OCT);
+  } else {
+    os << x.to_string(AC_DEC);
+  }
 #endif
   return os;
 }
@@ -1120,9 +1144,9 @@ inline std::ostream& operator << (std::ostream &os, const ac_fixed<W,I,S,Q,O> &x
 
 // Macros for Binary Operators with C Integers --------------------------------------------
 
-#define FX_BIN_OP_WITH_INT_2I(BIN_OP, C_TYPE, WI, SI, RTYPE)  \
+#define FX_BIN_OP_WITH_INT_2I(BIN_OP, C_TYPE, WI, SI)  \
   template<int W, int I, bool S, ac_q_mode Q, ac_o_mode O> \
-  inline typename ac_fixed<W,I,S>::template rt<WI,WI,SI>::RTYPE operator BIN_OP ( const ac_fixed<W,I,S,Q,O> &op, C_TYPE i_op) {  \
+  inline ac_fixed<W,I,S,Q,O> operator BIN_OP ( const ac_fixed<W,I,S,Q,O> &op, C_TYPE i_op) {  \
     return op.operator BIN_OP (ac_int<WI,SI>(i_op));  \
   }
 
@@ -1163,8 +1187,8 @@ inline std::ostream& operator << (std::ostream &os, const ac_fixed<W,I,S,Q,O> &x
   FX_BIN_OP_WITH_INT(+, C_TYPE, WI, SI, plus) \
   FX_BIN_OP_WITH_INT(-, C_TYPE, WI, SI, minus) \
   FX_BIN_OP_WITH_INT(/, C_TYPE, WI, SI, div) \
-  FX_BIN_OP_WITH_INT_2I(>>, C_TYPE, WI, SI, arg1) \
-  FX_BIN_OP_WITH_INT_2I(<<, C_TYPE, WI, SI, arg1) \
+  FX_BIN_OP_WITH_INT_2I(>>, C_TYPE, WI, SI) \
+  FX_BIN_OP_WITH_INT_2I(<<, C_TYPE, WI, SI) \
   FX_BIN_OP_WITH_INT(&, C_TYPE, WI, SI, logic) \
   FX_BIN_OP_WITH_INT(|, C_TYPE, WI, SI, logic) \
   FX_BIN_OP_WITH_INT(^, C_TYPE, WI, SI, logic) \
@@ -1271,7 +1295,6 @@ namespace ac {
     FX_ASSIGN_OP_WITH_AC_INT(-=)
     FX_ASSIGN_OP_WITH_AC_INT(*=)
     FX_ASSIGN_OP_WITH_AC_INT(/=)
-    FX_ASSIGN_OP_WITH_AC_INT(%=)
     FX_ASSIGN_OP_WITH_AC_INT(&=)
     FX_ASSIGN_OP_WITH_AC_INT(|=)
     FX_ASSIGN_OP_WITH_AC_INT(^=)
