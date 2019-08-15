@@ -159,9 +159,9 @@ CPPFLAGS ?= $(INC_FLAGS) -MMD -MP -fPIC -Wall -Werror -DSC_INCLUDE_DYNAMIC_PROCE
 LDFLAGS ?= -shared $(addprefix -l,$($(notdir $(SYSTEMC_LIBRARIES)):lib%.so=%)) $(LD_FLAGS)
 
 $(BUILD_DIR)/$(TARGET): $(OBJS) 
-	$(CC) $(OBJS) -o $@ $(LDFLAGS) -L$(BUILD_DIR)
+	$(GCC) $(OBJS) -o $@ $(LDFLAGS) -L$(BUILD_DIR)
 
-default: $(BUILD_DIR)/$(TARGET) install
+default: install
 	@echo "=============================================="
 	@echo "files are generated under $(TOT)/$(OUTDIR)/$(PROJECT)/$(REL_PATH_FROM_TOT)"
 	@echo "=============================================="
@@ -177,7 +177,7 @@ clean:
 
 .PHONY: install
 
-install:
+install: $(BUILD_DIR)/$(TARGET)
 	$(MKDIR_P) $(PREFIX)/lib
 	$(MKDIR_P) $(PREFIX)/include
 	$(CP) $(BUILD_DIR)/$(TARGET) $(PREFIX)/lib
