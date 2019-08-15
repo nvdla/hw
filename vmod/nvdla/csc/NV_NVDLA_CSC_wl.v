@@ -510,7 +510,7 @@ assign cbuf_reset = sc2cdma_wt_pending_req;
 //================  Non-SLCG clock domain ================//
 assign wt_entry_avl_add = cdma2sc_wt_updt ? cdma2sc_wt_entries : {CSC_ENTRIES_NUM_WIDTH{1'b0}};
 assign wt_entry_avl_sub = wt_rls ? wt_rls_wt_entries : {CSC_ENTRIES_NUM_WIDTH{1'b0}};
-assign {mon_wt_entry_avl_w,wt_entry_avl_w} = (cbuf_reset) ? {CSC_ENTRIES_NUM_WIDTH{1'b0}} : wt_entry_avl + wt_entry_avl_add - wt_entry_avl_sub;
+assign {mon_wt_entry_avl_w,wt_entry_avl_w} = (cbuf_reset) ? {(CSC_ENTRIES_NUM_WIDTH+1){1'b0}} : wt_entry_avl + wt_entry_avl_add - wt_entry_avl_sub;
 
 //////////////////////////////////// calculate avaliable wmb entries ////////////////////////////////////
 assign wmb_entry_avl_add = cdma2sc_wt_updt ? cdma2sc_wmb_entries : 9'b0;
