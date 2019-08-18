@@ -519,7 +519,7 @@ assign {mon_wmb_entry_avl_w,wmb_entry_avl_w} = (cbuf_reset) ? 10'b0 : wmb_entry_
 
 //////////////////////////////////// calculate weight entries start offset ////////////////////////////////////
 assign {mon_wt_entry_st_inc,wt_entry_st_inc} = wt_entry_st + wt_rls_wt_entries;
-assign {mon_wt_entry_st_inc_wrap,wt_entry_st_inc_wrap} = wt_entry_st_inc[CSC_ENTRIES_NUM_WIDTH-1:0] - {weight_bank, {LOG2_CBUF_BANK_DEPTH{1'b0}}};
+assign {mon_wt_entry_st_inc_wrap,wt_entry_st_inc_wrap} = wt_entry_st_inc[CSC_ENTRIES_NUM_WIDTH-1:0] - {1'b0, weight_bank, {LOG2_CBUF_BANK_DEPTH{1'b0}}};
 assign is_wt_entry_st_wrap = (wt_entry_st_inc >= {1'b0, weight_bank, {LOG2_CBUF_BANK_DEPTH{1'b0}}});
 assign wt_entry_st_w = (cbuf_reset) ? {CSC_ENTRIES_NUM_WIDTH{1'b0}} :
                        (~wt_rls) ? wt_entry_st :
@@ -528,7 +528,7 @@ assign wt_entry_st_w = (cbuf_reset) ? {CSC_ENTRIES_NUM_WIDTH{1'b0}} :
 
 //////////////////////////////////// calculate weight entries end offset ////////////////////////////////////
 assign {mon_wt_entry_end_inc,wt_entry_end_inc} = wt_entry_end + cdma2sc_wt_entries;
-assign {mon_wt_entry_end_inc_wrap,wt_entry_end_inc_wrap} = wt_entry_end_inc[CSC_ENTRIES_NUM_WIDTH-1:0] - {weight_bank, {LOG2_CBUF_BANK_DEPTH{1'b0}}};
+assign {mon_wt_entry_end_inc_wrap,wt_entry_end_inc_wrap} = wt_entry_end_inc[CSC_ENTRIES_NUM_WIDTH-1:0] - {1'b0, weight_bank, {LOG2_CBUF_BANK_DEPTH{1'b0}}};
 assign is_wt_entry_end_wrap = (wt_entry_end_inc >= {1'b0, weight_bank, {LOG2_CBUF_BANK_DEPTH{1'b0}}});
 assign wt_entry_end_w = (cbuf_reset) ? {CSC_ENTRIES_NUM_WIDTH{1'b0}} : is_wt_entry_end_wrap ? wt_entry_end_inc_wrap : wt_entry_end_inc[CSC_ENTRIES_NUM_WIDTH-1:0];
 
