@@ -11,14 +11,14 @@ include $(DEPTH)/tools/make/common.make
 
 default: $(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator/VNV_nvdla
 
-VERILATOR_PARAMS ?= --compiler clang --output-split 250000000
+VERILATOR_PARAMS ?= --compiler clang --output-split 250000000 -CFLAGS -fPIC
 # Perhaps you need to trace?
 #   VERILATOR_PARAMS += --trace --trace-depth 7 --trace-max-array 8
 
 # We end up hardcoding this, because the .f file applies only to nv_full,
 # living in outdir, right now.  Otherwise, you're on your own...
 $(DEPTH)/outdir/nv_full/verilator/VNV_nvdla.mk: verilator.f ../../outdir/nv_full/vmod # and a lot of RTL...
-	$(VERILATOR) --cc --exe -f verilator.f --Mdir ../../outdir/nv_full/verilator/ nvdla.cpp --compiler clang --output-split 250000000
+	$(VERILATOR) --cc --exe -f verilator.f --Mdir ../../outdir/nv_full/verilator/ nvdla.cpp $(VERILATOR_PARAMS)
 
 $(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator/VNV_nvdla: $(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator/VNV_nvdla.mk nvdla.cpp
 	rm -f $(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator/nvdla.cpp
