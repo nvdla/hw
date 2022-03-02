@@ -110,7 +110,7 @@ sub build {
     unlink $outdir_log_tmp;
     
     print "logfile: $outdir_log\n";
-    my $tee = IO::Tee->new(\*STDOUT, $outdir_log);
+    my $tee = IO::Tee->new(\*STDOUT, new IO::File(">>${outdir_log}"));
     print $tee "="x46,"\n";
     print $tee "="x18,"BUILD PASS","="x18,"\n";
     print $tee "="x46,"\n";
