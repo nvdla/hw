@@ -32,3 +32,7 @@ $(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator/test/%/trace.bin: $(DEPTH)/verif/traces/
 
 run: $(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator/test/$(TEST)/trace.bin $(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator/VNV_nvdla
 	cd $(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator/test/$(TEST) && ../../VNV_nvdla trace.bin
+
+.PHONY: run_csb_pipelined
+run_csb_pipelined: $(DEPTH)/$(OUTDIR)/$(PROJECT)/verilator/VNV_nvdla
+	$< --csb-pipelined

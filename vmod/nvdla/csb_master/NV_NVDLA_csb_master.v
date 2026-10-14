@@ -309,7 +309,9 @@ reg           cmac_b_req_pvld_w;
 reg    [33:0] cmac_b_resp_pd;
 reg           cmac_b_resp_valid;
 reg    [49:0] core_req_pd_d1;
+reg           core_req_pending;
 reg           core_req_pop_valid;
+reg           core_resp_pvld_d1;
 reg           csb2bdma_req_en;
 reg    [49:0] csb2bdma_req_pd_tmp;
 reg           csb2bdma_req_pvld;
@@ -465,7 +467,23 @@ NV_NVDLA_CSB_MASTER_falcon2csb_fifo u_fifo_csb2nvdla (
   ,.pwrbus_ram_pd (pwrbus_ram_pd[31:0])     //|< i
   );
 
-assign  core_req_prdy = 1'b1;
+// Keep response-bearing requests in order and reserve return FIFO space.
+// The registered FIFO write input needs one cycle to update occupancy.
+assign  core_req_prdy = ~core_req_pending & core_resp_prdy;
+
+always @(posedge nvdla_core_clk or negedge nvdla_core_rstn) begin
+  if (!nvdla_core_rstn) begin
+    core_req_pending <= 1'b0;
+    core_resp_pvld_d1 <= 1'b0;
+  end else begin
+    core_resp_pvld_d1 <= core_resp_pvld;
+    if (core_req_pop_valid & (~core_req_write | core_req_nposted)) begin
+      core_req_pending <= 1'b1;
+    end else if (core_resp_pvld_d1) begin
+      core_req_pending <= 1'b0;
+    end
+  end
+end
 
 NV_NVDLA_CSB_MASTER_csb2falcon_fifo u_fifo_nvdla2csb (
    .wr_clk        (nvdla_core_clk)          //|< i

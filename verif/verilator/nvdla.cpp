@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <fcntl.h>
+#include <string.h>
 
 #include <queue>
 #include <map>
@@ -32,6 +33,102 @@ uint64_t ticks = 0;
 
 double sc_time_stamp() {
 	return (double) ticks;
+}
+
+// Exercise accepted, overlapping CSB requests on the full core.
+static int test_csb_pipelined(VNV_nvdla *dla) {
+	struct request {
+		uint32_t addr;
+		int write;
+		int nposted;
+		uint32_t data;
+	};
+	const request ops[] = {
+		{0x0004, 1, 1, 0x000a0000},
+		{0x9018, 1, 1, 0xa5a50000},
+		{0x0004, 0, 0, 0x000a0000},
+		{0x9018, 0, 0, 0xa5a50000},
+		{0x1000, 0, 0, 0x00000000},
+		{0x0004, 0, 0, 0x000a0000}, {0x9018, 0, 0, 0xa5a50000},
+		{0x9018, 0, 0, 0xa5a50000}, {0x0004, 0, 0, 0x000a0000},
+		{0x0004, 0, 0, 0x000a0000}, {0x1000, 0, 0, 0x00000000},
+		{0x0004, 0, 0, 0x000a0000}, {0x0004, 0, 0, 0x000a0000},
+		{0x0004, 0, 0, 0x000a0000}, {0x0004, 0, 0, 0x000a0000},
+		{0x0004, 0, 0, 0x000a0000}, {0x0004, 0, 0, 0x000a0000},
+		{0x0004, 1, 1, 0x000a0000}, {0x1000, 0, 0, 0x00000000},
+		{0x0004, 1, 0, 0x000a0000}, {0x0004, 0, 0, 0x000a0000},
+		{0x1000, 1, 0, 0}, {0x1000, 0, 0, 0},
+		{0x1000, 1, 1, 0}, {0x0004, 0, 0, 0x000a0000}
+	};
+	const unsigned lengths[] = {1, 1, 1, 1, 1, 2, 2, 2, 6, 2, 2, 2, 2};
+	const unsigned ratios[][2] = {{5, 5}, {13, 5}, {7, 5}, {3, 7}, {50, 1}};
+	int passed = 1;
+
+	for (unsigned ratio = 0; ratio < sizeof(ratios) / sizeof(ratios[0]); ratio++) {
+		unsigned offset = 0;
+		unsigned csb_phase = 0, core_phase = 0;
+		for (unsigned batch = 0; batch < sizeof(lengths) / sizeof(lengths[0]); batch++) {
+			std::queue<uint32_t> expected;
+			unsigned writes = 0, sent = 0, reads = 0, completions = 0;
+			int matched = 1;
+			for (unsigned i = 0; i < lengths[batch]; i++) {
+				const request &op = ops[offset + i];
+				if (!op.write) expected.push(op.data);
+				else if (op.nposted) writes++;
+			}
+			// Hold each request until acceptance; also collect returns during issue.
+			for (unsigned cycle = 0; cycle < 256; ) {
+				if (!csb_phase && !dla->dla_csb_clk) {
+					dla->csb2nvdla_valid = sent < lengths[batch];
+					if (dla->csb2nvdla_valid) {
+						const request &op = ops[offset + sent];
+						dla->csb2nvdla_addr = op.addr >> 2;
+						dla->csb2nvdla_write = op.write;
+						dla->csb2nvdla_nposted = op.nposted;
+						dla->csb2nvdla_wdat = op.data;
+					}
+					dla->eval();
+				}
+				if (++csb_phase == ratios[ratio][0]) {
+					csb_phase = 0;
+					if (!dla->dla_csb_clk) {
+						if (dla->csb2nvdla_valid && dla->csb2nvdla_ready) sent++;
+						if (dla->nvdla2csb_valid) {
+							if (expected.empty() || expected.front() != dla->nvdla2csb_data)
+								matched = 0;
+							if (!expected.empty()) expected.pop();
+							reads++;
+						}
+						if (dla->nvdla2csb_wr_complete) completions++;
+						cycle++;
+					}
+					dla->dla_csb_clk = !dla->dla_csb_clk;
+				}
+				if (++core_phase == ratios[ratio][1]) {
+					core_phase = 0;
+					dla->dla_core_clk = !dla->dla_core_clk;
+				}
+				dla->eval();
+				ticks++;
+			}
+			dla->csb2nvdla_valid = 0;
+			dla->eval();
+			if (sent != lengths[batch] || !expected.empty() || completions != writes)
+				matched = 0;
+			printf("CSB %u/%u batch %u: accepted %u/%u, reads %u, writes %u/%u: %s\n",
+			       ratios[ratio][0], ratios[ratio][1], batch, sent, lengths[batch],
+			       reads, completions, writes, matched ? "PASS" : "FAIL");
+			fflush(stdout);
+			passed &= matched;
+			offset += lengths[batch];
+		}
+		// Finish on falling clock edges before selecting the next ratio.
+		dla->dla_core_clk = 0;
+		dla->dla_csb_clk = 0;
+		dla->eval();
+	}
+	printf("*** %s: CSB pipelined requests\n", passed ? "PASS" : "FAIL");
+	return passed ? 0 : 2;
 }
 
 class CSBMaster {
@@ -733,7 +830,9 @@ int main(int argc, const char **argv, char **env) {
 		return 1;
 	}
 	
-	trace->load(argv[1]);
+	int csb_pipelined = !strcmp(argv[1], "--csb-pipelined");
+	if (!csb_pipelined)
+		trace->load(argv[1]);
 
 	printf("reset...\n");
 	dla->dla_reset_rstn = 1;
@@ -800,6 +899,9 @@ int main(int argc, const char **argv, char **env) {
 		tfp->dump(ticks);
 #endif
 	}
+
+	if (csb_pipelined)
+		return test_csb_pipelined(dla);
 
 	printf("running trace...\n");
 	uint32_t quiesc_timer = 200;
